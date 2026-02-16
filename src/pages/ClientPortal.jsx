@@ -87,7 +87,7 @@ export default function ClientPortal() {
     if (editingLead.type === 'disposition') {
       updates.disposition = editData.disposition;
       if (editData.disposition === 'rescheduled' && editData.appointment_date) {
-        updates.appointment_date = editData.appointment_date;
+        updates.appointment_date = new Date(editData.appointment_date).toISOString();
       }
     } else if (editingLead.type === 'outcome') {
       updates.outcome = editData.outcome;
@@ -193,7 +193,6 @@ export default function ClientPortal() {
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Appointment Date</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Disposition</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Outcome</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200">
@@ -216,6 +215,7 @@ export default function ClientPortal() {
                             value={editData.disposition}
                             onChange={(e) => setEditData({...editData, disposition: e.target.value})}
                             className="text-xs px-2 py-1 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            autoFocus
                           >
                             <option value="scheduled">Scheduled</option>
                             <option value="cancelled">Cancelled</option>
@@ -226,21 +226,40 @@ export default function ClientPortal() {
                               type="datetime-local"
                               value={editData.appointment_date ? new Date(editData.appointment_date).toISOString().slice(0, 16) : ''}
                               onChange={(e) => setEditData({...editData, appointment_date: e.target.value})}
-                              className="text-xs px-2 py-1 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                              className="text-xs px-2 py-1 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 w-full"
                               placeholder="New appointment date"
                             />
                           )}
+                          <div className="flex gap-2">
+                            <button
+                              onClick={saveEdit}
+                              className="text-xs px-3 py-1 bg-green-600 text-white rounded hover:bg-green-700"
+                            >
+                              Save
+                            </button>
+                            <button
+                              onClick={cancelEdit}
+                              className="text-xs px-3 py-1 bg-gray-600 text-white rounded hover:bg-gray-700"
+                            >
+                              Cancel
+                            </button>
+                          </div>
                         </div>
                       ) : (
-                        <span className={`px-2 py-1 text-xs font-medium rounded-full ${
-                          lead.disposition === 'showed' ? 'bg-green-100 text-green-800' :
-                          lead.disposition === 'cancelled' ? 'bg-red-100 text-red-800' :
-                          lead.disposition === 'no_show' ? 'bg-gray-100 text-gray-800' :
-                          lead.disposition === 'rescheduled' ? 'bg-purple-100 text-purple-800' :
-                          'bg-blue-100 text-blue-800'
-                        }`}>
-                          {lead.disposition || 'scheduled'}
-                        </span>
+                        <button
+                          onClick={() => startEditing(lead, 'disposition')}
+                          className="text-left w-full"
+                        >
+                          <span className={`px-2 py-1 text-xs font-medium rounded-full cursor-pointer hover:opacity-80 ${
+                            lead.disposition === 'showed' ? 'bg-green-100 text-green-800' :
+                            lead.disposition === 'cancelled' ? 'bg-red-100 text-red-800' :
+                            lead.disposition === 'no_show' ? 'bg-gray-100 text-gray-800' :
+                            lead.disposition === 'rescheduled' ? 'bg-purple-100 text-purple-800' :
+                            'bg-blue-100 text-blue-800'
+                          }`}>
+                            {lead.disposition || 'scheduled'}
+                          </span>
+                        </button>
                       )}
                     </td>
                     <td className="px-6 py-4">
@@ -250,6 +269,7 @@ export default function ClientPortal() {
                             value={editData.outcome}
                             onChange={(e) => setEditData({...editData, outcome: e.target.value})}
                             className="text-xs px-2 py-1 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            autoFocus
                           >
                             <option value="pending">Pending</option>
                             <option value="sold">Sold</option>
@@ -275,53 +295,39 @@ export default function ClientPortal() {
                               />
                             </>
                           )}
+                          <div className="flex gap-2">
+                            <button
+                              onClick={saveEdit}
+                              className="text-xs px-3 py-1 bg-green-600 text-white rounded hover:bg-green-700"
+                            >
+                              Save
+                            </button>
+                            <button
+                              onClick={cancelEdit}
+                              className="text-xs px-3 py-1 bg-gray-600 text-white rounded hover:bg-gray-700"
+                            >
+                              Cancel
+                            </button>
+                          </div>
                         </div>
                       ) : (
-                        <div>
-                          <span className={`px-2 py-1 text-xs font-medium rounded-full ${
-                            lead.outcome === 'sold' ? 'bg-green-100 text-green-800' :
-                            lead.outcome === 'lost' ? 'bg-red-100 text-red-800' :
-                            'bg-yellow-100 text-yellow-800'
-                          }`}>
-                            {lead.outcome || 'pending'}
-                          </span>
-                          {lead.sale_amount && (
-                            <div className="text-xs text-gray-600 mt-1">${lead.sale_amount.toLocaleString()}</div>
-                          )}
-                        </div>
-                      )}
-                    </td>
-                    <td className="px-6 py-4">
-                      {editingLead?.id === lead.id ? (
-                        <div className="flex gap-2">
-                          <button
-                            onClick={saveEdit}
-                            className="text-xs px-3 py-1 bg-green-600 text-white rounded hover:bg-green-700"
-                          >
-                            Save
-                          </button>
-                          <button
-                            onClick={cancelEdit}
-                            className="text-xs px-3 py-1 bg-gray-600 text-white rounded hover:bg-gray-700"
-                          >
-                            Cancel
-                          </button>
-                        </div>
-                      ) : (
-                        <div className="flex gap-2 flex-wrap">
-                          <button
-                            onClick={() => startEditing(lead, 'disposition')}
-                            className="text-xs px-2 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 inline-flex items-center gap-1"
-                          >
-                            <Edit2 className="w-3 h-3" /> Edit Disposition
-                          </button>
-                          <button
-                            onClick={() => startEditing(lead, 'outcome')}
-                            className="text-xs px-2 py-1 bg-purple-600 text-white rounded hover:bg-purple-700 inline-flex items-center gap-1"
-                          >
-                            <Edit2 className="w-3 h-3" /> Edit Outcome
-                          </button>
-                        </div>
+                        <button
+                          onClick={() => startEditing(lead, 'outcome')}
+                          className="text-left w-full"
+                        >
+                          <div>
+                            <span className={`px-2 py-1 text-xs font-medium rounded-full cursor-pointer hover:opacity-80 ${
+                              lead.outcome === 'sold' ? 'bg-green-100 text-green-800' :
+                              lead.outcome === 'lost' ? 'bg-red-100 text-red-800' :
+                              'bg-yellow-100 text-yellow-800'
+                            }`}>
+                              {lead.outcome || 'pending'}
+                            </span>
+                            {lead.sale_amount && (
+                              <div className="text-xs text-gray-600 mt-1">${lead.sale_amount.toLocaleString()}</div>
+                            )}
+                          </div>
+                        </button>
                       )}
                     </td>
                   </tr>
