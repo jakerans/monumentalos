@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import { Calendar, CheckCircle, XCircle, Clock, Edit2 } from 'lucide-react';
 import toast from 'react-hot-toast';
+import confetti from 'canvas-confetti';
 
 export default function ClientPortal() {
   const navigate = useNavigate();
@@ -130,6 +131,37 @@ export default function ClientPortal() {
     }
 
     await base44.entities.Lead.update(editingLead.id, updates);
+    
+    // Celebration animation for sold leads
+    if (editingLead.type === 'outcome' && editData.outcome === 'sold') {
+      const duration = 3000;
+      const end = Date.now() + duration;
+
+      const frame = () => {
+        confetti({
+          particleCount: 7,
+          angle: 60,
+          spread: 55,
+          origin: { x: 0 },
+          colors: ['#22c55e', '#10b981', '#059669', '#FFD700', '#FFA500']
+        });
+        confetti({
+          particleCount: 7,
+          angle: 120,
+          spread: 55,
+          origin: { x: 1 },
+          colors: ['#22c55e', '#10b981', '#059669', '#FFD700', '#FFA500']
+        });
+
+        if (Date.now() < end) {
+          requestAnimationFrame(frame);
+        }
+      };
+      frame();
+      
+      toast.success('🎉 Sale recorded! Great job!', { duration: 4000 });
+    }
+    
     setEditingLead(null);
     setEditData({});
     setValidationErrors({});
