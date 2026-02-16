@@ -179,6 +179,12 @@ export default function ClientPortal() {
               </h1>
             </div>
             <div className="flex items-center gap-4">
+              <Link
+                to={createPageUrl('AppointmentHistory')}
+                className="px-3 py-1.5 text-sm border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                View History
+              </Link>
               {user.role === 'admin' && (
                 <button
                   onClick={() => {
@@ -244,7 +250,12 @@ export default function ClientPortal() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200">
-                {leads.map((lead) => (
+              {leads
+                .filter(lead => 
+                  (lead.disposition === 'scheduled' || lead.disposition === 'rescheduled') && 
+                  (!lead.outcome || lead.outcome === 'pending')
+                )
+                .map((lead) => (
                   <tr key={lead.id} className="hover:bg-gray-50">
                     <td className="px-6 py-4">
                       <div className="font-medium text-gray-900">{lead.name}</div>
