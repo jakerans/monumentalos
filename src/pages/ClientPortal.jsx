@@ -6,6 +6,7 @@ import { createPageUrl } from '@/utils';
 import { Calendar, CheckCircle, XCircle, Clock, Edit2 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import confetti from 'canvas-confetti';
+import LeadDetailsDrawer from '../components/LeadDetailsDrawer';
 
 export default function ClientPortal() {
   const navigate = useNavigate();
