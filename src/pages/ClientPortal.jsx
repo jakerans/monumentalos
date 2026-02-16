@@ -3,7 +3,7 @@ import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
-import { Calendar, CheckCircle, XCircle, Clock } from 'lucide-react';
+import { Calendar, CheckCircle, XCircle, Clock, Edit2 } from 'lucide-react';
 
 export default function ClientPortal() {
   const navigate = useNavigate();
@@ -195,7 +195,7 @@ export default function ClientPortal() {
                     </td>
                     <td className="px-6 py-4">
                       <div className="flex gap-2 flex-wrap">
-                        {!lead.disposition && (
+                        {!lead.disposition ? (
                           <>
                             <button
                               onClick={() => handleDisposition(lead.id, 'showed')}
@@ -216,6 +216,18 @@ export default function ClientPortal() {
                               Cancelled
                             </button>
                           </>
+                        ) : (
+                          <button
+                            onClick={() => {
+                              const newDisp = prompt('Change disposition to (showed/no_show/cancelled/rescheduled):', lead.disposition);
+                              if (newDisp && ['showed', 'no_show', 'cancelled', 'rescheduled'].includes(newDisp)) {
+                                handleDisposition(lead.id, newDisp);
+                              }
+                            }}
+                            className="text-xs px-2 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 inline-flex items-center gap-1"
+                          >
+                            <Edit2 className="w-3 h-3" /> Edit Disposition
+                          </button>
                         )}
                         {lead.disposition === 'showed' && !lead.outcome && (
                           <>
@@ -235,6 +247,24 @@ export default function ClientPortal() {
                               Lost
                             </button>
                           </>
+                        )}
+                        {lead.outcome && (
+                          <button
+                            onClick={() => {
+                              const newOutcome = prompt('Change outcome to (sold/lost/pending):', lead.outcome);
+                              if (newOutcome && ['sold', 'lost', 'pending'].includes(newOutcome)) {
+                                if (newOutcome === 'sold') {
+                                  const amount = prompt('Enter sale amount:', lead.sale_amount || '');
+                                  if (amount) handleOutcome(lead.id, newOutcome, amount);
+                                } else {
+                                  handleOutcome(lead.id, newOutcome);
+                                }
+                              }
+                            }}
+                            className="text-xs px-2 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 inline-flex items-center gap-1"
+                          >
+                            <Edit2 className="w-3 h-3" /> Edit Outcome
+                          </button>
                         )}
                       </div>
                     </td>
