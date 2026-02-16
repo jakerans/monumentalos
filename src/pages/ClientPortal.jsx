@@ -95,6 +95,21 @@ export default function ClientPortal() {
         }
       }
     } else if (editingLead.type === 'outcome') {
+      if (editData.outcome === 'sold') {
+        if (!editData.date_sold) {
+          alert('Please enter the date sold');
+          return;
+        }
+        if (!editData.estimate_value) {
+          alert('Please enter the estimate value');
+          return;
+        }
+      }
+      if (editData.outcome === 'lost' && !editData.estimate_value) {
+        alert('Please enter the estimate value');
+        return;
+      }
+      
       updates.outcome = editData.outcome;
       if ((editData.outcome === 'sold' || editData.outcome === 'lost') && editData.estimate_value) {
         updates.sale_amount = parseFloat(editData.estimate_value);
@@ -288,7 +303,8 @@ export default function ClientPortal() {
                                   value={editData.date_sold}
                                   onChange={(e) => setEditData({...editData, date_sold: e.target.value})}
                                   className="text-xs px-2 py-1 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 w-full"
-                                  placeholder="Date sold"
+                                  placeholder="Date sold*"
+                                  required
                                 />
                               )}
                               <input
@@ -296,7 +312,8 @@ export default function ClientPortal() {
                                 value={editData.estimate_value}
                                 onChange={(e) => setEditData({...editData, estimate_value: e.target.value})}
                                 className="text-xs px-2 py-1 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 w-full"
-                                placeholder="Estimate value ($)"
+                                placeholder="Estimate value ($)*"
+                                required
                               />
                             </>
                           )}
