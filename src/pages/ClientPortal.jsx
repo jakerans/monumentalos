@@ -86,8 +86,13 @@ export default function ClientPortal() {
     
     if (editingLead.type === 'disposition') {
       updates.disposition = editData.disposition;
-      if (editData.disposition === 'rescheduled' && editData.appointment_date) {
-        updates.appointment_date = new Date(editData.appointment_date).toISOString();
+      if (editData.disposition === 'rescheduled') {
+        if (editData.appointment_date) {
+          const dateValue = editData.appointment_date.includes('T') && editData.appointment_date.length <= 16 
+            ? editData.appointment_date + ':00' 
+            : editData.appointment_date;
+          updates.appointment_date = new Date(dateValue).toISOString();
+        }
       }
     } else if (editingLead.type === 'outcome') {
       updates.outcome = editData.outcome;
