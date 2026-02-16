@@ -324,9 +324,10 @@ export default function ClientPortal() {
                             <option value="lost">Lost</option>
                           </select>
                           {(editData.outcome === 'sold' || editData.outcome === 'lost') && (
-                            <>
+                            <div className="bg-gray-50 rounded-md p-3 space-y-3 border border-gray-200">
                               {editData.outcome === 'sold' && (
                                 <div>
+                                  <label className="block text-xs font-medium text-gray-700 mb-1">Date Sold*</label>
                                   <input
                                     type="date"
                                     value={editData.date_sold}
@@ -334,10 +335,9 @@ export default function ClientPortal() {
                                       setEditData({...editData, date_sold: e.target.value});
                                       setValidationErrors({...validationErrors, date_sold: false});
                                     }}
-                                    className={`text-xs px-2 py-1 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500 w-full ${
+                                    className={`text-xs px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 w-full bg-white ${
                                       validationErrors.date_sold ? 'border-red-500' : 'border-gray-300'
                                     }`}
-                                    placeholder="Date sold*"
                                   />
                                   {validationErrors.date_sold && (
                                     <p className="text-xs text-red-600 mt-1">Date sold is required</p>
@@ -345,8 +345,9 @@ export default function ClientPortal() {
                                 </div>
                               )}
                               <div>
+                                <label className="block text-xs font-medium text-gray-700 mb-1">Sale Amount*</label>
                                 <div className="relative">
-                                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs text-gray-500">$</span>
+                                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm font-medium text-gray-700">$</span>
                                   <input
                                     type="number"
                                     value={editData.estimate_value}
@@ -354,17 +355,17 @@ export default function ClientPortal() {
                                       setEditData({...editData, estimate_value: e.target.value});
                                       setValidationErrors({...validationErrors, estimate_value: false});
                                     }}
-                                    className={`text-xs px-2 py-1 pl-5 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500 w-full ${
+                                    className={`text-sm px-3 py-2 pl-7 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 w-full bg-white font-medium ${
                                       validationErrors.estimate_value ? 'border-red-500' : 'border-gray-300'
                                     }`}
-                                    placeholder="Estimate value*"
+                                    placeholder="0.00"
                                   />
                                 </div>
                                 {validationErrors.estimate_value && (
-                                  <p className="text-xs text-red-600 mt-1">Estimate value is required</p>
+                                  <p className="text-xs text-red-600 mt-1">Sale amount is required</p>
                                 )}
                               </div>
-                            </>
+                            </div>
                           )}
                           <div className="flex gap-2">
                             <button
