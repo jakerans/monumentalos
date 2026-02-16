@@ -134,30 +134,12 @@ export default function ClientPortal() {
     
     // Celebration animation for sold leads
     if (editingLead.type === 'outcome' && editData.outcome === 'sold') {
-      const duration = 3000;
-      const end = Date.now() + duration;
-
-      const frame = () => {
-        confetti({
-          particleCount: 7,
-          angle: 60,
-          spread: 55,
-          origin: { x: 0 },
-          colors: ['#22c55e', '#10b981', '#059669', '#FFD700', '#FFA500']
-        });
-        confetti({
-          particleCount: 7,
-          angle: 120,
-          spread: 55,
-          origin: { x: 1 },
-          colors: ['#22c55e', '#10b981', '#059669', '#FFD700', '#FFA500']
-        });
-
-        if (Date.now() < end) {
-          requestAnimationFrame(frame);
-        }
-      };
-      frame();
+      confetti({
+        particleCount: 150,
+        spread: 100,
+        origin: { y: 0.6 },
+        colors: ['#22c55e', '#10b981', '#059669', '#FFD700', '#FFA500']
+      });
       
       toast.success('🎉 Sale recorded! Great job!', { duration: 4000 });
     }
@@ -178,7 +160,8 @@ export default function ClientPortal() {
 
   const scheduledLeads = leads.filter(l => l.disposition === 'scheduled');
   const showedLeads = leads.filter(l => l.disposition === 'showed');
-  const completedLeads = leads.filter(l => l.outcome === 'sold' || l.outcome === 'lost');
+  const soldLeads = leads.filter(l => l.outcome === 'sold');
+  const totalSoldAmount = soldLeads.reduce((sum, lead) => sum + (lead.sale_amount || 0), 0);
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -237,10 +220,11 @@ export default function ClientPortal() {
           </div>
           <div className="bg-white rounded-lg shadow p-6 border border-gray-200">
             <div className="flex items-center gap-3 mb-2">
-              <Clock className="w-5 h-5 text-gray-600" />
-              <p className="text-sm font-medium text-gray-600">Completed</p>
+              <CheckCircle className="w-5 h-5 text-green-600" />
+              <p className="text-sm font-medium text-gray-600">Sold</p>
             </div>
-            <p className="text-3xl font-bold text-gray-900">{completedLeads.length}</p>
+            <p className="text-3xl font-bold text-gray-900">{soldLeads.length}</p>
+            <p className="text-sm text-green-600 font-semibold mt-1">${totalSoldAmount.toLocaleString()}</p>
           </div>
         </div>
 
@@ -361,18 +345,21 @@ export default function ClientPortal() {
                                 </div>
                               )}
                               <div>
-                                <input
-                                  type="number"
-                                  value={editData.estimate_value}
-                                  onChange={(e) => {
-                                    setEditData({...editData, estimate_value: e.target.value});
-                                    setValidationErrors({...validationErrors, estimate_value: false});
-                                  }}
-                                  className={`text-xs px-2 py-1 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500 w-full ${
-                                    validationErrors.estimate_value ? 'border-red-500' : 'border-gray-300'
-                                  }`}
-                                  placeholder="Estimate value ($)*"
-                                />
+                                <div className="relative">
+                                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs text-gray-500">$</span>
+                                  <input
+                                    type="number"
+                                    value={editData.estimate_value}
+                                    onChange={(e) => {
+                                      setEditData({...editData, estimate_value: e.target.value});
+                                      setValidationErrors({...validationErrors, estimate_value: false});
+                                    }}
+                                    className={`text-xs px-2 py-1 pl-5 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500 w-full ${
+                                      validationErrors.estimate_value ? 'border-red-500' : 'border-gray-300'
+                                    }`}
+                                    placeholder="Estimate value*"
+                                  />
+                                </div>
                                 {validationErrors.estimate_value && (
                                   <p className="text-xs text-red-600 mt-1">Estimate value is required</p>
                                 )}
