@@ -11,6 +11,7 @@ export default function ClientPortal() {
   const [user, setUser] = useState(null);
   const [editingLead, setEditingLead] = useState(null);
   const [editData, setEditData] = useState({});
+  const [validationErrors, setValidationErrors] = useState({});
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -84,6 +85,7 @@ export default function ClientPortal() {
 
   const saveEdit = async () => {
     const updates = {};
+    setValidationErrors({});
     
     if (editingLead.type === 'disposition') {
       updates.disposition = editData.disposition;
@@ -96,18 +98,25 @@ export default function ClientPortal() {
         }
       }
     } else if (editingLead.type === 'outcome') {
+      const errors = {};
       if (editData.outcome === 'sold') {
         if (!editData.date_sold) {
+          errors.date_sold = true;
           toast.error('Please enter the date sold');
-          return;
         }
         if (!editData.estimate_value) {
+          errors.estimate_value = true;
           toast.error('Please enter the estimate value');
+        }
+        if (Object.keys(errors).length > 0) {
+          setValidationErrors(errors);
           return;
         }
       }
       if (editData.outcome === 'lost' && !editData.estimate_value) {
+        errors.estimate_value = true;
         toast.error('Please enter the estimate value');
+        setValidationErrors(errors);
         return;
       }
       
@@ -123,12 +132,14 @@ export default function ClientPortal() {
     await base44.entities.Lead.update(editingLead.id, updates);
     setEditingLead(null);
     setEditData({});
+    setValidationErrors({});
     refetch();
   };
 
   const cancelEdit = () => {
     setEditingLead(null);
     setEditData({});
+    setValidationErrors({});
   };
 
   if (!user) return null;
@@ -299,23 +310,41 @@ export default function ClientPortal() {
                           {(editData.outcome === 'sold' || editData.outcome === 'lost') && (
                             <>
                               {editData.outcome === 'sold' && (
-                                <input
-                                  type="date"
-                                  value={editData.date_sold}
-                                  onChange={(e) => setEditData({...editData, date_sold: e.target.value})}
-                                  className="text-xs px-2 py-1 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 w-full"
-                                  placeholder="Date sold*"
-                                  required
-                                />
+                                <div>
+                                  <input
+                                    type="date"
+                                    value={editData.date_sold}
+                                    onChange={(e) => {
+                                      setEditData({...editData, date_sold: e.target.value});
+                                      setValidationErrors({...validationErrors, date_sold: false});
+                                    }}
+                                    className={`text-xs px-2 py-1 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500 w-full ${
+                                      validationErrors.date_sold ? 'border-red-500' : 'border-gray-300'
+                                    }`}
+                                    placeholder="Date sold*"
+                                  />
+                                  {validationErrors.date_sold && (
+                                    <p className="text-xs text-red-600 mt-1">Date sold is required</p>
+                                  )}
+                                </div>
                               )}
-                              <input
-                                type="number"
-                                value={editData.estimate_value}
-                                onChange={(e) => setEditData({...editData, estimate_value: e.target.value})}
-                                className="text-xs px-2 py-1 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 w-full"
-                                placeholder="Estimate value ($)*"
-                                required
-                              />
+                              <div>
+                                <input
+                                  type="number"
+                                  value={editData.estimate_value}
+                                  onChange={(e) => {
+                                    setEditData({...editData, estimate_value: e.target.value});
+                                    setValidationErrors({...validationErrors, estimate_value: false});
+                                  }}
+                                  className={`text-xs px-2 py-1 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500 w-full ${
+                                    validationErrors.estimate_value ? 'border-red-500' : 'border-gray-300'
+                                  }`}
+                                  placeholder="Estimate value ($)*"
+                                />
+                                {validationErrors.estimate_value && (
+                                  <p className="text-xs text-red-600 mt-1">Estimate value is required</p>
+                                )}
+                              </div>
                             </>
                           )}
                           <div className="flex gap-2">
