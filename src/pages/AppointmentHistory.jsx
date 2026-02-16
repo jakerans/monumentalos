@@ -8,6 +8,8 @@ import { ArrowLeft } from 'lucide-react';
 export default function AppointmentHistory() {
   const navigate = useNavigate();
   const [user, setUser] = useState(null);
+  const [filterDisposition, setFilterDisposition] = useState('all');
+  const [filterOutcome, setFilterOutcome] = useState('all');
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -60,6 +62,12 @@ export default function AppointmentHistory() {
   });
 
   if (!user) return null;
+
+  const filteredLeads = leads.filter(lead => {
+    const dispositionMatch = filterDisposition === 'all' || lead.disposition === filterDisposition;
+    const outcomeMatch = filterOutcome === 'all' || lead.outcome === filterOutcome;
+    return dispositionMatch && outcomeMatch;
+  });
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -120,6 +128,40 @@ export default function AppointmentHistory() {
           <ArrowLeft className="w-4 h-4" /> Back to Portal
         </Link>
 
+        <div className="bg-white rounded-lg shadow border border-gray-200 mb-6">
+          <div className="px-6 py-4">
+            <h3 className="text-sm font-medium text-gray-700 mb-3">Filters</h3>
+            <div className="flex gap-4">
+              <div>
+                <label className="block text-xs text-gray-600 mb-1">Disposition</label>
+                <select
+                  value={filterDisposition}
+                  onChange={(e) => setFilterDisposition(e.target.value)}
+                  className="px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  <option value="all">All</option>
+                  <option value="showed">Showed</option>
+                  <option value="cancelled">Cancelled</option>
+                  <option value="no_show">No Show</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-xs text-gray-600 mb-1">Outcome</label>
+                <select
+                  value={filterOutcome}
+                  onChange={(e) => setFilterOutcome(e.target.value)}
+                  className="px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  <option value="all">All</option>
+                  <option value="pending">Pending</option>
+                  <option value="sold">Sold</option>
+                  <option value="lost">Lost</option>
+                </select>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <div className="bg-white rounded-lg shadow border border-gray-200">
           <div className="px-6 py-4 border-b border-gray-200">
             <h2 className="text-xl font-bold text-gray-900">Completed & Cancelled Appointments</h2>
@@ -136,14 +178,14 @@ export default function AppointmentHistory() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200">
-                {leads.length === 0 ? (
+                {filteredLeads.length === 0 ? (
                   <tr>
                     <td colSpan="5" className="px-6 py-8 text-center text-gray-500">
-                      No completed or cancelled appointments yet
+                      No appointments match the selected filters
                     </td>
                   </tr>
                 ) : (
-                  leads.map((lead) => (
+                  filteredLeads.map((lead) => (
                     <tr key={lead.id} className="hover:bg-gray-50">
                       <td className="px-6 py-4">
                         <div className="font-medium text-gray-900">{lead.name}</div>
