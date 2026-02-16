@@ -46,11 +46,13 @@ export default function ClientView() {
     enabled: !!clientId,
   });
 
-  const { data: appointments = [] } = useQuery({
+  const { data: allLeads = [] } = useQuery({
     queryKey: ['appointments', clientId, startDate, endDate],
-    queryFn: () => base44.entities.Appointment.filter({ client_id: clientId }),
+    queryFn: () => base44.entities.Lead.filter({ client_id: clientId }),
     enabled: !!clientId,
   });
+  
+  const appointments = allLeads.filter(lead => lead.appointment_date);
 
   if (!user || !client) return null;
 

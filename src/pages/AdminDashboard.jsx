@@ -35,10 +35,12 @@ export default function AdminDashboard() {
     queryFn: () => base44.entities.Lead.list(),
   });
 
-  const { data: appointments = [] } = useQuery({
+  const { data: allLeads = [] } = useQuery({
     queryKey: ['appointments'],
-    queryFn: () => base44.entities.Appointment.list(),
+    queryFn: () => base44.entities.Lead.list(),
   });
+  
+  const appointments = allLeads.filter(lead => lead.appointment_date);
 
   if (!user) return null;
 

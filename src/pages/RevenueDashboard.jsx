@@ -34,10 +34,12 @@ export default function RevenueDashboard() {
     queryFn: () => base44.entities.Client.filter({ status: 'active' }),
   });
 
-  const { data: appointments = [] } = useQuery({
+  const { data: allLeads = [] } = useQuery({
     queryKey: ['appointments', startDate, endDate],
-    queryFn: () => base44.entities.Appointment.list(),
+    queryFn: () => base44.entities.Lead.list(),
   });
+  
+  const appointments = allLeads.filter(lead => lead.appointment_date);
 
   const { data: leads = [] } = useQuery({
     queryKey: ['leads', startDate, endDate],
