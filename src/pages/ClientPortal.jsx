@@ -387,7 +387,7 @@ export default function ClientPortal() {
                           onClick={() => startEditing(lead, 'outcome')}
                           className="text-left w-full"
                         >
-                          <div>
+                          <div className="inline-flex flex-col gap-1.5">
                             <span className={`px-2 py-1 text-xs font-medium rounded-full cursor-pointer hover:opacity-80 ${
                               lead.outcome === 'sold' ? 'bg-green-100 text-green-800' :
                               lead.outcome === 'lost' ? 'bg-red-100 text-red-800' :
@@ -396,7 +396,11 @@ export default function ClientPortal() {
                               {lead.outcome || 'pending'}
                             </span>
                             {lead.sale_amount && (
-                              <div className="text-xs text-gray-600 mt-1">${lead.sale_amount.toLocaleString()}</div>
+                              <div className="bg-green-50 border border-green-200 rounded-md px-2 py-1">
+                                <span className="text-sm font-semibold text-green-700">
+                                  ${lead.sale_amount.toLocaleString()}
+                                </span>
+                              </div>
                             )}
                           </div>
                         </button>

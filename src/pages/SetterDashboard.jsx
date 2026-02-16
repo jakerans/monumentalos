@@ -46,6 +46,7 @@ export default function SetterDashboard() {
     await base44.entities.Lead.update(leadId, {
       status: 'appointment_booked',
       appointment_date: appointmentDate,
+      date_appointment_set: new Date().toISOString(),
       disposition: 'scheduled'
     });
     refetch();
