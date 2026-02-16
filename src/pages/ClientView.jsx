@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import { Link, useNavigate } from 'react-router-dom';
-import { createPageUrl } from './utils';
+import { createPageUrl } from 'utils';
 import { ArrowLeft, DollarSign, Users, Calendar, TrendingUp } from 'lucide-react';
 import DateRangePicker from '../components/admin/DateRangePicker';
 import MetricCard from '../components/admin/MetricCard';
