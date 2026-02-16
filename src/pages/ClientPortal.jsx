@@ -4,6 +4,7 @@ import { useQuery } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import { Calendar, CheckCircle, XCircle, Clock, Edit2 } from 'lucide-react';
+import toast from 'react-hot-toast';
 
 export default function ClientPortal() {
   const navigate = useNavigate();
@@ -97,16 +98,16 @@ export default function ClientPortal() {
     } else if (editingLead.type === 'outcome') {
       if (editData.outcome === 'sold') {
         if (!editData.date_sold) {
-          alert('Please enter the date sold');
+          toast.error('Please enter the date sold');
           return;
         }
         if (!editData.estimate_value) {
-          alert('Please enter the estimate value');
+          toast.error('Please enter the estimate value');
           return;
         }
       }
       if (editData.outcome === 'lost' && !editData.estimate_value) {
-        alert('Please enter the estimate value');
+        toast.error('Please enter the estimate value');
         return;
       }
       
