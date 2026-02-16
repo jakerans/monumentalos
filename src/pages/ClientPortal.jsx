@@ -1,9 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
+import { useNavigate } from 'react-router-dom';
+import { createPageUrl } from '@/utils';
 import { Calendar, CheckCircle, XCircle, Clock } from 'lucide-react';
 
 export default function ClientPortal() {
+  const navigate = useNavigate();
   const [user, setUser] = useState(null);
 
   useEffect(() => {
@@ -11,9 +14,8 @@ export default function ClientPortal() {
       try {
         const currentUser = await base44.auth.me();
         setUser(currentUser);
-        if (currentUser.role !== 'client') {
-          if (currentUser.role === 'admin') window.location.href = '/AdminDashboard';
-          else if (currentUser.role === 'setter') window.location.href = '/SetterDashboard';
+        if (currentUser.role !== 'client' && currentUser.role !== 'admin') {
+          if (currentUser.role === 'setter') window.location.href = '/SetterDashboard';
         }
       } catch (error) {
         base44.auth.redirectToLogin();
@@ -61,6 +63,20 @@ export default function ClientPortal() {
               <h1 className="text-xl font-bold text-gray-900">Client Portal</h1>
             </div>
             <div className="flex items-center gap-4">
+              {user.role === 'admin' && (
+                <select
+                  defaultValue="client"
+                  onChange={(e) => {
+                    if (e.target.value === 'admin') navigate(createPageUrl('AdminDashboard'));
+                    else if (e.target.value === 'setter') navigate(createPageUrl('SetterDashboard'));
+                  }}
+                  className="px-3 py-1.5 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  <option value="admin">View as Admin</option>
+                  <option value="setter">View as Setter</option>
+                  <option value="client">View as Client</option>
+                </select>
+              )}
               <span className="text-sm text-gray-600">{user.full_name}</span>
               <button
                 onClick={() => base44.auth.logout()}

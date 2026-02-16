@@ -14,9 +14,8 @@ export default function SetterDashboard() {
       try {
         const currentUser = await base44.auth.me();
         setUser(currentUser);
-        if (currentUser.role !== 'setter') {
-          if (currentUser.role === 'admin') navigate(createPageUrl('AdminDashboard'));
-          else if (currentUser.role === 'client') navigate(createPageUrl('ClientPortal'));
+        if (currentUser.role !== 'setter' && currentUser.role !== 'admin') {
+          if (currentUser.role === 'client') navigate(createPageUrl('ClientPortal'));
         }
       } catch (error) {
         base44.auth.redirectToLogin();
@@ -72,6 +71,20 @@ export default function SetterDashboard() {
               <h1 className="text-xl font-bold text-gray-900">Setter Dashboard</h1>
             </div>
             <div className="flex items-center gap-4">
+              {user.role === 'admin' && (
+                <select
+                  defaultValue="setter"
+                  onChange={(e) => {
+                    if (e.target.value === 'admin') navigate(createPageUrl('AdminDashboard'));
+                    else if (e.target.value === 'client') navigate(createPageUrl('ClientPortal'));
+                  }}
+                  className="px-3 py-1.5 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  <option value="admin">View as Admin</option>
+                  <option value="setter">View as Setter</option>
+                  <option value="client">View as Client</option>
+                </select>
+              )}
               <span className="text-sm text-gray-600">{user.full_name}</span>
               <button
                 onClick={() => base44.auth.logout()}
