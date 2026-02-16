@@ -24,14 +24,33 @@ export default function ClientPortal() {
     checkAuth();
   }, []);
 
+  const getClientId = () => {
+    if (user?.role === 'admin') {
+      return localStorage.getItem('admin_view_client_id');
+    }
+    return user?.client_id;
+  };
+
+  const clientId = getClientId();
+
   const { data: leads = [], refetch } = useQuery({
-    queryKey: ['client-leads', user?.client_id],
+    queryKey: ['client-leads', clientId],
     queryFn: async () => {
-      if (!user?.client_id) return [];
-      const allLeads = await base44.entities.Lead.filter({ client_id: user.client_id });
+      if (!clientId) return [];
+      const allLeads = await base44.entities.Lead.filter({ client_id: clientId });
       return allLeads.filter(lead => lead.appointment_date);
     },
-    enabled: !!user?.client_id,
+    enabled: !!clientId,
+  });
+
+  const { data: clientInfo } = useQuery({
+    queryKey: ['client-info', clientId],
+    queryFn: async () => {
+      if (!clientId) return null;
+      const clients = await base44.entities.Client.filter({ id: clientId });
+      return clients[0] || null;
+    },
+    enabled: !!clientId,
   });
 
   const handleDisposition = async (leadId, disposition) => {
@@ -60,22 +79,26 @@ export default function ClientPortal() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between h-16">
             <div className="flex items-center">
-              <h1 className="text-xl font-bold text-gray-900">Client Portal</h1>
+              <h1 className="text-xl font-bold text-gray-900">
+                Client Portal
+                {user.role === 'admin' && clientInfo && (
+                  <span className="ml-2 text-sm text-gray-500">
+                    (Viewing as: {clientInfo.name})
+                  </span>
+                )}
+              </h1>
             </div>
             <div className="flex items-center gap-4">
               {user.role === 'admin' && (
-                <select
-                  defaultValue="client"
-                  onChange={(e) => {
-                    if (e.target.value === 'admin') navigate(createPageUrl('AdminDashboard'));
-                    else if (e.target.value === 'setter') navigate(createPageUrl('SetterDashboard'));
+                <button
+                  onClick={() => {
+                    localStorage.removeItem('admin_view_client_id');
+                    navigate(createPageUrl('AdminDashboard'));
                   }}
-                  className="px-3 py-1.5 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="px-3 py-1.5 text-sm border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
                 >
-                  <option value="admin">View as Admin</option>
-                  <option value="setter">View as Setter</option>
-                  <option value="client">View as Client</option>
-                </select>
+                  Back to Admin
+                </button>
               )}
               <span className="text-sm text-gray-600">{user.full_name}</span>
               <button

@@ -69,14 +69,25 @@ export default function AdminDashboard() {
             <div className="flex items-center gap-4">
               <select
                 onChange={(e) => {
-                  if (e.target.value === 'setter') navigate(createPageUrl('SetterDashboard'));
-                  else if (e.target.value === 'client') navigate(createPageUrl('ClientPortal'));
+                  if (e.target.value === 'setter') {
+                    navigate(createPageUrl('SetterDashboard'));
+                  } else if (e.target.value.startsWith('client-')) {
+                    const clientId = e.target.value.replace('client-', '');
+                    localStorage.setItem('admin_view_client_id', clientId);
+                    navigate(createPageUrl('ClientPortal'));
+                  }
                 }}
                 className="px-3 py-1.5 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
                 <option value="admin">View as Admin</option>
                 <option value="setter">View as Setter</option>
-                <option value="client">View as Client</option>
+                <optgroup label="View as Client">
+                  {clients.map(client => (
+                    <option key={client.id} value={`client-${client.id}`}>
+                      {client.name}
+                    </option>
+                  ))}
+                </optgroup>
               </select>
               <span className="text-sm text-gray-600">{user.full_name}</span>
               <button
