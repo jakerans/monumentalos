@@ -43,7 +43,6 @@ export default function AppointmentHistory() {
       return allLeads.filter(lead => 
         lead.appointment_date && 
         (lead.disposition === 'cancelled' || 
-         lead.disposition === 'no_show' || 
          lead.disposition === 'showed' ||
          (lead.outcome && lead.outcome !== 'pending'))
       );
@@ -142,7 +141,6 @@ export default function AppointmentHistory() {
                   <option value="all">All</option>
                   <option value="showed">Showed</option>
                   <option value="cancelled">Cancelled</option>
-                  <option value="no_show">No Show</option>
                 </select>
               </div>
               <div>
@@ -201,7 +199,6 @@ export default function AppointmentHistory() {
                         <span className={`px-2 py-1 text-xs font-medium rounded-full ${
                           lead.disposition === 'showed' ? 'bg-green-100 text-green-800' :
                           lead.disposition === 'cancelled' ? 'bg-red-100 text-red-800' :
-                          lead.disposition === 'no_show' ? 'bg-gray-100 text-gray-800' :
                           'bg-blue-100 text-blue-800'
                         }`}>
                           {lead.disposition || 'scheduled'}
