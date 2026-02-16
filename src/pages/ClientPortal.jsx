@@ -13,6 +13,8 @@ export default function ClientPortal() {
   const [editingLead, setEditingLead] = useState(null);
   const [editData, setEditData] = useState({});
   const [validationErrors, setValidationErrors] = useState({});
+  const [selectedLeadId, setSelectedLeadId] = useState(null);
+  const [drawerOpen, setDrawerOpen] = useState(false);
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -264,12 +266,15 @@ export default function ClientPortal() {
                 .map((lead) => (
                   <tr key={lead.id} className="hover:bg-gray-50">
                     <td className="px-6 py-4">
-                      <Link
-                        to={createPageUrl('LeadDetails') + `?leadId=${lead.id}&returnTo=ClientPortal`}
-                        className="font-medium text-blue-600 hover:text-blue-700 hover:underline"
+                      <button
+                        onClick={() => {
+                          setSelectedLeadId(lead.id);
+                          setDrawerOpen(true);
+                        }}
+                        className="font-medium text-blue-600 hover:text-blue-700 hover:underline text-left"
                       >
                         {lead.name}
-                      </Link>
+                      </button>
                     </td>
                     <td className="px-6 py-4 text-sm text-gray-600">
                       <div>{lead.email}</div>
@@ -433,6 +438,12 @@ export default function ClientPortal() {
             </table>
           </div>
         </div>
+
+        <LeadDetailsDrawer
+          leadId={selectedLeadId}
+          open={drawerOpen}
+          onOpenChange={setDrawerOpen}
+        />
       </main>
     </div>
   );

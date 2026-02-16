@@ -4,12 +4,15 @@ import { useQuery } from '@tanstack/react-query';
 import { Link, useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import { ArrowLeft } from 'lucide-react';
+import LeadDetailsDrawer from '../components/LeadDetailsDrawer';
 
 export default function AppointmentHistory() {
   const navigate = useNavigate();
   const [user, setUser] = useState(null);
   const [filterDisposition, setFilterDisposition] = useState('all');
   const [filterOutcome, setFilterOutcome] = useState('all');
+  const [selectedLeadId, setSelectedLeadId] = useState(null);
+  const [drawerOpen, setDrawerOpen] = useState(false);
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -186,12 +189,15 @@ export default function AppointmentHistory() {
                   filteredLeads.map((lead) => (
                     <tr key={lead.id} className="hover:bg-gray-50">
                       <td className="px-6 py-4">
-                        <Link
-                          to={createPageUrl('LeadDetails') + `?leadId=${lead.id}&returnTo=AppointmentHistory`}
-                          className="font-medium text-blue-600 hover:text-blue-700 hover:underline"
+                        <button
+                          onClick={() => {
+                            setSelectedLeadId(lead.id);
+                            setDrawerOpen(true);
+                          }}
+                          className="font-medium text-blue-600 hover:text-blue-700 hover:underline text-left"
                         >
                           {lead.name}
-                        </Link>
+                        </button>
                       </td>
                       <td className="px-6 py-4 text-sm text-gray-600">
                         <div>{lead.email}</div>
@@ -234,6 +240,12 @@ export default function AppointmentHistory() {
             </table>
           </div>
         </div>
+
+        <LeadDetailsDrawer
+          leadId={selectedLeadId}
+          open={drawerOpen}
+          onOpenChange={setDrawerOpen}
+        />
       </main>
     </div>
   );
