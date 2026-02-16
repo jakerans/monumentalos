@@ -54,6 +54,7 @@ import ClientPortal from './pages/ClientPortal';
 import ClientView from './pages/ClientView';
 import RevenueDashboard from './pages/RevenueDashboard';
 import SetterDashboard from './pages/SetterDashboard';
+import LeadDetails from './pages/LeadDetails';
 
 
 export const PAGES = {
@@ -64,6 +65,7 @@ export const PAGES = {
     "ClientView": ClientView,
     "RevenueDashboard": RevenueDashboard,
     "SetterDashboard": SetterDashboard,
+    "LeadDetails": LeadDetails,
 }
 
 export const pagesConfig = {

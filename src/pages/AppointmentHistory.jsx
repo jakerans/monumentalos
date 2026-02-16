@@ -186,7 +186,12 @@ export default function AppointmentHistory() {
                   filteredLeads.map((lead) => (
                     <tr key={lead.id} className="hover:bg-gray-50">
                       <td className="px-6 py-4">
-                        <div className="font-medium text-gray-900">{lead.name}</div>
+                        <Link
+                          to={createPageUrl('LeadDetails') + `?leadId=${lead.id}&returnTo=AppointmentHistory`}
+                          className="font-medium text-blue-600 hover:text-blue-700 hover:underline"
+                        >
+                          {lead.name}
+                        </Link>
                       </td>
                       <td className="px-6 py-4 text-sm text-gray-600">
                         <div>{lead.email}</div>
