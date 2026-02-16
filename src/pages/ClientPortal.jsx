@@ -8,6 +8,8 @@ import { Calendar, CheckCircle, XCircle, Clock, Edit2 } from 'lucide-react';
 export default function ClientPortal() {
   const navigate = useNavigate();
   const [user, setUser] = useState(null);
+  const [editingLead, setEditingLead] = useState(null);
+  const [editData, setEditData] = useState({});
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -65,6 +67,47 @@ export default function ClientPortal() {
     }
     await base44.entities.Lead.update(leadId, updates);
     refetch();
+  };
+
+  const startEditing = (lead, type) => {
+    setEditingLead({ id: lead.id, type });
+    setEditData({
+      disposition: lead.disposition || 'scheduled',
+      outcome: lead.outcome || 'pending',
+      sale_amount: lead.sale_amount || '',
+      appointment_date: lead.appointment_date || '',
+      date_sold: '',
+      estimate_value: lead.sale_amount || ''
+    });
+  };
+
+  const saveEdit = async () => {
+    const updates = {};
+    
+    if (editingLead.type === 'disposition') {
+      updates.disposition = editData.disposition;
+      if (editData.disposition === 'rescheduled' && editData.appointment_date) {
+        updates.appointment_date = editData.appointment_date;
+      }
+    } else if (editingLead.type === 'outcome') {
+      updates.outcome = editData.outcome;
+      if ((editData.outcome === 'sold' || editData.outcome === 'lost') && editData.estimate_value) {
+        updates.sale_amount = parseFloat(editData.estimate_value);
+      }
+      if (editData.outcome === 'sold' && editData.date_sold) {
+        updates.date_sold = editData.date_sold;
+      }
+    }
+
+    await base44.entities.Lead.update(editingLead.id, updates);
+    setEditingLead(null);
+    setEditData({});
+    refetch();
+  };
+
+  const cancelEdit = () => {
+    setEditingLead(null);
+    setEditData({});
   };
 
   if (!user) return null;
@@ -167,106 +210,119 @@ export default function ClientPortal() {
                       {new Date(lead.appointment_date).toLocaleString()}
                     </td>
                     <td className="px-6 py-4">
-                      {lead.disposition ? (
+                      {editingLead?.id === lead.id && editingLead?.type === 'disposition' ? (
+                        <div className="space-y-2">
+                          <select
+                            value={editData.disposition}
+                            onChange={(e) => setEditData({...editData, disposition: e.target.value})}
+                            className="text-xs px-2 py-1 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          >
+                            <option value="scheduled">Scheduled</option>
+                            <option value="cancelled">Cancelled</option>
+                            <option value="rescheduled">Rescheduled</option>
+                          </select>
+                          {editData.disposition === 'rescheduled' && (
+                            <input
+                              type="datetime-local"
+                              value={editData.appointment_date ? new Date(editData.appointment_date).toISOString().slice(0, 16) : ''}
+                              onChange={(e) => setEditData({...editData, appointment_date: e.target.value})}
+                              className="text-xs px-2 py-1 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                              placeholder="New appointment date"
+                            />
+                          )}
+                        </div>
+                      ) : (
                         <span className={`px-2 py-1 text-xs font-medium rounded-full ${
                           lead.disposition === 'showed' ? 'bg-green-100 text-green-800' :
                           lead.disposition === 'cancelled' ? 'bg-red-100 text-red-800' :
                           lead.disposition === 'no_show' ? 'bg-gray-100 text-gray-800' :
+                          lead.disposition === 'rescheduled' ? 'bg-purple-100 text-purple-800' :
                           'bg-blue-100 text-blue-800'
                         }`}>
-                          {lead.disposition}
+                          {lead.disposition || 'scheduled'}
                         </span>
-                      ) : (
-                        <span className="text-gray-400">-</span>
                       )}
                     </td>
                     <td className="px-6 py-4">
-                      {lead.outcome ? (
-                        <span className={`px-2 py-1 text-xs font-medium rounded-full ${
-                          lead.outcome === 'sold' ? 'bg-green-100 text-green-800' :
-                          lead.outcome === 'lost' ? 'bg-red-100 text-red-800' :
-                          'bg-yellow-100 text-yellow-800'
-                        }`}>
-                          {lead.outcome}
-                        </span>
+                      {editingLead?.id === lead.id && editingLead?.type === 'outcome' ? (
+                        <div className="space-y-2">
+                          <select
+                            value={editData.outcome}
+                            onChange={(e) => setEditData({...editData, outcome: e.target.value})}
+                            className="text-xs px-2 py-1 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          >
+                            <option value="pending">Pending</option>
+                            <option value="sold">Sold</option>
+                            <option value="lost">Lost</option>
+                          </select>
+                          {(editData.outcome === 'sold' || editData.outcome === 'lost') && (
+                            <>
+                              {editData.outcome === 'sold' && (
+                                <input
+                                  type="date"
+                                  value={editData.date_sold}
+                                  onChange={(e) => setEditData({...editData, date_sold: e.target.value})}
+                                  className="text-xs px-2 py-1 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 w-full"
+                                  placeholder="Date sold"
+                                />
+                              )}
+                              <input
+                                type="number"
+                                value={editData.estimate_value}
+                                onChange={(e) => setEditData({...editData, estimate_value: e.target.value})}
+                                className="text-xs px-2 py-1 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 w-full"
+                                placeholder="Estimate value ($)"
+                              />
+                            </>
+                          )}
+                        </div>
                       ) : (
-                        <span className="text-gray-400">-</span>
+                        <div>
+                          <span className={`px-2 py-1 text-xs font-medium rounded-full ${
+                            lead.outcome === 'sold' ? 'bg-green-100 text-green-800' :
+                            lead.outcome === 'lost' ? 'bg-red-100 text-red-800' :
+                            'bg-yellow-100 text-yellow-800'
+                          }`}>
+                            {lead.outcome || 'pending'}
+                          </span>
+                          {lead.sale_amount && (
+                            <div className="text-xs text-gray-600 mt-1">${lead.sale_amount.toLocaleString()}</div>
+                          )}
+                        </div>
                       )}
                     </td>
                     <td className="px-6 py-4">
-                      <div className="flex gap-2 flex-wrap">
-                        {!lead.disposition ? (
-                          <>
-                            <button
-                              onClick={() => handleDisposition(lead.id, 'showed')}
-                              className="text-xs px-2 py-1 bg-green-600 text-white rounded hover:bg-green-700"
-                            >
-                              Showed
-                            </button>
-                            <button
-                              onClick={() => handleDisposition(lead.id, 'no_show')}
-                              className="text-xs px-2 py-1 bg-gray-600 text-white rounded hover:bg-gray-700"
-                            >
-                              No Show
-                            </button>
-                            <button
-                              onClick={() => handleDisposition(lead.id, 'cancelled')}
-                              className="text-xs px-2 py-1 bg-red-600 text-white rounded hover:bg-red-700"
-                            >
-                              Cancelled
-                            </button>
-                          </>
-                        ) : (
+                      {editingLead?.id === lead.id ? (
+                        <div className="flex gap-2">
                           <button
-                            onClick={() => {
-                              const newDisp = prompt('Change disposition to (showed/no_show/cancelled/rescheduled):', lead.disposition);
-                              if (newDisp && ['showed', 'no_show', 'cancelled', 'rescheduled'].includes(newDisp)) {
-                                handleDisposition(lead.id, newDisp);
-                              }
-                            }}
+                            onClick={saveEdit}
+                            className="text-xs px-3 py-1 bg-green-600 text-white rounded hover:bg-green-700"
+                          >
+                            Save
+                          </button>
+                          <button
+                            onClick={cancelEdit}
+                            className="text-xs px-3 py-1 bg-gray-600 text-white rounded hover:bg-gray-700"
+                          >
+                            Cancel
+                          </button>
+                        </div>
+                      ) : (
+                        <div className="flex gap-2 flex-wrap">
+                          <button
+                            onClick={() => startEditing(lead, 'disposition')}
                             className="text-xs px-2 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 inline-flex items-center gap-1"
                           >
                             <Edit2 className="w-3 h-3" /> Edit Disposition
                           </button>
-                        )}
-                        {lead.disposition === 'showed' && !lead.outcome && (
-                          <>
-                            <button
-                              onClick={() => {
-                                const amount = prompt('Enter sale amount:');
-                                if (amount) handleOutcome(lead.id, 'sold', amount);
-                              }}
-                              className="text-xs px-2 py-1 bg-green-600 text-white rounded hover:bg-green-700"
-                            >
-                              Sold
-                            </button>
-                            <button
-                              onClick={() => handleOutcome(lead.id, 'lost')}
-                              className="text-xs px-2 py-1 bg-red-600 text-white rounded hover:bg-red-700"
-                            >
-                              Lost
-                            </button>
-                          </>
-                        )}
-                        {lead.outcome && (
                           <button
-                            onClick={() => {
-                              const newOutcome = prompt('Change outcome to (sold/lost/pending):', lead.outcome);
-                              if (newOutcome && ['sold', 'lost', 'pending'].includes(newOutcome)) {
-                                if (newOutcome === 'sold') {
-                                  const amount = prompt('Enter sale amount:', lead.sale_amount || '');
-                                  if (amount) handleOutcome(lead.id, newOutcome, amount);
-                                } else {
-                                  handleOutcome(lead.id, newOutcome);
-                                }
-                              }
-                            }}
-                            className="text-xs px-2 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 inline-flex items-center gap-1"
+                            onClick={() => startEditing(lead, 'outcome')}
+                            className="text-xs px-2 py-1 bg-purple-600 text-white rounded hover:bg-purple-700 inline-flex items-center gap-1"
                           >
                             <Edit2 className="w-3 h-3" /> Edit Outcome
                           </button>
-                        )}
-                      </div>
+                        </div>
+                      )}
                     </td>
                   </tr>
                 ))}
