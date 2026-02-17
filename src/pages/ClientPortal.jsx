@@ -186,6 +186,12 @@ export default function ClientPortal() {
                 >
                   History
                 </Link>
+                <Link
+                  to={createPageUrl('ClientReport')}
+                  className="px-3 py-2 rounded-md text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-50"
+                >
+                  Report
+                </Link>
               </div>
               {user.role === 'admin' && clientInfo && (
                 <span className="text-sm text-gray-500">
