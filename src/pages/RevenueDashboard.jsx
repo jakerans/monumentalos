@@ -34,33 +34,30 @@ export default function RevenueDashboard() {
     queryFn: () => base44.entities.Client.filter({ status: 'active' }),
   });
 
-  const { data: allLeads = [] } = useQuery({
+  const { data: appointments = [] } = useQuery({
     queryKey: ['appointments', startDate, endDate],
-    queryFn: () => base44.entities.Lead.list(),
+    queryFn: () => base44.entities.Lead.filter({
+      appointment_date: { $gte: new Date(startDate).toISOString(), $lte: new Date(endDate + 'T23:59:59').toISOString() }
+    }),
   });
-  
-  const appointments = allLeads.filter(lead => lead.appointment_date);
 
-  const { data: leads = [] } = useQuery({
-    queryKey: ['leads', startDate, endDate],
-    queryFn: () => base44.entities.Lead.list(),
+  const { data: spendRecords = [] } = useQuery({
+    queryKey: ['spend', startDate, endDate],
+    queryFn: () => base44.entities.Spend.filter({
+      date: { $gte: startDate, $lte: endDate }
+    }),
   });
 
   if (!user) return null;
 
-  // Filter by date range
-  const filteredAppointments = appointments.filter(apt => {
-    const aptDate = new Date(apt.appointment_date);
-    return aptDate >= new Date(startDate) && aptDate <= new Date(endDate);
-  });
-
   // Calculate metrics per client
   const clientMetrics = clients.map(client => {
-    const clientAppointments = filteredAppointments.filter(a => a.client_id === client.id);
+    const clientAppointments = appointments.filter(a => a.client_id === client.id);
     const showedCount = clientAppointments.filter(a => a.disposition === 'showed').length;
     const agencyRevenue = showedCount * client.price_per_shown_appointment;
-    const clientLeads = leads.filter(l => l.client_id === client.id);
-    const clientSpend = clientLeads.reduce((sum, lead) => sum + (lead.client_spend || 0), 0);
+    const clientSpend = spendRecords
+      .filter(s => s.client_id === client.id)
+      .reduce((sum, s) => sum + (s.amount || 0), 0);
 
     return {
       ...client,

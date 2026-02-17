@@ -52,9 +52,9 @@ import AppointmentHistory from './pages/AppointmentHistory';
 import ClientManagement from './pages/ClientManagement';
 import ClientPortal from './pages/ClientPortal';
 import ClientView from './pages/ClientView';
+import LeadDetails from './pages/LeadDetails';
 import RevenueDashboard from './pages/RevenueDashboard';
 import SetterDashboard from './pages/SetterDashboard';
-import LeadDetails from './pages/LeadDetails';
 
 
 export const PAGES = {
@@ -63,9 +63,9 @@ export const PAGES = {
     "ClientManagement": ClientManagement,
     "ClientPortal": ClientPortal,
     "ClientView": ClientView,
+    "LeadDetails": LeadDetails,
     "RevenueDashboard": RevenueDashboard,
     "SetterDashboard": SetterDashboard,
-    "LeadDetails": LeadDetails,
 }
 
 export const pagesConfig = {

@@ -42,38 +42,40 @@ export default function ClientView() {
 
   const { data: leads = [] } = useQuery({
     queryKey: ['leads', clientId, startDate, endDate],
-    queryFn: () => base44.entities.Lead.filter({ client_id: clientId }),
+    queryFn: () => base44.entities.Lead.filter({
+      client_id: clientId,
+      created_date: { $gte: new Date(startDate).toISOString(), $lte: new Date(endDate + 'T23:59:59').toISOString() }
+    }),
     enabled: !!clientId,
   });
 
-  const { data: allLeads = [] } = useQuery({
+  const { data: appointments = [] } = useQuery({
     queryKey: ['appointments', clientId, startDate, endDate],
-    queryFn: () => base44.entities.Lead.filter({ client_id: clientId }),
+    queryFn: () => base44.entities.Lead.filter({
+      client_id: clientId,
+      appointment_date: { $gte: new Date(startDate).toISOString(), $lte: new Date(endDate + 'T23:59:59').toISOString() }
+    }),
     enabled: !!clientId,
   });
-  
-  const appointments = allLeads.filter(lead => lead.appointment_date);
+
+  const { data: spendRecords = [] } = useQuery({
+    queryKey: ['spend', clientId, startDate, endDate],
+    queryFn: () => base44.entities.Spend.filter({
+      client_id: clientId,
+      date: { $gte: startDate, $lte: endDate }
+    }),
+    enabled: !!clientId,
+  });
 
   if (!user || !client) return null;
 
-  // Filter by date range
-  const filteredAppointments = appointments.filter(apt => {
-    const aptDate = new Date(apt.appointment_date);
-    return aptDate >= new Date(startDate) && aptDate <= new Date(endDate);
-  });
-
-  const filteredLeads = leads.filter(lead => {
-    const leadDate = new Date(lead.created_date);
-    return leadDate >= new Date(startDate) && leadDate <= new Date(endDate);
-  });
-
   // Calculate metrics
-  const totalLeads = filteredLeads.length;
-  const totalAppointments = filteredAppointments.length;
-  const showedCount = filteredAppointments.filter(a => a.disposition === 'showed').length;
-  const soldCount = filteredAppointments.filter(a => a.outcome === 'sold').length;
-  const clientSpend = filteredLeads.reduce((sum, lead) => sum + (lead.client_spend || 0), 0);
-  const clientRevenue = filteredAppointments
+  const totalLeads = leads.length;
+  const totalAppointments = appointments.length;
+  const showedCount = appointments.filter(a => a.disposition === 'showed').length;
+  const soldCount = appointments.filter(a => a.outcome === 'sold').length;
+  const clientSpend = spendRecords.reduce((sum, s) => sum + (s.amount || 0), 0);
+  const clientRevenue = appointments
     .filter(a => a.outcome === 'sold')
     .reduce((sum, apt) => sum + (apt.sale_amount || 0), 0);
   const com = clientRevenue > 0 ? ((clientSpend / clientRevenue) * 100).toFixed(2) : '0.00';
