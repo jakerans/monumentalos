@@ -140,16 +140,18 @@ export default function EmployeeDetailPanel({ employee, payrollSettings, open, o
                     {employee.has_performance_pay ? 'Remove Performance Pay' : 'Add Performance Pay'}
                   </button>
                   {employee.status !== 'dismissed' && (
-                    !dismissConfirm ? (
-                      <button onClick={() => setDismissConfirm(true)} className="w-full px-4 py-2 text-sm font-medium rounded-lg border border-red-500/50 text-red-400 hover:bg-red-500/10 flex items-center justify-center gap-2">
-                        <UserX className="w-3.5 h-3.5" /> Dismiss Employee
-                      </button>
-                    ) : (
-                      <div className="flex gap-2">
-                        <button onClick={handleDismiss} className="flex-1 px-4 py-2 text-sm font-bold rounded-lg bg-red-600 text-white hover:bg-red-700">Confirm Dismiss</button>
-                        <button onClick={() => setDismissConfirm(false)} className="px-4 py-2 text-sm border border-slate-700 text-slate-300 rounded-lg hover:bg-slate-800">Cancel</button>
-                      </div>
-                    )
+                    <div className="pt-6">
+                      {!dismissConfirm ? (
+                        <button onClick={() => setDismissConfirm(true)} className="w-full px-4 py-2 text-xs font-medium rounded-lg border border-slate-700 text-slate-500 hover:border-red-500/50 hover:text-red-400 hover:bg-red-500/5 flex items-center justify-center gap-2 transition-colors">
+                          <UserX className="w-3.5 h-3.5" /> Dismiss Employee
+                        </button>
+                      ) : (
+                        <div className="flex gap-2">
+                          <button onClick={handleDismiss} className="flex-1 px-4 py-2 text-sm font-bold rounded-lg bg-red-600 text-white hover:bg-red-700">Confirm Dismiss</button>
+                          <button onClick={() => setDismissConfirm(false)} className="px-4 py-2 text-sm border border-slate-700 text-slate-300 rounded-lg hover:bg-slate-800">Cancel</button>
+                        </div>
+                      )}
+                    </div>
                   )}
                 </>
               ) : (
