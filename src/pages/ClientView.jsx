@@ -70,8 +70,8 @@ export default function ClientView() {
     staleTime: 2 * 60 * 1000,
   });
 
-  const startISO = new Date(startDate).toISOString();
-  const endISO = new Date(endDate + 'T23:59:59').toISOString();
+  const startISO = dayjs(startDate).startOf('day').toISOString();
+  const endISO = dayjs(endDate).endOf('day').toISOString();
 
   // Filter leads by created_date within range
   const leads = useMemo(() =>
