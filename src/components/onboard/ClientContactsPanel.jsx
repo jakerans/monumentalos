@@ -30,7 +30,11 @@ export default function ClientContactsPanel({ open, onOpenChange, client, onUpda
     if (!contact.email.trim()) return;
     setInvitingIdx(idx);
     try {
-      await base44.users.inviteUser(contact.email.trim(), 'client');
+      // Use backend function to invite and auto-link client_id
+      await base44.functions.invoke('inviteClientUser', {
+        email: contact.email.trim(),
+        client_id: client.id,
+      });
       const updated = [...contacts];
       updated[idx] = { ...updated[idx], invited: true };
       setContacts(updated);

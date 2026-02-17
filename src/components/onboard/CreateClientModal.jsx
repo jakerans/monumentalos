@@ -42,11 +42,13 @@ export default function CreateClientModal({ open, onOpenChange, onCreated }) {
 
   const handleInviteContact = async (idx, clientId) => {
     const contact = contacts[idx];
-    if (!contact.email.trim()) return;
+    if (!contact.email.trim() || !clientId) return;
     setInvitingIdx(idx);
     try {
-      await base44.users.inviteUser(contact.email.trim(), 'client');
-      // Update the contact as invited
+      await base44.functions.invoke('inviteClientUser', {
+        email: contact.email.trim(),
+        client_id: clientId,
+      });
       const updated = [...contacts];
       updated[idx] = { ...updated[idx], invited: true };
       setContacts(updated);
