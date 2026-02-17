@@ -25,21 +25,13 @@ export default function InviteClientUserModal({ open, onOpenChange, client }) {
     try {
       await base44.users.inviteUser(email.trim(), 'user');
 
-      // Wait for user record, then set role + client_id
-      let newUser = null;
-      for (let i = 0; i < 5; i++) {
-        await new Promise(r => setTimeout(r, 1000));
-        const allUsers = await base44.entities.User.list();
-        newUser = allUsers.find(u => u.email?.toLowerCase() === email.trim().toLowerCase());
-        if (newUser) break;
-      }
-
-      if (newUser) {
-        await base44.entities.User.update(newUser.id, {
-          role: 'client',
-          client_id: client.id,
-        });
-      }
+      // Store a PendingInvite so role is applied when the user signs up
+      await base44.entities.PendingInvite.create({
+        email: email.trim().toLowerCase(),
+        intended_role: 'client',
+        client_id: client.id,
+        status: 'pending',
+      });
 
       setSuccess(`Invitation sent to ${email} — linked to ${client.name}`);
       setEmail('');
