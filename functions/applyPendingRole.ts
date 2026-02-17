@@ -3,40 +3,33 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
-    const payload = await req.json();
-    
-    const { event, data } = payload;
-    
-    if (!data || !data.email) {
-      return Response.json({ message: 'No user data' }, { status: 200 });
+    const user = await base44.auth.me();
+
+    if (!user) {
+      return Response.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const email = data.email.toLowerCase();
-
-    // Find pending invite for this email
-    const pendingInvites = await base44.asServiceRole.entities.PendingInvite.filter({
-      email: email,
-      status: 'pending'
+    // Check for a pending invite matching this user's email
+    const pending = await base44.asServiceRole.entities.PendingInvite.filter({
+      email: user.email.toLowerCase(),
+      status: 'pending',
     });
 
-    if (pendingInvites.length === 0) {
-      return Response.json({ message: 'No pending invite found' }, { status: 200 });
+    if (pending.length === 0) {
+      return Response.json({ applied: false, role: null });
     }
 
-    const invite = pendingInvites[0];
+    const invite = pending[0];
     const updateData = { role: invite.intended_role };
-    
     if (invite.client_id) {
       updateData.client_id = invite.client_id;
     }
 
-    // Apply the role to the new user
-    await base44.asServiceRole.entities.User.update(data.id, updateData);
-
-    // Mark invite as applied
+    // Use service role to update the user's role (regular users can't change their own role)
+    await base44.asServiceRole.entities.User.update(user.id, updateData);
     await base44.asServiceRole.entities.PendingInvite.update(invite.id, { status: 'applied' });
 
-    return Response.json({ message: `Role ${invite.intended_role} applied to ${email}` });
+    return Response.json({ applied: true, role: invite.intended_role });
   } catch (error) {
     return Response.json({ error: error.message }, { status: 500 });
   }
