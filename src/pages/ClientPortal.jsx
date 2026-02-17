@@ -6,6 +6,7 @@ import { createPageUrl } from '@/utils';
 import { Calendar, CheckCircle, Clock, AlertTriangle } from 'lucide-react';
 import LeadDetailsDrawer from '../components/LeadDetailsDrawer';
 import AppointmentCard from '../components/client/AppointmentCard';
+import OutstandingInvoiceAlert from '../components/client/OutstandingInvoiceAlert';
 
 export default function ClientPortal() {
   const navigate = useNavigate();
@@ -185,6 +186,8 @@ export default function ClientPortal() {
             Here's your appointment overview for {new Date().toLocaleString('default', { month: 'long', year: 'numeric' })}.
           </p>
         </div>
+        {clientId && <OutstandingInvoiceAlert clientId={clientId} />}
+
         <div className="grid grid-cols-2 md:grid-cols-4 gap-2 sm:gap-4 mb-6 sm:mb-8">
           <div className="bg-slate-800/50 rounded-lg shadow p-3 sm:p-5 border border-slate-700/50">
             <div className="flex items-center gap-1.5 sm:gap-2 mb-1">

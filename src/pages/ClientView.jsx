@@ -11,6 +11,7 @@ import ClientLeadBreakdown from '../components/clientview/ClientLeadBreakdown';
 import ClientSpendChart from '../components/clientview/ClientSpendChart';
 import ClientSettingsCard from '../components/clientview/ClientSettingsCard';
 import ClientBillingEditor from '../components/clientview/ClientBillingEditor';
+import ClientInvoiceHistory from '../components/clientview/ClientInvoiceHistory';
 import LeadDrilldownDialog from '../components/clientview/LeadDrilldownDialog';
 import SpendDrilldownDialog from '../components/clientview/SpendDrilldownDialog';
 
@@ -187,7 +188,9 @@ export default function ClientView() {
         {/* Lead breakdowns */}
         <ClientLeadBreakdown leads={leads} />
 
-        {/* Settings */}
+        {/* Invoice History + Settings */}
+        <ClientInvoiceHistory clientId={clientId} />
+
         <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
           <ClientSettingsCard client={client} />
           {canEditBilling && (
