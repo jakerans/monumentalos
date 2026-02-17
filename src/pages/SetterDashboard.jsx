@@ -216,8 +216,9 @@ export default function SetterDashboard() {
 
   if (!user) return null;
 
-  // Filter leads
+  // Filter leads — hide leads with a final outcome (sold/lost) or completed status
   const filtered = leads.filter(l => {
+    if (l.outcome === 'sold' || l.outcome === 'lost' || l.status === 'completed') return false;
     const matchSearch = !search || l.name?.toLowerCase().includes(search.toLowerCase()) || l.phone?.includes(search) || l.email?.toLowerCase().includes(search.toLowerCase());
     const matchClient = clientFilter === 'all' || l.client_id === clientFilter;
     return matchSearch && matchClient;
