@@ -46,6 +46,28 @@ export default function MMDashboard() {
     queryFn: () => base44.entities.Spend.list('-date', 2000),
   });
 
+  // Fetch pending onboard tasks for this MM
+  const { data: onboardTasks = [] } = useQuery({
+    queryKey: ['mm-onboard-tasks-nav'],
+    queryFn: () => base44.entities.OnboardTask.filter({ assigned_to: 'marketing_manager' }),
+  });
+
+  const { data: onboardProjects = [] } = useQuery({
+    queryKey: ['mm-onboard-projects-nav'],
+    queryFn: () => base44.entities.OnboardProject.filter({ status: 'in_progress' }),
+  });
+
+  const pendingOnboardCount = useMemo(() => {
+    if (!user) return 0;
+    const myProjectIds = user.role === 'admin'
+      ? onboardProjects.map(p => p.id)
+      : onboardProjects.filter(p => p.assigned_mm_id === user.id).map(p => p.id);
+    return onboardTasks.filter(t =>
+      (t.status === 'pending' || t.status === 'in_progress') &&
+      myProjectIds.includes(t.project_id)
+    ).length;
+  }, [user, onboardTasks, onboardProjects]);
+
   const clientMetrics = useMemo(() => {
     const now = new Date();
     const d7 = new Date(now); d7.setDate(d7.getDate() - 7);
@@ -112,7 +134,7 @@ export default function MMDashboard() {
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
-      <MMNav user={user} clients={clients} />
+      <MMNav user={user} clients={clients} pendingOnboardCount={pendingOnboardCount} />
 
       <main className="flex-1 max-w-[1600px] w-full mx-auto px-3 sm:px-5 py-3 flex flex-col min-h-0">
         <MMTopStats stats={topStats} />

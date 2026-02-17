@@ -2,9 +2,9 @@ import React from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import { base44 } from '@/api/base44Client';
-import { LayoutDashboard, LogOut } from 'lucide-react';
+import { LayoutDashboard, LogOut, ClipboardCheck } from 'lucide-react';
 
-export default function MMNav({ user, clients }) {
+export default function MMNav({ user, clients, pendingOnboardCount = 0 }) {
   const navigate = useNavigate();
 
   return (
@@ -17,9 +17,15 @@ export default function MMNav({ user, clients }) {
             <span className="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full font-medium">{clients?.length || 0} clients</span>
             <Link
               to={createPageUrl('MMOnboard')}
-              className="text-xs text-purple-600 hover:text-purple-700 font-medium px-2 py-0.5 bg-purple-50 rounded-full"
+              className="relative inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-md bg-purple-600 text-white hover:bg-purple-700 transition-colors shadow-sm"
             >
+              <ClipboardCheck className="w-3.5 h-3.5" />
               Onboarding
+              {pendingOnboardCount > 0 && (
+                <span className="absolute -top-1.5 -right-1.5 min-w-[18px] h-[18px] flex items-center justify-center text-[10px] font-bold bg-red-500 text-white rounded-full px-1 animate-pulse">
+                  {pendingOnboardCount}
+                </span>
+              )}
             </Link>
           </div>
           <div className="flex items-center gap-3">

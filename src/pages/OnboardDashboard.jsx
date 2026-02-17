@@ -3,12 +3,14 @@ import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
-import { Plus } from 'lucide-react';
+import { Plus, Building2, UserPlus } from 'lucide-react';
 import OnboardNav from '../components/onboard/OnboardNav';
 import OnboardKPIs from '../components/onboard/OnboardKPIs';
 import ProjectCard from '../components/onboard/ProjectCard';
 import ProjectDetail from '../components/onboard/ProjectDetail';
 import NewProjectModal from '../components/onboard/NewProjectModal';
+import CreateClientModal from '../components/onboard/CreateClientModal';
+import ClientContactsPanel from '../components/onboard/ClientContactsPanel';
 import TemplateManager from '../components/onboard/TemplateManager';
 
 export default function OnboardDashboard() {
@@ -18,6 +20,8 @@ export default function OnboardDashboard() {
   const [showNew, setShowNew] = useState(false);
   const [selectedProject, setSelectedProject] = useState(null);
   const [statusFilter, setStatusFilter] = useState('in_progress');
+  const [showCreateClient, setShowCreateClient] = useState(false);
+  const [contactsClient, setContactsClient] = useState(null);
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -49,7 +53,7 @@ export default function OnboardDashboard() {
     queryFn: () => base44.entities.OnboardTemplate.filter({ status: 'active' }),
   });
 
-  const { data: clients = [] } = useQuery({
+  const { data: clients = [], refetch: refetchClients } = useQuery({
     queryKey: ['all-clients'],
     queryFn: () => base44.entities.Client.list(),
   });
@@ -118,12 +122,20 @@ export default function OnboardDashboard() {
                   </button>
                 ))}
               </div>
-              <button
-                onClick={() => setShowNew(true)}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium bg-indigo-600 text-white rounded-md hover:bg-indigo-700"
-              >
-                <Plus className="w-3.5 h-3.5" /> New Client Onboard
-              </button>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => setShowCreateClient(true)}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium border border-indigo-300 text-indigo-600 rounded-md hover:bg-indigo-50"
+                >
+                  <Building2 className="w-3.5 h-3.5" /> Create Client
+                </button>
+                <button
+                  onClick={() => setShowNew(true)}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium bg-indigo-600 text-white rounded-md hover:bg-indigo-700"
+                >
+                  <Plus className="w-3.5 h-3.5" /> New Client Onboard
+                </button>
+              </div>
             </div>
 
             {filteredProjects.length === 0 ? (
@@ -152,6 +164,25 @@ export default function OnboardDashboard() {
               mmUsers={mmUsers}
               onCreate={handleCreateProject}
             />
+
+            <CreateClientModal
+              open={showCreateClient}
+              onOpenChange={setShowCreateClient}
+              onCreated={(newClient) => {
+                refetchClients();
+                // Auto-open contacts panel for the new client
+                setContactsClient(newClient);
+              }}
+            />
+
+            {contactsClient && (
+              <ClientContactsPanel
+                open={true}
+                onOpenChange={(v) => { if (!v) setContactsClient(null); }}
+                client={contactsClient}
+                onUpdated={refetchClients}
+              />
+            )}
 
             {freshSelectedProject && (
               <ProjectDetail
