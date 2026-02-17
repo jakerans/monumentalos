@@ -57,6 +57,7 @@ import LeadDetails from './pages/LeadDetails';
 import RevenueDashboard from './pages/RevenueDashboard';
 import SetterDashboard from './pages/SetterDashboard';
 import ClientSettings from './pages/ClientSettings';
+import MMDashboard from './pages/MMDashboard';
 
 
 export const PAGES = {
@@ -70,6 +71,7 @@ export const PAGES = {
     "RevenueDashboard": RevenueDashboard,
     "SetterDashboard": SetterDashboard,
     "ClientSettings": ClientSettings,
+    "MMDashboard": MMDashboard,
 }
 
 export const pagesConfig = {
