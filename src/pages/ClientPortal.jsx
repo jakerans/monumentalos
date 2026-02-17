@@ -85,19 +85,25 @@ export default function ClientPortal() {
     return d >= start && d <= end;
   };
 
-  // Scheduled/showed use appointment_date
+  // Booked uses date_appointment_set
+  const thisMonthBooked = leads.filter(l => inRange(l.date_appointment_set, thisMonthStart, now));
+  const lastMonthBooked = leads.filter(l => inRange(l.date_appointment_set, lastMonthStart, lastMonthEnd));
+
+  // Showed uses appointment_date in range + disposition showed or outcome sold/lost
   const thisMonthAppts = leads.filter(l => inRange(l.appointment_date, thisMonthStart, now));
   const lastMonthAppts = leads.filter(l => inRange(l.appointment_date, lastMonthStart, lastMonthEnd));
+  const thisMonthShowed = thisMonthAppts.filter(l => l.disposition === 'showed' || l.outcome === 'sold' || l.outcome === 'lost');
+  const lastMonthShowed = lastMonthAppts.filter(l => l.disposition === 'showed' || l.outcome === 'sold' || l.outcome === 'lost');
 
   // Sold/revenue use date_sold
   const thisMonthSold = leads.filter(l => l.outcome === 'sold' && inDateRange(l.date_sold, thisMonthStart, now));
   const lastMonthSold = leads.filter(l => l.outcome === 'sold' && inDateRange(l.date_sold, lastMonthStart, lastMonthEnd));
 
   const stats = {
-    scheduledThis: thisMonthAppts.filter(l => l.disposition === 'scheduled' || l.disposition === 'rescheduled').length,
-    scheduledLast: lastMonthAppts.filter(l => l.disposition === 'scheduled' || l.disposition === 'rescheduled').length,
-    showedThis: thisMonthAppts.filter(l => l.disposition === 'showed' || l.outcome === 'sold' || l.outcome === 'lost').length,
-    showedLast: lastMonthAppts.filter(l => l.disposition === 'showed' || l.outcome === 'sold' || l.outcome === 'lost').length,
+    scheduledThis: thisMonthBooked.length,
+    scheduledLast: lastMonthBooked.length,
+    showedThis: thisMonthShowed.length,
+    showedLast: lastMonthShowed.length,
     soldThis: thisMonthSold.length,
     soldLast: lastMonthSold.length,
     revenueThis: thisMonthSold.reduce((s, l) => s + (l.sale_amount || 0), 0),
