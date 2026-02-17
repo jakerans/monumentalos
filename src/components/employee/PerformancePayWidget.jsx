@@ -1,15 +1,6 @@
 import React from 'react';
 import { DollarSign, TrendingUp } from 'lucide-react';
-
-function getMonthlyBasePay(emp) {
-  if (emp.classification === 'salary') return emp.salary_monthly || 0;
-  if (emp.classification === 'hourly') return (emp.hourly_rate || 0) * (emp.standard_monthly_hours || 0);
-  if (emp.classification === 'contractor') {
-    if (emp.contractor_billing_type === 'monthly') return emp.contractor_rate || 0;
-    if (emp.contractor_billing_type === 'hourly') return (emp.contractor_rate || 0) * 160;
-  }
-  return 0;
-}
+import { getMonthlyBasePay } from './payUtils';
 
 function getCurrentTier(plan) {
   if (!plan.tiers || plan.tiers.length === 0) return null;
@@ -27,7 +18,7 @@ function getNextTier(plan) {
   return sorted.find(t => t.threshold > progress) || null;
 }
 
-export default function PerformancePayWidget({ employees, perfPlans, onSelectPlan }) {
+export default function PerformancePayWidget({ employees, perfPlans, payrollSettings, onSelectPlan }) {
   const activePlans = perfPlans.filter(p => p.status === 'active');
   const empsWithPlans = employees.filter(e => e.has_performance_pay && e.status === 'active');
 
@@ -49,7 +40,7 @@ export default function PerformancePayWidget({ employees, perfPlans, onSelectPla
       <div className="divide-y divide-slate-700/30">
         {empsWithPlans.map(emp => {
           const empPlans = activePlans.filter(p => p.employee_id === emp.id);
-          const basePay = getMonthlyBasePay(emp);
+          const basePay = getMonthlyBasePay(emp, payrollSettings);
           const totalPerfPay = empPlans.reduce((s, p) => s + (p.current_period_payout || 0), 0);
           const totalPay = basePay + totalPerfPay;
 

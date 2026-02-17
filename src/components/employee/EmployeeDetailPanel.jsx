@@ -1,31 +1,14 @@
 import React, { useState } from 'react';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { base44 } from '@/api/base44Client';
-import { CircleDot, UserX, DollarSign, X } from 'lucide-react';
+import { CircleDot, UserX, DollarSign } from 'lucide-react';
 import AddPerformancePayModal from './AddPerformancePayModal';
-
-function getPayDisplay(emp) {
-  if (!emp) return { monthly: '—', annual: '—' };
-  if (emp.classification === 'salary') {
-    const m = emp.salary_monthly || 0;
-    return { monthly: `$${m.toLocaleString()}`, annual: `$${(m * 12).toLocaleString()}` };
-  }
-  if (emp.classification === 'hourly') {
-    const m = (emp.hourly_rate || 0) * (emp.standard_monthly_hours || 0);
-    return { monthly: `$${m.toLocaleString()}`, annual: `$${(m * 12).toLocaleString()}`, rate: `$${emp.hourly_rate}/hr × ${emp.standard_monthly_hours} hrs` };
-  }
-  if (emp.classification === 'contractor') {
-    if (emp.contractor_billing_type === 'per_project') return { monthly: 'Per Project', annual: 'Per Project' };
-    if (emp.contractor_billing_type === 'hourly') return { monthly: `$${emp.contractor_rate}/hr`, annual: '—' };
-    return { monthly: `$${(emp.contractor_rate || 0).toLocaleString()}`, annual: `$${((emp.contractor_rate || 0) * 12).toLocaleString()}` };
-  }
-  return { monthly: '—', annual: '—' };
-}
+import { getPayDisplay, getCyclesPerYear } from './payUtils';
 
 const DISC_COLORS = { green: 'bg-green-500/20 border-green-500 text-green-400', yellow: 'bg-yellow-500/20 border-yellow-500 text-yellow-400', red: 'bg-red-500/20 border-red-500 text-red-400' };
 const ROLE_LABELS = { admin: 'Admin', marketing_manager: 'Marketing Manager', setter: 'Setter', onboard_admin: 'Onboard Admin', client: 'Client' };
 
-export default function EmployeeDetailPanel({ employee, open, onOpenChange, onUpdated }) {
+export default function EmployeeDetailPanel({ employee, payrollSettings, open, onOpenChange, onUpdated }) {
   const [editing, setEditing] = useState(false);
   const [form, setForm] = useState({});
   const [perfPayOpen, setPerfPayOpen] = useState(false);
@@ -40,11 +23,12 @@ export default function EmployeeDetailPanel({ employee, open, onOpenChange, onUp
   }, [employee]);
 
   if (!employee) return null;
-  const pay = getPayDisplay(employee);
+  const pay = getPayDisplay(employee, payrollSettings);
+  const cycles = getCyclesPerYear(payrollSettings);
 
   const handleSave = async () => {
     const updates = { ...form };
-    if (form.classification === 'salary') updates.salary_monthly = parseFloat(form.salary_monthly) || 0;
+    if (form.classification === 'salary') updates.pay_per_cycle = parseFloat(form.pay_per_cycle) || 0;
     if (form.classification === 'hourly') {
       updates.hourly_rate = parseFloat(form.hourly_rate) || 0;
       updates.standard_monthly_hours = parseFloat(form.standard_monthly_hours) || 0;
@@ -87,12 +71,14 @@ export default function EmployeeDetailPanel({ employee, open, onOpenChange, onUp
           </SheetHeader>
 
           <div className="mt-4 space-y-4">
-            {/* Quick info */}
             {!editing ? (
               <div className="space-y-3">
                 <div className="grid grid-cols-2 gap-3">
                   <div><p className={labelCls}>Role</p><p className="text-sm text-slate-200">{ROLE_LABELS[employee.app_role] || '—'}</p></div>
                   <div><p className={labelCls}>Classification</p><p className="text-sm text-slate-200 capitalize">{employee.classification}{employee.classification === 'contractor' ? ` (${employee.contractor_billing_type})` : ''}</p></div>
+                  {employee.classification === 'salary' && (
+                    <div><p className={labelCls}>Pay Per Cycle</p><p className="text-sm font-medium text-white">{pay.perCycle || '—'}</p></div>
+                  )}
                   <div><p className={labelCls}>Monthly Cost</p><p className="text-sm font-medium text-white">{pay.monthly}</p></div>
                   <div><p className={labelCls}>Annual Cost</p><p className="text-sm text-slate-300">{pay.annual}</p></div>
                   {pay.rate && <div className="col-span-2"><p className={labelCls}>Rate Breakdown</p><p className="text-sm text-slate-300">{pay.rate}</p></div>}
@@ -116,7 +102,10 @@ export default function EmployeeDetailPanel({ employee, open, onOpenChange, onUp
                   <div><label className={labelCls}>Cost Type</label><select className={inputCls} value={form.cost_type} onChange={e => setForm({ ...form, cost_type: e.target.value })}><option value="overhead">Overhead</option><option value="cogs">COGS</option></select></div>
                 </div>
                 {form.classification === 'salary' && (
-                  <div><label className={labelCls}>Monthly Salary ($)</label><input type="number" className={inputCls} value={form.salary_monthly || ''} onChange={e => setForm({ ...form, salary_monthly: e.target.value })} /></div>
+                  <div>
+                    <label className={labelCls}>Pay Per Cycle ($) — {cycles} cycles/yr</label>
+                    <input type="number" className={inputCls} value={form.pay_per_cycle || ''} onChange={e => setForm({ ...form, pay_per_cycle: e.target.value })} placeholder="e.g. 2500" />
+                  </div>
                 )}
                 {form.classification === 'hourly' && (
                   <div className="grid grid-cols-2 gap-3">
@@ -142,7 +131,6 @@ export default function EmployeeDetailPanel({ employee, open, onOpenChange, onUp
               </div>
             )}
 
-            {/* Action buttons */}
             <div className="space-y-2 pt-2 border-t border-slate-700">
               {!editing ? (
                 <>
