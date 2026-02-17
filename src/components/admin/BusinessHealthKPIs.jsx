@@ -1,9 +1,16 @@
 import React from 'react';
 import { Users, AlertTriangle, UserPlus, UserMinus, DollarSign, TrendingUp, Percent, Target } from 'lucide-react';
+import { motion } from 'framer-motion';
 
-function KPICard({ label, value, subtitle, icon: Icon, iconBg, iconColor }) {
+function KPICard({ label, value, subtitle, icon: Icon, iconBg, iconColor, index = 0 }) {
   return (
-    <div className="bg-slate-800/50 rounded-lg border border-slate-700/50 p-4">
+    <motion.div
+      initial={{ opacity: 0, y: 20, scale: 0.95 }}
+      animate={{ opacity: 1, y: 0, scale: 1 }}
+      transition={{ delay: 0.05 * index, duration: 0.35, ease: [0.25, 0.46, 0.45, 0.94] }}
+      whileHover={{ scale: 1.03, y: -2 }}
+      className="bg-slate-800/50 rounded-lg border border-slate-700/50 p-4 hover:border-slate-600/50 hover:bg-slate-800/70 transition-colors duration-200"
+    >
       <div className="flex items-center justify-between mb-1.5">
         <p className="text-[10px] font-medium text-slate-400 uppercase tracking-wider">{label}</p>
         <div className={`p-1.5 rounded-lg ${iconBg}`}>
@@ -12,7 +19,7 @@ function KPICard({ label, value, subtitle, icon: Icon, iconBg, iconColor }) {
       </div>
       <p className="text-2xl font-bold text-white">{value}</p>
       {subtitle && <p className="text-[10px] text-slate-500 mt-0.5">{subtitle}</p>}
-    </div>
+    </motion.div>
   );
 }
 
@@ -65,14 +72,14 @@ export default function BusinessHealthKPIs({ clients, leads, spend, payments, bi
 
   return (
     <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-3">
-      <KPICard label="Active Clients" value={activeClients.length} subtitle={`${newClientsThisMonth} new this month`} icon={Users} iconBg="bg-blue-500/10" iconColor="text-blue-400" />
-      <KPICard label="Alerts" value={alertClients.length} subtitle="Clients needing attention" icon={AlertTriangle} iconBg="bg-red-500/10" iconColor="text-red-400" />
-      <KPICard label="Churn Rate (90d)" value={`${churnRate}%`} subtitle={`${churnedCount} churned`} icon={UserMinus} iconBg="bg-orange-500/10" iconColor="text-orange-400" />
-      <KPICard label="New This Month" value={newClientsThisMonth} icon={UserPlus} iconBg="bg-green-500/10" iconColor="text-green-400" />
-      <KPICard label="Last Mo. Billed" value={`$${lastMonthTotal.toLocaleString()}`} subtitle="Performance billing" icon={DollarSign} iconBg="bg-indigo-500/10" iconColor="text-indigo-400" />
-      <KPICard label="Collection Rate" value={`${collectionRate}%`} subtitle={`$${lastMonthCollected.toLocaleString()} collected`} icon={Percent} iconBg="bg-emerald-500/10" iconColor="text-emerald-400" />
-      <KPICard label="MTD Leads" value={mtdLeads} icon={TrendingUp} iconBg="bg-purple-500/10" iconColor="text-purple-400" />
-      <KPICard label="MTD Booked" value={mtdBooked} icon={Target} iconBg="bg-cyan-500/10" iconColor="text-cyan-400" />
+      <KPICard index={0} label="Active Clients" value={activeClients.length} subtitle={`${newClientsThisMonth} new this month`} icon={Users} iconBg="bg-blue-500/10" iconColor="text-blue-400" />
+      <KPICard index={1} label="Alerts" value={alertClients.length} subtitle="Clients needing attention" icon={AlertTriangle} iconBg="bg-red-500/10" iconColor="text-red-400" />
+      <KPICard index={2} label="Churn Rate (90d)" value={`${churnRate}%`} subtitle={`${churnedCount} churned`} icon={UserMinus} iconBg="bg-orange-500/10" iconColor="text-orange-400" />
+      <KPICard index={3} label="New This Month" value={newClientsThisMonth} icon={UserPlus} iconBg="bg-green-500/10" iconColor="text-green-400" />
+      <KPICard index={4} label="Last Mo. Billed" value={`$${lastMonthTotal.toLocaleString()}`} subtitle="Performance billing" icon={DollarSign} iconBg="bg-indigo-500/10" iconColor="text-indigo-400" />
+      <KPICard index={5} label="Collection Rate" value={`${collectionRate}%`} subtitle={`$${lastMonthCollected.toLocaleString()} collected`} icon={Percent} iconBg="bg-emerald-500/10" iconColor="text-emerald-400" />
+      <KPICard index={6} label="MTD Leads" value={mtdLeads} icon={TrendingUp} iconBg="bg-purple-500/10" iconColor="text-purple-400" />
+      <KPICard index={7} label="MTD Booked" value={mtdBooked} icon={Target} iconBg="bg-cyan-500/10" iconColor="text-cyan-400" />
     </div>
   );
 }

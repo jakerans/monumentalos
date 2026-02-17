@@ -1,5 +1,6 @@
 import React from 'react';
 import { Users, CalendarCheck, DollarSign, AlertTriangle, TrendingUp, Clock } from 'lucide-react';
+import { motion } from 'framer-motion';
 
 export default function MMTopStats({ stats }) {
   const pd = stats.periodLabel || '30d';
@@ -17,8 +18,15 @@ export default function MMTopStats({ stats }) {
 
   return (
     <div className="grid grid-cols-3 md:grid-cols-6 gap-2 sm:gap-3 mb-4">
-      {items.map((item) => (
-        <div key={item.label} className="bg-slate-800/50 rounded-lg border border-slate-700/50 p-2.5 sm:p-3">
+      {items.map((item, i) => (
+        <motion.div
+          key={item.label}
+          initial={{ opacity: 0, y: 20, scale: 0.95 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          transition={{ delay: 0.05 * i, duration: 0.35, ease: [0.25, 0.46, 0.45, 0.94] }}
+          whileHover={{ scale: 1.04, y: -2 }}
+          className="bg-slate-800/50 rounded-lg border border-slate-700/50 p-2.5 sm:p-3 hover:border-slate-600/50 hover:bg-slate-800/70 transition-colors duration-200"
+        >
           <div className="flex items-center gap-1.5 mb-1">
             <div className={`p-1 rounded ${item.bg}`}>
               <item.icon className={`w-3 h-3 ${item.color}`} />
@@ -31,7 +39,7 @@ export default function MMTopStats({ stats }) {
               {item.cpaChange > 0 ? '▲' : '▼'} {Math.abs(item.cpaChange).toFixed(1)}% vs prior
             </span>
           )}
-        </div>
+        </motion.div>
       ))}
     </div>
   );
