@@ -76,15 +76,15 @@ export default function ReportCharts({ spendRecords, bookedLeads, appointmentLea
   const PIE_COLORS_OUT = { Sold: '#22c55e', Lost: '#ef4444', Pending: '#f59e0b' };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       {/* Monthly overview bar chart */}
-      <div className="bg-white rounded-lg shadow border border-gray-200 p-6">
-        <h3 className="text-lg font-bold text-gray-900 mb-4">Monthly Overview</h3>
+      <div className="bg-white rounded-lg shadow border border-gray-200 p-3 sm:p-6">
+        <h3 className="text-sm sm:text-lg font-bold text-gray-900 mb-3 sm:mb-4">Monthly Overview</h3>
         {monthlyData.length === 0 ? (
           <p className="text-gray-500 text-sm text-center py-8">No data available for the selected period</p>
         ) : (
-          <ResponsiveContainer width="100%" height={320}>
-            <BarChart data={monthlyData} margin={{ top: 5, right: 20, left: 10, bottom: 5 }}>
+          <ResponsiveContainer width="100%" height={240}>
+            <BarChart data={monthlyData} margin={{ top: 5, right: 5, left: -15, bottom: 5 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
               <XAxis dataKey="month" tick={{ fontSize: 12 }} />
               <YAxis tick={{ fontSize: 12 }} />
@@ -98,13 +98,13 @@ export default function ReportCharts({ spendRecords, bookedLeads, appointmentLea
       </div>
 
       {/* Spend & Revenue chart */}
-      <div className="bg-white rounded-lg shadow border border-gray-200 p-6">
-        <h3 className="text-lg font-bold text-gray-900 mb-4">Spend vs Revenue</h3>
+      <div className="bg-white rounded-lg shadow border border-gray-200 p-3 sm:p-6">
+        <h3 className="text-sm sm:text-lg font-bold text-gray-900 mb-3 sm:mb-4">Spend vs Revenue</h3>
         {monthlyData.length === 0 ? (
           <p className="text-gray-500 text-sm text-center py-8">No data available for the selected period</p>
         ) : (
-          <ResponsiveContainer width="100%" height={280}>
-            <BarChart data={monthlyData} margin={{ top: 5, right: 20, left: 10, bottom: 5 }}>
+          <ResponsiveContainer width="100%" height={220}>
+            <BarChart data={monthlyData} margin={{ top: 5, right: 5, left: -15, bottom: 5 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
               <XAxis dataKey="month" tick={{ fontSize: 12 }} />
               <YAxis tick={{ fontSize: 12 }} tickFormatter={(v) => `$${v.toLocaleString()}`} />
@@ -117,15 +117,15 @@ export default function ReportCharts({ spendRecords, bookedLeads, appointmentLea
       </div>
 
       {/* Pie charts */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className="bg-white rounded-lg shadow border border-gray-200 p-6">
-          <h3 className="text-lg font-bold text-gray-900 mb-4">Appointment Disposition</h3>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
+        <div className="bg-white rounded-lg shadow border border-gray-200 p-3 sm:p-6">
+          <h3 className="text-sm sm:text-lg font-bold text-gray-900 mb-3 sm:mb-4">Appointment Disposition</h3>
           {dispositionData.length === 0 ? (
             <p className="text-gray-500 text-sm text-center py-8">No data</p>
           ) : (
-            <ResponsiveContainer width="100%" height={260}>
+            <ResponsiveContainer width="100%" height={220}>
               <PieChart>
-                <Pie data={dispositionData} cx="50%" cy="50%" innerRadius={50} outerRadius={90} dataKey="value" label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}>
+                <Pie data={dispositionData} cx="50%" cy="50%" innerRadius={40} outerRadius={70} dataKey="value" label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`} fontSize={11}>
                   {dispositionData.map((entry) => (
                     <Cell key={entry.name} fill={PIE_COLORS_DISP[entry.name] || '#94a3b8'} />
                   ))}
@@ -137,14 +137,14 @@ export default function ReportCharts({ spendRecords, bookedLeads, appointmentLea
           )}
         </div>
 
-        <div className="bg-white rounded-lg shadow border border-gray-200 p-6">
-          <h3 className="text-lg font-bold text-gray-900 mb-4">Outcome Breakdown</h3>
+        <div className="bg-white rounded-lg shadow border border-gray-200 p-3 sm:p-6">
+          <h3 className="text-sm sm:text-lg font-bold text-gray-900 mb-3 sm:mb-4">Outcome Breakdown</h3>
           {outcomeData.length === 0 ? (
             <p className="text-gray-500 text-sm text-center py-8">No data</p>
           ) : (
-            <ResponsiveContainer width="100%" height={260}>
+            <ResponsiveContainer width="100%" height={220}>
               <PieChart>
-                <Pie data={outcomeData} cx="50%" cy="50%" innerRadius={50} outerRadius={90} dataKey="value" label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}>
+                <Pie data={outcomeData} cx="50%" cy="50%" innerRadius={40} outerRadius={70} dataKey="value" label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`} fontSize={11}>
                   {outcomeData.map((entry) => (
                     <Cell key={entry.name} fill={PIE_COLORS_OUT[entry.name] || '#94a3b8'} />
                   ))}

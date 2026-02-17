@@ -11,14 +11,14 @@ export default function ReportKPICards({ totalSpend, appointmentsBooked, appoint
   ];
 
   return (
-    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 mb-8">
+    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2 sm:gap-4 mb-6 sm:mb-8">
       {cards.map((card) => (
-        <div key={card.label} className={`${card.bg} rounded-lg p-5 border ${card.border}`}>
-          <div className="flex items-center gap-2 mb-2">
-            <card.icon className={`w-5 h-5 ${card.color}`} />
-            <p className="text-xs font-medium text-gray-600">{card.label}</p>
+        <div key={card.label} className={`${card.bg} rounded-lg p-3 sm:p-5 border ${card.border}`}>
+          <div className="flex items-center gap-1.5 sm:gap-2 mb-1 sm:mb-2">
+            <card.icon className={`w-4 h-4 sm:w-5 sm:h-5 ${card.color}`} />
+            <p className="text-[10px] sm:text-xs font-medium text-gray-600 leading-tight">{card.label}</p>
           </div>
-          <p className={`text-2xl font-bold ${card.color}`}>{card.value}</p>
+          <p className={`text-lg sm:text-2xl font-bold ${card.color}`}>{card.value}</p>
         </div>
       ))}
     </div>

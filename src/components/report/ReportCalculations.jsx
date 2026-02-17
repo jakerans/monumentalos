@@ -34,15 +34,15 @@ export default function ReportCalculations({ cancellationRate, winRate, avgJobSi
   ];
 
   return (
-    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+    <div className="grid grid-cols-2 md:grid-cols-4 gap-2 sm:gap-4 mb-6 sm:mb-8">
       {cards.map((card) => (
-        <div key={card.label} className="bg-white rounded-lg shadow p-5 border border-gray-200">
-          <div className="flex items-center gap-2 mb-1">
-            <card.icon className="w-4 h-4 text-gray-400" />
-            <p className="text-xs font-medium text-gray-500 uppercase">{card.label}</p>
+        <div key={card.label} className="bg-white rounded-lg shadow p-3 sm:p-5 border border-gray-200">
+          <div className="flex items-center gap-1.5 sm:gap-2 mb-1">
+            <card.icon className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-gray-400" />
+            <p className="text-[10px] sm:text-xs font-medium text-gray-500 uppercase leading-tight">{card.label}</p>
           </div>
-          <p className={`text-3xl font-bold ${card.color}`}>{card.value}</p>
-          <p className="text-xs text-gray-400 mt-1">{card.subtitle}</p>
+          <p className={`text-xl sm:text-3xl font-bold ${card.color}`}>{card.value}</p>
+          <p className="text-[10px] sm:text-xs text-gray-400 mt-0.5 sm:mt-1 truncate">{card.subtitle}</p>
         </div>
       ))}
     </div>
