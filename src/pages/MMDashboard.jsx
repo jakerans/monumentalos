@@ -9,10 +9,13 @@ import MMTopStats from '../components/mm/MMTopStats';
 import ClientTable from '../components/mm/ClientTable';
 import MMTaskBoard from '../components/mm/MMTaskBoard';
 import ClientQuickView from '../components/mm/ClientQuickView';
+import ClientBreakdownChart from '../components/mm/ClientBreakdownChart';
 import PageErrorBoundary from '../components/shared/PageErrorBoundary';
 import PageLoader from '../components/shared/PageLoader';
 
 const PERIOD_OPTIONS = [
+  { label: 'This Month', days: 'this_month' },
+  { label: 'Last Month', days: 'last_month' },
   { label: '7 Days', days: 7 },
   { label: '14 Days', days: 14 },
   { label: '30 Days', days: 30 },
@@ -23,6 +26,7 @@ export default function MMDashboard() {
   const [user, setUser] = useState(null);
   const [selectedClient, setSelectedClient] = useState(null);
   const [periodDays, setPeriodDays] = useState(30);
+  const [showChart, setShowChart] = useState(false);
 
   useEffect(() => {
     const checkAuth = async () => {
