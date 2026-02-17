@@ -35,13 +35,13 @@ export default function ExpenseBreakdown({ expenses, clients, startDate, endDate
   };
 
   return (
-    <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
-      <div className="px-4 py-3 border-b border-gray-200 flex items-center justify-between">
-        <h2 className="text-sm font-bold text-gray-900">Expense Breakdown</h2>
+    <div className="bg-slate-800/50 rounded-lg border border-slate-700/50 overflow-hidden">
+      <div className="px-4 py-3 border-b border-slate-700/50 flex items-center justify-between">
+        <h2 className="text-sm font-bold text-white">Expense Breakdown</h2>
         <span className="text-sm font-bold text-red-600">Total: ${total.toLocaleString()}</span>
       </div>
       {/* COGS vs Overhead summary */}
-      <div className="px-4 py-2 flex gap-3 border-b border-gray-100">
+      <div className="px-4 py-2 flex gap-3 border-b border-slate-700/30">
         <div className="px-2 py-1 rounded text-xs font-bold bg-orange-100 text-orange-700">
           COGS: ${filtered.filter(e => e.expense_type === 'cogs').reduce((s, e) => s + (e.amount || 0), 0).toLocaleString()}
         </div>
@@ -50,7 +50,7 @@ export default function ExpenseBreakdown({ expenses, clients, startDate, endDate
         </div>
       </div>
       {/* Category summary */}
-      <div className="px-4 py-2 flex flex-wrap gap-2 border-b border-gray-100">
+      <div className="px-4 py-2 flex flex-wrap gap-2 border-b border-slate-700/30">
         {Object.entries(byCat).sort((a, b) => b[1] - a[1]).map(([cat, amt]) => (
           <div key={cat} className={`px-2 py-1 rounded text-xs font-medium ${CATEGORY_COLORS[cat] || 'bg-gray-100 text-gray-600'}`}>
             {CATEGORY_LABELS[cat] || cat}: ${amt.toLocaleString()}
@@ -58,11 +58,11 @@ export default function ExpenseBreakdown({ expenses, clients, startDate, endDate
         ))}
       </div>
       {/* Detail list */}
-      <div className="max-h-[300px] overflow-y-auto divide-y divide-gray-100">
+      <div className="max-h-[300px] overflow-y-auto divide-y divide-slate-700/30">
         {filtered.length === 0 ? (
-          <div className="px-4 py-6 text-xs text-gray-400 text-center">No expenses in this period</div>
+          <div className="px-4 py-6 text-xs text-slate-500 text-center">No expenses in this period</div>
         ) : filtered.sort((a, b) => new Date(b.date) - new Date(a.date)).map(e => (
-          <div key={e.id} className="px-4 py-2 flex items-center justify-between hover:bg-gray-50">
+          <div key={e.id} className="px-4 py-2 flex items-center justify-between hover:bg-slate-700/20">
             <div className="flex items-center gap-3 min-w-0">
               <span className={`px-1.5 py-0.5 text-[10px] font-medium rounded flex-shrink-0 ${TYPE_COLORS[e.expense_type] || TYPE_COLORS.overhead}`}>
                 {e.expense_type === 'cogs' ? 'COGS' : 'OH'}
@@ -71,8 +71,8 @@ export default function ExpenseBreakdown({ expenses, clients, startDate, endDate
                 {CATEGORY_LABELS[e.category] || e.category}
               </span>
               <div className="min-w-0">
-                <p className="text-xs font-medium text-gray-900 truncate">{e.description || '—'}</p>
-                <p className="text-[10px] text-gray-400">{e.date} · {e.vendor || '—'}{e.client_id ? ` · ${getClientName(e.client_id)}` : ''}</p>
+                <p className="text-xs font-medium text-white truncate">{e.description || '—'}</p>
+                <p className="text-[10px] text-slate-500">{e.date} · {e.vendor || '—'}{e.client_id ? ` · ${getClientName(e.client_id)}` : ''}</p>
               </div>
             </div>
             <div className="flex items-center gap-2 flex-shrink-0">

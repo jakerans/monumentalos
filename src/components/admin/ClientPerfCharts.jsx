@@ -18,28 +18,28 @@ export default function ClientPerfCharts({ clients, leads, spend }) {
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-      <div className="bg-white rounded-lg border border-gray-200 p-4">
-        <h3 className="text-sm font-bold text-gray-900 mb-3">MTD Appointments by Client</h3>
+      <div className="bg-slate-800/50 rounded-lg border border-slate-700/50 p-4">
+        <h3 className="text-sm font-bold text-white mb-3">MTD Appointments by Client</h3>
         <ResponsiveContainer width="100%" height={250}>
           <BarChart data={clientBars}>
-            <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-            <XAxis dataKey="name" tick={{ fontSize: 10 }} />
-            <YAxis tick={{ fontSize: 10 }} />
-            <Tooltip />
+            <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" />
+            <XAxis dataKey="name" tick={{ fontSize: 10, fill: '#94a3b8' }} />
+            <YAxis tick={{ fontSize: 10, fill: '#94a3b8' }} />
+            <Tooltip contentStyle={{ backgroundColor: '#1e293b', border: '1px solid #334155', borderRadius: '8px', color: '#fff' }} />
             <Legend wrapperStyle={{ fontSize: 10 }} />
             <Bar dataKey="booked" fill="#8b5cf6" name="Booked" radius={[2, 2, 0, 0]} />
             <Bar dataKey="showed" fill="#10b981" name="Showed" radius={[2, 2, 0, 0]} />
           </BarChart>
         </ResponsiveContainer>
       </div>
-      <div className="bg-white rounded-lg border border-gray-200 p-4">
-        <h3 className="text-sm font-bold text-gray-900 mb-3">MTD Ad Spend by Client</h3>
+      <div className="bg-slate-800/50 rounded-lg border border-slate-700/50 p-4">
+        <h3 className="text-sm font-bold text-white mb-3">MTD Ad Spend by Client</h3>
         <ResponsiveContainer width="100%" height={250}>
           <BarChart data={clientBars}>
-            <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-            <XAxis dataKey="name" tick={{ fontSize: 10 }} />
-            <YAxis tick={{ fontSize: 10 }} tickFormatter={v => `$${v}`} />
-            <Tooltip formatter={v => `$${v.toLocaleString()}`} />
+            <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" />
+            <XAxis dataKey="name" tick={{ fontSize: 10, fill: '#94a3b8' }} />
+            <YAxis tick={{ fontSize: 10, fill: '#94a3b8' }} tickFormatter={v => `$${v}`} />
+            <Tooltip contentStyle={{ backgroundColor: '#1e293b', border: '1px solid #334155', borderRadius: '8px', color: '#fff' }} formatter={v => `$${v.toLocaleString()}`} />
             <Bar dataKey="adSpend" fill="#ef4444" name="Ad Spend" radius={[2, 2, 0, 0]} />
           </BarChart>
         </ResponsiveContainer>

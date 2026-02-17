@@ -49,24 +49,24 @@ export default function BillingTable({ billingRecords, clients, onRefresh, isOve
     <>
       {/* Summary cards */}
       <div className="grid grid-cols-3 gap-3 mb-4">
-        <div className="bg-white rounded-lg border border-gray-200 p-4">
-          <p className="text-[10px] font-medium text-gray-500 uppercase">Total To Bill</p>
-          <p className="text-2xl font-bold text-gray-900">${totalAmount.toLocaleString()}</p>
+        <div className="bg-slate-800/50 rounded-lg border border-slate-700/50 p-4">
+          <p className="text-[10px] font-medium text-slate-400 uppercase">Total To Bill</p>
+          <p className="text-2xl font-bold text-white">${totalAmount.toLocaleString()}</p>
         </div>
-        <div className="bg-white rounded-lg border border-gray-200 p-4">
-          <p className="text-[10px] font-medium text-gray-500 uppercase">Collected</p>
-          <p className="text-2xl font-bold text-emerald-600">${totalPaid.toLocaleString()}</p>
+        <div className="bg-slate-800/50 rounded-lg border border-slate-700/50 p-4">
+          <p className="text-[10px] font-medium text-slate-400 uppercase">Collected</p>
+          <p className="text-2xl font-bold text-emerald-400">${totalPaid.toLocaleString()}</p>
         </div>
-        <div className="bg-white rounded-lg border border-gray-200 p-4">
-          <p className="text-[10px] font-medium text-gray-500 uppercase">Outstanding</p>
-          <p className={`text-2xl font-bold ${totalPending > 0 ? 'text-amber-600' : 'text-gray-400'}`}>${totalPending.toLocaleString()}</p>
+        <div className="bg-slate-800/50 rounded-lg border border-slate-700/50 p-4">
+          <p className="text-[10px] font-medium text-slate-400 uppercase">Outstanding</p>
+          <p className={`text-2xl font-bold ${totalPending > 0 ? 'text-amber-400' : 'text-slate-500'}`}>${totalPending.toLocaleString()}</p>
         </div>
       </div>
 
-      <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+      <div className="bg-slate-800/50 rounded-lg border border-slate-700/50 overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
-            <thead className="bg-gray-50 text-xs text-gray-500 uppercase">
+            <thead className="bg-slate-900/50 text-xs text-slate-400 uppercase">
               <tr>
                 <th className="px-4 py-2.5 text-left">Client</th>
                 <th className="px-3 py-2.5 text-left">Type</th>
@@ -79,33 +79,33 @@ export default function BillingTable({ billingRecords, clients, onRefresh, isOve
                 <th className="px-3 py-2.5 text-center">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-100">
+            <tbody className="divide-y divide-slate-700/30">
               {rows.length === 0 ? (
-                <tr><td colSpan={9} className="px-4 py-8 text-center text-gray-400">No billing records for this month</td></tr>
+                <tr><td colSpan={9} className="px-4 py-8 text-center text-slate-500">No billing records for this month</td></tr>
               ) : rows.map(r => {
                 const sc = STATUS_CONFIG[r.displayStatus] || STATUS_CONFIG.pending;
                 return (
-                  <tr key={r.id} className="hover:bg-gray-50">
+                  <tr key={r.id} className="hover:bg-slate-700/20">
                     <td className="px-4 py-3">
-                      <span className="font-medium text-gray-900">{r.client?.name || '—'}</span>
+                      <span className="font-medium text-white">{r.client?.name || '—'}</span>
                     </td>
                     <td className="px-3 py-3">
                       <span className={`px-1.5 py-0.5 text-[10px] font-medium rounded ${BILLING_COLORS[r.billing_type]}`}>
                         {BILLING_LABELS[r.billing_type]}
                       </span>
                     </td>
-                    <td className="px-3 py-3 text-center text-gray-700 text-xs">
+                    <td className="px-3 py-3 text-center text-slate-300 text-xs">
                       {r.billing_type === 'retainer' && r.client?.retainer_due_day
                         ? `${r.client.retainer_due_day}${r.client.retainer_due_day === 1 ? 'st' : r.client.retainer_due_day === 2 ? 'nd' : r.client.retainer_due_day === 3 ? 'rd' : 'th'}`
                         : r.billing_type === 'retainer' ? '1st' : '—'}
                     </td>
-                    <td className="px-3 py-3 text-right text-gray-700">
+                    <td className="px-3 py-3 text-right text-slate-300">
                       {r.billing_type === 'retainer' ? '—' : (r.quantity || 0)}
                     </td>
-                    <td className="px-3 py-3 text-right text-gray-700">
+                    <td className="px-3 py-3 text-right text-slate-300">
                       {r.rate ? `$${r.rate}` : '—'}
                     </td>
-                    <td className="px-3 py-3 text-right font-medium text-gray-900">
+                    <td className="px-3 py-3 text-right font-medium text-white">
                       ${r.amount.toLocaleString()}
                     </td>
                     <td className="px-3 py-3 text-center">

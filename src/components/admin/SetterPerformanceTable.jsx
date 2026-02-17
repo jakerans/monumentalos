@@ -46,11 +46,11 @@ export default function SetterPerformanceTable({ users, leads, clients, startDat
   const totalShowed = stats.reduce((s, r) => s + r.showed, 0);
 
   const summaryCards = [
-    { label: 'Total Setters', value: setters.length, icon: Award, color: 'text-indigo-600', bg: 'bg-indigo-50' },
-    { label: 'Total First Calls', value: totalCalls, icon: Phone, color: 'text-blue-600', bg: 'bg-blue-50' },
-    { label: 'Total Booked', value: totalBooked, icon: Calendar, color: 'text-purple-600', bg: 'bg-purple-50' },
-    { label: 'Total Showed', value: totalShowed, icon: Target, color: 'text-green-600', bg: 'bg-green-50' },
-    { label: 'Avg Booking Rate', value: totalCalls > 0 ? `${((totalBooked / totalCalls) * 100).toFixed(1)}%` : '—', icon: TrendingUp, color: 'text-amber-600', bg: 'bg-amber-50' },
+    { label: 'Total Setters', value: setters.length, icon: Award, color: 'text-indigo-400', bg: 'bg-indigo-500/10' },
+    { label: 'Total First Calls', value: totalCalls, icon: Phone, color: 'text-blue-400', bg: 'bg-blue-500/10' },
+    { label: 'Total Booked', value: totalBooked, icon: Calendar, color: 'text-purple-400', bg: 'bg-purple-500/10' },
+    { label: 'Total Showed', value: totalShowed, icon: Target, color: 'text-green-400', bg: 'bg-green-500/10' },
+    { label: 'Avg Booking Rate', value: totalCalls > 0 ? `${((totalBooked / totalCalls) * 100).toFixed(1)}%` : '—', icon: TrendingUp, color: 'text-amber-400', bg: 'bg-amber-500/10' },
   ];
 
   return (
@@ -58,26 +58,26 @@ export default function SetterPerformanceTable({ users, leads, clients, startDat
       {/* Summary cards */}
       <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
         {summaryCards.map((c, i) => (
-          <div key={i} className="bg-white rounded-lg border border-gray-200 p-4">
+          <div key={i} className="bg-slate-800/50 rounded-lg border border-slate-700/50 p-4">
             <div className="flex items-center justify-between mb-1">
-              <p className="text-[10px] font-medium text-gray-500 uppercase tracking-wider">{c.label}</p>
+              <p className="text-[10px] font-medium text-slate-400 uppercase tracking-wider">{c.label}</p>
               <div className={`p-1 rounded ${c.bg}`}>
                 <c.icon className={`w-3.5 h-3.5 ${c.color}`} />
               </div>
             </div>
-            <p className="text-2xl font-bold text-gray-900">{c.value}</p>
+            <p className="text-2xl font-bold text-white">{c.value}</p>
           </div>
         ))}
       </div>
 
       {/* Setter detail table */}
-      <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
-        <div className="px-4 py-3 border-b border-gray-200">
-          <h2 className="text-sm font-bold text-gray-900">Individual Setter Stats</h2>
+      <div className="bg-slate-800/50 rounded-lg border border-slate-700/50 overflow-hidden">
+        <div className="px-4 py-3 border-b border-slate-700/50">
+          <h2 className="text-sm font-bold text-white">Individual Setter Stats</h2>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
-            <thead className="bg-gray-50 text-xs text-gray-500 uppercase">
+            <thead className="bg-slate-900/50 text-xs text-slate-400 uppercase">
               <tr>
                 <th className="px-4 py-2 text-left">#</th>
                 <th className="px-4 py-2 text-left">Setter</th>
@@ -91,21 +91,21 @@ export default function SetterPerformanceTable({ users, leads, clients, startDat
                 <th className="px-3 py-2 text-left">Client Breakdown</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-100">
+            <tbody className="divide-y divide-slate-700/30">
               {stats.length === 0 ? (
-                <tr><td colSpan={10} className="px-4 py-6 text-center text-gray-400">No setters found</td></tr>
+                <tr><td colSpan={10} className="px-4 py-6 text-center text-slate-500">No setters found</td></tr>
               ) : stats.map((s, i) => (
-                <tr key={s.id} className="hover:bg-gray-50">
+                <tr key={s.id} className="hover:bg-slate-700/20">
                   <td className="px-4 py-2.5">
                     <span className={`w-5 h-5 inline-flex items-center justify-center rounded-full text-[10px] font-bold ${i === 0 ? 'bg-yellow-100 text-yellow-700' : i === 1 ? 'bg-gray-200 text-gray-600' : i === 2 ? 'bg-orange-100 text-orange-700' : 'bg-gray-50 text-gray-400'}`}>
                       {i + 1}
                     </span>
                   </td>
-                  <td className="px-4 py-2.5 font-medium text-gray-900">{s.name}</td>
-                  <td className="px-3 py-2.5 text-right">{s.firstCalls}</td>
-                  <td className="px-3 py-2.5 text-right font-bold text-blue-600">{s.booked}</td>
-                  <td className="px-3 py-2.5 text-right font-medium text-green-600">{s.showed}</td>
-                  <td className="px-3 py-2.5 text-right text-red-500">{s.dq}</td>
+                  <td className="px-4 py-2.5 font-medium text-white">{s.name}</td>
+                  <td className="px-3 py-2.5 text-right text-slate-300">{s.firstCalls}</td>
+                  <td className="px-3 py-2.5 text-right font-bold text-blue-400">{s.booked}</td>
+                  <td className="px-3 py-2.5 text-right font-medium text-green-400">{s.showed}</td>
+                  <td className="px-3 py-2.5 text-right text-red-400">{s.dq}</td>
                   <td className="px-3 py-2.5 text-right">
                     {s.avgSTL != null ? (
                       <span className={`font-medium ${s.avgSTL <= 5 ? 'text-green-600' : s.avgSTL <= 15 ? 'text-amber-600' : 'text-red-600'}`}>
@@ -113,12 +113,12 @@ export default function SetterPerformanceTable({ users, leads, clients, startDat
                       </span>
                     ) : '—'}
                   </td>
-                  <td className="px-3 py-2.5 text-right font-medium">{s.bookingRate}%</td>
-                  <td className="px-3 py-2.5 text-right font-medium">{s.showRate}%</td>
+                  <td className="px-3 py-2.5 text-right font-medium text-slate-300">{s.bookingRate}%</td>
+                  <td className="px-3 py-2.5 text-right font-medium text-slate-300">{s.showRate}%</td>
                   <td className="px-3 py-2.5">
                     <div className="flex flex-wrap gap-1">
                       {Object.entries(s.clientBreakdown).map(([name, count]) => (
-                        <span key={name} className="px-1.5 py-0.5 bg-gray-100 text-gray-600 text-[10px] rounded">
+                        <span key={name} className="px-1.5 py-0.5 bg-slate-700 text-slate-300 text-[10px] rounded">
                           {name}: {count}
                         </span>
                       ))}

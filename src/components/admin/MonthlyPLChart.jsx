@@ -45,28 +45,28 @@ export default function MonthlyPLChart({ clients, leads, payments, expenses }) {
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-      <div className="bg-white rounded-lg border border-gray-200 p-4">
-        <h3 className="text-sm font-bold text-gray-900 mb-3">Revenue & Collections (6 Months)</h3>
+      <div className="bg-slate-800/50 rounded-lg border border-slate-700/50 p-4">
+        <h3 className="text-sm font-bold text-white mb-3">Revenue & Collections (6 Months)</h3>
         <ResponsiveContainer width="100%" height={280}>
           <BarChart data={data}>
-            <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-            <XAxis dataKey="name" tick={{ fontSize: 11 }} />
-            <YAxis tick={{ fontSize: 11 }} tickFormatter={v => `$${(v / 1000).toFixed(0)}k`} />
-            <Tooltip formatter={v => `$${v.toLocaleString()}`} />
+            <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" />
+            <XAxis dataKey="name" tick={{ fontSize: 11, fill: '#94a3b8' }} />
+            <YAxis tick={{ fontSize: 11, fill: '#94a3b8' }} tickFormatter={v => `$${(v / 1000).toFixed(0)}k`} />
+            <Tooltip contentStyle={{ backgroundColor: '#1e293b', border: '1px solid #334155', borderRadius: '8px', color: '#fff' }} formatter={v => `$${v.toLocaleString()}`} />
             <Legend wrapperStyle={{ fontSize: 11 }} />
             <Bar dataKey="Revenue" fill="#3b82f6" radius={[3, 3, 0, 0]} />
             <Bar dataKey="Collected" fill="#10b981" radius={[3, 3, 0, 0]} />
           </BarChart>
         </ResponsiveContainer>
       </div>
-      <div className="bg-white rounded-lg border border-gray-200 p-4">
-        <h3 className="text-sm font-bold text-gray-900 mb-3">Profit & Expenses (6 Months)</h3>
+      <div className="bg-slate-800/50 rounded-lg border border-slate-700/50 p-4">
+        <h3 className="text-sm font-bold text-white mb-3">Profit & Expenses (6 Months)</h3>
         <ResponsiveContainer width="100%" height={280}>
           <ComposedChart data={data}>
-            <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-            <XAxis dataKey="name" tick={{ fontSize: 11 }} />
-            <YAxis tick={{ fontSize: 11 }} tickFormatter={v => `$${(v / 1000).toFixed(0)}k`} />
-            <Tooltip formatter={v => `$${v.toLocaleString()}`} />
+            <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" />
+            <XAxis dataKey="name" tick={{ fontSize: 11, fill: '#94a3b8' }} />
+            <YAxis tick={{ fontSize: 11, fill: '#94a3b8' }} tickFormatter={v => `$${(v / 1000).toFixed(0)}k`} />
+            <Tooltip contentStyle={{ backgroundColor: '#1e293b', border: '1px solid #334155', borderRadius: '8px', color: '#fff' }} formatter={v => `$${v.toLocaleString()}`} />
             <Legend wrapperStyle={{ fontSize: 11 }} />
             <Bar dataKey="COGS" stackId="expenses" fill="#f97316" radius={[0, 0, 0, 0]} />
             <Bar dataKey="Overhead" stackId="expenses" fill="#ef4444" radius={[3, 3, 0, 0]} />

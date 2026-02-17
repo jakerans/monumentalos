@@ -12,12 +12,12 @@ export default function BillingMonthSelector({ selectedMonth, onChange }) {
 
   return (
     <div className="flex items-center gap-3">
-      <button onClick={() => shift(-1)} className="p-1 rounded hover:bg-gray-100">
-        <ChevronLeft className="w-5 h-5 text-gray-600" />
+      <button onClick={() => shift(-1)} className="p-1 rounded hover:bg-slate-800">
+        <ChevronLeft className="w-5 h-5 text-slate-400" />
       </button>
-      <h2 className="text-lg font-bold text-gray-900 min-w-[180px] text-center">{label}</h2>
-      <button onClick={() => shift(1)} className="p-1 rounded hover:bg-gray-100">
-        <ChevronRight className="w-5 h-5 text-gray-600" />
+      <h2 className="text-lg font-bold text-white min-w-[180px] text-center">{label}</h2>
+      <button onClick={() => shift(1)} className="p-1 rounded hover:bg-slate-800">
+        <ChevronRight className="w-5 h-5 text-slate-400" />
       </button>
     </div>
   );

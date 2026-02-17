@@ -49,9 +49,9 @@ export default function ClientOverviewTable({ clients, leads, spend, payments })
   });
 
   return (
-    <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
-      <div className="px-4 py-3 border-b border-gray-200 flex items-center justify-between">
-        <h2 className="text-sm font-bold text-gray-900">Client Overview (MTD)</h2>
+    <div className="bg-slate-800/50 rounded-lg border border-slate-700/50 overflow-hidden">
+      <div className="px-4 py-3 border-b border-slate-700/50 flex items-center justify-between">
+        <h2 className="text-sm font-bold text-white">Client Overview (MTD)</h2>
         <Link
           to={createPageUrl('ClientManagement')}
           className="px-3 py-1 text-xs font-medium bg-blue-600 text-white rounded hover:bg-blue-700"
@@ -61,7 +61,7 @@ export default function ClientOverviewTable({ clients, leads, spend, payments })
       </div>
       <div className="overflow-x-auto">
         <table className="w-full text-sm">
-          <thead className="bg-gray-50 text-xs text-gray-500 uppercase">
+          <thead className="bg-slate-900/50 text-xs text-slate-400 uppercase">
             <tr>
               <th className="px-4 py-2 text-left">Client</th>
               <th className="px-3 py-2 text-left">Billing</th>
@@ -74,11 +74,11 @@ export default function ClientOverviewTable({ clients, leads, spend, payments })
               <th className="px-3 py-2 text-right">Collected</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-gray-100">
+          <tbody className="divide-y divide-slate-700/30">
             {rows.length === 0 ? (
-              <tr><td colSpan={9} className="px-4 py-6 text-center text-gray-400">No active clients</td></tr>
+              <tr><td colSpan={9} className="px-4 py-6 text-center text-slate-500">No active clients</td></tr>
             ) : rows.map(r => (
-              <tr key={r.id} className="hover:bg-gray-50">
+              <tr key={r.id} className="hover:bg-slate-700/20">
                 <td className="px-4 py-2.5">
                   <Link to={createPageUrl('ClientView') + `?clientId=${r.id}`} className="font-medium text-blue-600 hover:text-blue-700">
                     {r.name}
@@ -89,13 +89,13 @@ export default function ClientOverviewTable({ clients, leads, spend, payments })
                     {BILLING_LABELS[r.billingType] || r.billingType}
                   </span>
                 </td>
-                <td className="px-3 py-2.5 text-right text-gray-700">{getBillingRate(r)}</td>
-                <td className="px-3 py-2.5 text-right text-gray-700">{r.mtdLeads}</td>
-                <td className="px-3 py-2.5 text-right text-gray-700">{r.mtdBooked}</td>
-                <td className="px-3 py-2.5 text-right text-gray-700">{r.mtdShowed}</td>
-                <td className="px-3 py-2.5 text-right text-gray-700">${r.mtdSpend.toLocaleString()}</td>
-                <td className="px-3 py-2.5 text-right font-medium text-green-700">${r.mtdBilled.toLocaleString()}</td>
-                <td className="px-3 py-2.5 text-right font-medium text-emerald-700">${r.mtdPaid.toLocaleString()}</td>
+                <td className="px-3 py-2.5 text-right text-slate-300">{getBillingRate(r)}</td>
+                <td className="px-3 py-2.5 text-right text-slate-300">{r.mtdLeads}</td>
+                <td className="px-3 py-2.5 text-right text-slate-300">{r.mtdBooked}</td>
+                <td className="px-3 py-2.5 text-right text-slate-300">{r.mtdShowed}</td>
+                <td className="px-3 py-2.5 text-right text-slate-300">${r.mtdSpend.toLocaleString()}</td>
+                <td className="px-3 py-2.5 text-right font-medium text-green-400">${r.mtdBilled.toLocaleString()}</td>
+                <td className="px-3 py-2.5 text-right font-medium text-emerald-400">${r.mtdPaid.toLocaleString()}</td>
               </tr>
             ))}
           </tbody>

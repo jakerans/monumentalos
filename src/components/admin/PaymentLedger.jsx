@@ -18,19 +18,19 @@ export default function PaymentLedger({ payments, clients, startDate, endDate, o
   };
 
   return (
-    <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
-      <div className="px-4 py-3 border-b border-gray-200 flex items-center justify-between">
-        <h2 className="text-sm font-bold text-gray-900">Payment Ledger</h2>
+    <div className="bg-slate-800/50 rounded-lg border border-slate-700/50 overflow-hidden">
+      <div className="px-4 py-3 border-b border-slate-700/50 flex items-center justify-between">
+        <h2 className="text-sm font-bold text-white">Payment Ledger</h2>
         <span className="text-sm font-bold text-emerald-600">Total: ${total.toLocaleString()}</span>
       </div>
-      <div className="max-h-[300px] overflow-y-auto divide-y divide-gray-100">
+      <div className="max-h-[300px] overflow-y-auto divide-y divide-slate-700/30">
         {filtered.length === 0 ? (
-          <div className="px-4 py-6 text-xs text-gray-400 text-center">No payments in this period</div>
+          <div className="px-4 py-6 text-xs text-slate-500 text-center">No payments in this period</div>
         ) : filtered.sort((a, b) => new Date(b.date) - new Date(a.date)).map(p => (
-          <div key={p.id} className="px-4 py-2 flex items-center justify-between hover:bg-gray-50">
+          <div key={p.id} className="px-4 py-2 flex items-center justify-between hover:bg-slate-700/20">
             <div className="min-w-0">
-              <p className="text-xs font-medium text-gray-900">{getClientName(p.client_id)}</p>
-              <p className="text-[10px] text-gray-400">
+              <p className="text-xs font-medium text-white">{getClientName(p.client_id)}</p>
+              <p className="text-[10px] text-slate-500">
                 {p.date} · {METHOD_LABELS[p.method] || p.method}
                 {p.period_start && p.period_end ? ` · Period: ${p.period_start} → ${p.period_end}` : ''}
                 {p.notes ? ` · ${p.notes}` : ''}

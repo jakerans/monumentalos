@@ -67,28 +67,28 @@ export default function UserTable({ users, clients = [], onUpdated }) {
   };
 
   return (
-    <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+    <div className="bg-slate-800/50 rounded-lg border border-slate-700/50 overflow-hidden">
       <div className="overflow-x-auto">
         <table className="w-full text-sm">
           <thead>
-            <tr className="bg-gray-50 border-b border-gray-200">
-              <th className="text-left px-4 py-3 text-xs font-semibold text-gray-600">Name</th>
-              <th className="text-left px-4 py-3 text-xs font-semibold text-gray-600">Email</th>
-              <th className="text-left px-4 py-3 text-xs font-semibold text-gray-600">Role</th>
-              <th className="text-left px-4 py-3 text-xs font-semibold text-gray-600">Client</th>
-              <th className="text-left px-4 py-3 text-xs font-semibold text-gray-600">Joined</th>
-              <th className="text-right px-4 py-3 text-xs font-semibold text-gray-600">Actions</th>
+            <tr className="bg-slate-900/50 border-b border-slate-700/50">
+              <th className="text-left px-4 py-3 text-xs font-semibold text-slate-400">Name</th>
+              <th className="text-left px-4 py-3 text-xs font-semibold text-slate-400">Email</th>
+              <th className="text-left px-4 py-3 text-xs font-semibold text-slate-400">Role</th>
+              <th className="text-left px-4 py-3 text-xs font-semibold text-slate-400">Client</th>
+              <th className="text-left px-4 py-3 text-xs font-semibold text-slate-400">Joined</th>
+              <th className="text-right px-4 py-3 text-xs font-semibold text-slate-400">Actions</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-gray-100">
+          <tbody className="divide-y divide-slate-700/30">
             {users.length === 0 ? (
               <tr>
-                <td colSpan={6} className="px-4 py-8 text-center text-xs text-gray-400">No users found</td>
+                <td colSpan={6} className="px-4 py-8 text-center text-xs text-slate-500">No users found</td>
               </tr>
             ) : users.map(user => (
-              <tr key={user.id} className="hover:bg-gray-50">
-                <td className="px-4 py-3 text-xs font-medium text-gray-900">{user.full_name || '—'}</td>
-                <td className="px-4 py-3 text-xs text-gray-600">{user.email}</td>
+              <tr key={user.id} className="hover:bg-slate-700/20">
+                <td className="px-4 py-3 text-xs font-medium text-white">{user.full_name || '—'}</td>
+                <td className="px-4 py-3 text-xs text-slate-400">{user.email}</td>
                 <td className="px-4 py-3">
                   {editingId === user.id ? (
                     <div className="flex items-center gap-1">
@@ -117,8 +117,8 @@ export default function UserTable({ users, clients = [], onUpdated }) {
                     </div>
                   )}
                 </td>
-                <td className="px-4 py-3 text-xs text-gray-600">{user.app_role === 'client' ? getClientName(user.client_id) : '—'}</td>
-                <td className="px-4 py-3 text-xs text-gray-400">
+                <td className="px-4 py-3 text-xs text-slate-400">{user.app_role === 'client' ? getClientName(user.client_id) : '—'}</td>
+                <td className="px-4 py-3 text-xs text-slate-500">
                   {user.created_date ? new Date(user.created_date).toLocaleDateString() : '—'}
                 </td>
                 <td className="px-4 py-3 text-right">
