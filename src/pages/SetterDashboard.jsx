@@ -159,6 +159,7 @@ export default function SetterDashboard() {
       booked_by_setter_id: user.id,
     });
     refetch();
+    setCelebration({ type: 'booking' });
   };
 
   const handleAddLead = async (leadData) => {
