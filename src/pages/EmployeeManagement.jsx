@@ -3,7 +3,7 @@ import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
-import { Users, UserPlus } from 'lucide-react';
+import { Users, UserPlus, RefreshCw } from 'lucide-react';
 import AdminNav from '../components/admin/AdminNav';
 import EmployeeTable from '../components/employee/EmployeeTable';
 import EmployeeDetailPanel from '../components/employee/EmployeeDetailPanel';
@@ -51,6 +51,45 @@ export default function EmployeeManagement() {
     queryFn: () => base44.entities.Client.list(),
   });
 
+  const { data: users = [] } = useQuery({
+    queryKey: ['emp-users'],
+    queryFn: () => base44.entities.User.list(),
+  });
+
+  const [syncing, setSyncing] = useState(false);
+
+  const handleSyncFromUsers = async () => {
+    setSyncing(true);
+    const internalRoles = ['admin', 'marketing_manager', 'setter', 'onboard_admin'];
+    const internalUsers = users.filter(u => internalRoles.includes(u.app_role));
+    const existingUserIds = new Set(employees.filter(e => e.user_id).map(e => e.user_id));
+    const existingEmails = new Set(employees.map(e => e.email?.toLowerCase()).filter(Boolean));
+    
+    const toCreate = internalUsers.filter(u => 
+      !existingUserIds.has(u.id) && !existingEmails.has(u.email?.toLowerCase())
+    );
+
+    if (toCreate.length === 0) {
+      setSyncing(false);
+      return;
+    }
+
+    const newEmployees = toCreate.map(u => ({
+      user_id: u.id,
+      full_name: u.full_name || u.email,
+      email: u.email,
+      app_role: u.app_role,
+      classification: 'salary',
+      cost_type: 'overhead',
+      discipline_status: 'green',
+      status: 'active',
+    }));
+
+    await base44.entities.Employee.bulkCreate(newEmployees);
+    refetch();
+    setSyncing(false);
+  };
+
   const handleAdd = async (data) => {
     await base44.entities.Employee.create(data);
     refetch();
@@ -95,13 +134,22 @@ export default function EmployeeManagement() {
               <p className="text-sm text-slate-400">{employees.filter(e => e.status === 'active').length} active employees</p>
             </div>
           </div>
-          <button
-            onClick={() => setAddOpen(true)}
-            className="px-4 py-2 text-sm font-bold text-black rounded-lg hover:opacity-90 flex items-center gap-2"
-            style={{ backgroundColor: '#D6FF03' }}
-          >
-            <UserPlus className="w-4 h-4" /> Add Employee
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={handleSyncFromUsers}
+              disabled={syncing}
+              className="px-4 py-2 text-sm font-medium rounded-lg border border-slate-600 text-slate-300 hover:bg-slate-800 flex items-center gap-2 disabled:opacity-50"
+            >
+              <RefreshCw className={`w-4 h-4 ${syncing ? 'animate-spin' : ''}`} /> Sync from Users
+            </button>
+            <button
+              onClick={() => setAddOpen(true)}
+              className="px-4 py-2 text-sm font-bold text-black rounded-lg hover:opacity-90 flex items-center gap-2"
+              style={{ backgroundColor: '#D6FF03' }}
+            >
+              <UserPlus className="w-4 h-4" /> Add Employee
+            </button>
+          </div>
         </div>
 
         {/* Status toggle */}
