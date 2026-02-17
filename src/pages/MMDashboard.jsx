@@ -228,13 +228,10 @@ export default function MMDashboard() {
     const spend = clientMetrics.reduce((s, c) => s + c.spendCur, 0);
     const avgCPA = apptsSet > 0 ? spend / apptsSet : 0;
 
-    // Prior period totals for CPA change
-    const now = new Date();
-    const periodStart = new Date(now); periodStart.setDate(periodStart.getDate() - periodDays);
-    const priorStart = new Date(periodStart); priorStart.setDate(priorStart.getDate() - periodDays);
+    const { periodStart, priorStart, priorEnd } = periodRange;
     const pStartStr = periodStart.toISOString();
-    const priorStartStr = priorStart.toISOString();
     const pStartDate = periodStart.toISOString().split('T')[0];
+    const priorStartStr = priorStart.toISOString();
     const priorStartDate = priorStart.toISOString().split('T')[0];
 
     const priorSpend = allSpend.filter(s => s.date >= priorStartDate && s.date < pStartDate).reduce((s, r) => s + (r.amount || 0), 0);
@@ -248,8 +245,8 @@ export default function MMDashboard() {
     const stlClients = clientMetrics.filter(c => c.stl !== null);
     const avgSTL = stlClients.length > 0 ? stlClients.reduce((s, c) => s + c.stl, 0) / stlClients.length : null;
     const alertCount = clientMetrics.filter(c => c.alerts.length > 0).length;
-    return { activeClients, apptsSet, spend, avgCPA, cpaChange, avgSTL, alertCount, periodDays };
-  }, [clientMetrics, periodDays, allLeads, allSpend]);
+    return { activeClients, apptsSet, spend, avgCPA, cpaChange, avgSTL, alertCount, periodLabel: periodRange.label };
+  }, [clientMetrics, periodRange, allLeads, allSpend]);
 
   if (!user) return null;
   if (l1 || l2 || l3) return <PageLoader message="Loading dashboard..." />;
