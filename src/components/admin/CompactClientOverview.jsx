@@ -1,15 +1,9 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
-import { AlertTriangle, Copy, Check } from 'lucide-react';
+import { AlertTriangle } from 'lucide-react';
 
 export default function CompactClientOverview({ clients, leads, spend }) {
-  const [copiedId, setCopiedId] = useState(null);
-  const handleCopy = (id) => {
-    navigator.clipboard.writeText(id);
-    setCopiedId(id);
-    setTimeout(() => setCopiedId(null), 2000);
-  };
   const now = new Date();
   const mtdStart = new Date(now.getFullYear(), now.getMonth(), 1);
 
@@ -34,7 +28,7 @@ export default function CompactClientOverview({ clients, leads, spend }) {
           <thead className="bg-gray-50 text-xs text-gray-500 uppercase">
             <tr>
               <th className="px-4 py-2 text-left">Client</th>
-              <th className="px-3 py-2 text-left">ID (Zapier)</th>
+              <th className="px-3 py-2 text-left">Goal Status</th>
               <th className="px-3 py-2 text-right">Leads</th>
               <th className="px-3 py-2 text-right">Booked</th>
               <th className="px-3 py-2 text-right">Spend</th>
@@ -51,12 +45,22 @@ export default function CompactClientOverview({ clients, leads, spend }) {
                   </div>
                 </td>
                 <td className="px-3 py-2 whitespace-nowrap">
-                  <div className="flex items-center gap-1">
-                    <code className="text-[10px] bg-gray-100 px-1.5 py-0.5 rounded font-mono text-gray-600 select-all truncate max-w-[100px]">{r.id}</code>
-                    <button onClick={(e) => { e.stopPropagation(); handleCopy(r.id); }} className="p-0.5 hover:bg-gray-200 rounded">
-                      {copiedId === r.id ? <Check className="w-3 h-3 text-green-600" /> : <Copy className="w-3 h-3 text-gray-400" />}
-                    </button>
-                  </div>
+                  {r.goal_status ? (
+                    <span className={`inline-block px-2 py-0.5 rounded-full text-[10px] font-semibold ${
+                      r.goal_status === 'goal_met' ? 'bg-green-100 text-green-700' :
+                      r.goal_status === 'on_track' ? 'bg-blue-100 text-blue-700' :
+                      r.goal_status === 'behind_confident' ? 'bg-amber-100 text-amber-700' :
+                      r.goal_status === 'behind_wont_meet' ? 'bg-red-100 text-red-700' :
+                      'bg-gray-100 text-gray-500'
+                    }`}>
+                      {r.goal_status === 'goal_met' ? 'Goal Met' :
+                       r.goal_status === 'on_track' ? 'On Track' :
+                       r.goal_status === 'behind_confident' ? 'Behind (Confident)' :
+                       r.goal_status === 'behind_wont_meet' ? 'Behind' : r.goal_status}
+                    </span>
+                  ) : (
+                    <span className="text-[10px] text-gray-400">—</span>
+                  )}
                 </td>
                 <td className="px-3 py-2 text-xs text-right text-gray-700">{r.mtdLeads}</td>
                 <td className="px-3 py-2 text-xs text-right text-gray-700">{r.mtdBooked}</td>
