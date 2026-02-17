@@ -27,10 +27,16 @@ export default function AccountPending() {
         return;
       }
 
-      // Use backend function to apply pending invite (service role can read PendingInvite)
+      // Use backend function to find pending invite, then apply role client-side
       try {
         const res = await base44.functions.invoke('applyPendingRole');
         if (res.data?.applied && res.data?.role) {
+          // Apply role via updateMe (user updating their own record works)
+          const updateData = { role: res.data.role };
+          if (res.data.client_id) {
+            updateData.client_id = res.data.client_id;
+          }
+          await base44.auth.updateMe(updateData);
           redirectByRole(res.data.role);
           return;
         }

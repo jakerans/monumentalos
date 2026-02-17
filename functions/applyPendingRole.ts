@@ -16,31 +16,22 @@ Deno.serve(async (req) => {
     });
 
     if (pending.length === 0) {
-      return Response.json({ applied: false, role: null });
+      return Response.json({ applied: false, role: null, client_id: null });
     }
 
     const invite = pending[0];
-    
-    // Build update data - only include custom/editable fields
-    // The 'role' field on User entity is a custom enum field, not the platform role
-    const updateData = { role: invite.intended_role };
-    if (invite.client_id) {
-      updateData.client_id = invite.client_id;
-    }
-
-    console.log('Applying pending invite for', user.email, '-> role:', invite.intended_role, 'data:', JSON.stringify(updateData));
-
-    // Use service role to update the user record
-    await base44.asServiceRole.entities.User.update(user.id, updateData);
-    console.log('User updated successfully');
 
     // Mark invite as applied
     await base44.asServiceRole.entities.PendingInvite.update(invite.id, { status: 'applied' });
-    console.log('Invite marked as applied');
 
-    return Response.json({ applied: true, role: invite.intended_role });
+    // Return the role info so the frontend can apply it via auth.updateMe()
+    return Response.json({
+      applied: true,
+      role: invite.intended_role,
+      client_id: invite.client_id || null,
+    });
   } catch (error) {
-    console.error('applyPendingRole error:', error.message, error.response?.data);
+    console.error('applyPendingRole error:', error.message);
     return Response.json({ error: error.message }, { status: 500 });
   }
 });
