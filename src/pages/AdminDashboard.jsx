@@ -9,6 +9,7 @@ import ClientGoalChart from '../components/admin/ClientGoalChart';
 import RevenueBreakdownChart from '../components/admin/RevenueBreakdownChart';
 import MTDGoalProgress from '../components/admin/MTDGoalProgress';
 import GoalManagementModal from '../components/admin/GoalManagementModal';
+import dayjs from 'dayjs';
 import { Settings, Trophy } from 'lucide-react';
 import PageErrorBoundary from '../components/shared/PageErrorBoundary';
 import PageLoader from '../components/shared/PageLoader';
@@ -49,11 +50,8 @@ export default function AdminDashboard() {
 
   const isLoading = l1 || l2 || l3 || l4 || l5;
 
-  const currentMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
-  const lastMonth = (() => {
-    const d = new Date(now.getFullYear(), now.getMonth() - 1);
-    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
-  })();
+  const currentMonth = dayjs().format('YYYY-MM');
+  const lastMonth = dayjs().subtract(1, 'month').format('YYYY-MM');
 
   const currentGoal = goals.find(g => g.month === currentMonth);
   const lastMonthBilling = billingRecords.filter(b => b.billing_month === lastMonth);

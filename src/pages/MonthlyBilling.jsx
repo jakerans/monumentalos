@@ -3,6 +3,7 @@ import { base44 } from '@/api/base44Client';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
+import dayjs from 'dayjs';
 import { RefreshCw } from 'lucide-react';
 import AdminNav from '../components/admin/AdminNav';
 import BillingMonthSelector from '../components/admin/BillingMonthSelector';
@@ -11,9 +12,7 @@ import PageErrorBoundary from '../components/shared/PageErrorBoundary';
 import PageLoader from '../components/shared/PageLoader';
 
 function getPrevMonth() {
-  const d = new Date();
-  d.setMonth(d.getMonth() - 1);
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+  return dayjs().subtract(1, 'month').format('YYYY-MM');
 }
 
 export default function MonthlyBilling() {
