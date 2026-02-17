@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { base44 } from '@/api/base44Client';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import DateRangePicker from '../components/admin/DateRangePicker';
@@ -10,10 +10,14 @@ import ClientFunnel from '../components/clientview/ClientFunnel';
 import ClientLeadBreakdown from '../components/clientview/ClientLeadBreakdown';
 import ClientSpendChart from '../components/clientview/ClientSpendChart';
 import ClientSettingsCard from '../components/clientview/ClientSettingsCard';
+import LeadDrilldownDialog from '../components/clientview/LeadDrilldownDialog';
+import SpendDrilldownDialog from '../components/clientview/SpendDrilldownDialog';
 
 export default function ClientView() {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const [user, setUser] = useState(null);
+  const [drilldown, setDrilldown] = useState(null); // 'leads' | 'booked' | 'showed' | 'cancelled' | 'sold' | 'spend' | null
 
   const today = new Date();
   const thirtyDaysAgo = new Date(today);
@@ -48,14 +52,13 @@ export default function ClientView() {
     enabled: !!clientId,
   });
 
-  // All leads for this client (no date filter — we filter in JS for flexibility)
-  const { data: allLeads = [] } = useQuery({
+  const { data: allLeads = [], refetch: refetchLeads } = useQuery({
     queryKey: ['client-all-leads', clientId],
     queryFn: () => base44.entities.Lead.filter({ client_id: clientId }, '-created_date', 2000),
     enabled: !!clientId,
   });
 
-  const { data: allSpend = [] } = useQuery({
+  const { data: allSpend = [], refetch: refetchSpend } = useQuery({
     queryKey: ['client-all-spend', clientId],
     queryFn: () => base44.entities.Spend.filter({ client_id: clientId }, '-date', 2000),
     enabled: !!clientId,
@@ -88,11 +91,31 @@ export default function ClientView() {
     [allSpend, startDate, endDate]
   );
 
-  // Sold in range (by date_sold)
   const soldLeads = useMemo(() =>
     allLeads.filter(l => l.outcome === 'sold' && l.date_sold && l.date_sold >= startDate && l.date_sold <= endDate),
     [allLeads, startDate, endDate]
   );
+
+  const showedLeads = useMemo(() =>
+    apptLeads.filter(l => l.disposition === 'showed' || l.outcome === 'sold' || l.outcome === 'lost'),
+    [apptLeads]
+  );
+
+  const cancelledLeads = useMemo(() =>
+    apptLeads.filter(l => l.disposition === 'cancelled'),
+    [apptLeads]
+  );
+
+  const drilldownMap = {
+    leads: { title: 'All Leads', data: leads },
+    booked: { title: 'Appointments Booked', data: bookedLeads },
+    showed: { title: 'Showed Appointments', data: showedLeads },
+    cancelled: { title: 'Cancelled Appointments', data: cancelledLeads },
+    sold: { title: 'Jobs Sold', data: soldLeads },
+  };
+
+  const handleCardClick = (key) => setDrilldown(key);
+  const handleRefresh = () => { refetchLeads(); refetchSpend(); };
 
   const metrics = useMemo(() => {
     const totalSpend = spendInRange.reduce((s, r) => s + (r.amount || 0), 0);
@@ -145,7 +168,7 @@ export default function ClientView() {
         </div>
 
         {/* KPI Grid */}
-        <ClientKPIGrid metrics={metrics} />
+        <ClientKPIGrid metrics={metrics} onCardClick={handleCardClick} />
 
         {/* Charts + Funnel row */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
@@ -162,6 +185,26 @@ export default function ClientView() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
           <ClientSettingsCard client={client} />
         </div>
+        {/* Drilldown dialogs */}
+        {drilldown && drilldown !== 'spend' && drilldownMap[drilldown] && (
+          <LeadDrilldownDialog
+            open={true}
+            onOpenChange={(v) => { if (!v) setDrilldown(null); }}
+            title={drilldownMap[drilldown].title}
+            leads={drilldownMap[drilldown].data}
+            onLeadUpdated={handleRefresh}
+          />
+        )}
+
+        {drilldown === 'spend' && (
+          <SpendDrilldownDialog
+            open={true}
+            onOpenChange={(v) => { if (!v) setDrilldown(null); }}
+            title="Ad Spend Records"
+            spendRecords={spendInRange}
+            onUpdated={handleRefresh}
+          />
+        )}
       </main>
     </div>
   );
