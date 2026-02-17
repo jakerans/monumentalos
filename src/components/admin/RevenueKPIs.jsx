@@ -42,7 +42,7 @@ export default function RevenueKPIs({ clients, leads, payments, expenses, startD
   const outstanding = totalBilled - totalCollected;
 
   const cards = [
-    { label: 'Total Billed', value: `$${totalBilled.toLocaleString()}`, icon: DollarSign, color: 'text-blue-600', bg: 'bg-blue-50' },
+    { label: 'To Be Billed', value: `$${totalBilled.toLocaleString()}`, icon: DollarSign, color: 'text-blue-600', bg: 'bg-blue-50' },
     { label: 'Collected', value: `$${totalCollected.toLocaleString()}`, icon: TrendingUp, color: 'text-emerald-600', bg: 'bg-emerald-50' },
     { label: 'Outstanding', value: `$${outstanding.toLocaleString()}`, icon: ArrowDownRight, color: 'text-amber-600', bg: 'bg-amber-50' },
     { label: 'Total Expenses', value: `$${totalExpenses.toLocaleString()}`, icon: TrendingDown, color: 'text-red-600', bg: 'bg-red-50' },

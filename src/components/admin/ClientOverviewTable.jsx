@@ -70,7 +70,7 @@ export default function ClientOverviewTable({ clients, leads, spend, payments })
               <th className="px-3 py-2 text-right">Booked</th>
               <th className="px-3 py-2 text-right">Showed</th>
               <th className="px-3 py-2 text-right">Ad Spend</th>
-              <th className="px-3 py-2 text-right">Billed</th>
+              <th className="px-3 py-2 text-right">To Be Billed</th>
               <th className="px-3 py-2 text-right">Collected</th>
             </tr>
           </thead>

@@ -51,7 +51,7 @@ export default function RevenueClientTable({ clients, leads, payments, startDate
               <th className="px-3 py-2 text-left">Billing</th>
               <th className="px-3 py-2 text-right">Booked</th>
               <th className="px-3 py-2 text-right">Showed</th>
-              <th className="px-3 py-2 text-right">Billed</th>
+              <th className="px-3 py-2 text-right">To Be Billed</th>
               <th className="px-3 py-2 text-right">Collected</th>
               <th className="px-3 py-2 text-right">Outstanding</th>
             </tr>
