@@ -450,6 +450,7 @@ export default function ClientPortal() {
           leadId={selectedLeadId}
           open={drawerOpen}
           onOpenChange={setDrawerOpen}
+          onLeadUpdated={refetch}
         />
       </main>
     </div>

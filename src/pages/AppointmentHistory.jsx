@@ -251,6 +251,7 @@ export default function AppointmentHistory() {
           leadId={selectedLeadId}
           open={drawerOpen}
           onOpenChange={setDrawerOpen}
+          onLeadUpdated={() => {}}
         />
       </main>
     </div>
