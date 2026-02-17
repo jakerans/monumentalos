@@ -12,6 +12,7 @@ import BookAppointmentModal from '../components/setter/BookAppointmentModal';
 import AddLeadModal from '../components/setter/AddLeadModal';
 import FirstCallModal from '../components/setter/FirstCallModal';
 import DisqualifyModal from '../components/setter/DisqualifyModal';
+import LeaderboardWidget from '../components/setter/LeaderboardWidget';
 
 export default function SetterDashboard() {
   const navigate = useNavigate();
@@ -63,6 +64,11 @@ export default function SetterDashboard() {
     queryKey: ['all-users'],
     queryFn: () => base44.entities.User.list(),
     initialData: [],
+  });
+
+  const { data: spiffs = [] } = useQuery({
+    queryKey: ['setter-spiffs'],
+    queryFn: () => base44.entities.Spiff.filter({ status: 'active' }),
   });
 
   const getUserName = (userId) => {
@@ -161,6 +167,34 @@ export default function SetterDashboard() {
     setSelectedLead(lead);
     setDetailOpen(true);
   };
+
+  // Build leaderboard data
+  const now2 = new Date();
+  const mtdStart = new Date(now2.getFullYear(), now2.getMonth(), 1);
+  const lastMtdStart = new Date(now2.getFullYear(), now2.getMonth() - 1, 1);
+  const lastMtdEnd = new Date(now2.getFullYear(), now2.getMonth(), 0, 23, 59, 59);
+
+  const setters = users.filter(u => u.app_role === 'setter');
+
+  const buildBoard = (start, end) => {
+    return setters.map(s => {
+      const booked = leads.filter(l =>
+        l.booked_by_setter_id === s.id && l.date_appointment_set &&
+        new Date(l.date_appointment_set) >= start &&
+        (!end || new Date(l.date_appointment_set) <= end)
+      ).length;
+      const stlLeads = leads.filter(l =>
+        l.setter_id === s.id && l.speed_to_lead_minutes != null &&
+        new Date(l.created_date) >= start &&
+        (!end || new Date(l.created_date) <= end)
+      );
+      const avgSTL = stlLeads.length > 0 ? Math.round(stlLeads.reduce((sum, l) => sum + l.speed_to_lead_minutes, 0) / stlLeads.length) : null;
+      return { id: s.id, name: s.full_name, booked, avgSTL };
+    }).sort((a, b) => b.booked - a.booked);
+  };
+
+  const leaderboard = buildBoard(mtdStart, null);
+  const lastMonthBoard = buildBoard(lastMtdStart, lastMtdEnd);
 
   if (!user) return null;
 
@@ -314,6 +348,14 @@ export default function SetterDashboard() {
         clients={clients}
         onAdd={handleAddLead}
         userId={user?.id}
+      />
+
+      <LeaderboardWidget
+        user={user}
+        leaderboard={leaderboard}
+        lastMonthBoard={lastMonthBoard}
+        spiffs={spiffs}
+        leads={leads}
       />
     </div>
   );

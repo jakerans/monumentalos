@@ -6,6 +6,7 @@ import { createPageUrl } from '@/utils';
 import AdminNav from '../components/admin/AdminNav';
 import SetterPerformanceTable from '../components/admin/SetterPerformanceTable';
 import DateRangePicker from '../components/admin/DateRangePicker';
+import SpiffManager from '../components/admin/SpiffManager';
 
 export default function SetterPerformance() {
   const navigate = useNavigate();
@@ -59,6 +60,8 @@ export default function SetterPerformance() {
         </div>
 
         <SetterPerformanceTable users={users} leads={leads} clients={clients} startDate={startDate} endDate={endDate} />
+
+        <SpiffManager leads={leads} users={users} />
       </main>
     </div>
   );
