@@ -156,7 +156,9 @@ export default function ClientView() {
           <div>
             <h1 className="text-xl sm:text-2xl font-bold text-gray-900">{client?.name || 'Loading...'}</h1>
             <p className="text-xs text-gray-500 mt-0.5">
-              ${client?.price_per_shown_appointment || 0} / shown appointment · {client?.status || 'active'}
+              {client?.billing_type === 'pay_per_set' ? `$${client?.price_per_set_appointment || 0} / appt set` :
+               client?.billing_type === 'retainer' ? `$${client?.retainer_amount || 0}/mo retainer` :
+               `$${client?.price_per_shown_appointment || 0} / shown appt`} · {client?.status || 'active'}
             </p>
           </div>
           <DateRangePicker
