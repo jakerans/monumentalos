@@ -120,11 +120,15 @@ export default function LeadEditRow({ lead, expanded, onToggle, onSave }) {
           <div className="flex justify-end">
             <button
               onClick={handleSave}
-              disabled={saving}
-              className="px-4 py-1.5 text-xs font-medium bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 flex items-center gap-1.5"
+              disabled={saving || saved}
+              className={`px-4 py-1.5 text-xs font-medium rounded-md flex items-center gap-1.5 transition-colors ${
+                saved
+                  ? 'bg-green-600 text-white'
+                  : 'bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50'
+              }`}
             >
-              {saving ? <Loader2 className="w-3 h-3 animate-spin" /> : <Save className="w-3 h-3" />}
-              Save Changes
+              {saving ? <Loader2 className="w-3 h-3 animate-spin" /> : saved ? <Check className="w-3 h-3" /> : <Save className="w-3 h-3" />}
+              {saving ? 'Saving...' : saved ? 'Saved!' : 'Save Changes'}
             </button>
           </div>
         </div>
