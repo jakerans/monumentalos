@@ -1,26 +1,34 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { Users, AlertTriangle, UserPlus, UserMinus, DollarSign, TrendingUp, Percent, Target } from 'lucide-react';
-import { motion } from 'framer-motion';
+import SparklineCard from '../shared/SparklineCard';
 
-function KPICard({ label, value, subtitle, icon: Icon, iconBg, iconColor, index = 0 }) {
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 20, scale: 0.95 }}
-      animate={{ opacity: 1, y: 0, scale: 1 }}
-      transition={{ delay: 0.05 * index, duration: 0.35, ease: [0.25, 0.46, 0.45, 0.94] }}
-      whileHover={{ scale: 1.03, y: -2 }}
-      className="bg-slate-800/50 rounded-lg border border-slate-700/50 p-4 hover:border-slate-600/50 hover:bg-slate-800/70 transition-colors duration-200"
-    >
-      <div className="flex items-center justify-between mb-1.5">
-        <p className="text-[10px] font-medium text-slate-400 uppercase tracking-wider">{label}</p>
-        <div className={`p-1.5 rounded-lg ${iconBg}`}>
-          <Icon className={`w-3.5 h-3.5 ${iconColor}`} />
-        </div>
-      </div>
-      <p className="text-2xl font-bold text-white">{value}</p>
-      {subtitle && <p className="text-[10px] text-slate-500 mt-0.5">{subtitle}</p>}
-    </motion.div>
-  );
+function buildDailySparkline(items, dateKey, days = 14) {
+  const now = new Date();
+  const data = [];
+  for (let i = days - 1; i >= 0; i--) {
+    const d = new Date(now);
+    d.setDate(d.getDate() - i);
+    const dayStr = d.toISOString().split('T')[0];
+    const count = items.filter(item => {
+      const val = item[dateKey];
+      return val && val.startsWith(dayStr);
+    }).length;
+    data.push({ v: count });
+  }
+  return data;
+}
+
+function buildDailyAmountSparkline(items, dateKey, amountKey = 'amount', days = 14) {
+  const now = new Date();
+  const data = [];
+  for (let i = days - 1; i >= 0; i--) {
+    const d = new Date(now);
+    d.setDate(d.getDate() - i);
+    const dayStr = d.toISOString().split('T')[0];
+    const total = items.filter(item => item[dateKey]?.startsWith(dayStr)).reduce((s, item) => s + (item[amountKey] || 0), 0);
+    data.push({ v: total });
+  }
+  return data;
 }
 
 export default function BusinessHealthKPIs({ clients, leads, spend, payments, billingRecords, lastMonthBilling }) {
@@ -30,24 +38,18 @@ export default function BusinessHealthKPIs({ clients, leads, spend, payments, bi
   const lastMonthEnd = new Date(now.getFullYear(), now.getMonth(), 0, 23, 59, 59);
 
   const inMTD = (d) => d && new Date(d) >= thisMonthStart;
-  const inLastMonth = (d) => { if (!d) return false; const dt = new Date(d); return dt >= lastMonthStart && dt <= lastMonthEnd; };
 
   const activeClients = clients.filter(c => c.status === 'active');
   const inactiveClients = clients.filter(c => c.status === 'inactive');
-
-  // New clients this month (created_date in current month)
   const newClientsThisMonth = clients.filter(c => inMTD(c.created_date)).length;
 
-  // Churned in last 90 days (clients with deactivated_date within 90 days)
   const ninetyDaysAgo = new Date(now);
   ninetyDaysAgo.setDate(ninetyDaysAgo.getDate() - 90);
   const churnedRecently = inactiveClients.filter(c => c.deactivated_date && new Date(c.deactivated_date) >= ninetyDaysAgo);
   const churnedCount = churnedRecently.length;
-  // Churn rate = churned in 90d / (active + churned in 90d) to approximate starting client count
   const baseCount = activeClients.length + churnedCount;
   const churnRate = baseCount > 0 ? ((churnedCount / baseCount) * 100).toFixed(0) : 0;
 
-  // Alerts: clients with goal_status behind_wont_meet or high CPA
   const alertClients = activeClients.filter(c => {
     if (c.goal_status === 'behind_wont_meet') return true;
     const cLeads = leads.filter(l => l.client_id === c.id);
@@ -58,28 +60,26 @@ export default function BusinessHealthKPIs({ clients, leads, spend, payments, bi
     return false;
   });
 
-  // Last month billing performance
-  const lastMonthTotal = lastMonthBilling.reduce((s, b) => {
-    const amt = b.billing_type === 'retainer' ? (b.manual_amount || b.calculated_amount || 0) : (b.calculated_amount || 0);
-    return s + amt;
-  }, 0);
+  const lastMonthTotal = lastMonthBilling.reduce((s, b) => s + (b.billing_type === 'retainer' ? (b.manual_amount || b.calculated_amount || 0) : (b.calculated_amount || 0)), 0);
   const lastMonthCollected = lastMonthBilling.filter(b => b.status === 'paid').reduce((s, b) => s + (b.paid_amount || b.calculated_amount || 0), 0);
   const collectionRate = lastMonthTotal > 0 ? ((lastMonthCollected / lastMonthTotal) * 100).toFixed(0) : 0;
 
-  // MTD leads & booked
   const mtdLeads = leads.filter(l => inMTD(l.created_date)).length;
   const mtdBooked = leads.filter(l => l.date_appointment_set && inMTD(l.date_appointment_set)).length;
 
+  const leadsSparkline = useMemo(() => buildDailySparkline(leads, 'created_date'), [leads]);
+  const bookedSparkline = useMemo(() => buildDailySparkline(leads.filter(l => l.date_appointment_set), 'date_appointment_set'), [leads]);
+
   return (
     <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-3">
-      <KPICard index={0} label="Active Clients" value={activeClients.length} subtitle={`${newClientsThisMonth} new this month`} icon={Users} iconBg="bg-blue-500/10" iconColor="text-blue-400" />
-      <KPICard index={1} label="Alerts" value={alertClients.length} subtitle="Clients needing attention" icon={AlertTriangle} iconBg="bg-red-500/10" iconColor="text-red-400" />
-      <KPICard index={2} label="Churn Rate (90d)" value={`${churnRate}%`} subtitle={`${churnedCount} churned`} icon={UserMinus} iconBg="bg-orange-500/10" iconColor="text-orange-400" />
-      <KPICard index={3} label="New This Month" value={newClientsThisMonth} icon={UserPlus} iconBg="bg-green-500/10" iconColor="text-green-400" />
-      <KPICard index={4} label="Last Mo. Billed" value={`$${lastMonthTotal.toLocaleString()}`} subtitle="Performance billing" icon={DollarSign} iconBg="bg-indigo-500/10" iconColor="text-indigo-400" />
-      <KPICard index={5} label="Collection Rate" value={`${collectionRate}%`} subtitle={`$${lastMonthCollected.toLocaleString()} collected`} icon={Percent} iconBg="bg-emerald-500/10" iconColor="text-emerald-400" />
-      <KPICard index={6} label="MTD Leads" value={mtdLeads} icon={TrendingUp} iconBg="bg-purple-500/10" iconColor="text-purple-400" />
-      <KPICard index={7} label="MTD Booked" value={mtdBooked} icon={Target} iconBg="bg-cyan-500/10" iconColor="text-cyan-400" />
+      <SparklineCard index={0} label="Active Clients" value={activeClients.length} subtitle={`${newClientsThisMonth} new this month`} icon={Users} iconBg="bg-blue-500/10" iconColor="text-blue-400" sparkColor="#60a5fa" />
+      <SparklineCard index={1} label="Alerts" value={alertClients.length} subtitle="Clients needing attention" icon={AlertTriangle} iconBg="bg-red-500/10" iconColor="text-red-400" sparkColor="#f87171" />
+      <SparklineCard index={2} label="Churn Rate (90d)" value={`${churnRate}%`} subtitle={`${churnedCount} churned`} icon={UserMinus} iconBg="bg-orange-500/10" iconColor="text-orange-400" sparkColor="#fb923c" />
+      <SparklineCard index={3} label="New This Month" value={newClientsThisMonth} icon={UserPlus} iconBg="bg-green-500/10" iconColor="text-green-400" sparkColor="#34d399" />
+      <SparklineCard index={4} label="Last Mo. Billed" value={`$${lastMonthTotal.toLocaleString()}`} subtitle="Performance billing" icon={DollarSign} iconBg="bg-indigo-500/10" iconColor="text-indigo-400" sparkColor="#818cf8" />
+      <SparklineCard index={5} label="Collection Rate" value={`${collectionRate}%`} subtitle={`$${lastMonthCollected.toLocaleString()} collected`} icon={Percent} iconBg="bg-emerald-500/10" iconColor="text-emerald-400" sparkColor="#34d399" />
+      <SparklineCard index={6} label="MTD Leads" value={mtdLeads} icon={TrendingUp} iconBg="bg-purple-500/10" iconColor="text-purple-400" sparkData={leadsSparkline} sparkColor="#c084fc" />
+      <SparklineCard index={7} label="MTD Booked" value={mtdBooked} icon={Target} iconBg="bg-cyan-500/10" iconColor="text-cyan-400" sparkData={bookedSparkline} sparkColor="#22d3ee" />
     </div>
   );
 }

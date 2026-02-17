@@ -1,9 +1,22 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import dayjs from 'dayjs';
 import isBetween from 'dayjs/plugin/isBetween';
 import { DollarSign, TrendingUp, TrendingDown, ArrowDownRight, Percent, BarChart3 } from 'lucide-react';
+import SparklineCard from '../shared/SparklineCard';
 
 dayjs.extend(isBetween);
+
+function buildDailyAmountSparkline(items, dateKey, amountKey = 'amount', days = 14) {
+  const now = new Date();
+  const data = [];
+  for (let i = days - 1; i >= 0; i--) {
+    const d = new Date(now);
+    d.setDate(d.getDate() - i);
+    const dayStr = d.toISOString().split('T')[0];
+    data.push({ v: items.filter(item => item[dateKey]?.startsWith(dayStr)).reduce((s, item) => s + (item[amountKey] || 0), 0) });
+  }
+  return data;
+}
 
 export default function AccountingKPIs({ clients, leads, payments, expenses, startDate, endDate }) {
   const start = dayjs(startDate).startOf('day');
@@ -35,28 +48,35 @@ export default function AccountingKPIs({ clients, leads, payments, expenses, sta
   const netMargin = collected > 0 ? ((netProfit / collected) * 100).toFixed(1) : '0.0';
   const outstanding = grossRevenue - collected;
 
+  const paySpk = useMemo(() => buildDailyAmountSparkline(payments, 'date'), [payments]);
+  const expSpk = useMemo(() => buildDailyAmountSparkline(expenses, 'date'), [expenses]);
+
   const cards = [
-    { label: 'Gross Revenue', value: `$${grossRevenue.toLocaleString()}`, icon: DollarSign, color: 'text-blue-400', bg: 'bg-blue-500/10' },
-    { label: 'Cash Collected', value: `$${collected.toLocaleString()}`, icon: TrendingUp, color: 'text-emerald-400', bg: 'bg-emerald-500/10' },
-    { label: 'Outstanding', value: `$${outstanding.toLocaleString()}`, icon: ArrowDownRight, color: 'text-amber-400', bg: 'bg-amber-500/10' },
-    { label: 'COGS', value: `$${cogs.toLocaleString()}`, icon: TrendingDown, color: 'text-orange-400', bg: 'bg-orange-500/10' },
-    { label: 'Overhead', value: `$${overhead.toLocaleString()}`, icon: TrendingDown, color: 'text-red-400', bg: 'bg-red-500/10' },
-    { label: 'Gross Profit', value: `$${grossProfit.toLocaleString()}`, icon: BarChart3, color: grossProfit >= 0 ? 'text-green-400' : 'text-red-400', bg: grossProfit >= 0 ? 'bg-green-500/10' : 'bg-red-500/10' },
-    { label: 'Gross Margin', value: `${grossMargin}%`, icon: Percent, color: 'text-indigo-400', bg: 'bg-indigo-500/10' },
-    { label: 'Net Profit', value: `$${netProfit.toLocaleString()}`, icon: DollarSign, color: netProfit >= 0 ? 'text-green-400' : 'text-red-400', bg: netProfit >= 0 ? 'bg-green-500/10' : 'bg-red-500/10' },
-    { label: 'Net Margin', value: `${netMargin}%`, icon: Percent, color: 'text-purple-400', bg: 'bg-purple-500/10' },
+    { label: 'Gross Revenue', value: `$${grossRevenue.toLocaleString()}`, icon: DollarSign, color: 'text-blue-400', bg: 'bg-blue-500/10', spark: '#60a5fa' },
+    { label: 'Cash Collected', value: `$${collected.toLocaleString()}`, icon: TrendingUp, color: 'text-emerald-400', bg: 'bg-emerald-500/10', spark: '#34d399', sparkData: paySpk },
+    { label: 'Outstanding', value: `$${outstanding.toLocaleString()}`, icon: ArrowDownRight, color: 'text-amber-400', bg: 'bg-amber-500/10', spark: '#fbbf24' },
+    { label: 'COGS', value: `$${cogs.toLocaleString()}`, icon: TrendingDown, color: 'text-orange-400', bg: 'bg-orange-500/10', spark: '#fb923c' },
+    { label: 'Overhead', value: `$${overhead.toLocaleString()}`, icon: TrendingDown, color: 'text-red-400', bg: 'bg-red-500/10', spark: '#f87171', sparkData: expSpk },
+    { label: 'Gross Profit', value: `$${grossProfit.toLocaleString()}`, icon: BarChart3, color: grossProfit >= 0 ? 'text-green-400' : 'text-red-400', bg: grossProfit >= 0 ? 'bg-green-500/10' : 'bg-red-500/10', spark: grossProfit >= 0 ? '#34d399' : '#f87171' },
+    { label: 'Gross Margin', value: `${grossMargin}%`, icon: Percent, color: 'text-indigo-400', bg: 'bg-indigo-500/10', spark: '#818cf8' },
+    { label: 'Net Profit', value: `$${netProfit.toLocaleString()}`, icon: DollarSign, color: netProfit >= 0 ? 'text-green-400' : 'text-red-400', bg: netProfit >= 0 ? 'bg-green-500/10' : 'bg-red-500/10', spark: netProfit >= 0 ? '#34d399' : '#f87171' },
+    { label: 'Net Margin', value: `${netMargin}%`, icon: Percent, color: 'text-purple-400', bg: 'bg-purple-500/10', spark: '#c084fc' },
   ];
 
   return (
     <div className="grid grid-cols-3 md:grid-cols-5 lg:grid-cols-9 gap-2">
       {cards.map((c, i) => (
-        <div key={i} className="bg-slate-800/50 rounded-lg border border-slate-700/50 p-3">
-          <div className="flex items-center justify-between mb-1">
-            <p className="text-[9px] font-medium text-slate-400 uppercase tracking-wider leading-tight">{c.label}</p>
-            <div className={`p-1 rounded ${c.bg}`}><c.icon className={`w-3 h-3 ${c.color}`} /></div>
-          </div>
-          <p className={`text-lg font-bold ${c.color}`}>{c.value}</p>
-        </div>
+        <SparklineCard
+          key={c.label}
+          index={i}
+          label={c.label}
+          value={c.value}
+          icon={c.icon}
+          iconBg={c.bg}
+          iconColor={c.color}
+          sparkColor={c.spark}
+          sparkData={c.sparkData}
+        />
       ))}
     </div>
   );
