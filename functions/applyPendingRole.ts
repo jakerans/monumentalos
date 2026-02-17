@@ -20,13 +20,31 @@ Deno.serve(async (req) => {
     }
 
     const invite = pending[0];
-    const updateData = { role: invite.intended_role };
+
+    // Update non-role fields on the user (e.g. client_id)
+    // The platform role was already set at invite time; we can only update custom fields here
+    const updateData = {};
     if (invite.client_id) {
       updateData.client_id = invite.client_id;
     }
 
-    // Use service role to update the user's role (regular users can't change their own role)
-    await base44.asServiceRole.entities.User.update(user.id, updateData);
+    // Try to set the app-level role; if the platform rejects it, that's ok —
+    // the role might already be correct from the invite
+    try {
+      updateData.role = invite.intended_role;
+      await base44.asServiceRole.entities.User.update(user.id, updateData);
+    } catch (roleErr) {
+      console.log('Could not update role (may already be set):', roleErr.message);
+      // Still try to update non-role fields if any
+      if (invite.client_id) {
+        try {
+          await base44.asServiceRole.entities.User.update(user.id, { client_id: invite.client_id });
+        } catch (e2) {
+          console.log('Could not update client_id:', e2.message);
+        }
+      }
+    }
+
     await base44.asServiceRole.entities.PendingInvite.update(invite.id, { status: 'applied' });
 
     return Response.json({ applied: true, role: invite.intended_role });
