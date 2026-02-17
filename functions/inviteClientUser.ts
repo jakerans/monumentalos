@@ -9,32 +9,39 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // Only admins and onboard_admins can invite client users
+    // Only admins and onboard_admins can invite users
     if (user.role !== 'admin' && user.role !== 'onboard_admin') {
       return Response.json({ error: 'Forbidden' }, { status: 403 });
     }
 
-    const { email, client_id } = await req.json();
+    const { email, intended_role, client_id } = await req.json();
 
-    if (!email || !client_id) {
-      return Response.json({ error: 'email and client_id are required' }, { status: 400 });
+    if (!email || !intended_role) {
+      return Response.json({ error: 'email and intended_role are required' }, { status: 400 });
     }
 
-    // Invite the user with base "user" role (API only allows "user" or "admin")
-    await base44.users.inviteUser(email.trim(), 'user');
-
-    // Now find the newly created user by email and set their client_id + role to "client"
-    const allUsers = await base44.asServiceRole.entities.User.filter({ email: email.trim().toLowerCase() });
-    
-    if (allUsers.length > 0) {
-      const invitedUser = allUsers[0];
-      await base44.asServiceRole.entities.User.update(invitedUser.id, { 
-        client_id,
-        role: 'client'
-      });
+    if (intended_role === 'client' && !client_id) {
+      return Response.json({ error: 'client_id is required for client role' }, { status: 400 });
     }
 
-    return Response.json({ success: true, email: email.trim(), client_id });
+    // Use service role to invite (bypasses user-level permission restrictions)
+    const inviteRole = intended_role === 'admin' ? 'admin' : 'user';
+    await base44.asServiceRole.users.inviteUser(email.trim(), inviteRole);
+
+    // Create a PendingInvite so the role is applied when the user signs up
+    if (intended_role !== 'admin') {
+      const inviteData = {
+        email: email.trim().toLowerCase(),
+        intended_role,
+        status: 'pending',
+      };
+      if (client_id) {
+        inviteData.client_id = client_id;
+      }
+      await base44.asServiceRole.entities.PendingInvite.create(inviteData);
+    }
+
+    return Response.json({ success: true, email: email.trim(), intended_role, client_id });
   } catch (error) {
     return Response.json({ error: error.message }, { status: 500 });
   }
