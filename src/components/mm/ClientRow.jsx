@@ -2,7 +2,7 @@ import React from 'react';
 import { AlertTriangle, ChevronRight } from 'lucide-react';
 
 export default function ClientRow({ client, onClick }) {
-  const { name, spend7d, leads7d, appts7d, cpa7d, stl, showRate7d, alerts } = client;
+  const { name, spendCur, leadsCur, apptsCur, cpaCur, cpaChange, stl, showRateCur, alerts } = client;
   const hasAlert = alerts.length > 0;
 
   return (
@@ -16,20 +16,27 @@ export default function ClientRow({ client, onClick }) {
           <span className="text-sm font-medium text-gray-900 truncate max-w-[180px]">{name}</span>
         </div>
       </td>
-      <td className="px-3 py-2.5 text-sm text-gray-700 text-right whitespace-nowrap">${spend7d.toLocaleString()}</td>
-      <td className="px-3 py-2.5 text-sm text-gray-700 text-right whitespace-nowrap">{leads7d}</td>
-      <td className="px-3 py-2.5 text-sm text-gray-700 text-right whitespace-nowrap">{appts7d}</td>
+      <td className="px-3 py-2.5 text-sm text-gray-700 text-right whitespace-nowrap">${spendCur.toLocaleString()}</td>
+      <td className="px-3 py-2.5 text-sm text-gray-700 text-right whitespace-nowrap">{leadsCur}</td>
+      <td className="px-3 py-2.5 text-sm text-gray-700 text-right whitespace-nowrap">{apptsCur}</td>
       <td className="px-3 py-2.5 text-right whitespace-nowrap">
-        <span className={`text-sm font-semibold ${cpa7d > 300 ? 'text-red-600' : cpa7d > 200 ? 'text-amber-600' : 'text-green-600'}`}>
-          {cpa7d === Infinity || isNaN(cpa7d) ? '—' : `$${cpa7d.toFixed(0)}`}
-        </span>
+        <div className="flex flex-col items-end">
+          <span className={`text-sm font-semibold ${cpaCur > 300 ? 'text-red-600' : cpaCur > 200 ? 'text-amber-600' : 'text-green-600'}`}>
+            {cpaCur === Infinity || isNaN(cpaCur) ? '—' : `$${cpaCur.toFixed(0)}`}
+          </span>
+          {cpaChange != null && (
+            <span className={`text-[10px] font-medium ${cpaChange > 0 ? 'text-red-500' : 'text-green-500'}`}>
+              {cpaChange > 0 ? '▲' : '▼'}{Math.abs(cpaChange).toFixed(0)}%
+            </span>
+          )}
+        </div>
       </td>
       <td className="px-3 py-2.5 text-right whitespace-nowrap">
         <span className={`text-sm font-medium ${stl !== null && stl > 15 ? 'text-red-600' : stl !== null && stl > 5 ? 'text-amber-600' : 'text-green-600'}`}>
           {stl === null ? '—' : `${stl.toFixed(0)}m`}
         </span>
       </td>
-      <td className="px-3 py-2.5 text-sm text-gray-700 text-right whitespace-nowrap">{showRate7d}</td>
+      <td className="px-3 py-2.5 text-sm text-gray-700 text-right whitespace-nowrap">{showRateCur}</td>
       <td className="px-3 py-2.5 text-right whitespace-nowrap">
         {alerts.length > 0 ? (
           <span className="text-xs bg-red-100 text-red-700 px-1.5 py-0.5 rounded font-medium">{alerts.length}</span>

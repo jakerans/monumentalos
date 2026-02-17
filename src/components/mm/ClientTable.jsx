@@ -4,12 +4,12 @@ import ClientRow from './ClientRow';
 
 const HEADERS = [
   { key: 'name', label: 'Client', align: 'left' },
-  { key: 'spend7d', label: 'Spend 7d', align: 'right' },
-  { key: 'leads7d', label: 'Leads 7d', align: 'right' },
-  { key: 'appts7d', label: 'Appts 7d', align: 'right' },
-  { key: 'cpa7d', label: 'CPA 7d', align: 'right' },
+  { key: 'spendCur', label: 'Spend', align: 'right' },
+  { key: 'leadsCur', label: 'Leads', align: 'right' },
+  { key: 'apptsCur', label: 'Appts', align: 'right' },
+  { key: 'cpaCur', label: 'CPA', align: 'right' },
   { key: 'stl', label: 'Avg STL', align: 'right' },
-  { key: 'showRate7d', label: 'Show %', align: 'right' },
+  { key: 'showRateCur', label: 'Show %', align: 'right' },
   { key: 'alerts', label: 'Alerts', align: 'right' },
   { key: 'action', label: '', align: 'right' },
 ];
@@ -39,7 +39,7 @@ export default function ClientTable({ clientMetrics, onSelectClient }) {
     let bVal = b[sortKey];
     if (sortKey === 'alerts') { aVal = a.alerts.length; bVal = b.alerts.length; }
     if (sortKey === 'name') return sortDir * aVal.localeCompare(bVal);
-    if (sortKey === 'showRate7d') { aVal = parseFloat(aVal) || 0; bVal = parseFloat(bVal) || 0; }
+    if (sortKey === 'showRateCur') { aVal = parseFloat(aVal) || 0; bVal = parseFloat(bVal) || 0; }
     if (aVal === null || aVal === Infinity) aVal = -Infinity * sortDir;
     if (bVal === null || bVal === Infinity) bVal = -Infinity * sortDir;
     return sortDir * (aVal - bVal);
