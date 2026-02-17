@@ -180,6 +180,14 @@ export default function ClientPortal() {
       </nav>
 
       <main className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-8">
+        <div className="mb-6 sm:mb-8">
+          <h2 className="text-2xl sm:text-3xl font-bold text-gray-900">
+            Welcome{user?.full_name ? `, ${user.full_name.split(' ')[0]}` : ''}!
+          </h2>
+          <p className="text-sm text-gray-500 mt-1">
+            Here's your appointment overview for {new Date().toLocaleString('default', { month: 'long', year: 'numeric' })}.
+          </p>
+        </div>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-2 sm:gap-4 mb-6 sm:mb-8">
           <StatCard icon={Calendar} iconColor="text-blue-600" label="Scheduled" thisMonth={stats.scheduledThis} lastMonth={stats.scheduledLast} />
           <StatCard icon={CheckCircle} iconColor="text-green-600" label="Showed" thisMonth={stats.showedThis} lastMonth={stats.showedLast} />

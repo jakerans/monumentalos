@@ -23,6 +23,7 @@ export default function GoalManagementModal({ open, onOpenChange, goals, onSaved
 
   const [selectedMonth, setSelectedMonth] = useState(currentMonth);
   const [form, setForm] = useState({});
+  const [netProfitManual, setNetProfitManual] = useState(false);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
 
@@ -33,10 +34,14 @@ export default function GoalManagementModal({ open, onOpenChange, goals, onSaved
       const f = {};
       FIELDS.forEach(field => { f[field.key] = String(goal[field.key] || ''); });
       setForm(f);
+      // If net profit was manually set (doesn't match auto calc), mark as manual
+      const autoCalc = (Number(f.cash_collected_goal) || 0) * ((Number(f.net_margin_goal) || 0) / 100);
+      setNetProfitManual(goal.net_profit_goal > 0 && Math.abs(goal.net_profit_goal - autoCalc) > 1);
     } else {
       const f = {};
       FIELDS.forEach(field => { f[field.key] = ''; });
       setForm(f);
+      setNetProfitManual(false);
     }
     setSaved(false);
   }, [selectedMonth, goals]);
@@ -46,6 +51,16 @@ export default function GoalManagementModal({ open, onOpenChange, goals, onSaved
     const d = new Date(y, m - 1 + dir);
     setSelectedMonth(`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`);
   };
+
+  // Auto-calculate net profit when cash collected or net margin changes (unless manually overridden)
+  useEffect(() => {
+    if (!netProfitManual) {
+      const cash = Number(form.cash_collected_goal) || 0;
+      const margin = Number(form.net_margin_goal) || 0;
+      const auto = Math.round(cash * (margin / 100));
+      setForm(prev => ({ ...prev, net_profit_goal: auto > 0 ? String(auto) : '' }));
+    }
+  }, [form.cash_collected_goal, form.net_margin_goal, netProfitManual]);
 
   const handleSave = async () => {
     setSaving(true);
@@ -128,26 +143,42 @@ export default function GoalManagementModal({ open, onOpenChange, goals, onSaved
 
           {/* Goal fields */}
           <div className="space-y-2.5">
-            {FIELDS.map(field => (
-              <div key={field.key}>
-                <label className="text-xs font-medium text-gray-700">{field.label}</label>
-                <div className="relative mt-1">
-                  {field.prefix && (
-                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-gray-400">{field.prefix}</span>
-                  )}
-                  <input
-                    type="number"
-                    value={form[field.key] || ''}
-                    onChange={e => setForm(prev => ({ ...prev, [field.key]: e.target.value }))}
-                    placeholder={field.placeholder}
-                    className={`w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${field.prefix ? 'pl-7' : ''} ${field.suffix ? 'pr-8' : ''}`}
-                  />
-                  {field.suffix && (
-                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-gray-400">{field.suffix}</span>
-                  )}
+            {FIELDS.map(field => {
+              const isNetProfit = field.key === 'net_profit_goal';
+              return (
+                <div key={field.key}>
+                  <div className="flex items-center justify-between">
+                    <label className="text-xs font-medium text-gray-700">{field.label}</label>
+                    {isNetProfit && !netProfitManual && (Number(form.cash_collected_goal) > 0 && Number(form.net_margin_goal) > 0) && (
+                      <span className="text-[10px] text-blue-500 font-medium">Auto-calculated</span>
+                    )}
+                    {isNetProfit && netProfitManual && (
+                      <button onClick={() => setNetProfitManual(false)} className="text-[10px] text-blue-500 hover:text-blue-700 font-medium">
+                        Reset to auto
+                      </button>
+                    )}
+                  </div>
+                  <div className="relative mt-1">
+                    {field.prefix && (
+                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-gray-400">{field.prefix}</span>
+                    )}
+                    <input
+                      type="number"
+                      value={form[field.key] || ''}
+                      onChange={e => {
+                        if (isNetProfit) setNetProfitManual(true);
+                        setForm(prev => ({ ...prev, [field.key]: e.target.value }));
+                      }}
+                      placeholder={field.placeholder}
+                      className={`w-full px-3 py-2 text-sm border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${isNetProfit && !netProfitManual ? 'border-blue-200 bg-blue-50/30' : 'border-gray-300'} ${field.prefix ? 'pl-7' : ''} ${field.suffix ? 'pr-8' : ''}`}
+                    />
+                    {field.suffix && (
+                      <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-gray-400">{field.suffix}</span>
+                    )}
+                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
 
           {/* Actions */}
