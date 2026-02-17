@@ -32,10 +32,10 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Forbidden' }, { status: 403 });
     }
 
-    // Use service role to invite (bypasses user-level permission restrictions)
+    // Invite the user with basic 'user' role (role will be upgraded via PendingInvite on signup)
     const inviteRole = intended_role === 'admin' ? 'admin' : 'user';
     console.log('Inviting user:', email.trim(), 'with platform role:', inviteRole);
-    await base44.asServiceRole.users.inviteUser(email.trim(), inviteRole);
+    await base44.auth.inviteUser(email.trim(), inviteRole);
     console.log('Invite sent successfully');
 
     // Create a PendingInvite so the role is applied when the user signs up
