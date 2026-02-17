@@ -20,7 +20,8 @@ export default function RevenueDashboard() {
         const currentUser = await base44.auth.me();
         setUser(currentUser);
         if (currentUser.role !== 'admin') {
-          navigate(createPageUrl('SetterDashboard'));
+          if (currentUser.role === 'marketing_manager') navigate(createPageUrl('MMDashboard'));
+          else navigate(createPageUrl('SetterDashboard'));
         }
       } catch (error) {
         navigate(createPageUrl('Login'));

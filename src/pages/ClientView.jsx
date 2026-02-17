@@ -21,7 +21,7 @@ export default function ClientView() {
       try {
         const currentUser = await base44.auth.me();
         setUser(currentUser);
-        if (currentUser.role !== 'admin') {
+        if (currentUser.role !== 'admin' && currentUser.role !== 'marketing_manager') {
           navigate(createPageUrl('SetterDashboard'));
         }
       } catch (error) {
@@ -94,12 +94,14 @@ export default function ClientView() {
                 >
                   Dashboard
                 </Link>
-                <Link
-                  to={createPageUrl('RevenueDashboard')}
-                  className="px-3 py-2 rounded-md text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-50"
-                >
-                  Revenue
-                </Link>
+                {user?.role === 'admin' && (
+                  <Link
+                    to={createPageUrl('RevenueDashboard')}
+                    className="px-3 py-2 rounded-md text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-50"
+                  >
+                    Revenue
+                  </Link>
+                )}
               </div>
             </div>
             <div className="flex items-center gap-4">

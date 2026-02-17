@@ -12,15 +12,19 @@ export default function AdminDashboard() {
 
   useEffect(() => {
     const checkAuth = async () => {
-      try {
-        const currentUser = await base44.auth.me();
-        setUser(currentUser);
-        if (currentUser.role !== 'admin') {
-          navigate(createPageUrl('SetterDashboard'));
-        }
-      } catch (error) {
-        navigate(createPageUrl('Login'));
+    try {
+      const currentUser = await base44.auth.me();
+      setUser(currentUser);
+      if (currentUser.role === 'marketing_manager') {
+        navigate(createPageUrl('MMDashboard'));
+        return;
       }
+      if (currentUser.role !== 'admin') {
+        navigate(createPageUrl('SetterDashboard'));
+      }
+    } catch (error) {
+      navigate(createPageUrl('Login'));
+    }
     };
     checkAuth();
   }, [navigate]);
@@ -71,6 +75,8 @@ export default function AdminDashboard() {
                 onChange={(e) => {
                   if (e.target.value === 'setter') {
                     navigate(createPageUrl('SetterDashboard'));
+                  } else if (e.target.value === 'mm') {
+                    navigate(createPageUrl('MMDashboard'));
                   } else if (e.target.value.startsWith('client-')) {
                     const clientId = e.target.value.replace('client-', '');
                     localStorage.setItem('admin_view_client_id', clientId);
@@ -80,6 +86,7 @@ export default function AdminDashboard() {
                 className="px-3 py-1.5 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
                 <option value="admin">View as Admin</option>
+                <option value="mm">View as Marketing Manager</option>
                 <option value="setter">View as Setter</option>
                 <optgroup label="View as Client">
                   {clients.map(client => (
