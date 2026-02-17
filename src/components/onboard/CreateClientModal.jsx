@@ -5,7 +5,10 @@ import { Plus, Trash2, Send } from 'lucide-react';
 
 export default function CreateClientModal({ open, onOpenChange, onCreated }) {
   const [name, setName] = useState('');
+  const [billingType, setBillingType] = useState('pay_per_show');
   const [price, setPrice] = useState('');
+  const [pricePerSet, setPricePerSet] = useState('');
+  const [retainerAmount, setRetainerAmount] = useState('');
   const [bookingLink, setBookingLink] = useState('');
   const [serviceRadius, setServiceRadius] = useState('');
   const [contacts, setContacts] = useState([{ name: '', email: '', role: 'Owner' }]);
@@ -26,14 +29,18 @@ export default function CreateClientModal({ open, onOpenChange, onCreated }) {
     if (!name.trim() || !price) return;
     setSaving(true);
     const validContacts = contacts.filter(c => c.email.trim()).map(c => ({ ...c, invited: false }));
-    const client = await base44.entities.Client.create({
+    const data = {
       name: name.trim(),
-      price_per_shown_appointment: parseFloat(price),
+      billing_type: billingType,
       booking_link: bookingLink.trim() || undefined,
       service_radius: serviceRadius.trim() || undefined,
       status: 'active',
       contacts: validContacts,
-    });
+    };
+    if (billingType === 'pay_per_show') data.price_per_shown_appointment = parseFloat(price) || 0;
+    if (billingType === 'pay_per_set') data.price_per_set_appointment = parseFloat(pricePerSet) || 0;
+    if (billingType === 'retainer') data.retainer_amount = parseFloat(retainerAmount) || 0;
+    const client = await base44.entities.Client.create(data);
     setSaving(false);
     onCreated(client);
     resetForm();
@@ -60,7 +67,10 @@ export default function CreateClientModal({ open, onOpenChange, onCreated }) {
 
   const resetForm = () => {
     setName('');
+    setBillingType('pay_per_show');
     setPrice('');
+    setPricePerSet('');
+    setRetainerAmount('');
     setBookingLink('');
     setServiceRadius('');
     setContacts([{ name: '', email: '', role: 'Owner' }]);
@@ -78,9 +88,31 @@ export default function CreateClientModal({ open, onOpenChange, onCreated }) {
             <input value={name} onChange={e => setName(e.target.value)} className="w-full mt-1 px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="e.g. Smith Remodeling" />
           </div>
           <div>
-            <label className="text-xs font-medium text-gray-700">Price Per Shown Appointment *</label>
-            <input type="number" value={price} onChange={e => setPrice(e.target.value)} className="w-full mt-1 px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="e.g. 250" />
+            <label className="text-xs font-medium text-gray-700">Billing Type *</label>
+            <select value={billingType} onChange={e => setBillingType(e.target.value)} className="w-full mt-1 px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500">
+              <option value="pay_per_show">Pay Per Show</option>
+              <option value="pay_per_set">Pay Per Set</option>
+              <option value="retainer">Retainer (Flat Monthly)</option>
+            </select>
           </div>
+          {billingType === 'pay_per_show' && (
+            <div>
+              <label className="text-xs font-medium text-gray-700">Price Per Shown Appointment *</label>
+              <input type="number" value={price} onChange={e => setPrice(e.target.value)} className="w-full mt-1 px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="e.g. 250" />
+            </div>
+          )}
+          {billingType === 'pay_per_set' && (
+            <div>
+              <label className="text-xs font-medium text-gray-700">Price Per Appointment Set *</label>
+              <input type="number" value={pricePerSet} onChange={e => setPricePerSet(e.target.value)} className="w-full mt-1 px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="e.g. 100" />
+            </div>
+          )}
+          {billingType === 'retainer' && (
+            <div>
+              <label className="text-xs font-medium text-gray-700">Monthly Retainer Amount *</label>
+              <input type="number" value={retainerAmount} onChange={e => setRetainerAmount(e.target.value)} className="w-full mt-1 px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="e.g. 2000" />
+            </div>
+          )}
           <div className="grid grid-cols-2 gap-2">
             <div>
               <label className="text-xs font-medium text-gray-700">Booking Link</label>
@@ -137,7 +169,7 @@ export default function CreateClientModal({ open, onOpenChange, onCreated }) {
 
           <button
             onClick={handleCreate}
-            disabled={!name.trim() || !price || saving}
+            disabled={!name.trim() || saving}
             className="w-full px-4 py-2 text-sm font-medium bg-indigo-600 text-white rounded-md hover:bg-indigo-700 disabled:opacity-50 transition-colors"
           >
             {saving ? 'Creating...' : 'Create Client'}
