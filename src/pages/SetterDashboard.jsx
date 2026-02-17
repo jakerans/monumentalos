@@ -56,9 +56,11 @@ export default function SetterDashboard() {
   }, [navigate]);
 
   // Only fetch active pipeline leads (exclude completed/sold/lost) + recent 90 days for leaderboard
-  const pipelineFetchStart = new Date();
-  pipelineFetchStart.setDate(pipelineFetchStart.getDate() - 90);
-  const pipelineStartStr = pipelineFetchStart.toISOString();
+  const pipelineStartStr = React.useMemo(() => {
+    const d = new Date();
+    d.setDate(d.getDate() - 90);
+    return d.toISOString().split('T')[0] + 'T00:00:00.000Z';
+  }, []);
 
   const { data: leads = [], refetch, isLoading: l1 } = useQuery({
     queryKey: ['setter-leads', pipelineStartStr],
