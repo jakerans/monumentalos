@@ -27,21 +27,11 @@ export default function InviteUserModal({ open, onOpenChange, clients = [], onIn
 
     setSaving(true);
     try {
-      const inviteRole = role === 'admin' ? 'admin' : 'user';
-      await base44.users.inviteUser(email.trim(), inviteRole);
-
-      // Store a PendingInvite so role is applied when the user signs up
-      if (role !== 'admin') {
-        const inviteData = {
-          email: email.trim().toLowerCase(),
-          intended_role: role,
-          status: 'pending',
-        };
-        if (role === 'client' && clientId) {
-          inviteData.client_id = clientId;
-        }
-        await base44.entities.PendingInvite.create(inviteData);
-      }
+      await base44.functions.invoke('inviteClientUser', {
+        email: email.trim(),
+        intended_role: role,
+        client_id: role === 'client' ? clientId : undefined,
+      });
 
       setSuccess(`Invitation sent to ${email}`);
       setEmail('');
@@ -49,7 +39,7 @@ export default function InviteUserModal({ open, onOpenChange, clients = [], onIn
       setClientId('');
       if (onInvited) onInvited();
     } catch (err) {
-      setError(err?.message || 'Failed to send invitation');
+      setError(err?.response?.data?.error || err?.message || 'Failed to send invitation');
     } finally {
       setSaving(false);
     }

@@ -23,20 +23,16 @@ export default function InviteClientUserModal({ open, onOpenChange, client }) {
 
     setSaving(true);
     try {
-      await base44.users.inviteUser(email.trim(), 'user');
-
-      // Store a PendingInvite so role is applied when the user signs up
-      await base44.entities.PendingInvite.create({
-        email: email.trim().toLowerCase(),
+      await base44.functions.invoke('inviteClientUser', {
+        email: email.trim(),
         intended_role: 'client',
         client_id: client.id,
-        status: 'pending',
       });
 
       setSuccess(`Invitation sent to ${email} — linked to ${client.name}`);
       setEmail('');
     } catch (err) {
-      setError(err?.message || 'Failed to send invitation');
+      setError(err?.response?.data?.error || err?.message || 'Failed to send invitation');
     } finally {
       setSaving(false);
     }
