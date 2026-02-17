@@ -36,6 +36,10 @@ export default function SetterDashboard() {
         setUser(currentUser);
         if (currentUser.role !== 'setter' && currentUser.role !== 'admin') {
           if (currentUser.role === 'client') navigate(createPageUrl('ClientPortal'));
+          else if (currentUser.role === 'marketing_manager') navigate(createPageUrl('MMDashboard'));
+          else if (currentUser.role === 'onboard_admin') navigate(createPageUrl('OnboardDashboard'));
+          else if (currentUser.role === 'user') navigate(createPageUrl('AccountPending'));
+          else navigate(createPageUrl('AdminDashboard'));
         }
       } catch (error) {
         base44.auth.redirectToLogin();
