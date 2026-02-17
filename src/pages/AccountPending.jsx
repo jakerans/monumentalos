@@ -21,10 +21,26 @@ export default function AccountPending() {
           return;
         }
 
-        // Use backend function to check and apply pending invite role
-        const res = await base44.functions.invoke('applyPendingRole');
-        if (res.data?.applied && res.data?.role) {
-          redirectByRole(res.data.role);
+        // Check for a pending invite and apply it
+        const pendingInvites = await base44.entities.PendingInvite.filter({
+          email: currentUser.email.toLowerCase(),
+          status: 'pending',
+        });
+
+        if (pendingInvites.length > 0) {
+          const invite = pendingInvites[0];
+          
+          // Update user with intended role and client_id
+          const updateData = { role: invite.intended_role };
+          if (invite.client_id) {
+            updateData.client_id = invite.client_id;
+          }
+          await base44.auth.updateMe(updateData);
+
+          // Mark invite as applied
+          await base44.entities.PendingInvite.update(invite.id, { status: 'applied' });
+
+          redirectByRole(invite.intended_role);
           return;
         }
 
