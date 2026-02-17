@@ -2,6 +2,7 @@ import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import { base44 } from '@/api/base44Client';
+import { motion } from 'framer-motion';
 
 export default function AdminNav({ user, currentPage, clients = [] }) {
   const navigate = useNavigate();
@@ -17,24 +18,41 @@ export default function AdminNav({ user, currentPage, clients = [] }) {
   ];
 
   return (
-    <nav className="bg-slate-900 shadow-lg sticky top-0 z-30">
+    <motion.nav
+      initial={{ y: -20, opacity: 0 }}
+      animate={{ y: 0, opacity: 1 }}
+      transition={{ duration: 0.4, ease: [0.25, 0.46, 0.45, 0.94] }}
+      className="bg-slate-900/80 glass shadow-lg shadow-black/20 sticky top-0 z-30 border-b border-slate-700/50"
+    >
       <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-14">
           <div className="flex items-center gap-6">
-            <h1 className="text-lg font-bold text-white tracking-tight">Monumental<span style={{color:'#D6FF03'}}>OS</span></h1>
+            <motion.h1
+              className="text-lg font-bold text-white tracking-tight"
+              whileHover={{ scale: 1.03 }}
+              transition={{ type: 'spring', stiffness: 400, damping: 25 }}
+            >
+              Monumental<span style={{color:'#D6FF03'}}>OS</span>
+            </motion.h1>
             <div className="flex gap-1">
-              {navItems.map(item => (
-                <Link
+              {navItems.map((item, i) => (
+                <motion.div
                   key={item.key}
-                  to={createPageUrl(item.key)}
-                  className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
-                    currentPage === item.key
-                      ? 'bg-white/10 text-white font-semibold'
-                      : 'text-slate-400 hover:text-white hover:bg-white/5'
-                  }`}
+                  initial={{ opacity: 0, y: -8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.1 + i * 0.04, duration: 0.3 }}
                 >
-                  {item.label}
-                </Link>
+                  <Link
+                    to={createPageUrl(item.key)}
+                    className={`nav-link-animated px-3 py-1.5 rounded-md text-sm font-medium transition-all duration-200 ${
+                      currentPage === item.key
+                        ? 'bg-white/10 text-white font-semibold active'
+                        : 'text-slate-400 hover:text-white hover:bg-white/5'
+                    }`}
+                  >
+                    {item.label}
+                  </Link>
+                </motion.div>
               ))}
             </div>
           </div>
@@ -50,7 +68,7 @@ export default function AdminNav({ user, currentPage, clients = [] }) {
                   navigate(createPageUrl('ClientPortal'));
                 }
               }}
-              className="px-2 py-1 text-xs bg-slate-800 border border-slate-700 text-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#D6FF03]"
+              className="px-2 py-1 text-xs bg-slate-800/80 border border-slate-700/50 text-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#D6FF03] transition-all hover:border-slate-600"
             >
               <option value="">Switch View</option>
               <option value="mm">Marketing Manager</option>
@@ -65,15 +83,17 @@ export default function AdminNav({ user, currentPage, clients = [] }) {
               )}
             </select>
             <span className="text-xs text-slate-400">{user?.full_name}</span>
-            <button
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
               onClick={() => base44.auth.logout()}
               className="text-xs text-slate-500 hover:text-white transition-colors"
             >
               Logout
-            </button>
+            </motion.button>
           </div>
         </div>
       </div>
-    </nav>
+    </motion.nav>
   );
 }
