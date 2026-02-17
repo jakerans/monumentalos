@@ -10,7 +10,7 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'email and role are required' }, { status: 400 });
     }
 
-    await base44.users.inviteUser(email.trim(), role);
+    await base44.asServiceRole.users.inviteUser(email.trim(), role);
 
     return Response.json({ success: true, email: email.trim(), role });
   } catch (error) {
