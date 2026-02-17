@@ -11,8 +11,12 @@ export default function ClientSettingsCard({ client }) {
         <div className="flex items-start gap-2">
           <DollarSign className="w-3.5 h-3.5 text-green-500 mt-0.5 flex-shrink-0" />
           <div>
-            <p className="text-gray-500">Price / Shown Appt</p>
-            <p className="font-semibold text-gray-900">${client.price_per_shown_appointment}</p>
+            <p className="text-gray-500">Billing</p>
+            <p className="font-semibold text-gray-900">
+              {client.billing_type === 'pay_per_set' ? `$${client.price_per_set_appointment || 0} / appt set` :
+               client.billing_type === 'retainer' ? `$${client.retainer_amount || 0}/mo retainer` :
+               `$${client.price_per_shown_appointment || 0} / shown appt`}
+            </p>
           </div>
         </div>
         {client.service_radius && (
