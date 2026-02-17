@@ -92,14 +92,38 @@ export default function MMDashboard() {
     ).length;
   }, [user, onboardTasks, onboardProjects]);
 
-  const clientMetrics = useMemo(() => {
+  // Resolve period start/end for both "days ago" and "this/last month" modes
+  const periodRange = useMemo(() => {
     const now = new Date();
+    if (periodDays === 'this_month') {
+      const start = new Date(now.getFullYear(), now.getMonth(), 1);
+      const priorStart = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+      const priorEnd = new Date(now.getFullYear(), now.getMonth(), 0, 23, 59, 59);
+      return { periodStart: start, periodEnd: now, priorStart, priorEnd, label: 'MTD' };
+    }
+    if (periodDays === 'last_month') {
+      const start = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+      const end = new Date(now.getFullYear(), now.getMonth(), 0, 23, 59, 59);
+      const priorStart = new Date(now.getFullYear(), now.getMonth() - 2, 1);
+      const priorEnd = new Date(start.getTime() - 1);
+      return { periodStart: start, periodEnd: end, priorStart, priorEnd, label: 'Last Mo' };
+    }
     const periodStart = new Date(now); periodStart.setDate(periodStart.getDate() - periodDays);
     const priorStart = new Date(periodStart); priorStart.setDate(priorStart.getDate() - periodDays);
+    return { periodStart, periodEnd: now, priorStart, priorEnd: new Date(periodStart.getTime() - 1), label: `${periodDays}d` };
+  }, [periodDays]);
+
+  const clientMetrics = useMemo(() => {
+    const now = new Date();
+    const { periodStart, periodEnd, priorStart, priorEnd } = periodRange;
     const pStartStr = periodStart.toISOString();
     const pStartDate = periodStart.toISOString().split('T')[0];
+    const pEndStr = periodEnd.toISOString();
+    const pEndDate = periodEnd.toISOString().split('T')[0];
     const priorStartStr = priorStart.toISOString();
     const priorStartDate = priorStart.toISOString().split('T')[0];
+    const priorEndStr = priorEnd.toISOString();
+    const priorEndDate = priorEnd.toISOString().split('T')[0];
 
     // Fixed date cutoffs for 7d and 30d (used by ClientQuickView)
     const d7 = new Date(now); d7.setDate(d7.getDate() - 7);
