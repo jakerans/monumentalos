@@ -39,15 +39,16 @@ export default function ClientPortal() {
 
   const clientId = getClientId();
 
-  const { data: leads = [], refetch } = useQuery({
+  const { data: allClientLeads = [], refetch } = useQuery({
     queryKey: ['client-leads', clientId],
     queryFn: async () => {
       if (!clientId) return [];
-      const allLeads = await base44.entities.Lead.filter({ client_id: clientId });
-      return allLeads.filter(lead => lead.appointment_date);
+      return await base44.entities.Lead.filter({ client_id: clientId });
     },
     enabled: !!clientId,
   });
+
+  const leads = allClientLeads.filter(lead => lead.appointment_date);
 
   const { data: clientInfo } = useQuery({
     queryKey: ['client-info', clientId],
