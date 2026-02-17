@@ -3,13 +3,15 @@ import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
-import { Users, UserPlus, RefreshCw } from 'lucide-react';
+import { Users, UserPlus, RefreshCw, Settings } from 'lucide-react';
 import AdminNav from '../components/admin/AdminNav';
 import EmployeeTable from '../components/employee/EmployeeTable';
 import EmployeeDetailPanel from '../components/employee/EmployeeDetailPanel';
 import AddEmployeeModal from '../components/employee/AddEmployeeModal';
 import PerformancePayWidget from '../components/employee/PerformancePayWidget';
 import PerformancePayDetailPanel from '../components/employee/PerformancePayDetailPanel';
+import PayrollSettingsModal from '../components/employee/PayrollSettingsModal';
+import { getCyclesPerYear } from '../components/employee/payUtils';
 
 export default function EmployeeManagement() {
   const navigate = useNavigate();
@@ -20,6 +22,7 @@ export default function EmployeeManagement() {
   const [selectedPlan, setSelectedPlan] = useState(null);
   const [planDetailOpen, setPlanDetailOpen] = useState(false);
   const [showDismissed, setShowDismissed] = useState(false);
+  const [payrollOpen, setPayrollOpen] = useState(false);
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -50,6 +53,13 @@ export default function EmployeeManagement() {
     queryKey: ['emp-clients'],
     queryFn: () => base44.entities.Client.list(),
   });
+
+  const { data: companySettings = [], refetch: refetchSettings } = useQuery({
+    queryKey: ['company-settings'],
+    queryFn: () => base44.entities.CompanySettings.filter({ key: 'payroll' }),
+  });
+
+  const payrollSettings = companySettings[0] || null;
 
   const { data: users = [] } = useQuery({
     queryKey: ['emp-users'],
@@ -136,6 +146,14 @@ export default function EmployeeManagement() {
           </div>
           <div className="flex items-center gap-2">
             <button
+              onClick={() => setPayrollOpen(true)}
+              className="px-3 py-2 text-sm font-medium rounded-lg border border-slate-600 text-slate-300 hover:bg-slate-800 flex items-center gap-2"
+            >
+              <Settings className="w-4 h-4" />
+              <span className="hidden sm:inline">Payroll:</span>
+              <span className="text-xs font-bold text-white capitalize">{payrollSettings?.payroll_frequency?.replace('_', '-') || 'Bi-Weekly'}</span>
+            </button>
+            <button
               onClick={handleSyncFromUsers}
               disabled={syncing}
               className="px-4 py-2 text-sm font-medium rounded-lg border border-slate-600 text-slate-300 hover:bg-slate-800 flex items-center gap-2 disabled:opacity-50"
@@ -168,12 +186,13 @@ export default function EmployeeManagement() {
           </button>
         </div>
 
-        <EmployeeTable employees={filtered} onSelect={handleSelectEmp} />
+        <EmployeeTable employees={filtered} payrollSettings={payrollSettings} onSelect={handleSelectEmp} />
 
         {/* Performance Pay Section */}
         <PerformancePayWidget
           employees={employees}
           perfPlans={perfPlans}
+          payrollSettings={payrollSettings}
           onSelectPlan={handleSelectPlan}
         />
       </main>
@@ -182,6 +201,7 @@ export default function EmployeeManagement() {
 
       <EmployeeDetailPanel
         employee={selectedEmp}
+        payrollSettings={payrollSettings}
         open={empDetailOpen}
         onOpenChange={setEmpDetailOpen}
         onUpdated={handleUpdated}
@@ -193,6 +213,13 @@ export default function EmployeeManagement() {
         open={planDetailOpen}
         onOpenChange={setPlanDetailOpen}
         onUpdated={handleUpdated}
+      />
+
+      <PayrollSettingsModal
+        open={payrollOpen}
+        onOpenChange={setPayrollOpen}
+        settings={payrollSettings}
+        onSaved={refetchSettings}
       />
     </div>
   );
