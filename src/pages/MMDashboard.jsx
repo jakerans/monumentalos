@@ -277,7 +277,29 @@ export default function MMDashboard() {
         </div>
         <MMTopStats stats={topStats} />
 
-        <div className="flex-1 flex gap-3 min-h-0" style={{ height: 'calc(100vh - 180px)' }}>
+        {/* Chart toggle + chart */}
+        <div className="flex items-center mb-3">
+          <button
+            onClick={() => setShowChart(!showChart)}
+            className={`px-3 py-1.5 text-xs font-medium rounded-md border transition-colors ${
+              showChart ? 'bg-[#D6FF03]/10 border-[#D6FF03]/30 text-[#D6FF03]' : 'border-slate-700 text-slate-400 hover:text-white hover:bg-slate-800'
+            }`}
+          >
+            {showChart ? 'Hide Chart' : 'Show Lead Breakdown'}
+          </button>
+        </div>
+        {showChart && (
+          <div className="mb-3">
+            <ClientBreakdownChart
+              clients={clients}
+              leads={allLeads}
+              periodStart={periodRange.periodStart.toISOString()}
+              periodEnd={periodRange.periodEnd.toISOString()}
+            />
+          </div>
+        )}
+
+        <div className="flex-1 flex gap-3 min-h-0" style={{ height: showChart ? 'calc(100vh - 180px)' : 'calc(100vh - 180px)' }}>
           {/* Main table — always visible */}
           <div className="flex-1 min-w-0">
             <ClientTable
