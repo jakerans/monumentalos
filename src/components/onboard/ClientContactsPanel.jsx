@@ -7,6 +7,7 @@ export default function ClientContactsPanel({ open, onOpenChange, client, onUpda
   const [contacts, setContacts] = useState(client?.contacts || []);
   const [invitingIdx, setInvitingIdx] = useState(null);
   const [saving, setSaving] = useState(false);
+  const [success, setSuccess] = useState('');
 
   const addContact = () => setContacts([...contacts, { name: '', email: '', role: '', invited: false }]);
 
@@ -22,7 +23,11 @@ export default function ClientContactsPanel({ open, onOpenChange, client, onUpda
     setSaving(true);
     await base44.entities.Client.update(client.id, { contacts });
     setSaving(false);
-    onUpdated();
+    if (onUpdated) onUpdated();
+    setSuccess('Contacts saved successfully!');
+    setTimeout(() => {
+      onOpenChange(false);
+    }, 1200);
   };
 
   const inviteContact = async (idx) => {
@@ -111,6 +116,10 @@ export default function ClientContactsPanel({ open, onOpenChange, client, onUpda
           <button onClick={addContact} className="w-full inline-flex items-center justify-center gap-1 px-3 py-1.5 text-xs font-medium text-indigo-600 bg-indigo-50 border border-dashed border-indigo-300 rounded-md hover:bg-indigo-100">
             <Plus className="w-3.5 h-3.5" /> Add Contact
           </button>
+
+          {success && (
+            <p className="text-xs text-green-600 font-medium text-center">{success}</p>
+          )}
 
           <button
             onClick={saveContacts}
