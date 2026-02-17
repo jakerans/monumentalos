@@ -47,6 +47,7 @@
  *
  * The mainPage value must match a key in the PAGES object exactly.
  */
+import AccountPending from './pages/AccountPending';
 import AdminDashboard from './pages/AdminDashboard';
 import AppointmentHistory from './pages/AppointmentHistory';
 import ClientManagement from './pages/ClientManagement';
@@ -64,10 +65,10 @@ import RevenueDashboard from './pages/RevenueDashboard';
 import SetterDashboard from './pages/SetterDashboard';
 import SetterPerformance from './pages/SetterPerformance';
 import UserManagement from './pages/UserManagement';
-import AccountPending from './pages/AccountPending';
 
 
 export const PAGES = {
+    "AccountPending": AccountPending,
     "AdminDashboard": AdminDashboard,
     "AppointmentHistory": AppointmentHistory,
     "ClientManagement": ClientManagement,
@@ -85,7 +86,6 @@ export const PAGES = {
     "SetterDashboard": SetterDashboard,
     "SetterPerformance": SetterPerformance,
     "UserManagement": UserManagement,
-    "AccountPending": AccountPending,
 }
 
 export const pagesConfig = {

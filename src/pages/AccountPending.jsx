@@ -1,21 +1,70 @@
 import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
-import { Clock } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { createPageUrl } from '@/utils';
+import { Clock, Loader2 } from 'lucide-react';
 
 export default function AccountPending() {
+  const navigate = useNavigate();
   const [user, setUser] = useState(null);
+  const [checking, setChecking] = useState(true);
 
   useEffect(() => {
     const checkAuth = async () => {
       try {
         const currentUser = await base44.auth.me();
         setUser(currentUser);
+
+        // If user already has a real role, redirect them
+        if (currentUser.role && currentUser.role !== 'user') {
+          redirectByRole(currentUser.role);
+          return;
+        }
+
+        // Check for a pending invite and apply the role
+        const pending = await base44.entities.PendingInvite.filter({
+          email: currentUser.email.toLowerCase(),
+          status: 'pending'
+        });
+
+        if (pending.length > 0) {
+          const invite = pending[0];
+          const updateData = { role: invite.intended_role };
+          if (invite.client_id) updateData.client_id = invite.client_id;
+
+          await base44.entities.User.update(currentUser.id, updateData);
+          await base44.entities.PendingInvite.update(invite.id, { status: 'applied' });
+
+          redirectByRole(invite.intended_role);
+          return;
+        }
+
+        setChecking(false);
       } catch {
         base44.auth.redirectToLogin();
       }
     };
     checkAuth();
   }, []);
+
+  const redirectByRole = (role) => {
+    const routes = {
+      admin: 'AdminDashboard',
+      marketing_manager: 'MMDashboard',
+      setter: 'SetterDashboard',
+      onboard_admin: 'OnboardDashboard',
+      client: 'ClientPortal',
+    };
+    navigate(createPageUrl(routes[role] || 'AdminDashboard'));
+  };
+
+  if (checking) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <Loader2 className="w-8 h-8 text-blue-600 animate-spin" />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
