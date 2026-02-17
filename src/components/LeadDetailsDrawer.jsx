@@ -288,8 +288,7 @@ export default function LeadDetailsDrawer({ leadId, open, onOpenChange, onLeadUp
                 </div>
 
               {/* Project Details */}
-              {(lead.project_type || lead.project_size || lead.budget_range || lead.timeline || editing) && (
-                <div>
+              <div>
                   <h3 className="text-xs font-semibold text-gray-500 uppercase mb-3">Project Details</h3>
                   <div className="space-y-3">
                     <InfoRow icon={Briefcase} label="Project Type" value={lead.project_type} editing={editing} editValue={editData.project_type} onEditChange={(v) => setEditData(d => ({...d, project_type: v}))} />
@@ -298,22 +297,18 @@ export default function LeadDetailsDrawer({ leadId, open, onOpenChange, onLeadUp
                     <InfoRow icon={Clock} label="Timeline" value={lead.timeline} editing={editing} editValue={editData.timeline} onEditChange={(v) => setEditData(d => ({...d, timeline: v}))} />
                   </div>
                 </div>
-              )}
 
               {/* Sale Information */}
-              {(lead.sale_amount || lead.date_sold || editing) && (
-                <div>
+              <div>
                   <h3 className="text-xs font-semibold text-gray-500 uppercase mb-3">Sale Information</h3>
                   <div className="space-y-3">
                     <InfoRow icon={DollarSign} label="Sale Amount" value={lead.sale_amount ? `$${lead.sale_amount.toLocaleString()}` : null} iconColor="text-green-600" editing={editing} editValue={editData.sale_amount} onEditChange={(v) => setEditData(d => ({...d, sale_amount: v}))} type="number" />
                     <InfoRow icon={Calendar} label="Date Sold" value={lead.date_sold ? new Date(lead.date_sold).toLocaleDateString() : null} editing={editing} editValue={editData.date_sold} onEditChange={(v) => setEditData(d => ({...d, date_sold: v}))} type="date" />
                   </div>
                 </div>
-              )}
 
               {/* Notes */}
-              {(lead.notes || editing) && (
-                <div>
+              <div>
                   <h3 className="text-xs font-semibold text-gray-500 uppercase mb-3">Notes</h3>
                   {editing ? (
                     <textarea
@@ -327,7 +322,6 @@ export default function LeadDetailsDrawer({ leadId, open, onOpenChange, onLeadUp
                     </div>
                   )}
                 </div>
-              )}
 
               {/* Edit / Save buttons at bottom */}
               <div className="pt-4 border-t border-gray-200">

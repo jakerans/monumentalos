@@ -96,10 +96,10 @@ export default function ClientReport() {
   const showedAppointments = appointmentLeads.filter(l => l.disposition === 'showed' || l.disposition === 'rescheduled' || l.outcome === 'sold' || l.outcome === 'lost');
   const appointmentsShowed = showedAppointments.length;
   const cancelledCount = appointmentLeads.filter(l => l.disposition === 'cancelled').length;
-  // Jobs sold & revenue based on appointment_date range (not date_sold) so sold leads count in showed too
-  const soldFromShowed = showedAppointments.filter(l => l.outcome === 'sold');
-  const jobsSold = soldFromShowed.length;
-  const totalRevenue = soldFromShowed.reduce((sum, l) => sum + (l.sale_amount || 0), 0);
+  // Jobs sold & revenue based on date_sold range
+  const actualSoldLeads = soldLeads.filter(l => l.outcome === 'sold');
+  const jobsSold = actualSoldLeads.length;
+  const totalRevenue = actualSoldLeads.reduce((sum, l) => sum + (l.sale_amount || 0), 0);
 
   const cancellationRate = appointmentLeads.length > 0
     ? ((cancelledCount / appointmentLeads.length) * 100).toFixed(1)
