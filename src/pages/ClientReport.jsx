@@ -58,12 +58,12 @@ export default function ClientReport() {
     enabled: !!clientId,
   });
 
-  // Appointments booked = all leads with appointment_date in range
+  // Appointments booked by date_appointment_set
   const { data: bookedLeads = [] } = useQuery({
     queryKey: ['report-booked', clientId, startDate, endDate],
     queryFn: () => base44.entities.Lead.filter({
       client_id: clientId,
-      appointment_date: { $gte: new Date(startDate).toISOString(), $lte: new Date(endDate + 'T23:59:59').toISOString() }
+      date_appointment_set: { $gte: new Date(startDate).toISOString(), $lte: new Date(endDate + 'T23:59:59').toISOString() }
     }),
     enabled: !!clientId,
   });
@@ -93,7 +93,7 @@ export default function ClientReport() {
   const totalSpend = spendRecords.reduce((sum, s) => sum + (s.amount || 0), 0);
   const appointmentsBooked = bookedLeads.length;
   // Showed = any lead with appointment_date in range whose disposition progressed to showed (including sold/lost)
-  const showedAppointments = appointmentLeads.filter(l => l.disposition === 'showed' || l.outcome === 'sold' || l.outcome === 'lost');
+  const showedAppointments = appointmentLeads.filter(l => l.disposition === 'showed' || l.disposition === 'rescheduled' || l.outcome === 'sold' || l.outcome === 'lost');
   const appointmentsShowed = showedAppointments.length;
   const cancelledCount = appointmentLeads.filter(l => l.disposition === 'cancelled').length;
   // Jobs sold & revenue based on appointment_date range (not date_sold) so sold leads count in showed too
