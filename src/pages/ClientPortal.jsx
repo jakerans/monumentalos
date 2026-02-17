@@ -3,17 +3,14 @@ import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import { Link, useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
-import { Calendar, CheckCircle, XCircle, Clock, Edit2 } from 'lucide-react';
-import toast from 'react-hot-toast';
-import confetti from 'canvas-confetti';
+import { Calendar, CheckCircle, DollarSign } from 'lucide-react';
 import LeadDetailsDrawer from '../components/LeadDetailsDrawer';
+import AppointmentCard from '../components/client/AppointmentCard';
 
 export default function ClientPortal() {
   const navigate = useNavigate();
   const [user, setUser] = useState(null);
-  const [editingLead, setEditingLead] = useState(null);
-  const [editData, setEditData] = useState({});
-  const [validationErrors, setValidationErrors] = useState({});
+
   const [selectedLeadId, setSelectedLeadId] = useState(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
 
@@ -60,104 +57,6 @@ export default function ClientPortal() {
     },
     enabled: !!clientId,
   });
-
-  const handleDisposition = async (leadId, disposition) => {
-    await base44.entities.Lead.update(leadId, { disposition });
-    refetch();
-  };
-
-  const handleOutcome = async (leadId, outcome, saleAmount = null) => {
-    const updates = { outcome };
-    if (outcome === 'sold' && saleAmount) {
-      updates.sale_amount = parseFloat(saleAmount);
-    }
-    await base44.entities.Lead.update(leadId, updates);
-    refetch();
-  };
-
-  const startEditing = (lead, type) => {
-    setEditingLead({ id: lead.id, type });
-    setEditData({
-      disposition: lead.disposition || 'scheduled',
-      outcome: lead.outcome || 'pending',
-      sale_amount: lead.sale_amount || '',
-      appointment_date: lead.appointment_date || '',
-      date_sold: '',
-      estimate_value: lead.sale_amount || ''
-    });
-  };
-
-  const saveEdit = async () => {
-    const updates = {};
-    setValidationErrors({});
-    
-    if (editingLead.type === 'disposition') {
-      updates.disposition = editData.disposition;
-      if (editData.disposition === 'rescheduled') {
-        if (editData.appointment_date) {
-          const dateValue = editData.appointment_date.includes('T') && editData.appointment_date.length <= 16 
-            ? editData.appointment_date + ':00' 
-            : editData.appointment_date;
-          updates.appointment_date = new Date(dateValue).toISOString();
-        }
-      }
-    } else if (editingLead.type === 'outcome') {
-      const errors = {};
-      if (editData.outcome === 'sold') {
-        if (!editData.date_sold) {
-          errors.date_sold = true;
-          toast.error('Please enter the date sold');
-        }
-        if (!editData.estimate_value) {
-          errors.estimate_value = true;
-          toast.error('Please enter the estimate value');
-        }
-        if (Object.keys(errors).length > 0) {
-          setValidationErrors(errors);
-          return;
-        }
-      }
-      if (editData.outcome === 'lost' && !editData.estimate_value) {
-        errors.estimate_value = true;
-        toast.error('Please enter the estimate value');
-        setValidationErrors(errors);
-        return;
-      }
-      
-      updates.outcome = editData.outcome;
-      if ((editData.outcome === 'sold' || editData.outcome === 'lost') && editData.estimate_value) {
-        updates.sale_amount = parseFloat(editData.estimate_value);
-      }
-      if (editData.outcome === 'sold' && editData.date_sold) {
-        updates.date_sold = editData.date_sold;
-      }
-    }
-
-    await base44.entities.Lead.update(editingLead.id, updates);
-    
-    // Celebration animation for sold leads
-    if (editingLead.type === 'outcome' && editData.outcome === 'sold') {
-      confetti({
-        particleCount: 150,
-        spread: 100,
-        origin: { y: 0.6 },
-        colors: ['#22c55e', '#10b981', '#059669', '#FFD700', '#FFA500']
-      });
-      
-      toast.success('🎉 Sale recorded! Great job!', { duration: 4000 });
-    }
-    
-    setEditingLead(null);
-    setEditData({});
-    setValidationErrors({});
-    refetch();
-  };
-
-  const cancelEdit = () => {
-    setEditingLead(null);
-    setEditData({});
-    setValidationErrors({});
-  };
 
   if (!user) return null;
 
