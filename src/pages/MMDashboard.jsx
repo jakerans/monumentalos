@@ -262,6 +262,13 @@ export default function MMDashboard() {
     return { activeClients, apptsSet, spend, avgCPA, cpaChange, avgSTL, alertCount, periodLabel: periodRange.label };
   }, [clientMetrics, periodRange, allLeads, allSpend]);
 
+  // Debug: log data counts to verify fetching
+  console.log('[MM Debug] clients:', clients.length, 'allLeads:', allLeads.length, 'allSpend:', allSpend.length, 'l1:', l1, 'l2:', l2, 'l3:', l3);
+  if (allLeads.length > 0) {
+    console.log('[MM Debug] Sample lead created_date:', allLeads[0].created_date, 'type:', typeof allLeads[0].created_date);
+    console.log('[MM Debug] mmStartStr:', mmStartStr);
+  }
+
   if (!user) return null;
   if (l1 || l2 || l3) return <PageLoader message="Loading dashboard..." />;
 
