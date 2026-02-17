@@ -1,5 +1,5 @@
 import React from 'react';
-import { Phone, Mail, Building2, Calendar, Clock, Briefcase, Ruler, DollarSign, Tag, User } from 'lucide-react';
+import { Phone, Mail, Building2, Calendar, Clock, Briefcase, Ruler, DollarSign, Tag, User, Ban } from 'lucide-react';
 import {
   Sheet,
   SheetContent,
@@ -87,10 +87,10 @@ export default function LeadDetailPanel({ lead, clientName, setterName, bookedBy
             {(lead.status === 'first_call_made' || lead.status === 'contacted') && (
               <>
                 <button
-                  onClick={() => { onAction('first_call', lead); onOpenChange(false); }}
-                  className="flex-1 text-sm px-3 py-2 bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 font-medium"
+                  onClick={() => { onAction('disqualify', lead); onOpenChange(false); }}
+                  className="flex-1 text-sm px-3 py-2 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 font-medium"
                 >
-                  <Phone className="w-3.5 h-3.5 inline mr-1.5" />Call Again
+                  <Ban className="w-3.5 h-3.5 inline mr-1.5" />Disqualify
                 </button>
                 <button
                   onClick={() => { onAction('book', lead); onOpenChange(false); }}

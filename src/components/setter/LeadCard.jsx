@@ -1,5 +1,5 @@
 import React from 'react';
-import { Phone, Mail, Clock, Building2, Tag } from 'lucide-react';
+import { Phone, Mail, Clock, Building2, Tag, Ban } from 'lucide-react';
 
 function timeSince(dateStr) {
   if (!dateStr) return null;
@@ -106,10 +106,10 @@ export default function LeadCard({ lead, clientName, onAction, onSelect, urgency
         {(lead.status === 'first_call_made' || lead.status === 'contacted') && (
           <>
             <button
-              onClick={() => onAction('first_call', lead)}
-              className="flex-1 text-xs px-2.5 py-1.5 bg-blue-100 text-blue-700 rounded-md hover:bg-blue-200 font-medium transition-colors"
+              onClick={() => onAction('disqualify', lead)}
+              className="flex-1 text-xs px-2.5 py-1.5 bg-red-100 text-red-700 rounded-md hover:bg-red-200 font-medium transition-colors"
             >
-              <Phone className="w-3 h-3 inline mr-1" />Call Again
+              <Ban className="w-3 h-3 inline mr-1" />Disqualify
             </button>
             <button
               onClick={() => onAction('book', lead)}
