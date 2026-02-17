@@ -24,6 +24,7 @@ export default function AdminDashboard() {
       try {
         const currentUser = await base44.auth.me();
         setUser(currentUser);
+        if (currentUser.role === 'user') { navigate(createPageUrl('AccountPending')); return; }
         if (currentUser.role === 'marketing_manager') { navigate(createPageUrl('MMDashboard')); return; }
         if (currentUser.role === 'onboard_admin') { navigate(createPageUrl('OnboardDashboard')); return; }
         if (currentUser.role !== 'admin') { navigate(createPageUrl('SetterDashboard')); }
