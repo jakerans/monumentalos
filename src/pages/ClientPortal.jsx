@@ -302,7 +302,8 @@ export default function ClientPortal() {
                         )}
                       </td>
                     </tr>
-                  ))
+                    );
+                  })
                 )}
               </tbody>
             </table>
