@@ -7,7 +7,7 @@ import { createPageUrl } from '@/utils';
 import MMNav from '../components/mm/MMNav';
 import MMTopStats from '../components/mm/MMTopStats';
 import ClientTable from '../components/mm/ClientTable';
-import AIRecapPanel from '../components/mm/AIRecapPanel';
+import MMTaskBoard from '../components/mm/MMTaskBoard';
 import ClientQuickView from '../components/mm/ClientQuickView';
 
 const PERIOD_OPTIONS = [
@@ -228,11 +228,7 @@ export default function MMDashboard() {
                 onClose={() => setSelectedClient(null)}
               />
             ) : (
-              <AIRecapPanel
-                clientMetrics={clientMetrics}
-                leads={allLeads}
-                spendRecords={allSpend}
-              />
+              <MMTaskBoard clients={clients} />
             )}
           </div>
         </div>
