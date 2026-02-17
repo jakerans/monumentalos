@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { Sparkles, RefreshCw, ListChecks, History, Check, X, Clock, Play } from 'lucide-react';
+import { Sparkles, RefreshCw, ListChecks, History, Check, X, Clock, Play, Plus } from 'lucide-react';
 
 const STATUS_CONFIG = {
   pending: { label: 'Pending', icon: Clock, bg: 'bg-yellow-50', text: 'text-yellow-700', dot: 'bg-yellow-400' },
@@ -15,7 +15,9 @@ export default function AIRecapPanel({ clientMetrics, leads, spendRecords }) {
   const [recap, setRecap] = useState(null);
   const [loading, setLoading] = useState(false);
   const [tab, setTab] = useState('tasks');
-  const [showHistory, setShowHistory] = useState(false);
+  const [showAddTask, setShowAddTask] = useState(false);
+  const [newTaskText, setNewTaskText] = useState('');
+  const [newTaskClientId, setNewTaskClientId] = useState('');
 
   // Fetch existing task logs (last 14 days)
   const fourteenDaysAgo = new Date();
@@ -134,6 +136,21 @@ Provide:
     refetchLogs();
   };
 
+  const handleAddTask = async () => {
+    if (!newTaskText.trim()) return;
+    await base44.entities.AITaskLog.create({
+      task_text: newTaskText.trim(),
+      type: 'task',
+      status: 'pending',
+      client_id: newTaskClientId || null,
+      generated_date: new Date().toISOString(),
+    });
+    setNewTaskText('');
+    setNewTaskClientId('');
+    setShowAddTask(false);
+    refetchLogs();
+  };
+
   return (
     <div className="bg-white rounded-lg border border-gray-200 shadow-sm flex flex-col h-full">
       {/* Tabs */}
@@ -183,6 +200,42 @@ Provide:
           </div>
         ) : tab === 'tasks' ? (
           <div className="space-y-1.5">
+            {/* Add task form */}
+            {showAddTask ? (
+              <div className="bg-blue-50 border border-blue-200 rounded-md p-2 space-y-1.5">
+                <input
+                  type="text"
+                  value={newTaskText}
+                  onChange={(e) => setNewTaskText(e.target.value)}
+                  placeholder="Describe the task..."
+                  className="w-full px-2 py-1.5 text-xs border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+                  autoFocus
+                  onKeyDown={(e) => { if (e.key === 'Enter') handleAddTask(); }}
+                />
+                <select
+                  value={newTaskClientId}
+                  onChange={(e) => setNewTaskClientId(e.target.value)}
+                  className="w-full px-2 py-1.5 text-xs border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+                >
+                  <option value="">General (no client)</option>
+                  {clientMetrics.map(c => (
+                    <option key={c.id} value={c.id}>{c.name}</option>
+                  ))}
+                </select>
+                <div className="flex gap-1">
+                  <button onClick={handleAddTask} className="flex-1 px-2 py-1 text-[10px] font-medium bg-blue-600 text-white rounded-md hover:bg-blue-700">Add</button>
+                  <button onClick={() => { setShowAddTask(false); setNewTaskText(''); }} className="flex-1 px-2 py-1 text-[10px] font-medium bg-gray-200 text-gray-600 rounded-md hover:bg-gray-300">Cancel</button>
+                </div>
+              </div>
+            ) : (
+              <button
+                onClick={() => setShowAddTask(true)}
+                className="w-full flex items-center justify-center gap-1 px-2 py-1.5 text-[10px] font-medium text-blue-600 bg-blue-50 border border-dashed border-blue-300 rounded-md hover:bg-blue-100 transition-colors"
+              >
+                <Plus className="w-3 h-3" /> Add Task
+              </button>
+            )}
+
             {activeTasks.length > 0 ? (
               activeTasks.map((task) => (
                 <TaskItem
