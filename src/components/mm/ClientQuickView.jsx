@@ -2,6 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import { X, ExternalLink, AlertTriangle, TrendingUp, DollarSign, Users, Calendar, Clock, MapPin } from 'lucide-react';
+import ClientGoalEditor from './ClientGoalEditor';
 
 function Stat({ label, value, color }) {
   return (
@@ -12,7 +13,7 @@ function Stat({ label, value, color }) {
   );
 }
 
-export default function ClientQuickView({ client, onClose }) {
+export default function ClientQuickView({ client, onClose, onClientUpdated }) {
   if (!client) return null;
 
   return (
@@ -58,6 +59,9 @@ export default function ClientQuickView({ client, onClose }) {
             <Stat label="CPA" value={client.cpa30d === Infinity || isNaN(client.cpa30d) ? '—' : `$${client.cpa30d.toFixed(0)}`} />
           </div>
         </div>
+
+        {/* Monthly Goal */}
+        <ClientGoalEditor client={client} onSaved={onClientUpdated} />
 
         {/* Client Info */}
         {(client.service_radius || client.target_zip_codes) && (

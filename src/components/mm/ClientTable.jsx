@@ -4,6 +4,8 @@ import ClientRow from './ClientRow';
 
 const HEADERS = [
   { key: 'name', label: 'Client', align: 'left' },
+  { key: 'goalProgress', label: 'Goal', align: 'right' },
+  { key: 'goalStatusSort', label: 'Status', align: 'left' },
   { key: 'spendCur', label: 'Spend', align: 'right' },
   { key: 'leadsCur', label: 'Leads', align: 'right' },
   { key: 'apptsCur', label: 'Appts', align: 'right' },
@@ -100,7 +102,7 @@ export default function ClientTable({ clientMetrics, onSelectClient }) {
             ))}
             {filtered.length === 0 && (
               <tr>
-                <td colSpan={9} className="px-3 py-8 text-center text-sm text-gray-400">
+                <td colSpan={11} className="px-3 py-8 text-center text-sm text-gray-400">
                   {search ? 'No clients match your search' : 'No clients found'}
                 </td>
               </tr>

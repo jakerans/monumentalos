@@ -1,9 +1,24 @@
 import React from 'react';
 import { AlertTriangle, ChevronRight } from 'lucide-react';
 
+const GOAL_STATUS_CONFIG = {
+  behind_wont_meet: { label: "Won't Meet", bg: 'bg-red-100 text-red-700' },
+  behind_confident: { label: 'Behind', bg: 'bg-amber-100 text-amber-700' },
+  on_track: { label: 'On Track', bg: 'bg-blue-100 text-blue-700' },
+  goal_met: { label: 'Goal Met', bg: 'bg-green-100 text-green-700' },
+};
+
+const GOAL_TYPE_LABELS = { leads: 'Leads', sets: 'Sets', shows: 'Shows' };
+
 export default function ClientRow({ client, onClick }) {
   const { name, spendCur, leadsCur, apptsCur, cpaCur, cpaChange, stl, showRateCur, alerts } = client;
   const hasAlert = alerts.length > 0;
+
+  const goalType = client.goal_type;
+  const goalValue = client.goal_value;
+  const goalActual = client.goalActual;
+  const goalStatus = client.effectiveGoalStatus;
+  const statusCfg = goalStatus ? GOAL_STATUS_CONFIG[goalStatus] : null;
 
   return (
     <tr
@@ -15,6 +30,26 @@ export default function ClientRow({ client, onClick }) {
           {hasAlert && <AlertTriangle className="w-3.5 h-3.5 text-red-500 flex-shrink-0" />}
           <span className="text-sm font-medium text-gray-900 truncate max-w-[180px]">{name}</span>
         </div>
+      </td>
+      {/* Goal progress */}
+      <td className="px-3 py-2.5 text-right whitespace-nowrap">
+        {goalType && goalValue ? (
+          <span className="text-xs font-semibold text-gray-700">
+            {goalActual ?? 0}/{goalValue} <span className="text-[10px] text-gray-400">{GOAL_TYPE_LABELS[goalType]}</span>
+          </span>
+        ) : (
+          <span className="text-[10px] text-gray-300">—</span>
+        )}
+      </td>
+      {/* Goal status */}
+      <td className="px-3 py-2.5 whitespace-nowrap">
+        {statusCfg ? (
+          <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded-full ${statusCfg.bg}`}>
+            {statusCfg.label}
+          </span>
+        ) : (
+          <span className="text-[10px] text-gray-300">—</span>
+        )}
       </td>
       <td className="px-3 py-2.5 text-sm text-gray-700 text-right whitespace-nowrap">${spendCur.toLocaleString()}</td>
       <td className="px-3 py-2.5 text-sm text-gray-700 text-right whitespace-nowrap">{leadsCur}</td>
