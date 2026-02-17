@@ -1,26 +1,6 @@
 import React from 'react';
 import { CircleDot } from 'lucide-react';
-
-function getPayDisplay(emp) {
-  if (emp.classification === 'salary') {
-    const monthly = emp.salary_monthly || 0;
-    return { monthly: `$${monthly.toLocaleString()}`, annual: `$${(monthly * 12).toLocaleString()}` };
-  }
-  if (emp.classification === 'hourly') {
-    const monthly = (emp.hourly_rate || 0) * (emp.standard_monthly_hours || 0);
-    return { monthly: `$${monthly.toLocaleString()}`, annual: `$${(monthly * 12).toLocaleString()}` };
-  }
-  if (emp.classification === 'contractor') {
-    if (emp.contractor_billing_type === 'per_project') return { monthly: 'Per Project', annual: 'Per Project' };
-    if (emp.contractor_billing_type === 'hourly') {
-      const monthly = (emp.contractor_rate || 0) * 160; // estimated
-      return { monthly: `~$${monthly.toLocaleString()}/mo`, annual: `~$${(monthly * 12).toLocaleString()}/yr` };
-    }
-    const monthly = emp.contractor_rate || 0;
-    return { monthly: `$${monthly.toLocaleString()}`, annual: `$${(monthly * 12).toLocaleString()}` };
-  }
-  return { monthly: '—', annual: '—' };
-}
+import { getPayDisplay } from './payUtils';
 
 const DISC_COLORS = {
   green: 'text-green-400',
@@ -33,7 +13,7 @@ const ROLE_LABELS = {
   onboard_admin: 'Onboard', client: 'Client',
 };
 
-export default function EmployeeTable({ employees, onSelect }) {
+export default function EmployeeTable({ employees, payrollSettings, onSelect }) {
   return (
     <div className="bg-slate-800/50 rounded-lg border border-slate-700/50 overflow-hidden">
       <div className="overflow-x-auto">
@@ -43,6 +23,7 @@ export default function EmployeeTable({ employees, onSelect }) {
               <th className="px-4 py-3 text-left text-[10px] font-medium text-slate-400 uppercase">Name</th>
               <th className="px-4 py-3 text-left text-[10px] font-medium text-slate-400 uppercase">Role</th>
               <th className="px-4 py-3 text-left text-[10px] font-medium text-slate-400 uppercase">Classification</th>
+              <th className="px-4 py-3 text-left text-[10px] font-medium text-slate-400 uppercase">Per Cycle</th>
               <th className="px-4 py-3 text-left text-[10px] font-medium text-slate-400 uppercase">Monthly</th>
               <th className="px-4 py-3 text-left text-[10px] font-medium text-slate-400 uppercase">Annual</th>
               <th className="px-4 py-3 text-left text-[10px] font-medium text-slate-400 uppercase">Cost Type</th>
@@ -52,9 +33,9 @@ export default function EmployeeTable({ employees, onSelect }) {
           </thead>
           <tbody className="divide-y divide-slate-700/30">
             {employees.length === 0 ? (
-              <tr><td colSpan="8" className="px-4 py-8 text-center text-sm text-slate-500">No employees found</td></tr>
+              <tr><td colSpan="9" className="px-4 py-8 text-center text-sm text-slate-500">No employees found</td></tr>
             ) : employees.map(emp => {
-              const pay = getPayDisplay(emp);
+              const pay = getPayDisplay(emp, payrollSettings);
               return (
                 <tr key={emp.id} onClick={() => onSelect(emp)} className="hover:bg-slate-700/20 cursor-pointer transition-colors">
                   <td className="px-4 py-3">
@@ -67,6 +48,9 @@ export default function EmployeeTable({ employees, onSelect }) {
                     {emp.classification === 'contractor' && emp.contractor_billing_type && (
                       <span className="text-[10px] text-slate-500 ml-1">({emp.contractor_billing_type})</span>
                     )}
+                  </td>
+                  <td className="px-4 py-3 text-xs font-medium text-slate-200">
+                    {emp.classification === 'salary' ? (pay.perCycle || '—') : '—'}
                   </td>
                   <td className="px-4 py-3 text-xs font-medium text-slate-200">{pay.monthly}</td>
                   <td className="px-4 py-3 text-xs text-slate-400">{pay.annual}</td>

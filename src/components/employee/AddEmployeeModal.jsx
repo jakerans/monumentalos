@@ -12,7 +12,7 @@ const ROLES = [
 export default function AddEmployeeModal({ open, onOpenChange, onAdd }) {
   const [form, setForm] = useState({
     full_name: '', email: '', phone: '', app_role: 'setter',
-    classification: 'salary', salary_monthly: '', hourly_rate: '', standard_monthly_hours: '',
+    classification: 'salary', pay_per_cycle: '', hourly_rate: '', standard_monthly_hours: '',
     contractor_billing_type: 'monthly', contractor_rate: '',
     cost_type: 'overhead', discipline_status: 'green', start_date: '',
     has_performance_pay: false, notes: '',
@@ -24,7 +24,7 @@ export default function AddEmployeeModal({ open, onOpenChange, onAdd }) {
     e.preventDefault();
     const data = { ...form, status: 'active' };
     if (form.classification === 'salary') {
-      data.salary_monthly = parseFloat(form.salary_monthly) || 0;
+      data.pay_per_cycle = parseFloat(form.pay_per_cycle) || 0;
     } else if (form.classification === 'hourly') {
       data.hourly_rate = parseFloat(form.hourly_rate) || 0;
       data.standard_monthly_hours = parseFloat(form.standard_monthly_hours) || 0;
@@ -35,7 +35,7 @@ export default function AddEmployeeModal({ open, onOpenChange, onAdd }) {
       }
     }
     onAdd(data);
-    setForm({ full_name: '', email: '', phone: '', app_role: 'setter', classification: 'salary', salary_monthly: '', hourly_rate: '', standard_monthly_hours: '', contractor_billing_type: 'monthly', contractor_rate: '', cost_type: 'overhead', discipline_status: 'green', start_date: '', has_performance_pay: false, notes: '' });
+    setForm({ full_name: '', email: '', phone: '', app_role: 'setter', classification: 'salary', pay_per_cycle: '', hourly_rate: '', standard_monthly_hours: '', contractor_billing_type: 'monthly', contractor_rate: '', cost_type: 'overhead', discipline_status: 'green', start_date: '', has_performance_pay: false, notes: '' });
     onOpenChange(false);
   };
 
@@ -77,7 +77,7 @@ export default function AddEmployeeModal({ open, onOpenChange, onAdd }) {
           </div>
 
           {form.classification === 'salary' && (
-            <div><label className={labelCls}>Monthly Salary ($)</label><input type="number" className={inputCls} value={form.salary_monthly} onChange={e => set('salary_monthly', e.target.value)} placeholder="e.g. 5000" /></div>
+            <div><label className={labelCls}>Pay Per Cycle ($)</label><input type="number" className={inputCls} value={form.pay_per_cycle} onChange={e => set('pay_per_cycle', e.target.value)} placeholder="e.g. 2500" /></div>
           )}
 
           {form.classification === 'hourly' && (
