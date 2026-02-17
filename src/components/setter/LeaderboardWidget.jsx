@@ -103,7 +103,7 @@ export default function LeaderboardWidget({ user, leaderboard, lastMonthBoard, s
 
         <Trophy className={`w-6 h-6 relative z-10 ${isFirst ? 'text-yellow-300 drop-shadow-[0_0_6px_rgba(255,215,0,0.6)]' : 'text-amber-400'}`} />
         <div className="flex flex-col items-start relative z-10">
-          <span className="text-lg font-black leading-tight" style={{ color: isFirst ? '#FFD700' : '#D6FF03' }}>#{myRank || '—'}</span>
+          <span className="text-lg font-black leading-tight" style={{ color: isFirst ? '#FFD700' : '#D6FF03' }}>#{displayRank || '—'}</span>
           <span className={`text-[10px] font-medium ${isFirst ? 'text-amber-300' : 'text-slate-400'}`}>Leaderboard</span>
         </div>
       </button>
