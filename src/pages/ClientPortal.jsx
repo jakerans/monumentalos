@@ -256,8 +256,10 @@ export default function ClientPortal() {
                     <td colSpan="6" className="px-6 py-8 text-center text-slate-500">No active appointments</td>
                   </tr>
                 ) : (
-                  activeLeads.map((lead) => (
-                    <tr key={lead.id} className="hover:bg-slate-700/20">
+                  activeLeads.map((lead) => {
+                    const isNeedsOutcome = needsOutcomeIds.has(lead.id);
+                    return (
+                    <tr key={lead.id} className={`${isNeedsOutcome ? 'bg-red-500/10 hover:bg-red-500/15' : 'hover:bg-slate-700/20'}`}>
                       <td className="px-6 py-4">
                         <button
                           onClick={() => { setSelectedLeadId(lead.id); setDrawerOpen(true); }}
