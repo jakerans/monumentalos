@@ -18,7 +18,7 @@ export default function LeadDetails() {
       try {
         const currentUser = await base44.auth.me();
         setUser(currentUser);
-        if (currentUser.role !== 'client' && currentUser.role !== 'admin') {
+        if (currentUser.app_role !== 'client' && currentUser.app_role !== 'admin') {
           navigate(createPageUrl('SetterDashboard'));
         }
       } catch (error) {
@@ -48,7 +48,7 @@ export default function LeadDetails() {
               <h1 className="text-xl font-bold text-gray-900">Lead Details</h1>
             </div>
             <div className="flex items-center gap-4">
-              {user.role === 'admin' && (
+              {user.app_role === 'admin' && (
                 <button
                   onClick={() => navigate(createPageUrl('AdminDashboard'))}
                   className="px-3 py-1.5 text-sm border border-gray-300 rounded-md hover:bg-gray-50"

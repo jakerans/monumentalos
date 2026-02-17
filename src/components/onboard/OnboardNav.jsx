@@ -31,7 +31,7 @@ export default function OnboardNav({ user, activeTab, onTabChange }) {
             ))}
           </div>
           <div className="flex items-center gap-3">
-            {user?.role === 'admin' && (
+            {user?.app_role === 'admin' && (
               <button
                 onClick={() => navigate(createPageUrl('AdminDashboard'))}
                 className="px-2 py-1 text-xs border border-gray-300 rounded-md hover:bg-gray-50"
