@@ -1,8 +1,7 @@
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import { base44 } from '@/api/base44Client';
-import { Link } from 'react-router-dom';
 import { LayoutDashboard, LogOut } from 'lucide-react';
 
 export default function MMNav({ user, clients }) {
