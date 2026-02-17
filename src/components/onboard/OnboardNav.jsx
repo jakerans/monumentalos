@@ -16,7 +16,7 @@ export default function OnboardNav({ user, activeTab, onTabChange }) {
             <h1 className="text-base font-bold text-gray-900">MonumentalOS</h1>
           </div>
           <div className="flex items-center gap-1">
-            {['projects', 'templates'].map(t => (
+            {['projects', 'clients', 'templates'].map(t => (
               <button
                 key={t}
                 onClick={() => onTabChange(t)}
@@ -26,7 +26,7 @@ export default function OnboardNav({ user, activeTab, onTabChange }) {
                     : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
                 }`}
               >
-                {t === 'projects' ? 'Projects' : 'Templates'}
+                {t === 'projects' ? 'Projects' : t === 'clients' ? 'Clients' : 'Templates'}
               </button>
             ))}
           </div>

@@ -12,6 +12,8 @@ import NewProjectModal from '../components/onboard/NewProjectModal';
 import CreateClientModal from '../components/onboard/CreateClientModal';
 import ClientContactsPanel from '../components/onboard/ClientContactsPanel';
 import TemplateManager from '../components/onboard/TemplateManager';
+import ClientList from '../components/onboard/ClientList';
+import InviteClientUserModal from '../components/onboard/InviteClientUserModal';
 
 export default function OnboardDashboard() {
   const navigate = useNavigate();
@@ -22,6 +24,7 @@ export default function OnboardDashboard() {
   const [statusFilter, setStatusFilter] = useState('in_progress');
   const [showCreateClient, setShowCreateClient] = useState(false);
   const [contactsClient, setContactsClient] = useState(null);
+  const [inviteClient, setInviteClient] = useState(null);
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -195,6 +198,18 @@ export default function OnboardDashboard() {
                 onManageContacts={(client) => { setSelectedProject(null); setContactsClient(client); }}
               />
             )}
+          </>
+        ) : tab === 'clients' ? (
+          <>
+            <ClientList
+              clients={clients}
+              onInviteUser={(client) => setInviteClient(client)}
+            />
+            <InviteClientUserModal
+              open={!!inviteClient}
+              onOpenChange={(v) => { if (!v) setInviteClient(null); }}
+              client={inviteClient}
+            />
           </>
         ) : (
           <TemplateManager templates={templates} onRefresh={refetchTemplates} />
