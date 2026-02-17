@@ -50,7 +50,6 @@ export default function AdminDashboard() {
 
   const isLoading = l1 || l2 || l3 || l4 || l5;
 
-  const now = new Date();
   const currentMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
   const lastMonth = (() => {
     const d = new Date(now.getFullYear(), now.getMonth() - 1);
