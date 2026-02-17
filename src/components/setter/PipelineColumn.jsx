@@ -1,5 +1,6 @@
 import React from 'react';
 import LeadCard from './LeadCard';
+import { motion } from 'framer-motion';
 
 export default function PipelineColumn({ title, count, color, leads, clients, onAction, onSelect }) {
   const getClientName = (clientId) => {
@@ -17,10 +18,19 @@ export default function PipelineColumn({ title, count, color, leads, clients, on
   };
 
   return (
-    <div className="flex flex-col min-w-0">
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.4, ease: [0.25, 0.46, 0.45, 0.94] }}
+      className="flex flex-col min-w-0"
+    >
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
-          <div className={`w-2 h-2 rounded-full ${color}`} />
+          <motion.div
+            className={`w-2 h-2 rounded-full ${color}`}
+            animate={{ scale: [1, 1.3, 1] }}
+            transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
+          />
           <h3 className="text-sm font-semibold text-slate-200">{title}</h3>
         </div>
         <span className="text-xs font-medium text-slate-400 bg-slate-800 px-2 py-0.5 rounded-full">{count}</span>
@@ -43,6 +53,6 @@ export default function PipelineColumn({ title, count, color, leads, clients, on
           ))
         )}
       </div>
-    </div>
+    </motion.div>
   );
 }

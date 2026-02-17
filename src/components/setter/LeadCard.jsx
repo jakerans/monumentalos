@@ -1,5 +1,6 @@
 import React from 'react';
 import { Phone, Mail, Clock, Building2, Tag, Ban } from 'lucide-react';
+import { motion } from 'framer-motion';
 
 function timeSince(dateStr) {
   if (!dateStr) return null;
@@ -34,8 +35,12 @@ export default function LeadCard({ lead, clientName, onAction, onSelect, urgency
   const speedLabel = lead.lead_received_date ? timeSince(lead.lead_received_date) : timeSince(lead.created_date);
 
   return (
-    <div
-      className={`bg-slate-800/60 rounded-lg border p-3 sm:p-4 hover:shadow-md transition-shadow cursor-pointer ${
+    <motion.div
+      initial={{ opacity: 0, x: -8 }}
+      animate={{ opacity: 1, x: 0 }}
+      whileHover={{ scale: 1.02, x: 4 }}
+      transition={{ type: 'spring', stiffness: 400, damping: 25 }}
+      className={`bg-slate-800/60 rounded-lg border p-3 sm:p-4 hover:shadow-lg hover:shadow-black/20 transition-shadow cursor-pointer ${
         lead.status === 'disqualified' ? 'border-red-500/30 bg-red-500/10' :
         urgency === 'high' ? 'border-red-500/40 bg-red-500/10' :
         urgency === 'medium' ? 'border-amber-500/40 bg-amber-500/10' :
@@ -125,6 +130,6 @@ export default function LeadCard({ lead, clientName, onAction, onSelect, urgency
           </span>
         )}
       </div>
-    </div>
+    </motion.div>
   );
 }
