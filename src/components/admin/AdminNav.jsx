@@ -16,11 +16,11 @@ export default function AdminNav({ user, currentPage, clients = [] }) {
   ];
 
   return (
-    <nav className="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-30">
+    <nav className="bg-slate-900 shadow-lg sticky top-0 z-30">
       <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-14">
           <div className="flex items-center gap-6">
-            <h1 className="text-lg font-bold text-gray-900">MonumentalOS</h1>
+            <h1 className="text-lg font-bold text-white tracking-tight">Monumental<span className="text-cyan-400">OS</span></h1>
             <div className="flex gap-1">
               {navItems.map(item => (
                 <Link
@@ -28,8 +28,8 @@ export default function AdminNav({ user, currentPage, clients = [] }) {
                   to={createPageUrl(item.key)}
                   className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
                     currentPage === item.key
-                      ? 'bg-blue-50 text-blue-700'
-                      : 'text-gray-500 hover:text-gray-900 hover:bg-gray-50'
+                      ? 'bg-white/10 text-white'
+                      : 'text-slate-400 hover:text-white hover:bg-white/5'
                   }`}
                 >
                   {item.label}
@@ -49,7 +49,7 @@ export default function AdminNav({ user, currentPage, clients = [] }) {
                   navigate(createPageUrl('ClientPortal'));
                 }
               }}
-              className="px-2 py-1 text-xs border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="px-2 py-1 text-xs bg-slate-800 border border-slate-700 text-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-cyan-500"
             >
               <option value="">Switch View</option>
               <option value="mm">Marketing Manager</option>
@@ -63,10 +63,10 @@ export default function AdminNav({ user, currentPage, clients = [] }) {
                 </optgroup>
               )}
             </select>
-            <span className="text-xs text-gray-600">{user?.full_name}</span>
+            <span className="text-xs text-slate-400">{user?.full_name}</span>
             <button
               onClick={() => base44.auth.logout()}
-              className="text-xs text-gray-500 hover:text-gray-700"
+              className="text-xs text-slate-500 hover:text-white transition-colors"
             >
               Logout
             </button>

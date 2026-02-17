@@ -8,16 +8,16 @@ export default function MMNav({ user, clients, pendingOnboardCount = 0 }) {
   const navigate = useNavigate();
 
   return (
-    <nav className="bg-white border-b border-gray-200 sticky top-0 z-30">
+    <nav className="bg-slate-900 shadow-lg sticky top-0 z-30">
       <div className="max-w-[1600px] mx-auto px-4 sm:px-6">
         <div className="flex items-center justify-between h-14">
           <div className="flex items-center gap-3">
-            <LayoutDashboard className="w-5 h-5 text-blue-600" />
-            <h1 className="text-base font-bold text-gray-900">MonumentalOS</h1>
-            <span className="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full font-medium">{clients?.length || 0} clients</span>
+            <LayoutDashboard className="w-5 h-5 text-cyan-400" />
+            <h1 className="text-base font-bold text-white tracking-tight">Monumental<span className="text-cyan-400">OS</span></h1>
+            <span className="text-xs bg-white/10 text-cyan-300 px-2 py-0.5 rounded-full font-medium">{clients?.length || 0} clients</span>
             <Link
               to={createPageUrl('MMOnboard')}
-              className="relative inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-md bg-purple-600 text-white hover:bg-purple-700 transition-colors shadow-sm"
+              className="relative inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-md bg-cyan-600 text-white hover:bg-cyan-500 transition-colors shadow-sm"
             >
               <ClipboardCheck className="w-3.5 h-3.5" />
               Onboarding
@@ -36,15 +36,15 @@ export default function MMNav({ user, clients, pendingOnboardCount = 0 }) {
                   else if (e.target.value === 'setter') navigate(createPageUrl('SetterDashboard'));
                 }}
                 defaultValue="mm"
-                className="px-2 py-1 text-xs border border-gray-300 rounded-md"
+                className="px-2 py-1 text-xs bg-slate-800 border border-slate-700 text-slate-300 rounded-md"
               >
                 <option value="mm">Marketing Manager</option>
                 <option value="admin">Admin</option>
                 <option value="setter">Setter</option>
               </select>
             )}
-            <span className="text-xs text-gray-500">{user?.full_name}</span>
-            <button onClick={() => base44.auth.logout()} className="text-gray-400 hover:text-gray-600">
+            <span className="text-xs text-slate-400">{user?.full_name}</span>
+            <button onClick={() => base44.auth.logout()} className="text-slate-500 hover:text-white transition-colors">
               <LogOut className="w-4 h-4" />
             </button>
           </div>

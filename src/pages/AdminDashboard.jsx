@@ -93,7 +93,7 @@ export default function AdminDashboard() {
   if (!user) return null;
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-slate-50">
       <AdminNav user={user} currentPage="AdminDashboard" clients={clients} />
 
       <main className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-5">
@@ -104,7 +104,7 @@ export default function AdminDashboard() {
               {now.toLocaleString('default', { month: 'long', year: 'numeric' })} overview
             </p>
           </div>
-          <button onClick={() => setGoalsOpen(true)} className="px-4 py-2 text-xs font-medium bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 flex items-center gap-1.5 shadow-sm">
+          <button onClick={() => setGoalsOpen(true)} className="px-4 py-2 text-xs font-medium bg-slate-900 text-white rounded-lg hover:bg-slate-800 flex items-center gap-1.5 shadow-sm">
             <Settings className="w-3.5 h-3.5" /> Manage Goals
           </button>
         </div>
