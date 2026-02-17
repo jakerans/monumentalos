@@ -88,7 +88,7 @@ export default function RevenueDashboard() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between h-16">
             <div className="flex items-center gap-8">
-              <h1 className="text-xl font-bold text-gray-900">Agency ERP</h1>
+              <h1 className="text-xl font-bold text-gray-900">MonumentalOS</h1>
               <div className="flex gap-4">
                 <Link
                   to={createPageUrl('AdminDashboard')}
