@@ -27,8 +27,8 @@ export default function InviteUserModal({ open, onOpenChange, clients = [], onIn
 
     setSaving(true);
     try {
-      // Admin can invite with 'admin' role directly; all others get 'user' platform role
-      const platformRole = role === 'admin' ? 'admin' : 'user';
+      // Admins and onboard_admins get platform 'admin' role for full permissions
+      const platformRole = (role === 'admin' || role === 'onboard_admin') ? 'admin' : 'user';
       await base44.users.inviteUser(email.trim(), platformRole);
 
       // Create a PendingInvite so the app-level role is applied on signup
