@@ -11,6 +11,7 @@ import RevenueClientTable from '../components/admin/RevenueClientTable';
 import MonthlyPLChart from '../components/admin/MonthlyPLChart';
 import ExpenseBreakdown from '../components/admin/ExpenseBreakdown';
 import PaymentLedger from '../components/admin/PaymentLedger';
+import CashFlowAnalysis from '../components/admin/CashFlowAnalysis';
 import AddPaymentModal from '../components/admin/AddPaymentModal';
 import AddExpenseModal from '../components/admin/AddExpenseModal';
 
@@ -76,6 +77,8 @@ export default function RevenueDashboard() {
           <PaymentLedger payments={payments} clients={clients} startDate={startDate} endDate={endDate} onRefresh={refetchPayments} />
           <ExpenseBreakdown expenses={expenses} clients={clients} startDate={startDate} endDate={endDate} onRefresh={refetchExpenses} />
         </div>
+
+        <CashFlowAnalysis payments={payments} expenses={expenses} />
 
         <RevenueClientTable clients={clients} leads={leads} payments={payments} />
       </main>
