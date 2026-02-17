@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import { Mail, Phone, Calendar, DollarSign, Clock, Briefcase, Ruler, FileText, X, Pencil, Save } from 'lucide-react';
+import { Mail, Phone, Calendar, DollarSign, Clock, Briefcase, Ruler, FileText, X, Pencil, Save, Tag } from 'lucide-react';
 import toast from 'react-hot-toast';
 import confetti from 'canvas-confetti';
 import {
@@ -20,6 +20,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
+import IndustryPicker, { INDUSTRY_LABELS, INDUSTRY_COLORS } from './shared/IndustryPicker';
 
 const DISPOSITION_OPTIONS = [
   { value: 'scheduled', label: 'Scheduled', bg: 'bg-blue-100 text-blue-800 border-blue-300', activeBg: 'bg-blue-600 text-white' },
@@ -88,6 +89,7 @@ export default function LeadDetailsDrawer({ leadId, open, onOpenChange, onLeadUp
         name: lead.name || '',
         email: lead.email || '',
         phone: lead.phone || '',
+        industries: lead.industries || [],
         appointment_date: toLocalDatetimeString(lead.appointment_date),
         date_appointment_set: toLocalDatetimeString(lead.date_appointment_set),
         project_type: lead.project_type || '',
@@ -293,6 +295,22 @@ export default function LeadDetailsDrawer({ leadId, open, onOpenChange, onLeadUp
                   </div>
                 </div>
 
+              {/* Industry */}
+              <div>
+                <h3 className="text-xs font-semibold text-gray-500 uppercase mb-3">Industry</h3>
+                {editing ? (
+                  <IndustryPicker selected={editData.industries} onChange={(v) => setEditData(d => ({...d, industries: v}))} />
+                ) : (
+                  <div className="flex flex-wrap gap-1">
+                    {(lead.industries && lead.industries.length > 0) ? lead.industries.map(ind => (
+                      <span key={ind} className={`px-2 py-1 text-xs font-medium rounded ${INDUSTRY_COLORS[ind] || 'bg-gray-100 text-gray-600'}`}>
+                        {INDUSTRY_LABELS[ind] || ind}
+                      </span>
+                    )) : <span className="text-sm text-gray-400 italic">—</span>}
+                  </div>
+                )}
+              </div>
+
               {/* Project Details */}
               <div>
                   <h3 className="text-xs font-semibold text-gray-500 uppercase mb-3">Project Details</h3>
@@ -339,7 +357,7 @@ export default function LeadDetailsDrawer({ leadId, open, onOpenChange, onLeadUp
                     <button onClick={() => setShowConfirm(true)} className="flex-1 px-4 py-2.5 text-sm font-medium bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center justify-center gap-2">
                       <Save className="w-4 h-4" /> Save Changes
                     </button>
-                    <button onClick={() => { setEditing(false); setEditData({ name: lead.name || '', email: lead.email || '', phone: lead.phone || '', appointment_date: toLocalDatetimeString(lead.appointment_date), date_appointment_set: toLocalDatetimeString(lead.date_appointment_set), project_type: lead.project_type || '', project_size: lead.project_size || '', timeline: lead.timeline || '', sale_amount: lead.sale_amount || '', date_sold: lead.date_sold || '', notes: lead.notes || '' }); }} className="flex-1 px-4 py-2.5 text-sm font-medium bg-gray-100 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-200">
+                    <button onClick={() => { setEditing(false); setEditData({ name: lead.name || '', email: lead.email || '', phone: lead.phone || '', industries: lead.industries || [], appointment_date: toLocalDatetimeString(lead.appointment_date), date_appointment_set: toLocalDatetimeString(lead.date_appointment_set), project_type: lead.project_type || '', project_size: lead.project_size || '', timeline: lead.timeline || '', sale_amount: lead.sale_amount || '', date_sold: lead.date_sold || '', notes: lead.notes || '' }); }} className="flex-1 px-4 py-2.5 text-sm font-medium bg-gray-100 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-200">
                       Cancel
                     </button>
                   </div>
