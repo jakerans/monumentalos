@@ -129,17 +129,27 @@ Provide:
       };
 
       await base44.entities.AITaskLog.bulkCreate([insightLog, ...newLogs]);
+      localStorage.setItem('ai_recap_last_run', new Date().toISOString().split('T')[0]);
       refetchLogs();
     }
 
     setLoading(false);
   };
 
+  // Only auto-generate once per day
   useEffect(() => {
     if (clientMetrics.length > 0 && !recap && !loading) {
-      generateRecap();
+      const lastRun = localStorage.getItem('ai_recap_last_run');
+      const todayStr = new Date().toISOString().split('T')[0];
+      if (lastRun === todayStr) {
+        // Already ran today — just load the most recent recap from logs
+        const latestInsight = taskLogs.find(l => l.type === 'insight');
+        if (latestInsight) setRecap(latestInsight.task_text);
+      } else {
+        generateRecap();
+      }
     }
-  }, [clientMetrics.length]);
+  }, [clientMetrics.length, taskLogs.length]);
 
   const updateTaskStatus = async (taskId, newStatus) => {
     await base44.entities.AITaskLog.update(taskId, { status: newStatus });
