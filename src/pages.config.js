@@ -67,6 +67,7 @@ import RevenueDashboard from './pages/RevenueDashboard';
 import SetterDashboard from './pages/SetterDashboard';
 import SetterPerformance from './pages/SetterPerformance';
 import UserManagement from './pages/UserManagement';
+import __Layout from './Layout.jsx';
 
 
 export const PAGES = {
@@ -95,4 +96,5 @@ export const PAGES = {
 export const pagesConfig = {
     mainPage: "AdminDashboard",
     Pages: PAGES,
+    Layout: __Layout,
 };
