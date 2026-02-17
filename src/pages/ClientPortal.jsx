@@ -3,7 +3,7 @@ import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import { Link, useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
-import { Calendar, CheckCircle, DollarSign } from 'lucide-react';
+import { Calendar, CheckCircle, Clock, AlertTriangle } from 'lucide-react';
 import LeadDetailsDrawer from '../components/LeadDetailsDrawer';
 import AppointmentCard from '../components/client/AppointmentCard';
 import StatCard from '../components/client/StatCard';
