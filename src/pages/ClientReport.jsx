@@ -92,20 +92,20 @@ export default function ClientReport() {
 
   const totalSpend = spendRecords.reduce((sum, s) => sum + (s.amount || 0), 0);
   const appointmentsBooked = bookedLeads.length;
-  const showedAppointments = appointmentLeads.filter(l => l.disposition === 'showed');
+  // Showed = any lead with appointment_date in range whose disposition progressed to showed (including sold/lost)
+  const showedAppointments = appointmentLeads.filter(l => l.disposition === 'showed' || l.outcome === 'sold' || l.outcome === 'lost');
   const appointmentsShowed = showedAppointments.length;
   const cancelledCount = appointmentLeads.filter(l => l.disposition === 'cancelled').length;
-  const jobsSoldFromShowed = showedAppointments.filter(l => l.outcome === 'sold').length;
-  const jobsSold = soldLeads.filter(l => l.outcome === 'sold').length;
-  const totalRevenue = soldLeads
-    .filter(l => l.outcome === 'sold')
-    .reduce((sum, l) => sum + (l.sale_amount || 0), 0);
+  // Jobs sold & revenue based on appointment_date range (not date_sold) so sold leads count in showed too
+  const soldFromShowed = showedAppointments.filter(l => l.outcome === 'sold');
+  const jobsSold = soldFromShowed.length;
+  const totalRevenue = soldFromShowed.reduce((sum, l) => sum + (l.sale_amount || 0), 0);
 
   const cancellationRate = appointmentLeads.length > 0
     ? ((cancelledCount / appointmentLeads.length) * 100).toFixed(1)
     : '0.0';
   const winRate = appointmentsShowed > 0
-    ? ((jobsSoldFromShowed / appointmentsShowed) * 100).toFixed(1)
+    ? ((jobsSold / appointmentsShowed) * 100).toFixed(1)
     : '0.0';
   const avgJobSize = jobsSold > 0
     ? (totalRevenue / jobsSold).toFixed(0)
