@@ -11,6 +11,7 @@ import LeadDetailPanel from '../components/setter/LeadDetailPanel';
 import BookAppointmentModal from '../components/setter/BookAppointmentModal';
 import AddLeadModal from '../components/setter/AddLeadModal';
 import FirstCallModal from '../components/setter/FirstCallModal';
+import DisqualifyModal from '../components/setter/DisqualifyModal';
 
 export default function SetterDashboard() {
   const navigate = useNavigate();
@@ -24,6 +25,8 @@ export default function SetterDashboard() {
   const [addOpen, setAddOpen] = useState(false);
   const [firstCallLead, setFirstCallLead] = useState(null);
   const [firstCallOpen, setFirstCallOpen] = useState(false);
+  const [dqLead, setDqLead] = useState(null);
+  const [dqOpen, setDqOpen] = useState(false);
   const [showDQ, setShowDQ] = useState(false);
 
   useEffect(() => {
@@ -75,7 +78,18 @@ export default function SetterDashboard() {
     } else if (action === 'book') {
       setBookingLead(lead);
       setBookingOpen(true);
+    } else if (action === 'disqualify') {
+      setDqLead(lead);
+      setDqOpen(true);
     }
+  };
+
+  const handleDisqualify = async (leadId, dqReason) => {
+    await base44.entities.Lead.update(leadId, {
+      status: 'disqualified',
+      dq_reason: dqReason,
+    });
+    refetch();
   };
 
   const handleFirstCallResult = async (leadId, result, dqReason) => {
@@ -279,6 +293,13 @@ export default function SetterDashboard() {
         open={bookingOpen}
         onOpenChange={setBookingOpen}
         onBook={handleBookAppointment}
+      />
+
+      <DisqualifyModal
+        lead={dqLead}
+        open={dqOpen}
+        onOpenChange={setDqOpen}
+        onDisqualify={handleDisqualify}
       />
 
       <AddLeadModal
