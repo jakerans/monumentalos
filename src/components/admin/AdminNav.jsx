@@ -20,7 +20,7 @@ export default function AdminNav({ user, currentPage, clients = [] }) {
       <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-14">
           <div className="flex items-center gap-6">
-            <h1 className="text-lg font-bold text-white tracking-tight">Monumental<span className="text-cyan-400">OS</span></h1>
+            <h1 className="text-lg font-bold text-white tracking-tight">Monumental<span style={{color:'#D6FF03'}}>OS</span></h1>
             <div className="flex gap-1">
               {navItems.map(item => (
                 <Link
@@ -28,7 +28,7 @@ export default function AdminNav({ user, currentPage, clients = [] }) {
                   to={createPageUrl(item.key)}
                   className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
                     currentPage === item.key
-                      ? 'bg-white/10 text-white'
+                      ? 'bg-white/10 text-white font-semibold'
                       : 'text-slate-400 hover:text-white hover:bg-white/5'
                   }`}
                 >
@@ -49,7 +49,7 @@ export default function AdminNav({ user, currentPage, clients = [] }) {
                   navigate(createPageUrl('ClientPortal'));
                 }
               }}
-              className="px-2 py-1 text-xs bg-slate-800 border border-slate-700 text-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-cyan-500"
+              className="px-2 py-1 text-xs bg-slate-800 border border-slate-700 text-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#D6FF03]"
             >
               <option value="">Switch View</option>
               <option value="mm">Marketing Manager</option>

@@ -104,7 +104,7 @@ export default function AdminDashboard() {
               {now.toLocaleString('default', { month: 'long', year: 'numeric' })} overview
             </p>
           </div>
-          <button onClick={() => setGoalsOpen(true)} className="px-4 py-2 text-xs font-medium bg-slate-900 text-white rounded-lg hover:bg-slate-800 flex items-center gap-1.5 shadow-sm">
+          <button onClick={() => setGoalsOpen(true)} className="px-4 py-2 text-xs font-bold rounded-lg flex items-center gap-1.5 shadow-sm hover:opacity-90 transition-opacity text-black" style={{backgroundColor:'#D6FF03'}}>
             <Settings className="w-3.5 h-3.5" /> Manage Goals
           </button>
         </div>

@@ -11,7 +11,7 @@ export default function SetterNav({ user }) {
       <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
         <div className="flex justify-between h-14 sm:h-16">
           <div className="flex items-center">
-            <h1 className="text-lg sm:text-xl font-bold text-white tracking-tight">Monumental<span className="text-cyan-400">OS</span></h1>
+            <h1 className="text-lg sm:text-xl font-bold text-white tracking-tight">Monumental<span style={{color:'#D6FF03'}}>OS</span></h1>
           </div>
           <div className="flex items-center gap-2 sm:gap-4">
             {user.app_role === 'admin' && (
@@ -21,7 +21,7 @@ export default function SetterNav({ user }) {
                   if (e.target.value === 'admin') navigate(createPageUrl('AdminDashboard'));
                   else if (e.target.value === 'client') navigate(createPageUrl('ClientPortal'));
                 }}
-                className="px-2 sm:px-3 py-1 sm:py-1.5 text-xs sm:text-sm bg-slate-800 border border-slate-700 text-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-cyan-500"
+                className="px-2 sm:px-3 py-1 sm:py-1.5 text-xs sm:text-sm bg-slate-800 border border-slate-700 text-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#D6FF03]"
               >
                 <option value="admin">Admin</option>
                 <option value="setter">Setter</option>

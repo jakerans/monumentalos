@@ -80,7 +80,7 @@ export default function ClientSettings() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col sm:flex-row sm:justify-between sm:h-16">
             <div className="flex items-center justify-between h-14 sm:h-16">
-              <h1 className="text-lg sm:text-xl font-bold text-white tracking-tight">Monumental<span className="text-cyan-400">OS</span></h1>
+              <h1 className="text-lg sm:text-xl font-bold text-white tracking-tight">Monumental<span style={{color:'#D6FF03'}}>OS</span></h1>
               <div className="flex items-center gap-2 sm:hidden">
                 {user.app_role === 'admin' && (
                   <button

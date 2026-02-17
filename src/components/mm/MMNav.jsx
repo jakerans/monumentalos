@@ -12,12 +12,13 @@ export default function MMNav({ user, clients, pendingOnboardCount = 0 }) {
       <div className="max-w-[1600px] mx-auto px-4 sm:px-6">
         <div className="flex items-center justify-between h-14">
           <div className="flex items-center gap-3">
-            <LayoutDashboard className="w-5 h-5 text-cyan-400" />
-            <h1 className="text-base font-bold text-white tracking-tight">Monumental<span className="text-cyan-400">OS</span></h1>
-            <span className="text-xs bg-white/10 text-cyan-300 px-2 py-0.5 rounded-full font-medium">{clients?.length || 0} clients</span>
+            <LayoutDashboard className="w-5 h-5" style={{color:'#D6FF03'}} />
+            <h1 className="text-base font-bold text-white tracking-tight">Monumental<span style={{color:'#D6FF03'}}>OS</span></h1>
+            <span className="text-xs bg-white/10 px-2 py-0.5 rounded-full font-medium" style={{color:'#D6FF03'}}>{clients?.length || 0} clients</span>
             <Link
               to={createPageUrl('MMOnboard')}
-              className="relative inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-md bg-cyan-600 text-white hover:bg-cyan-500 transition-colors shadow-sm"
+              className="relative inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-md text-black hover:opacity-90 transition-colors shadow-sm"
+              style={{backgroundColor:'#D6FF03'}}
             >
               <ClipboardCheck className="w-3.5 h-3.5" />
               Onboarding

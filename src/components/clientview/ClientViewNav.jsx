@@ -17,7 +17,7 @@ export default function ClientViewNav({ user, clientName }) {
           <div className="flex items-center gap-3">
             <Link
               to={createPageUrl(backPage)}
-              className="text-sm text-cyan-400 hover:text-cyan-300 inline-flex items-center gap-1"
+              className="text-sm hover:opacity-80 inline-flex items-center gap-1" style={{color:'#D6FF03'}}
             >
               <ArrowLeft className="w-4 h-4" /> {backLabel}
             </Link>

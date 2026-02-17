@@ -57,7 +57,7 @@ export default function AccountPending() {
   if (checking) {
     return (
       <div className="min-h-screen bg-slate-50 flex items-center justify-center">
-        <Loader2 className="w-8 h-8 text-cyan-500 animate-spin" />
+        <Loader2 className="w-8 h-8 animate-spin" style={{color:'#D6FF03'}} />
       </div>
     );
   }
@@ -66,8 +66,8 @@ export default function AccountPending() {
     <div className="min-h-screen bg-slate-900 flex items-center justify-center px-4">
       <div className="max-w-md w-full text-center">
         <div className="bg-slate-800 rounded-2xl shadow-lg border border-slate-700 p-8 space-y-5">
-          <div className="w-16 h-16 bg-cyan-500/10 rounded-full flex items-center justify-center mx-auto">
-            <Clock className="w-8 h-8 text-cyan-400" />
+          <div className="w-16 h-16 rounded-full flex items-center justify-center mx-auto" style={{backgroundColor:'rgba(214,255,3,0.1)'}}>
+            <Clock className="w-8 h-8" style={{color:'#D6FF03'}} />
           </div>
           <div>
             <h1 className="text-xl font-bold text-white">Your Account Is Being Set Up</h1>
@@ -75,8 +75,8 @@ export default function AccountPending() {
               Welcome{user?.full_name ? `, ${user.full_name}` : ''}! Your account is currently being configured by our team. We'll notify you as soon as everything is ready.
             </p>
           </div>
-          <div className="bg-cyan-500/10 border border-cyan-500/20 rounded-lg px-4 py-3">
-            <p className="text-xs text-cyan-300">
+          <div className="rounded-lg px-4 py-3" style={{backgroundColor:'rgba(214,255,3,0.08)', borderWidth:1, borderColor:'rgba(214,255,3,0.2)'}}>
+            <p className="text-xs" style={{color:'#D6FF03'}}>
               You'll receive an email when your account is live. No further action is needed from you right now.
             </p>
           </div>

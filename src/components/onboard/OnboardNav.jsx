@@ -12,8 +12,8 @@ export default function OnboardNav({ user, activeTab, onTabChange }) {
       <div className="max-w-[1400px] mx-auto px-4 sm:px-6">
         <div className="flex items-center justify-between h-14">
           <div className="flex items-center gap-3">
-            <ClipboardList className="w-5 h-5 text-cyan-400" />
-            <h1 className="text-base font-bold text-white tracking-tight">Monumental<span className="text-cyan-400">OS</span></h1>
+            <ClipboardList className="w-5 h-5" style={{color:'#D6FF03'}} />
+            <h1 className="text-base font-bold text-white tracking-tight">Monumental<span style={{color:'#D6FF03'}}>OS</span></h1>
           </div>
           <div className="flex items-center gap-1">
             {['projects', 'clients', 'templates'].map(t => (
