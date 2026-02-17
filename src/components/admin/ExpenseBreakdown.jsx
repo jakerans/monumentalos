@@ -12,6 +12,7 @@ const CATEGORY_COLORS = {
   contractor: 'bg-indigo-100 text-indigo-700', travel: 'bg-teal-100 text-teal-700',
   other: 'bg-gray-100 text-gray-700',
 };
+const TYPE_COLORS = { cogs: 'bg-orange-100 text-orange-700', overhead: 'bg-gray-100 text-gray-700' };
 
 export default function ExpenseBreakdown({ expenses, clients, startDate, endDate, onRefresh }) {
   const start = new Date(startDate);
@@ -39,8 +40,17 @@ export default function ExpenseBreakdown({ expenses, clients, startDate, endDate
         <h2 className="text-sm font-bold text-gray-900">Expense Breakdown</h2>
         <span className="text-sm font-bold text-red-600">Total: ${total.toLocaleString()}</span>
       </div>
+      {/* COGS vs Overhead summary */}
+      <div className="px-4 py-2 flex gap-3 border-b border-gray-100">
+        <div className="px-2 py-1 rounded text-xs font-bold bg-orange-100 text-orange-700">
+          COGS: ${filtered.filter(e => e.expense_type === 'cogs').reduce((s, e) => s + (e.amount || 0), 0).toLocaleString()}
+        </div>
+        <div className="px-2 py-1 rounded text-xs font-bold bg-gray-200 text-gray-700">
+          Overhead: ${filtered.filter(e => e.expense_type !== 'cogs').reduce((s, e) => s + (e.amount || 0), 0).toLocaleString()}
+        </div>
+      </div>
       {/* Category summary */}
-      <div className="px-4 py-3 flex flex-wrap gap-2 border-b border-gray-100">
+      <div className="px-4 py-2 flex flex-wrap gap-2 border-b border-gray-100">
         {Object.entries(byCat).sort((a, b) => b[1] - a[1]).map(([cat, amt]) => (
           <div key={cat} className={`px-2 py-1 rounded text-xs font-medium ${CATEGORY_COLORS[cat] || 'bg-gray-100 text-gray-600'}`}>
             {CATEGORY_LABELS[cat] || cat}: ${amt.toLocaleString()}
@@ -54,6 +64,9 @@ export default function ExpenseBreakdown({ expenses, clients, startDate, endDate
         ) : filtered.sort((a, b) => new Date(b.date) - new Date(a.date)).map(e => (
           <div key={e.id} className="px-4 py-2 flex items-center justify-between hover:bg-gray-50">
             <div className="flex items-center gap-3 min-w-0">
+              <span className={`px-1.5 py-0.5 text-[10px] font-medium rounded flex-shrink-0 ${TYPE_COLORS[e.expense_type] || TYPE_COLORS.overhead}`}>
+                {e.expense_type === 'cogs' ? 'COGS' : 'OH'}
+              </span>
               <span className={`px-1.5 py-0.5 text-[10px] font-medium rounded flex-shrink-0 ${CATEGORY_COLORS[e.category] || 'bg-gray-100 text-gray-600'}`}>
                 {CATEGORY_LABELS[e.category] || e.category}
               </span>
