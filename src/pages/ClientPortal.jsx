@@ -187,10 +187,34 @@ export default function ClientPortal() {
           </p>
         </div>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-2 sm:gap-4 mb-6 sm:mb-8">
-          <StatCard icon={Calendar} iconColor="text-blue-600" label="Scheduled" thisMonth={stats.scheduledThis} lastMonth={stats.scheduledLast} />
-          <StatCard icon={CheckCircle} iconColor="text-green-600" label="Showed" thisMonth={stats.showedThis} lastMonth={stats.showedLast} />
-          <StatCard icon={CheckCircle} iconColor="text-green-600" label="Sold" thisMonth={stats.soldThis} lastMonth={stats.soldLast} />
-          <StatCard icon={DollarSign} iconColor="text-emerald-600" label="Revenue" thisMonth={stats.revenueThis} lastMonth={stats.revenueLast} format="currency" />
+          <div className="bg-slate-800/50 rounded-lg shadow p-3 sm:p-5 border border-slate-700/50">
+            <div className="flex items-center gap-1.5 sm:gap-2 mb-1">
+              <Calendar className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-blue-400" />
+              <p className="text-[10px] sm:text-sm font-medium text-slate-400">Scheduled MTD</p>
+            </div>
+            <p className="text-lg sm:text-3xl font-bold text-white">{scheduledMTD}</p>
+          </div>
+          <div className="bg-slate-800/50 rounded-lg shadow p-3 sm:p-5 border border-slate-700/50">
+            <div className="flex items-center gap-1.5 sm:gap-2 mb-1">
+              <Clock className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-amber-400" />
+              <p className="text-[10px] sm:text-sm font-medium text-slate-400">Upcoming</p>
+            </div>
+            <p className="text-lg sm:text-3xl font-bold text-white">{upcomingCount}</p>
+          </div>
+          <div className="bg-slate-800/50 rounded-lg shadow p-3 sm:p-5 border border-slate-700/50">
+            <div className="flex items-center gap-1.5 sm:gap-2 mb-1">
+              <CheckCircle className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-green-400" />
+              <p className="text-[10px] sm:text-sm font-medium text-slate-400">Showed</p>
+            </div>
+            <p className="text-lg sm:text-3xl font-bold text-white">{showedMTD}</p>
+          </div>
+          <div className="bg-slate-800/50 rounded-lg shadow p-3 sm:p-5 border border-red-500/30" style={{ backgroundColor: needsOutcomeCount > 0 ? 'rgba(239,68,68,0.08)' : undefined }}>
+            <div className="flex items-center gap-1.5 sm:gap-2 mb-1">
+              <AlertTriangle className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-red-400" />
+              <p className="text-[10px] sm:text-sm font-medium text-red-400">Needs Outcome</p>
+            </div>
+            <p className="text-lg sm:text-3xl font-bold text-red-400">{needsOutcomeCount}</p>
+          </div>
         </div>
 
         {/* Mobile card view */}
