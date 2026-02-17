@@ -6,8 +6,9 @@ import { createPageUrl } from '@/utils';
 import { DollarSign, Receipt } from 'lucide-react';
 import AdminNav from '../components/admin/AdminNav';
 import DateRangePicker from '../components/admin/DateRangePicker';
-import RevenueKPIs from '../components/admin/RevenueKPIs';
+import AccountingKPIs from '../components/admin/AccountingKPIs';
 import RevenueClientTable from '../components/admin/RevenueClientTable';
+import MonthlyPLChart from '../components/admin/MonthlyPLChart';
 import ExpenseBreakdown from '../components/admin/ExpenseBreakdown';
 import PaymentLedger from '../components/admin/PaymentLedger';
 import AddPaymentModal from '../components/admin/AddPaymentModal';
@@ -31,30 +32,15 @@ export default function RevenueDashboard() {
           if (currentUser.role === 'marketing_manager') navigate(createPageUrl('MMDashboard'));
           else navigate(createPageUrl('SetterDashboard'));
         }
-      } catch (error) { base44.auth.redirectToLogin(); }
+      } catch { base44.auth.redirectToLogin(); }
     };
     checkAuth();
   }, [navigate]);
 
-  const { data: clients = [] } = useQuery({
-    queryKey: ['rev-clients'],
-    queryFn: () => base44.entities.Client.list(),
-  });
-
-  const { data: leads = [] } = useQuery({
-    queryKey: ['rev-leads'],
-    queryFn: () => base44.entities.Lead.list('-created_date', 5000),
-  });
-
-  const { data: payments = [], refetch: refetchPayments } = useQuery({
-    queryKey: ['rev-payments'],
-    queryFn: () => base44.entities.Payment.list('-date', 5000),
-  });
-
-  const { data: expenses = [], refetch: refetchExpenses } = useQuery({
-    queryKey: ['rev-expenses'],
-    queryFn: () => base44.entities.Expense.list('-date', 5000),
-  });
+  const { data: clients = [] } = useQuery({ queryKey: ['rev-clients'], queryFn: () => base44.entities.Client.list() });
+  const { data: leads = [] } = useQuery({ queryKey: ['rev-leads'], queryFn: () => base44.entities.Lead.list('-created_date', 5000) });
+  const { data: payments = [], refetch: refetchPayments } = useQuery({ queryKey: ['rev-payments'], queryFn: () => base44.entities.Payment.list('-date', 5000) });
+  const { data: expenses = [], refetch: refetchExpenses } = useQuery({ queryKey: ['rev-expenses'], queryFn: () => base44.entities.Expense.list('-date', 5000) });
 
   if (!user) return null;
 
@@ -62,11 +48,11 @@ export default function RevenueDashboard() {
     <div className="min-h-screen bg-gray-50">
       <AdminNav user={user} currentPage="RevenueDashboard" clients={clients} />
 
-      <main className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+      <main className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-5">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">Revenue & Accounting</h1>
-            <p className="text-sm text-gray-500">Full financial overview with billing, payments, and expenses</p>
+            <h1 className="text-2xl font-bold text-gray-900">Accounting</h1>
+            <p className="text-sm text-gray-500">P&L, billing breakdown, payments & expenses</p>
           </div>
           <div className="flex items-center gap-2">
             <DateRangePicker startDate={startDate} endDate={endDate} onStartChange={setStartDate} onEndChange={setEndDate} />
@@ -82,38 +68,15 @@ export default function RevenueDashboard() {
           </button>
         </div>
 
-        <RevenueKPIs
-          clients={clients}
-          leads={leads}
-          payments={payments}
-          expenses={expenses}
-          startDate={startDate}
-          endDate={endDate}
-        />
+        <AccountingKPIs clients={clients} leads={leads} payments={payments} expenses={expenses} startDate={startDate} endDate={endDate} />
 
-        <RevenueClientTable
-          clients={clients}
-          leads={leads}
-          payments={payments}
-          startDate={startDate}
-          endDate={endDate}
-        />
+        <MonthlyPLChart clients={clients} leads={leads} payments={payments} expenses={expenses} />
+
+        <RevenueClientTable clients={clients} leads={leads} payments={payments} startDate={startDate} endDate={endDate} />
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <PaymentLedger
-            payments={payments}
-            clients={clients}
-            startDate={startDate}
-            endDate={endDate}
-            onRefresh={refetchPayments}
-          />
-          <ExpenseBreakdown
-            expenses={expenses}
-            clients={clients}
-            startDate={startDate}
-            endDate={endDate}
-            onRefresh={refetchExpenses}
-          />
+          <PaymentLedger payments={payments} clients={clients} startDate={startDate} endDate={endDate} onRefresh={refetchPayments} />
+          <ExpenseBreakdown expenses={expenses} clients={clients} startDate={startDate} endDate={endDate} onRefresh={refetchExpenses} />
         </div>
       </main>
 
