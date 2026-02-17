@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
-import { Check, Clock, AlertTriangle, DollarSign } from 'lucide-react';
+import { Check, Clock, AlertTriangle, DollarSign, Pencil, Trash2 } from 'lucide-react';
 import MarkPaidModal from './MarkPaidModal';
+import EditInvoiceModal from './EditInvoiceModal';
 
 const BILLING_LABELS = { pay_per_show: 'Per Show', pay_per_set: 'Per Set', retainer: 'Retainer' };
 const BILLING_COLORS = { pay_per_show: 'bg-blue-100 text-blue-700', pay_per_set: 'bg-purple-100 text-purple-700', retainer: 'bg-amber-100 text-amber-700' };
@@ -14,6 +15,7 @@ const STATUS_CONFIG = {
 
 export default function BillingTable({ billingRecords, clients, onRefresh, isOverdueMonth }) {
   const [markPaidRecord, setMarkPaidRecord] = useState(null);
+  const [editRecord, setEditRecord] = useState(null);
 
   const getClient = (id) => clients.find(c => c.id === id);
 
@@ -73,7 +75,7 @@ export default function BillingTable({ billingRecords, clients, onRefresh, isOve
                 <th className="px-3 py-2.5 text-right">Amount</th>
                 <th className="px-3 py-2.5 text-center">Status</th>
                 <th className="px-3 py-2.5 text-right">Paid</th>
-                <th className="px-3 py-2.5 text-center">Action</th>
+                <th className="px-3 py-2.5 text-center">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
@@ -114,17 +116,26 @@ export default function BillingTable({ billingRecords, clients, onRefresh, isOve
                       )}
                     </td>
                     <td className="px-3 py-3 text-center">
-                      {r.status !== 'paid' && (
+                      <div className="flex items-center justify-center gap-1">
+                        {r.status !== 'paid' && (
+                          <button
+                            onClick={() => setMarkPaidRecord(r)}
+                            className="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium bg-emerald-600 text-white rounded hover:bg-emerald-700"
+                          >
+                            <DollarSign className="w-3 h-3" /> Pay
+                          </button>
+                        )}
+                        {r.status === 'paid' && (
+                          <span className="text-[10px] text-gray-400 mr-1">{r.paid_date || ''}</span>
+                        )}
                         <button
-                          onClick={() => setMarkPaidRecord(r)}
-                          className="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-medium bg-emerald-600 text-white rounded hover:bg-emerald-700"
+                          onClick={() => setEditRecord(r)}
+                          className="p-1 text-gray-400 hover:text-blue-600 rounded hover:bg-blue-50"
+                          title="Edit invoice"
                         >
-                          <DollarSign className="w-3 h-3" /> Mark Paid
+                          <Pencil className="w-3.5 h-3.5" />
                         </button>
-                      )}
-                      {r.status === 'paid' && (
-                        <span className="text-[10px] text-gray-400">{r.paid_date || ''}</span>
-                      )}
+                      </div>
                     </td>
                   </tr>
                 );
@@ -141,6 +152,16 @@ export default function BillingTable({ billingRecords, clients, onRefresh, isOve
           open={!!markPaidRecord}
           onOpenChange={(v) => { if (!v) setMarkPaidRecord(null); }}
           onConfirm={handleMarkPaid}
+        />
+      )}
+
+      {editRecord && (
+        <EditInvoiceModal
+          record={editRecord}
+          clientName={editRecord.client?.name}
+          open={!!editRecord}
+          onOpenChange={(v) => { if (!v) setEditRecord(null); }}
+          onUpdated={onRefresh}
         />
       )}
     </>
