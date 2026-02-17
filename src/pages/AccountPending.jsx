@@ -21,22 +21,16 @@ export default function AccountPending() {
 
       setUser(currentUser);
 
-      // If user already has a real role, redirect them
-      if (currentUser.role && currentUser.role !== 'user') {
-        redirectByRole(currentUser.role);
+      // If user already has an app_role, redirect them
+      if (currentUser.app_role) {
+        redirectByRole(currentUser.app_role);
         return;
       }
 
-      // Use backend function to find pending invite, then apply role client-side
+      // Use backend function to find pending invite and apply app_role via service role
       try {
         const res = await base44.functions.invoke('applyPendingRole');
         if (res.data?.applied && res.data?.role) {
-          // Apply role via updateMe (user updating their own record works)
-          const updateData = { role: res.data.role };
-          if (res.data.client_id) {
-            updateData.client_id = res.data.client_id;
-          }
-          await base44.auth.updateMe(updateData);
           redirectByRole(res.data.role);
           return;
         }
