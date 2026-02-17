@@ -3,17 +3,7 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
-    const user = await base44.auth.me();
-
-    if (!user) {
-      return Response.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
-    // Only admins and onboard_admins can invite users
-    if (user.role !== 'admin' && user.role !== 'onboard_admin') {
-      return Response.json({ error: 'Forbidden' }, { status: 403 });
-    }
-
+    
     const { email, intended_role, client_id } = await req.json();
 
     if (!email || !intended_role) {
@@ -24,9 +14,29 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'client_id is required for client role' }, { status: 400 });
     }
 
+    // Check auth - allow service role calls too
+    let user = null;
+    try {
+      user = await base44.auth.me();
+    } catch (e) {
+      // If auth fails, reject
+      return Response.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    if (!user) {
+      return Response.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    // Only admins and onboard_admins can invite users
+    if (user.role !== 'admin' && user.role !== 'onboard_admin') {
+      return Response.json({ error: 'Forbidden' }, { status: 403 });
+    }
+
     // Use service role to invite (bypasses user-level permission restrictions)
     const inviteRole = intended_role === 'admin' ? 'admin' : 'user';
+    console.log('Inviting user:', email.trim(), 'with platform role:', inviteRole);
     await base44.asServiceRole.users.inviteUser(email.trim(), inviteRole);
+    console.log('Invite sent successfully');
 
     // Create a PendingInvite so the role is applied when the user signs up
     if (intended_role !== 'admin') {
@@ -39,6 +49,7 @@ Deno.serve(async (req) => {
         inviteData.client_id = client_id;
       }
       await base44.asServiceRole.entities.PendingInvite.create(inviteData);
+      console.log('PendingInvite created');
     }
 
     return Response.json({ success: true, email: email.trim(), intended_role, client_id });
