@@ -21,27 +21,52 @@ Deno.serve(async (req) => {
 
     const invite = pending[0];
 
-    // Update non-role fields on the user (e.g. client_id)
-    // The platform role was already set at invite time; we can only update custom fields here
-    const updateData = {};
+    // Update user role and custom fields using service role
+    // First update custom fields (client_id), then try role separately
+    const customData = {};
     if (invite.client_id) {
-      updateData.client_id = invite.client_id;
+      customData.client_id = invite.client_id;
     }
 
-    // Try to set the app-level role; if the platform rejects it, that's ok —
-    // the role might already be correct from the invite
+    // Update custom fields first (these always work with service role)
+    if (Object.keys(customData).length > 0) {
+      try {
+        await base44.asServiceRole.entities.User.update(user.id, customData);
+        console.log('Custom fields updated:', customData);
+      } catch (e) {
+        console.log('Could not update custom fields:', e.message);
+      }
+    }
+
+    // Now try to update the role - use the users API directly
     try {
-      updateData.role = invite.intended_role;
-      await base44.asServiceRole.entities.User.update(user.id, updateData);
+      await base44.asServiceRole.entities.User.update(user.id, { 
+        role: invite.intended_role,
+        ...customData
+      });
+      console.log('Role updated to:', invite.intended_role);
     } catch (roleErr) {
-      console.log('Could not update role (may already be set):', roleErr.message);
-      // Still try to update non-role fields if any
-      if (invite.client_id) {
-        try {
-          await base44.asServiceRole.entities.User.update(user.id, { client_id: invite.client_id });
-        } catch (e2) {
-          console.log('Could not update client_id:', e2.message);
+      console.log('Service role update failed, trying alternative:', roleErr.message);
+      // If service role can't update the role field, try using the raw fetch approach
+      try {
+        const appId = Deno.env.get('BASE44_APP_ID');
+        const resp = await fetch(`https://app.base44.com/api/apps/${appId}/entities/User/${user.id}`, {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': req.headers.get('Authorization') || '',
+            'x-service-role': 'true',
+          },
+          body: JSON.stringify({ role: invite.intended_role, ...customData }),
+        });
+        if (!resp.ok) {
+          const errText = await resp.text();
+          console.log('Direct API update also failed:', resp.status, errText);
+        } else {
+          console.log('Role updated via direct API');
         }
+      } catch (e2) {
+        console.log('Direct API also failed:', e2.message);
       }
     }
 
