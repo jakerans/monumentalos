@@ -8,8 +8,7 @@ export default function AddPaymentModal({ open, onOpenChange, clients, onCreated
   const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
   const [method, setMethod] = useState('ach');
   const [notes, setNotes] = useState('');
-  const [periodStart, setPeriodStart] = useState('');
-  const [periodEnd, setPeriodEnd] = useState('');
+
   const [saving, setSaving] = useState(false);
 
   const handleSave = async () => {
@@ -21,12 +20,11 @@ export default function AddPaymentModal({ open, onOpenChange, clients, onCreated
       date,
       method,
       notes: notes || undefined,
-      period_start: periodStart || undefined,
-      period_end: periodEnd || undefined,
+
     });
     setSaving(false);
     setClientId(''); setAmount(''); setNotes('');
-    setPeriodStart(''); setPeriodEnd('');
+
     onCreated();
     onOpenChange(false);
   };
@@ -66,16 +64,7 @@ export default function AddPaymentModal({ open, onOpenChange, clients, onCreated
               <option value="other">Other</option>
             </select>
           </div>
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className="text-xs font-medium text-gray-700">Period Start</label>
-              <input type="date" value={periodStart} onChange={e => setPeriodStart(e.target.value)} className="w-full mt-1 px-3 py-2 text-sm border border-gray-300 rounded-md" />
-            </div>
-            <div>
-              <label className="text-xs font-medium text-gray-700">Period End</label>
-              <input type="date" value={periodEnd} onChange={e => setPeriodEnd(e.target.value)} className="w-full mt-1 px-3 py-2 text-sm border border-gray-300 rounded-md" />
-            </div>
-          </div>
+
           <div>
             <label className="text-xs font-medium text-gray-700">Notes</label>
             <textarea value={notes} onChange={e => setNotes(e.target.value)} rows={2} className="w-full mt-1 px-3 py-2 text-sm border border-gray-300 rounded-md" placeholder="Optional..." />
