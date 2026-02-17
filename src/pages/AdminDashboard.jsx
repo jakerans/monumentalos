@@ -87,7 +87,9 @@ export default function AdminDashboard() {
   const mtdStart = new Date(now.getFullYear(), now.getMonth(), 1);
   const setterStats = setters.map(setter => {
     const booked = leads.filter(l => l.booked_by_setter_id === setter.id && l.date_appointment_set && new Date(l.date_appointment_set) >= mtdStart).length;
-    return { name: setter.full_name, booked };
+    const stlLeads = leads.filter(l => l.setter_id === setter.id && l.speed_to_lead_minutes != null && new Date(l.created_date) >= mtdStart);
+    const avgSTL = stlLeads.length > 0 ? Math.round(stlLeads.reduce((s, l) => s + l.speed_to_lead_minutes, 0) / stlLeads.length) : null;
+    return { name: setter.full_name, booked, avgSTL };
   }).sort((a, b) => b.booked - a.booked);
 
   if (!user) return null;
@@ -169,7 +171,12 @@ export default function AdminDashboard() {
                     }`}>{i + 1}</span>
                     <span className="text-xs font-medium text-slate-200">{s.name}</span>
                   </div>
-                  <span className="text-xs font-bold" style={{color:'#D6FF03'}}>{s.booked} booked</span>
+                  <div className="flex items-center gap-3">
+                    {s.avgSTL != null && (
+                      <span className="text-[10px] text-slate-400">{s.avgSTL}m STL</span>
+                    )}
+                    <span className="text-xs font-bold" style={{color:'#D6FF03'}}>{s.booked} booked</span>
+                  </div>
                 </div>
               ))}
             </div>
