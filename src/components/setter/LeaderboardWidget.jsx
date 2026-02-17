@@ -43,28 +43,29 @@ export default function LeaderboardWidget({ user, leaderboard, lastMonthBoard, s
 
   return (
     <>
-      {/* Tab on the right edge */}
+      {/* Tab on the left edge */}
       <button
         onClick={() => setOpen(true)}
-        className="fixed right-0 top-1/2 -translate-y-1/2 z-40 flex items-center gap-1.5 px-2 py-3 rounded-l-lg shadow-lg border border-r-0 border-slate-700 bg-slate-800 hover:bg-slate-700 transition-colors"
+        className="fixed left-0 top-[40%] -translate-y-1/2 z-40 flex items-center gap-2 px-3 py-5 rounded-r-xl shadow-lg border border-l-0 border-slate-700 bg-slate-800 hover:bg-slate-700 transition-colors"
         style={{ writingMode: 'vertical-rl', textOrientation: 'mixed' }}
       >
-        <Trophy className="w-4 h-4 text-amber-400 rotate-90" />
-        <span className="text-xs font-bold text-white">#{myRank || '—'}</span>
+        <Trophy className="w-5 h-5 text-amber-400 rotate-90" />
+        <span className="text-sm font-bold text-white">#{myRank || '—'}</span>
+        <span className="text-[10px] text-slate-400">Rank</span>
       </button>
 
       {/* Overlay */}
       {open && <div className="fixed inset-0 bg-black/40 z-40" onClick={() => setOpen(false)} />}
 
       {/* Slide-out panel */}
-      <div className={`fixed right-0 top-0 h-full w-80 sm:w-96 bg-slate-900 border-l border-slate-700 z-50 transform transition-transform duration-300 ${open ? 'translate-x-0' : 'translate-x-full'} flex flex-col`}>
+      <div className={`fixed left-0 top-0 h-full w-80 sm:w-96 bg-slate-900 border-r border-slate-700 z-50 transform transition-transform duration-300 ${open ? 'translate-x-0' : '-translate-x-full'} flex flex-col`}>
         <div className="flex items-center justify-between px-4 py-3 border-b border-slate-700">
           <div className="flex items-center gap-2">
             <Trophy className="w-5 h-5 text-amber-400" />
             <h2 className="text-sm font-bold text-white">Monthly Leaderboard</h2>
           </div>
           <button onClick={() => setOpen(false)} className="text-slate-400 hover:text-white">
-            <ChevronRight className="w-5 h-5" />
+            <ChevronLeft className="w-5 h-5" />
           </button>
         </div>
 
