@@ -27,11 +27,22 @@ export default function InviteUserModal({ open, onOpenChange, clients = [], onIn
 
     setSaving(true);
     try {
-      await base44.users.inviteUser(email.trim(), role);
+      // inviteUser only accepts "user" or "admin", so invite as the base role first
+      const inviteRole = role === 'admin' ? 'admin' : 'user';
+      await base44.users.inviteUser(email.trim(), inviteRole);
 
-      // If client role, update the user's client_id after invite
-      if (role === 'client' && clientId) {
-        // The user record is created on invite — we'll let the admin handle client_id via user list
+      // After invite, find the newly created user and update their actual role
+      const allUsers = await base44.entities.User.list();
+      const newUser = allUsers.find(u => u.email === email.trim().toLowerCase());
+
+      if (newUser && role !== 'admin' && role !== 'user') {
+        const updateData = { role };
+        if (role === 'client' && clientId) {
+          updateData.client_id = clientId;
+        }
+        await base44.entities.User.update(newUser.id, updateData);
+      } else if (newUser && role === 'client' && clientId) {
+        await base44.entities.User.update(newUser.id, { client_id: clientId });
       }
 
       setSuccess(`Invitation sent to ${email}`);
