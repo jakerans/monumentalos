@@ -20,60 +20,27 @@ Deno.serve(async (req) => {
     }
 
     const invite = pending[0];
-
-    // Update user role and custom fields using service role
-    // First update custom fields (client_id), then try role separately
-    const customData = {};
+    
+    // Build update data - only include custom/editable fields
+    // The 'role' field on User entity is a custom enum field, not the platform role
+    const updateData = { role: invite.intended_role };
     if (invite.client_id) {
-      customData.client_id = invite.client_id;
+      updateData.client_id = invite.client_id;
     }
 
-    // Update custom fields first (these always work with service role)
-    if (Object.keys(customData).length > 0) {
-      try {
-        await base44.asServiceRole.entities.User.update(user.id, customData);
-        console.log('Custom fields updated:', customData);
-      } catch (e) {
-        console.log('Could not update custom fields:', e.message);
-      }
-    }
+    console.log('Applying pending invite for', user.email, '-> role:', invite.intended_role, 'data:', JSON.stringify(updateData));
 
-    // Now try to update the role - use the users API directly
-    try {
-      await base44.asServiceRole.entities.User.update(user.id, { 
-        role: invite.intended_role,
-        ...customData
-      });
-      console.log('Role updated to:', invite.intended_role);
-    } catch (roleErr) {
-      console.log('Service role update failed, trying alternative:', roleErr.message);
-      // If service role can't update the role field, try using the raw fetch approach
-      try {
-        const appId = Deno.env.get('BASE44_APP_ID');
-        const resp = await fetch(`https://app.base44.com/api/apps/${appId}/entities/User/${user.id}`, {
-          method: 'PATCH',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': req.headers.get('Authorization') || '',
-            'x-service-role': 'true',
-          },
-          body: JSON.stringify({ role: invite.intended_role, ...customData }),
-        });
-        if (!resp.ok) {
-          const errText = await resp.text();
-          console.log('Direct API update also failed:', resp.status, errText);
-        } else {
-          console.log('Role updated via direct API');
-        }
-      } catch (e2) {
-        console.log('Direct API also failed:', e2.message);
-      }
-    }
+    // Use service role to update the user record
+    await base44.asServiceRole.entities.User.update(user.id, updateData);
+    console.log('User updated successfully');
 
+    // Mark invite as applied
     await base44.asServiceRole.entities.PendingInvite.update(invite.id, { status: 'applied' });
+    console.log('Invite marked as applied');
 
     return Response.json({ applied: true, role: invite.intended_role });
   } catch (error) {
+    console.error('applyPendingRole error:', error.message, error.response?.data);
     return Response.json({ error: error.message }, { status: 500 });
   }
 });
