@@ -14,6 +14,7 @@ export default function CreateClientModal({ open, onOpenChange, onCreated }) {
   const [retainerDueDay, setRetainerDueDay] = useState('1');
   const [bookingLink, setBookingLink] = useState('');
   const [serviceRadius, setServiceRadius] = useState('');
+  const [startDate, setStartDate] = useState(new Date().toISOString().split('T')[0]);
   const [contacts, setContacts] = useState([{ name: '', email: '', role: 'Owner' }]);
   const [saving, setSaving] = useState(false);
   const [invitingIdx, setInvitingIdx] = useState(null);
@@ -39,6 +40,7 @@ export default function CreateClientModal({ open, onOpenChange, onCreated }) {
       booking_link: bookingLink.trim() || undefined,
       service_radius: serviceRadius.trim() || undefined,
       status: 'active',
+      start_date: startDate || undefined,
       contacts: validContacts,
     };
     if (billingType === 'pay_per_show') data.price_per_shown_appointment = parseFloat(price) || 0;
@@ -82,6 +84,7 @@ export default function CreateClientModal({ open, onOpenChange, onCreated }) {
     setRetainerDueDay('1');
     setBookingLink('');
     setServiceRadius('');
+    setStartDate(new Date().toISOString().split('T')[0]);
     setContacts([{ name: '', email: '', role: 'Owner' }]);
   };
 
@@ -138,6 +141,10 @@ export default function CreateClientModal({ open, onOpenChange, onCreated }) {
               </div>
             </>
           )}
+          <div>
+            <label className="text-xs font-medium text-gray-700">Start Date</label>
+            <input type="date" value={startDate} onChange={e => setStartDate(e.target.value)} className="w-full mt-1 px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+          </div>
           <div className="grid grid-cols-2 gap-2">
             <div>
               <label className="text-xs font-medium text-gray-700">Booking Link</label>
