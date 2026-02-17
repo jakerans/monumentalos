@@ -79,7 +79,34 @@ export default function UserTable({ users, clients = [], onUpdated }) {
               <tr key={user.id} className="hover:bg-gray-50">
                 <td className="px-4 py-3 text-xs font-medium text-gray-900">{user.full_name || '—'}</td>
                 <td className="px-4 py-3 text-xs text-gray-600">{user.email}</td>
-                <td className="px-4 py-3">{getRoleBadge(user.role)}</td>
+                <td className="px-4 py-3">
+                  {editingId === user.id ? (
+                    <div className="flex items-center gap-1">
+                      <select
+                        value={editRole}
+                        onChange={(e) => setEditRole(e.target.value)}
+                        className="px-2 py-1 text-xs border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      >
+                        {ROLE_OPTIONS.map(r => (
+                          <option key={r.value} value={r.value}>{r.label}</option>
+                        ))}
+                      </select>
+                      <button onClick={() => saveRole(user.id)} disabled={saving} className="p-1 text-green-600 hover:bg-green-50 rounded">
+                        <Check className="w-3.5 h-3.5" />
+                      </button>
+                      <button onClick={cancelEdit} className="p-1 text-gray-400 hover:bg-gray-100 rounded">
+                        <X className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-1.5">
+                      {getRoleBadge(user.role)}
+                      <button onClick={() => startEdit(user)} className="p-0.5 text-gray-400 hover:text-gray-600 rounded">
+                        <Pencil className="w-3 h-3" />
+                      </button>
+                    </div>
+                  )}
+                </td>
                 <td className="px-4 py-3 text-xs text-gray-600">{user.role === 'client' ? getClientName(user.client_id) : '—'}</td>
                 <td className="px-4 py-3 text-xs text-gray-400">
                   {user.created_date ? new Date(user.created_date).toLocaleDateString() : '—'}
