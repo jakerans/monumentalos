@@ -43,15 +43,63 @@ export default function LeaderboardWidget({ user, leaderboard, lastMonthBoard, s
 
   return (
     <>
+      {/* Gold liquid animation styles */}
+      {isFirst && (
+        <style>{`
+          @keyframes goldSlosh1 {
+            0%, 100% { d: path("M0,28 C8,24 16,32 24,28 C32,24 40,30 48,26 C56,22 64,28 72,26 C80,24 88,30 96,28 L96,48 L0,48 Z"); }
+            25% { d: path("M0,30 C8,26 16,22 24,26 C32,30 40,24 48,28 C56,32 64,24 72,28 C80,32 88,26 96,30 L96,48 L0,48 Z"); }
+            50% { d: path("M0,26 C8,30 16,24 24,30 C32,26 40,32 48,28 C56,24 64,30 72,24 C80,28 88,32 96,26 L96,48 L0,48 Z"); }
+            75% { d: path("M0,32 C8,28 16,30 24,24 C32,28 40,26 48,32 C56,28 64,26 72,30 C80,26 88,28 96,24 L96,48 L0,48 Z"); }
+          }
+          @keyframes goldSlosh2 {
+            0%, 100% { d: path("M0,32 C10,28 20,34 30,30 C40,26 50,34 60,30 C70,26 80,32 90,28 L96,30 L96,48 L0,48 Z"); }
+            33% { d: path("M0,28 C10,32 20,26 30,32 C40,28 50,26 60,32 C70,28 80,26 90,32 L96,28 L96,48 L0,48 Z"); }
+            66% { d: path("M0,34 C10,30 20,32 30,26 C40,32 50,28 60,26 C70,32 80,28 90,26 L96,32 L96,48 L0,48 Z"); }
+          }
+          @keyframes goldShimmer {
+            0%, 100% { opacity: 0.3; }
+            50% { opacity: 0.7; }
+          }
+        `}</style>
+      )}
+
       {/* Tab on the left edge */}
       <button
         onClick={() => setOpen(true)}
-        className="fixed left-0 top-[38%] -translate-y-1/2 z-40 flex items-center gap-3 pl-4 pr-5 py-4 rounded-r-2xl shadow-xl border border-l-0 border-slate-600 bg-slate-800 hover:bg-slate-700 transition-colors"
+        className={`fixed left-0 top-[38%] -translate-y-1/2 z-40 flex items-center gap-3 pl-4 pr-5 py-4 rounded-r-2xl shadow-xl border border-l-0 transition-colors overflow-hidden ${
+          isFirst
+            ? 'border-amber-500/60 bg-slate-800'
+            : 'border-slate-600 bg-slate-800 hover:bg-slate-700'
+        }`}
       >
-        <Trophy className="w-6 h-6 text-amber-400" />
-        <div className="flex flex-col items-start">
-          <span className="text-lg font-black leading-tight" style={{ color: '#D6FF03' }}>#{myRank || '—'}</span>
-          <span className="text-[10px] text-slate-400 font-medium">Leaderboard</span>
+        {/* Animated gold liquid background for #1 */}
+        {isFirst && (
+          <div className="absolute inset-0 pointer-events-none">
+            <svg className="absolute inset-0 w-full h-full" viewBox="0 0 96 48" preserveAspectRatio="none">
+              <defs>
+                <linearGradient id="gold1" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stopColor="#FFD700" stopOpacity="0.5" />
+                  <stop offset="50%" stopColor="#FFA500" stopOpacity="0.4" />
+                  <stop offset="100%" stopColor="#FFD700" stopOpacity="0.5" />
+                </linearGradient>
+                <linearGradient id="gold2" x1="100%" y1="0%" x2="0%" y2="100%">
+                  <stop offset="0%" stopColor="#FFEC8B" stopOpacity="0.3" />
+                  <stop offset="50%" stopColor="#DAA520" stopOpacity="0.35" />
+                  <stop offset="100%" stopColor="#FFEC8B" stopOpacity="0.3" />
+                </linearGradient>
+              </defs>
+              <path fill="url(#gold1)" style={{ animation: 'goldSlosh1 3s ease-in-out infinite' }} d="M0,28 C8,24 16,32 24,28 C32,24 40,30 48,26 C56,22 64,28 72,26 C80,24 88,30 96,28 L96,48 L0,48 Z" />
+              <path fill="url(#gold2)" style={{ animation: 'goldSlosh2 3.5s ease-in-out infinite' }} d="M0,32 C10,28 20,34 30,30 C40,26 50,34 60,30 C70,26 80,32 90,28 L96,30 L96,48 L0,48 Z" />
+            </svg>
+            <div className="absolute inset-0 bg-gradient-to-t from-amber-500/10 to-transparent" style={{ animation: 'goldShimmer 2s ease-in-out infinite' }} />
+          </div>
+        )}
+
+        <Trophy className={`w-6 h-6 relative z-10 ${isFirst ? 'text-yellow-300 drop-shadow-[0_0_6px_rgba(255,215,0,0.6)]' : 'text-amber-400'}`} />
+        <div className="flex flex-col items-start relative z-10">
+          <span className="text-lg font-black leading-tight" style={{ color: isFirst ? '#FFD700' : '#D6FF03' }}>#{myRank || '—'}</span>
+          <span className={`text-[10px] font-medium ${isFirst ? 'text-amber-300' : 'text-slate-400'}`}>Leaderboard</span>
         </div>
       </button>
 
