@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import IndustryPicker from '../shared/IndustryPicker';
 
 export default function ClientBillingEditor({ client, open, onOpenChange, onUpdated }) {
+  const [industries, setIndustries] = useState([]);
   const [billingType, setBillingType] = useState('pay_per_show');
   const [pricePerShow, setPricePerShow] = useState('');
   const [pricePerSet, setPricePerSet] = useState('');
@@ -12,6 +14,7 @@ export default function ClientBillingEditor({ client, open, onOpenChange, onUpda
 
   useEffect(() => {
     if (client) {
+      setIndustries(client.industries || []);
       setBillingType(client.billing_type || 'pay_per_show');
       setPricePerShow(String(client.price_per_shown_appointment || ''));
       setPricePerSet(String(client.price_per_set_appointment || ''));
@@ -22,7 +25,7 @@ export default function ClientBillingEditor({ client, open, onOpenChange, onUpda
 
   const handleSave = async () => {
     setSaving(true);
-    const updates = { billing_type: billingType };
+    const updates = { billing_type: billingType, industries };
     if (billingType === 'pay_per_show') updates.price_per_shown_appointment = Number(pricePerShow) || 0;
     if (billingType === 'pay_per_set') updates.price_per_set_appointment = Number(pricePerSet) || 0;
     if (billingType === 'retainer') {
@@ -46,6 +49,12 @@ export default function ClientBillingEditor({ client, open, onOpenChange, onUpda
           <DialogTitle>Edit Billing — {client.name}</DialogTitle>
         </DialogHeader>
         <div className="space-y-3 mt-2">
+          <div>
+            <label className="text-xs font-medium text-gray-700">Industry</label>
+            <div className="mt-1">
+              <IndustryPicker selected={industries} onChange={setIndustries} />
+            </div>
+          </div>
           <div>
             <label className="text-xs font-medium text-gray-700">Billing Type</label>
             <select value={billingType} onChange={e => setBillingType(e.target.value)} className="w-full mt-1 px-3 py-2 text-sm border border-gray-300 rounded-md">

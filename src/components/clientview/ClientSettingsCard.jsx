@@ -1,5 +1,6 @@
 import React from 'react';
-import { MapPin, DollarSign, Link as LinkIcon } from 'lucide-react';
+import { MapPin, DollarSign, Link as LinkIcon, Tag } from 'lucide-react';
+import { INDUSTRY_LABELS, INDUSTRY_COLORS } from '../shared/IndustryPicker';
 
 export default function ClientSettingsCard({ client }) {
   if (!client) return null;
@@ -8,6 +9,21 @@ export default function ClientSettingsCard({ client }) {
     <div className="bg-slate-800/50 rounded-lg border border-slate-700/50 p-4">
       <h3 className="text-sm font-bold text-white mb-3">Client Settings</h3>
       <div className="space-y-2.5 text-xs">
+        {client.industries && client.industries.length > 0 && (
+          <div className="flex items-start gap-2">
+            <Tag className="w-3.5 h-3.5 text-indigo-400 mt-0.5 flex-shrink-0" />
+            <div>
+              <p className="text-slate-500">Industry</p>
+              <div className="flex flex-wrap gap-1 mt-0.5">
+                {client.industries.map(ind => (
+                  <span key={ind} className={`px-1.5 py-0.5 text-[10px] font-medium rounded ${INDUSTRY_COLORS[ind] || 'bg-slate-700 text-slate-400'}`}>
+                    {INDUSTRY_LABELS[ind] || ind}
+                  </span>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
         <div className="flex items-start gap-2">
           <DollarSign className="w-3.5 h-3.5 text-green-500 mt-0.5 flex-shrink-0" />
           <div>

@@ -2,9 +2,11 @@ import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Plus, Trash2, Send } from 'lucide-react';
+import IndustryPicker from '../shared/IndustryPicker';
 
 export default function CreateClientModal({ open, onOpenChange, onCreated }) {
   const [name, setName] = useState('');
+  const [industries, setIndustries] = useState([]);
   const [billingType, setBillingType] = useState('pay_per_show');
   const [price, setPrice] = useState('');
   const [pricePerSet, setPricePerSet] = useState('');
@@ -32,6 +34,7 @@ export default function CreateClientModal({ open, onOpenChange, onCreated }) {
     const validContacts = contacts.filter(c => c.email.trim()).map(c => ({ ...c, invited: false }));
     const data = {
       name: name.trim(),
+      industries: industries.length > 0 ? industries : undefined,
       billing_type: billingType,
       booking_link: bookingLink.trim() || undefined,
       service_radius: serviceRadius.trim() || undefined,
@@ -71,6 +74,7 @@ export default function CreateClientModal({ open, onOpenChange, onCreated }) {
 
   const resetForm = () => {
     setName('');
+    setIndustries([]);
     setBillingType('pay_per_show');
     setPrice('');
     setPricePerSet('');
@@ -91,6 +95,12 @@ export default function CreateClientModal({ open, onOpenChange, onCreated }) {
           <div>
             <label className="text-xs font-medium text-gray-700">Company Name *</label>
             <input value={name} onChange={e => setName(e.target.value)} className="w-full mt-1 px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="e.g. Smith Remodeling" />
+          </div>
+          <div>
+            <label className="text-xs font-medium text-gray-700">Industry</label>
+            <div className="mt-1">
+              <IndustryPicker selected={industries} onChange={setIndustries} />
+            </div>
           </div>
           <div>
             <label className="text-xs font-medium text-gray-700">Billing Type *</label>

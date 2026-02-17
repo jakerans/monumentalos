@@ -6,12 +6,14 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import IndustryPicker from '../shared/IndustryPicker';
 
 const SOURCE_OPTIONS = [
   { value: 'form', label: 'Form' },
   { value: 'msg', label: 'MSG' },
   { value: 'quiz', label: 'Quiz' },
   { value: 'inbound_call', label: 'Inbound Call' },
+  { value: 'agency', label: 'Agency' },
 ];
 
 export default function AddLeadModal({ open, onOpenChange, clients, onAdd, userId }) {
@@ -21,6 +23,7 @@ export default function AddLeadModal({ open, onOpenChange, clients, onAdd, userI
     email: '',
     client_id: '',
     lead_source: '',
+    industries: [],
     notes: '',
     project_type: '',
     project_size: '',
@@ -50,7 +53,7 @@ export default function AddLeadModal({ open, onOpenChange, clients, onAdd, userI
 
     await onAdd(leadData);
     setLoading(false);
-    setForm({ name: '', phone: '', email: '', client_id: '', lead_source: '', notes: '', project_type: '', project_size: '', timeline: '' });
+    setForm({ name: '', phone: '', email: '', client_id: '', lead_source: '', industries: [], notes: '', project_type: '', project_size: '', timeline: '' });
     setIsBooked(false);
     setAppointmentDate('');
     onOpenChange(false);
@@ -138,6 +141,11 @@ export default function AddLeadModal({ open, onOpenChange, clients, onAdd, userI
                 </button>
               ))}
             </div>
+          </div>
+
+          <div>
+            <label className="block text-xs font-medium text-slate-300 mb-1">Industry</label>
+            <IndustryPicker selected={form.industries} onChange={(v) => update('industries', v)} dark />
           </div>
 
           <div>
