@@ -228,12 +228,6 @@ export default function SetterDashboard() {
     prevRankRef.current = myCurrentRank;
   }, [myCurrentRank]);
 
-  // Debug: log data counts
-  console.log('[Setter Debug] leads:', leads.length, 'clients:', clients.length, 'l1:', l1, 'l2:', l2);
-  if (leads.length > 0) {
-    console.log('[Setter Debug] Sample lead:', leads[0].name, 'status:', leads[0].status, 'created_date:', leads[0].created_date);
-  }
-
   if (!user) return null;
   if (l1 || l2) return <PageLoader message="Loading pipeline..." />;
 
