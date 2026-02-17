@@ -56,11 +56,12 @@ import ClientSettings from './pages/ClientSettings';
 import ClientView from './pages/ClientView';
 import LeadDetails from './pages/LeadDetails';
 import MMDashboard from './pages/MMDashboard';
+import MMOnboard from './pages/MMOnboard';
+import OnboardDashboard from './pages/OnboardDashboard';
 import RevenueDashboard from './pages/RevenueDashboard';
 import SetterDashboard from './pages/SetterDashboard';
-import OnboardDashboard from './pages/OnboardDashboard';
-import MMOnboard from './pages/MMOnboard';
 import SetterPerformance from './pages/SetterPerformance';
+import MonthlyBilling from './pages/MonthlyBilling';
 
 
 export const PAGES = {
@@ -73,11 +74,12 @@ export const PAGES = {
     "ClientView": ClientView,
     "LeadDetails": LeadDetails,
     "MMDashboard": MMDashboard,
+    "MMOnboard": MMOnboard,
+    "OnboardDashboard": OnboardDashboard,
     "RevenueDashboard": RevenueDashboard,
     "SetterDashboard": SetterDashboard,
-    "OnboardDashboard": OnboardDashboard,
-    "MMOnboard": MMOnboard,
     "SetterPerformance": SetterPerformance,
+    "MonthlyBilling": MonthlyBilling,
 }
 
 export const pagesConfig = {
