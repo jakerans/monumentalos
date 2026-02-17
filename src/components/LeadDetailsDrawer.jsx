@@ -75,14 +75,21 @@ export default function LeadDetailsDrawer({ leadId, open, onOpenChange, onLeadUp
   const [showConfirm, setShowConfirm] = useState(false);
   const [editData, setEditData] = useState({});
 
+  const toLocalDatetimeString = (isoStr) => {
+    if (!isoStr) return '';
+    const d = new Date(isoStr);
+    const pad = (n) => String(n).padStart(2, '0');
+    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+  };
+
   useEffect(() => {
     if (lead) {
       setEditData({
         name: lead.name || '',
         email: lead.email || '',
         phone: lead.phone || '',
-        appointment_date: lead.appointment_date ? lead.appointment_date.slice(0, 16) : '',
-        date_appointment_set: lead.date_appointment_set ? lead.date_appointment_set.slice(0, 16) : '',
+        appointment_date: toLocalDatetimeString(lead.appointment_date),
+        date_appointment_set: toLocalDatetimeString(lead.date_appointment_set),
         project_type: lead.project_type || '',
         project_size: lead.project_size || '',
         budget_range: lead.budget_range || '',
@@ -334,7 +341,7 @@ export default function LeadDetailsDrawer({ leadId, open, onOpenChange, onLeadUp
                     <button onClick={() => setShowConfirm(true)} className="flex-1 px-4 py-2.5 text-sm font-medium bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center justify-center gap-2">
                       <Save className="w-4 h-4" /> Save Changes
                     </button>
-                    <button onClick={() => { setEditing(false); setEditData({ name: lead.name || '', email: lead.email || '', phone: lead.phone || '', appointment_date: lead.appointment_date ? lead.appointment_date.slice(0, 16) : '', date_appointment_set: lead.date_appointment_set ? lead.date_appointment_set.slice(0, 16) : '', project_type: lead.project_type || '', project_size: lead.project_size || '', budget_range: lead.budget_range || '', timeline: lead.timeline || '', sale_amount: lead.sale_amount || '', date_sold: lead.date_sold || '', notes: lead.notes || '' }); }} className="flex-1 px-4 py-2.5 text-sm font-medium bg-gray-100 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-200">
+                    <button onClick={() => { setEditing(false); setEditData({ name: lead.name || '', email: lead.email || '', phone: lead.phone || '', appointment_date: toLocalDatetimeString(lead.appointment_date), date_appointment_set: toLocalDatetimeString(lead.date_appointment_set), project_type: lead.project_type || '', project_size: lead.project_size || '', budget_range: lead.budget_range || '', timeline: lead.timeline || '', sale_amount: lead.sale_amount || '', date_sold: lead.date_sold || '', notes: lead.notes || '' }); }} className="flex-1 px-4 py-2.5 text-sm font-medium bg-gray-100 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-200">
                       Cancel
                     </button>
                   </div>
