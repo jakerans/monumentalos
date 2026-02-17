@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
-import { Pencil, Check, X } from 'lucide-react';
+import { Pencil, Check, X, Trash2 } from 'lucide-react';
 
 const ROLE_LABELS = {
   admin: { label: 'Admin', bg: 'bg-purple-100 text-purple-700' },
@@ -24,6 +24,15 @@ export default function UserTable({ users, clients = [], onUpdated }) {
   const [editingId, setEditingId] = useState(null);
   const [editRole, setEditRole] = useState('');
   const [saving, setSaving] = useState(false);
+  const [deletingId, setDeletingId] = useState(null);
+
+  const handleDelete = async (userId) => {
+    setSaving(true);
+    await base44.entities.User.delete(userId);
+    setSaving(false);
+    setDeletingId(null);
+    if (onUpdated) onUpdated();
+  };
 
   const startEdit = (user) => {
     setEditingId(user.id);
@@ -68,12 +77,13 @@ export default function UserTable({ users, clients = [], onUpdated }) {
               <th className="text-left px-4 py-3 text-xs font-semibold text-gray-600">Role</th>
               <th className="text-left px-4 py-3 text-xs font-semibold text-gray-600">Client</th>
               <th className="text-left px-4 py-3 text-xs font-semibold text-gray-600">Joined</th>
+              <th className="text-right px-4 py-3 text-xs font-semibold text-gray-600">Actions</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-100">
             {users.length === 0 ? (
               <tr>
-                <td colSpan={5} className="px-4 py-8 text-center text-xs text-gray-400">No users found</td>
+                <td colSpan={6} className="px-4 py-8 text-center text-xs text-gray-400">No users found</td>
               </tr>
             ) : users.map(user => (
               <tr key={user.id} className="hover:bg-gray-50">
@@ -110,6 +120,23 @@ export default function UserTable({ users, clients = [], onUpdated }) {
                 <td className="px-4 py-3 text-xs text-gray-600">{user.role === 'client' ? getClientName(user.client_id) : '—'}</td>
                 <td className="px-4 py-3 text-xs text-gray-400">
                   {user.created_date ? new Date(user.created_date).toLocaleDateString() : '—'}
+                </td>
+                <td className="px-4 py-3 text-right">
+                  {deletingId === user.id ? (
+                    <div className="flex items-center justify-end gap-1">
+                      <span className="text-[10px] text-red-600 font-medium mr-1">Delete?</span>
+                      <button onClick={() => handleDelete(user.id)} disabled={saving} className="px-2 py-1 text-[10px] font-medium bg-red-600 text-white rounded hover:bg-red-700 disabled:opacity-50">
+                        Yes
+                      </button>
+                      <button onClick={() => setDeletingId(null)} className="px-2 py-1 text-[10px] font-medium bg-gray-100 text-gray-600 rounded hover:bg-gray-200">
+                        No
+                      </button>
+                    </div>
+                  ) : (
+                    <button onClick={() => setDeletingId(user.id)} className="p-1 text-gray-400 hover:text-red-600 rounded hover:bg-red-50 transition-colors">
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
+                  )}
                 </td>
               </tr>
             ))}
