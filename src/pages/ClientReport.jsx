@@ -58,12 +58,12 @@ export default function ClientReport() {
     enabled: !!clientId,
   });
 
-  // Appointments booked by date_appointment_set
+  // Appointments booked = all leads with appointment_date in range
   const { data: bookedLeads = [] } = useQuery({
     queryKey: ['report-booked', clientId, startDate, endDate],
     queryFn: () => base44.entities.Lead.filter({
       client_id: clientId,
-      date_appointment_set: { $gte: new Date(startDate).toISOString(), $lte: new Date(endDate + 'T23:59:59').toISOString() }
+      appointment_date: { $gte: new Date(startDate).toISOString(), $lte: new Date(endDate + 'T23:59:59').toISOString() }
     }),
     enabled: !!clientId,
   });
