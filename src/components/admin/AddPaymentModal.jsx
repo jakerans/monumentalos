@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
+import dayjs from 'dayjs';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { base44 } from '@/api/base44Client';
 
 export default function AddPaymentModal({ open, onOpenChange, clients, onCreated }) {
   const [clientId, setClientId] = useState('');
   const [amount, setAmount] = useState('');
-  const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
+  const [date, setDate] = useState(dayjs().format('YYYY-MM-DD'));
   const [method, setMethod] = useState('ach');
   const [notes, setNotes] = useState('');
 

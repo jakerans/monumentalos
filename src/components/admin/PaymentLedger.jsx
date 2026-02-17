@@ -1,13 +1,17 @@
 import React from 'react';
+import dayjs from 'dayjs';
+import isBetween from 'dayjs/plugin/isBetween';
 import { Trash2 } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
+
+dayjs.extend(isBetween);
 
 const METHOD_LABELS = { ach: 'ACH', check: 'Check', wire: 'Wire', credit_card: 'Card', cash: 'Cash', other: 'Other' };
 
 export default function PaymentLedger({ payments, clients, startDate, endDate, onRefresh }) {
-  const start = new Date(startDate);
-  const end = new Date(endDate + 'T23:59:59');
-  const filtered = payments.filter(p => { const d = new Date(p.date); return d >= start && d <= end; });
+  const start = dayjs(startDate).startOf('day');
+  const end = dayjs(endDate).endOf('day');
+  const filtered = payments.filter(p => p.date && dayjs(p.date).isBetween(start, end, null, '[]'));
   const total = filtered.reduce((s, p) => s + (p.amount || 0), 0);
 
   const getClientName = (id) => clients.find(c => c.id === id)?.name || '—';

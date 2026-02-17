@@ -1,6 +1,10 @@
 import React from 'react';
+import dayjs from 'dayjs';
+import isBetween from 'dayjs/plugin/isBetween';
 import { Trash2 } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
+
+dayjs.extend(isBetween);
 
 const CATEGORY_LABELS = {
   ad_spend: 'Ad Spend', payroll: 'Payroll', software: 'Software',
@@ -15,9 +19,9 @@ const CATEGORY_COLORS = {
 const TYPE_COLORS = { cogs: 'bg-orange-100 text-orange-700', overhead: 'bg-gray-100 text-gray-700' };
 
 export default function ExpenseBreakdown({ expenses, clients, startDate, endDate, onRefresh }) {
-  const start = new Date(startDate);
-  const end = new Date(endDate + 'T23:59:59');
-  const filtered = expenses.filter(e => { const d = new Date(e.date); return d >= start && d <= end; });
+  const start = dayjs(startDate).startOf('day');
+  const end = dayjs(endDate).endOf('day');
+  const filtered = expenses.filter(e => e.date && dayjs(e.date).isBetween(start, end, null, '[]'));
 
   // Group by category
   const byCat = {};

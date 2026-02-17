@@ -1,10 +1,14 @@
 import React from 'react';
+import dayjs from 'dayjs';
+import isBetween from 'dayjs/plugin/isBetween';
 import { DollarSign, TrendingUp, TrendingDown, ArrowDownRight, Percent, BarChart3 } from 'lucide-react';
 
+dayjs.extend(isBetween);
+
 export default function AccountingKPIs({ clients, leads, payments, expenses, startDate, endDate }) {
-  const start = new Date(startDate);
-  const end = new Date(endDate + 'T23:59:59');
-  const inRange = (d) => { if (!d) return false; const dt = new Date(d); return dt >= start && dt <= end; };
+  const start = dayjs(startDate).startOf('day');
+  const end = dayjs(endDate).endOf('day');
+  const inRange = (d) => d ? dayjs(d).isBetween(start, end, null, '[]') : false;
 
   let grossRevenue = 0;
   clients.filter(c => c.status === 'active').forEach(client => {
@@ -15,7 +19,7 @@ export default function AccountingKPIs({ clients, leads, payments, expenses, sta
     } else if (bt === 'pay_per_set') {
       grossRevenue += cLeads.filter(l => l.date_appointment_set && inRange(l.date_appointment_set)).length * (client.price_per_set_appointment || 0);
     } else if (bt === 'retainer') {
-      const months = Math.max(1, Math.ceil((end - start) / (30 * 24 * 60 * 60 * 1000)));
+      const months = Math.max(1, Math.ceil(end.diff(start, 'day') / 30));
       grossRevenue += (client.retainer_amount || 0) * months;
     }
   });

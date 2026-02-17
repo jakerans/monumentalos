@@ -1,10 +1,14 @@
 import React from 'react';
+import dayjs from 'dayjs';
+import isBetween from 'dayjs/plugin/isBetween';
 import { Phone, Calendar, Target, Clock, TrendingUp, Award } from 'lucide-react';
 
+dayjs.extend(isBetween);
+
 export default function SetterPerformanceTable({ users, leads, clients, startDate, endDate }) {
-  const start = new Date(startDate);
-  const end = new Date(endDate + 'T23:59:59');
-  const inRange = (d) => { if (!d) return false; const dt = new Date(d); return dt >= start && dt <= end; };
+  const start = dayjs(startDate).startOf('day');
+  const end = dayjs(endDate).endOf('day');
+  const inRange = (d) => d ? dayjs(d).isBetween(start, end, null, '[]') : false;
 
   const setters = users.filter(u => u.app_role === 'setter');
   const getClientName = (id) => clients.find(c => c.id === id)?.name || '—';
