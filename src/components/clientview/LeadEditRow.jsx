@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
-import { ChevronDown, ChevronUp, Save, Loader2 } from 'lucide-react';
+import { ChevronDown, ChevronUp, Save, Loader2, Check } from 'lucide-react';
 
 const STATUS_OPTIONS = ['new', 'first_call_made', 'contacted', 'appointment_booked', 'disqualified', 'completed'];
 const DISPOSITION_OPTIONS = ['scheduled', 'showed', 'cancelled', 'rescheduled'];
