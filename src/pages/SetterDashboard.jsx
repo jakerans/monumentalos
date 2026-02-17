@@ -313,6 +313,7 @@ export default function SetterDashboard() {
         onOpenChange={setAddOpen}
         clients={clients}
         onAdd={handleAddLead}
+        userId={user?.id}
       />
     </div>
   );
