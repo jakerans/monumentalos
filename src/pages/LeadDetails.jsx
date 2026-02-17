@@ -149,7 +149,7 @@ export default function LeadDetails() {
               </div>
             )}
 
-            {(lead.project_type || lead.project_size || lead.budget_range || lead.timeline) && (
+            {(lead.project_type || lead.project_size || lead.timeline) && (
               <div>
                 <h3 className="text-sm font-semibold text-gray-500 uppercase mb-3">Project Details</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -163,12 +163,6 @@ export default function LeadDetails() {
                     <div>
                       <p className="text-xs text-gray-500">Project Size</p>
                       <p className="text-sm font-medium text-gray-900">{lead.project_size}</p>
-                    </div>
-                  )}
-                  {lead.budget_range && (
-                    <div>
-                      <p className="text-xs text-gray-500">Budget Range</p>
-                      <p className="text-sm font-medium text-gray-900">{lead.budget_range}</p>
                     </div>
                   )}
                   {lead.timeline && (

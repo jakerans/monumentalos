@@ -159,13 +159,12 @@ export default function LeadDetailPanel({ lead, clientName, setterName, bookedBy
           </div>
 
           {/* Project */}
-          {(lead.project_type || lead.project_size || lead.budget_range || lead.timeline) && (
+          {(lead.project_type || lead.project_size || lead.timeline) && (
             <div>
               <h3 className="text-xs font-semibold text-gray-500 uppercase mb-2.5">Project Details</h3>
               <div className="space-y-2.5">
                 <InfoRow icon={Briefcase} label="Type" value={lead.project_type} />
                 <InfoRow icon={Ruler} label="Size" value={lead.project_size} />
-                <InfoRow icon={DollarSign} label="Budget" value={lead.budget_range} />
                 <InfoRow icon={Clock} label="Timeline" value={lead.timeline} />
               </div>
             </div>

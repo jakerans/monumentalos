@@ -36,7 +36,7 @@ export default function LeadEditRow({ lead, expanded, onToggle, onSave }) {
     date_sold: lead.date_sold || '',
     appointment_date: toLocalDatetime(lead.appointment_date),
     project_type: lead.project_type || '',
-    budget_range: lead.budget_range || '',
+
     notes: lead.notes || '',
   });
 
@@ -107,7 +107,7 @@ export default function LeadEditRow({ lead, expanded, onToggle, onSave }) {
             <Field label="Sale Amount" value={form.sale_amount} onChange={(v) => set('sale_amount', v)} type="number" prefix="$" />
             <Field label="Date Sold" value={form.date_sold} onChange={(v) => set('date_sold', v)} type="date" />
             <Field label="Project Type" value={form.project_type} onChange={(v) => set('project_type', v)} />
-            <Field label="Budget Range" value={form.budget_range} onChange={(v) => set('budget_range', v)} />
+
           </div>
           <div>
             <label className="block text-[10px] font-medium text-gray-500 mb-0.5">Notes</label>

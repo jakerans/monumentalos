@@ -92,7 +92,6 @@ export default function LeadDetailsDrawer({ leadId, open, onOpenChange, onLeadUp
         date_appointment_set: toLocalDatetimeString(lead.date_appointment_set),
         project_type: lead.project_type || '',
         project_size: lead.project_size || '',
-        budget_range: lead.budget_range || '',
         timeline: lead.timeline || '',
         sale_amount: lead.sale_amount || '',
         date_sold: lead.date_sold || '',
@@ -300,7 +299,6 @@ export default function LeadDetailsDrawer({ leadId, open, onOpenChange, onLeadUp
                   <div className="space-y-3">
                     <InfoRow icon={Briefcase} label="Project Type" value={lead.project_type} editing={editing} editValue={editData.project_type} onEditChange={(v) => setEditData(d => ({...d, project_type: v}))} />
                     <InfoRow icon={Ruler} label="Project Size" value={lead.project_size} editing={editing} editValue={editData.project_size} onEditChange={(v) => setEditData(d => ({...d, project_size: v}))} />
-                    <InfoRow icon={DollarSign} label="Budget Range" value={lead.budget_range} iconColor="text-green-500" editing={editing} editValue={editData.budget_range} onEditChange={(v) => setEditData(d => ({...d, budget_range: v}))} />
                     <InfoRow icon={Clock} label="Timeline" value={lead.timeline} editing={editing} editValue={editData.timeline} onEditChange={(v) => setEditData(d => ({...d, timeline: v}))} />
                   </div>
                 </div>
@@ -341,7 +339,7 @@ export default function LeadDetailsDrawer({ leadId, open, onOpenChange, onLeadUp
                     <button onClick={() => setShowConfirm(true)} className="flex-1 px-4 py-2.5 text-sm font-medium bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center justify-center gap-2">
                       <Save className="w-4 h-4" /> Save Changes
                     </button>
-                    <button onClick={() => { setEditing(false); setEditData({ name: lead.name || '', email: lead.email || '', phone: lead.phone || '', appointment_date: toLocalDatetimeString(lead.appointment_date), date_appointment_set: toLocalDatetimeString(lead.date_appointment_set), project_type: lead.project_type || '', project_size: lead.project_size || '', budget_range: lead.budget_range || '', timeline: lead.timeline || '', sale_amount: lead.sale_amount || '', date_sold: lead.date_sold || '', notes: lead.notes || '' }); }} className="flex-1 px-4 py-2.5 text-sm font-medium bg-gray-100 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-200">
+                    <button onClick={() => { setEditing(false); setEditData({ name: lead.name || '', email: lead.email || '', phone: lead.phone || '', appointment_date: toLocalDatetimeString(lead.appointment_date), date_appointment_set: toLocalDatetimeString(lead.date_appointment_set), project_type: lead.project_type || '', project_size: lead.project_size || '', timeline: lead.timeline || '', sale_amount: lead.sale_amount || '', date_sold: lead.date_sold || '', notes: lead.notes || '' }); }} className="flex-1 px-4 py-2.5 text-sm font-medium bg-gray-100 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-200">
                       Cancel
                     </button>
                   </div>
