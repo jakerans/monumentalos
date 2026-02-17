@@ -43,6 +43,7 @@ Deno.serve(async (req) => {
 
     return Response.json({ success: true, email: email.trim(), intended_role, client_id });
   } catch (error) {
-    return Response.json({ error: error.message }, { status: 500 });
+    console.error('inviteClientUser error:', error.message, error.response?.data);
+    return Response.json({ error: error.message, details: error.response?.data }, { status: 500 });
   }
 });
