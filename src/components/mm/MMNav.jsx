@@ -13,7 +13,7 @@ export default function MMNav({ user, clients, pendingOnboardCount = 0 }) {
         <div className="flex items-center justify-between h-14">
           <div className="flex items-center gap-3">
             <LayoutDashboard className="w-5 h-5 text-blue-600" />
-            <h1 className="text-base font-bold text-gray-900">Marketing Manager</h1>
+            <h1 className="text-base font-bold text-gray-900">MonumentalOS</h1>
             <span className="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full font-medium">{clients?.length || 0} clients</span>
             <Link
               to={createPageUrl('MMOnboard')}

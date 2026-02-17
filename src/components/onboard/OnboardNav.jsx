@@ -13,7 +13,7 @@ export default function OnboardNav({ user, activeTab, onTabChange }) {
         <div className="flex items-center justify-between h-14">
           <div className="flex items-center gap-3">
             <ClipboardList className="w-5 h-5 text-indigo-600" />
-            <h1 className="text-base font-bold text-gray-900">Onboarding</h1>
+            <h1 className="text-base font-bold text-gray-900">MonumentalOS</h1>
           </div>
           <div className="flex items-center gap-1">
             {['projects', 'templates'].map(t => (
