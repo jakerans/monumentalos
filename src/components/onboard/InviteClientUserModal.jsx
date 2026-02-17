@@ -23,10 +23,15 @@ export default function InviteClientUserModal({ open, onOpenChange, client }) {
 
     setSaving(true);
     try {
-      await base44.functions.invoke('inviteClientUser', {
-        email: email.trim(),
+      // Send the platform invite (any authenticated user can invite with role 'user')
+      await base44.users.inviteUser(email.trim(), 'user');
+
+      // Create a PendingInvite so the correct role is applied on signup
+      await base44.entities.PendingInvite.create({
+        email: email.trim().toLowerCase(),
         intended_role: 'client',
         client_id: client.id,
+        status: 'pending',
       });
 
       setSuccess(`Invitation sent to ${email} — linked to ${client.name}`);
