@@ -38,7 +38,7 @@ export default function MMDashboard() {
     checkAuth();
   }, [navigate]);
 
-  const { data: clients = [] } = useQuery({
+  const { data: clients = [], refetch: refetchClients } = useQuery({
     queryKey: ['mm-clients'],
     queryFn: () => base44.entities.Client.filter({ status: 'active' }),
   });
@@ -145,12 +145,38 @@ export default function MMDashboard() {
         cpaChange = ((cpaCur - cpaPrior) / cpaPrior) * 100;
       }
 
+      // Monthly goal calculation
+      const mtdStart = new Date(now.getFullYear(), now.getMonth(), 1);
+      const mtdStr = mtdStart.toISOString();
+      const mtdDate = mtdStart.toISOString().split('T')[0];
+      let goalActual = null;
+      if (client.goal_type === 'leads') {
+        goalActual = cLeads.filter(l => l.created_date >= mtdStr).length;
+      } else if (client.goal_type === 'sets') {
+        goalActual = cLeads.filter(l => l.date_appointment_set && l.date_appointment_set >= mtdStr).length;
+      } else if (client.goal_type === 'shows') {
+        goalActual = cLeads.filter(l => l.appointment_date && l.appointment_date >= mtdStr && (l.disposition === 'showed' || l.outcome === 'sold' || l.outcome === 'lost')).length;
+      }
+
+      let effectiveGoalStatus = client.goal_status || null;
+      if (client.goal_type && client.goal_value && goalActual !== null && goalActual >= client.goal_value) {
+        effectiveGoalStatus = 'goal_met';
+      }
+
+      // Sort helper for goal status
+      const goalStatusOrder = { behind_wont_meet: 0, behind_confident: 1, on_track: 2, goal_met: 3 };
+      const goalStatusSort = effectiveGoalStatus ? goalStatusOrder[effectiveGoalStatus] ?? -1 : -1;
+
+      // Goal progress for sorting
+      const goalProgress = client.goal_value ? (goalActual ?? 0) / client.goal_value : -1;
+
       return {
         ...client,
         leadsCur, spendCur, apptsCur, cpaCur, cpaPrior, cpaChange,
         showRateCur, stl, alerts,
         spend7d, leads7d, appts7d, cpa7d, showRate7d,
         spend30d, leads30d, appts30d, cpa30d,
+        goalActual, effectiveGoalStatus, goalStatusSort, goalProgress,
       };
     });
   }, [clients, allLeads, allSpend, periodDays]);
@@ -226,6 +252,7 @@ export default function MMDashboard() {
               <ClientQuickView
                 client={selectedClient}
                 onClose={() => setSelectedClient(null)}
+                onClientUpdated={refetchClients}
               />
             ) : (
               <MMTaskBoard clients={clients} />
