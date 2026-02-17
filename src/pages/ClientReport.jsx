@@ -92,8 +92,10 @@ export default function ClientReport() {
 
   const totalSpend = spendRecords.reduce((sum, s) => sum + (s.amount || 0), 0);
   const appointmentsBooked = bookedLeads.length;
-  const appointmentsShowed = appointmentLeads.filter(l => l.disposition === 'showed').length;
+  const showedAppointments = appointmentLeads.filter(l => l.disposition === 'showed');
+  const appointmentsShowed = showedAppointments.length;
   const cancelledCount = appointmentLeads.filter(l => l.disposition === 'cancelled').length;
+  const jobsSoldFromShowed = showedAppointments.filter(l => l.outcome === 'sold').length;
   const jobsSold = soldLeads.filter(l => l.outcome === 'sold').length;
   const totalRevenue = soldLeads
     .filter(l => l.outcome === 'sold')
@@ -103,7 +105,7 @@ export default function ClientReport() {
     ? ((cancelledCount / appointmentLeads.length) * 100).toFixed(1)
     : '0.0';
   const winRate = appointmentsShowed > 0
-    ? ((jobsSold / appointmentsShowed) * 100).toFixed(1)
+    ? ((jobsSoldFromShowed / appointmentsShowed) * 100).toFixed(1)
     : '0.0';
   const avgJobSize = jobsSold > 0
     ? (totalRevenue / jobsSold).toFixed(0)
