@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { toast } from '@/components/ui/use-toast';
 import { useQuery } from '@tanstack/react-query';
 
 const ROLES = [
@@ -44,12 +45,14 @@ export default function InviteUserModal({ open, onOpenChange, clients = [], onIn
         await base44.entities.PendingInvite.create(inviteData);
       }
 
+      toast({ title: 'Invitation Sent', description: `${email} has been invited as ${role}.`, variant: 'success' });
       setSuccess(`Invitation sent to ${email}`);
       setEmail('');
       setRole('setter');
       setClientId('');
       if (onInvited) onInvited();
     } catch (err) {
+      toast({ title: 'Invite Failed', description: err?.response?.data?.error || err?.message || 'Failed to send invitation', variant: 'destructive' });
       setError(err?.response?.data?.error || err?.message || 'Failed to send invitation');
     } finally {
       setSaving(false);

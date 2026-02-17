@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { toast } from '@/components/ui/use-toast';
 
 export default function MarkPaidModal({ record, clientName, open, onOpenChange, onConfirm }) {
   const defaultAmount = record.billing_type === 'retainer'
@@ -15,6 +16,7 @@ export default function MarkPaidModal({ record, clientName, open, onOpenChange, 
     setSaving(true);
     await onConfirm(record, Number(paidAmount), paidDate, notes);
     setSaving(false);
+    toast({ title: 'Payment Confirmed', description: `$${Number(paidAmount).toLocaleString()} from ${clientName}`, variant: 'success' });
     onOpenChange(false);
   };
 

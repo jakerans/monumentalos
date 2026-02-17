@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { toast } from '@/components/ui/use-toast';
 import { Plus, Trash2, Send } from 'lucide-react';
 import IndustryPicker from '../shared/IndustryPicker';
 
@@ -51,6 +52,7 @@ export default function CreateClientModal({ open, onOpenChange, onCreated }) {
     }
     const client = await base44.entities.Client.create(data);
     setSaving(false);
+    toast({ title: 'Client Created', description: `${name.trim()} has been added.`, variant: 'success' });
     onCreated(client);
     resetForm();
     onOpenChange(false);

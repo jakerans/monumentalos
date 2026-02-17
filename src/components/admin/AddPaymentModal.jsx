@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import dayjs from 'dayjs';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { toast } from '@/components/ui/use-toast';
 import { base44 } from '@/api/base44Client';
 
 export default function AddPaymentModal({ open, onOpenChange, clients, onCreated }) {
@@ -24,8 +25,9 @@ export default function AddPaymentModal({ open, onOpenChange, clients, onCreated
 
     });
     setSaving(false);
+    const cName = clients.find(c => c.id === clientId)?.name || 'Client';
+    toast({ title: 'Payment Recorded', description: `$${Number(amount).toLocaleString()} from ${cName}`, variant: 'success' });
     setClientId(''); setAmount(''); setNotes('');
-
     onCreated();
     onOpenChange(false);
   };

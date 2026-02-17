@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { toast } from '@/components/ui/use-toast';
 import IndustryPicker from '../shared/IndustryPicker';
 
 export default function ClientBillingEditor({ client, open, onOpenChange, onUpdated }) {
@@ -42,6 +43,7 @@ export default function ClientBillingEditor({ client, open, onOpenChange, onUpda
     }
     await base44.entities.Client.update(client.id, updates);
     setSaving(false);
+    toast({ title: 'Billing Updated', description: `${client.name} settings saved.`, variant: 'success' });
     onUpdated();
     onOpenChange(false);
   };

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { toast } from '@/components/ui/use-toast';
 
 export default function NewProjectModal({ open, onOpenChange, clients, templates, mmUsers, onCreate }) {
   const [clientId, setClientId] = useState('');
@@ -29,6 +30,7 @@ export default function NewProjectModal({ open, onOpenChange, clients, templates
     setMmId('');
     setNotes('');
     setCreating(false);
+    toast({ title: 'Onboarding Started', description: `${selectedClient?.name || 'Client'} project created.`, variant: 'success' });
     onOpenChange(false);
   };
 

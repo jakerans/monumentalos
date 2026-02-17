@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
+import { toast } from '@/components/ui/use-toast';
 import { Pencil, Check, X, Trash2 } from 'lucide-react';
 
 const ROLE_LABELS = {
@@ -27,10 +28,12 @@ export default function UserTable({ users, clients = [], onUpdated }) {
   const [deletingId, setDeletingId] = useState(null);
 
   const handleDelete = async (userId) => {
+    const u = users.find(x => x.id === userId);
     setSaving(true);
     await base44.entities.User.delete(userId);
     setSaving(false);
     setDeletingId(null);
+    toast({ title: 'User Deleted', description: `${u?.full_name || u?.email || 'User'} has been removed.`, variant: 'destructive' });
     if (onUpdated) onUpdated();
   };
 
@@ -45,10 +48,12 @@ export default function UserTable({ users, clients = [], onUpdated }) {
   };
 
   const saveRole = async (userId) => {
+    const u = users.find(x => x.id === userId);
     setSaving(true);
     await base44.entities.User.update(userId, { app_role: editRole });
     setSaving(false);
     setEditingId(null);
+    toast({ title: 'Role Updated', description: `${u?.full_name || 'User'} is now ${editRole}.`, variant: 'success' });
     if (onUpdated) onUpdated();
   };
   const getClientName = (clientId) => {

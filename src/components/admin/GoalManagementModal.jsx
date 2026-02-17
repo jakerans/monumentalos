@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { toast } from '@/components/ui/use-toast';
 import { base44 } from '@/api/base44Client';
 import { ChevronLeft, ChevronRight, Save, Loader2, Check, Plus, Trash2 } from 'lucide-react';
 
@@ -75,12 +76,14 @@ export default function GoalManagementModal({ open, onOpenChange, goals, onSaved
     setSaving(false);
     setSaved(true);
     setTimeout(() => setSaved(false), 2000);
+    toast({ title: goal ? 'Goals Updated' : 'Goals Set', description: `${MonthLabel(selectedMonth)} goals saved.`, variant: 'success' });
     onSaved();
   };
 
   const handleDelete = async () => {
     if (!goal) return;
     await base44.entities.CompanyGoal.delete(goal.id);
+    toast({ title: 'Goals Deleted', description: `${MonthLabel(selectedMonth)} goals removed.`, variant: 'destructive' });
     onSaved();
   };
 

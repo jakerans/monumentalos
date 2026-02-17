@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { toast } from '@/components/ui/use-toast';
 import { Trash2 } from 'lucide-react';
 
 const BILLING_LABELS = { pay_per_show: 'Per Show', pay_per_set: 'Per Set', retainer: 'Retainer' };
@@ -31,12 +32,14 @@ export default function EditInvoiceModal({ record, clientName, open, onOpenChang
     };
     await base44.entities.MonthlyBilling.update(record.id, updates);
     setSaving(false);
+    toast({ title: 'Invoice Updated', description: `${clientName} — ${record.billing_month}`, variant: 'success' });
     onUpdated();
     onOpenChange(false);
   };
 
   const handleDelete = async () => {
     await base44.entities.MonthlyBilling.delete(record.id);
+    toast({ title: 'Invoice Deleted', description: `${clientName} — ${record.billing_month}`, variant: 'destructive' });
     onUpdated();
     onOpenChange(false);
   };

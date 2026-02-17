@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { toast } from '@/components/ui/use-toast';
 import { base44 } from '@/api/base44Client';
 
 export default function SetGoalsModal({ open, onOpenChange, currentGoal, month, onSaved }) {
@@ -38,6 +39,7 @@ export default function SetGoalsModal({ open, onOpenChange, currentGoal, month, 
       await base44.entities.CompanyGoal.create(data);
     }
     setSaving(false);
+    toast({ title: 'Goals Saved', description: `Monthly targets for ${month} have been set.`, variant: 'success' });
     onSaved();
     onOpenChange(false);
   };

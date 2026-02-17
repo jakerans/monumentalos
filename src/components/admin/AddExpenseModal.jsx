@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import dayjs from 'dayjs';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { toast } from '@/components/ui/use-toast';
 import { base44 } from '@/api/base44Client';
 
 export default function AddExpenseModal({ open, onOpenChange, clients, onCreated }) {
@@ -28,6 +29,7 @@ export default function AddExpenseModal({ open, onOpenChange, clients, onCreated
       recurring,
     });
     setSaving(false);
+    toast({ title: 'Expense Added', description: `$${Number(amount).toLocaleString()} — ${category}`, variant: 'success' });
     setDescription(''); setAmount(''); setVendor('');
     onCreated();
     onOpenChange(false);

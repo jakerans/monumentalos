@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
+import { toast } from '@/components/ui/use-toast';
 import { MapPin, DollarSign, Link as LinkIcon, Tag, Pencil, Save, X, Power } from 'lucide-react';
 import { INDUSTRY_LABELS, INDUSTRY_COLORS } from '../shared/IndustryPicker';
 import IndustryPicker from '../shared/IndustryPicker';
@@ -40,6 +41,7 @@ export default function ClientSettingsCard({ client, userRole, onUpdated }) {
     await base44.entities.Client.update(client.id, form);
     setSaving(false);
     setEditing(false);
+    toast({ title: 'Settings Saved', description: `${client.name} updated.`, variant: 'success' });
     if (onUpdated) onUpdated();
   };
 
@@ -55,6 +57,11 @@ export default function ClientSettingsCard({ client, userRole, onUpdated }) {
     }
     await base44.entities.Client.update(client.id, updates);
     setConfirmDeactivate(false);
+    toast({
+      title: isActive ? 'Client Deactivated' : 'Client Reactivated',
+      description: `${client.name} is now ${isActive ? 'inactive' : 'active'}.`,
+      variant: isActive ? 'warning' : 'success',
+    });
     if (onUpdated) onUpdated();
   };
 
