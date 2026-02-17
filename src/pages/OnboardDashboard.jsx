@@ -189,8 +189,10 @@ export default function OnboardDashboard() {
                 project={freshSelectedProject}
                 tasks={tasks}
                 mmUsers={mmUsers}
+                clients={clients}
                 onClose={() => setSelectedProject(null)}
                 onRefresh={handleRefresh}
+                onManageContacts={(client) => { setSelectedProject(null); setContactsClient(client); }}
               />
             )}
           </>

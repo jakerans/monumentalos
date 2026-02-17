@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Check, Circle, Play, ArrowLeft, User, Calendar } from 'lucide-react';
+import { Check, Circle, Play, ArrowLeft, User, Calendar, UserPlus } from 'lucide-react';
 
 const taskStatusConfig = {
   pending: { label: 'Pending', icon: Circle, bg: 'bg-gray-50', text: 'text-gray-600', dot: 'bg-gray-300' },
@@ -9,7 +9,7 @@ const taskStatusConfig = {
   completed: { label: 'Done', icon: Check, bg: 'bg-green-50', text: 'text-green-700', dot: 'bg-green-500' },
 };
 
-export default function ProjectDetail({ project, tasks, mmUsers, onClose, onRefresh }) {
+export default function ProjectDetail({ project, tasks, mmUsers, clients, onClose, onRefresh, onManageContacts }) {
   const [updatingId, setUpdatingId] = useState(null);
 
   const projectTasks = tasks
@@ -68,9 +68,22 @@ export default function ProjectDetail({ project, tasks, mmUsers, onClose, onRefr
 
           {project.notes && <p className="text-xs text-gray-500 bg-gray-50 p-2 rounded-md">{project.notes}</p>}
 
-          <button onClick={toggleProjectHold} className="text-xs font-medium text-amber-600 hover:text-amber-700">
-            {project.status === 'on_hold' ? 'Resume Project' : 'Put On Hold'}
-          </button>
+          <div className="flex gap-2">
+            <button onClick={toggleProjectHold} className="text-xs font-medium text-amber-600 hover:text-amber-700">
+              {project.status === 'on_hold' ? 'Resume Project' : 'Put On Hold'}
+            </button>
+            {onManageContacts && (
+              <button
+                onClick={() => {
+                  const client = clients?.find(c => c.id === project.client_id);
+                  if (client) onManageContacts(client);
+                }}
+                className="inline-flex items-center gap-1 text-xs font-medium text-indigo-600 hover:text-indigo-700"
+              >
+                <UserPlus className="w-3 h-3" /> Manage Contacts
+              </button>
+            )}
+          </div>
 
           {/* Tasks */}
           <div className="space-y-1.5">
