@@ -17,6 +17,7 @@ export default function AdminDashboard() {
   const navigate = useNavigate();
   const [user, setUser] = useState(null);
   const [goalsOpen, setGoalsOpen] = useState(false);
+  const now = new Date();
 
   useEffect(() => {
     const checkAuth = async () => {
