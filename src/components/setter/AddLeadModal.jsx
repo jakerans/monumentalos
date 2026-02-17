@@ -14,7 +14,7 @@ const SOURCE_OPTIONS = [
   { value: 'inbound_call', label: 'Inbound Call' },
 ];
 
-export default function AddLeadModal({ open, onOpenChange, clients, onAdd }) {
+export default function AddLeadModal({ open, onOpenChange, clients, onAdd, userId }) {
   const [form, setForm] = useState({
     name: '',
     phone: '',
@@ -22,19 +22,37 @@ export default function AddLeadModal({ open, onOpenChange, clients, onAdd }) {
     client_id: '',
     lead_source: '',
     notes: '',
+    project_type: '',
+    project_size: '',
+    timeline: '',
   });
+  const [isBooked, setIsBooked] = useState(false);
+  const [appointmentDate, setAppointmentDate] = useState('');
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!form.name || !form.client_id || !form.lead_source) return;
     setLoading(true);
-    await onAdd({
+
+    const leadData = {
       ...form,
       lead_received_date: new Date().toISOString(),
-    });
+    };
+
+    if (isBooked && appointmentDate) {
+      leadData.status = 'appointment_booked';
+      leadData.appointment_date = new Date(appointmentDate).toISOString();
+      leadData.date_appointment_set = new Date().toISOString();
+      leadData.disposition = 'scheduled';
+      if (userId) leadData.booked_by_setter_id = userId;
+    }
+
+    await onAdd(leadData);
     setLoading(false);
-    setForm({ name: '', phone: '', email: '', client_id: '', lead_source: '', notes: '' });
+    setForm({ name: '', phone: '', email: '', client_id: '', lead_source: '', notes: '', project_type: '', project_size: '', timeline: '' });
+    setIsBooked(false);
+    setAppointmentDate('');
     onOpenChange(false);
   };
 
@@ -42,57 +60,57 @@ export default function AddLeadModal({ open, onOpenChange, clients, onAdd }) {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-md bg-slate-900 border-slate-700 max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <UserPlus className="w-5 h-5 text-blue-600" />
+          <DialogTitle className="flex items-center gap-2 text-white">
+            <UserPlus className="w-5 h-5" style={{color:'#D6FF03'}} />
             Add New Lead
           </DialogTitle>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-3">
           <div>
-            <label className="block text-xs font-medium text-gray-700 mb-1">Name *</label>
+            <label className="block text-xs font-medium text-slate-300 mb-1">Name *</label>
             <input
               type="text"
               value={form.name}
               onChange={(e) => update('name', e.target.value)}
               required
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-slate-700 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#D6FF03] bg-slate-800 text-white placeholder-slate-500"
               placeholder="Lead name"
             />
           </div>
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-medium text-gray-700 mb-1">Phone</label>
+              <label className="block text-xs font-medium text-slate-300 mb-1">Phone</label>
               <input
                 type="tel"
                 value={form.phone}
                 onChange={(e) => update('phone', e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-slate-700 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#D6FF03] bg-slate-800 text-white placeholder-slate-500"
                 placeholder="(555) 123-4567"
               />
             </div>
             <div>
-              <label className="block text-xs font-medium text-gray-700 mb-1">Email</label>
+              <label className="block text-xs font-medium text-slate-300 mb-1">Email</label>
               <input
                 type="email"
                 value={form.email}
                 onChange={(e) => update('email', e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-slate-700 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#D6FF03] bg-slate-800 text-white placeholder-slate-500"
                 placeholder="email@example.com"
               />
             </div>
           </div>
 
           <div>
-            <label className="block text-xs font-medium text-gray-700 mb-1">Client *</label>
+            <label className="block text-xs font-medium text-slate-300 mb-1">Client *</label>
             <select
               value={form.client_id}
               onChange={(e) => update('client_id', e.target.value)}
               required
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+              className="w-full px-3 py-2 border border-slate-700 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#D6FF03] bg-slate-800 text-white"
             >
               <option value="">Select client...</option>
               {clients.map(c => (
@@ -102,7 +120,7 @@ export default function AddLeadModal({ open, onOpenChange, clients, onAdd }) {
           </div>
 
           <div>
-            <label className="block text-xs font-medium text-gray-700 mb-1">Lead Source *</label>
+            <label className="block text-xs font-medium text-slate-300 mb-1">Lead Source *</label>
             <div className="grid grid-cols-2 gap-2">
               {SOURCE_OPTIONS.map(opt => (
                 <button
@@ -111,9 +129,10 @@ export default function AddLeadModal({ open, onOpenChange, clients, onAdd }) {
                   onClick={() => update('lead_source', opt.value)}
                   className={`px-3 py-2 text-sm font-medium rounded-lg border transition-all ${
                     form.lead_source === opt.value
-                      ? 'bg-blue-600 text-white border-blue-600'
-                      : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
+                      ? 'text-black border-[#D6FF03]'
+                      : 'bg-slate-800 text-slate-300 border-slate-700 hover:bg-slate-700'
                   }`}
+                  style={form.lead_source === opt.value ? {backgroundColor:'#D6FF03'} : {}}
                 >
                   {opt.label}
                 </button>
@@ -122,27 +141,88 @@ export default function AddLeadModal({ open, onOpenChange, clients, onAdd }) {
           </div>
 
           <div>
-            <label className="block text-xs font-medium text-gray-700 mb-1">Notes</label>
+            <label className="block text-xs font-medium text-slate-300 mb-1">Notes</label>
             <textarea
               value={form.notes}
               onChange={(e) => update('notes', e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 h-16"
+              className="w-full px-3 py-2 border border-slate-700 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#D6FF03] bg-slate-800 text-white placeholder-slate-500 h-16"
               placeholder="Any initial notes..."
             />
+          </div>
+
+          {/* Appointment Booked Toggle */}
+          <div className="border border-slate-700 rounded-lg p-3 space-y-3">
+            <label className="flex items-center gap-3 cursor-pointer">
+              <div
+                onClick={() => setIsBooked(!isBooked)}
+                className={`w-10 h-5 rounded-full relative transition-colors ${isBooked ? 'bg-[#D6FF03]' : 'bg-slate-700'}`}
+              >
+                <div className={`absolute top-0.5 w-4 h-4 rounded-full bg-white transition-transform ${isBooked ? 'translate-x-5' : 'translate-x-0.5'}`} />
+              </div>
+              <span className="text-sm font-medium text-slate-300">Appointment Already Booked</span>
+            </label>
+
+            {isBooked && (
+              <div className="space-y-3 pt-1">
+                <div>
+                  <label className="block text-xs font-medium text-slate-300 mb-1">Appointment Date & Time *</label>
+                  <input
+                    type="datetime-local"
+                    value={appointmentDate}
+                    onChange={(e) => setAppointmentDate(e.target.value)}
+                    required={isBooked}
+                    className="w-full px-3 py-2 border border-slate-700 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#D6FF03] bg-slate-800 text-white"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-slate-300 mb-1">Project Type</label>
+                  <input
+                    type="text"
+                    value={form.project_type}
+                    onChange={(e) => update('project_type', e.target.value)}
+                    className="w-full px-3 py-2 border border-slate-700 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#D6FF03] bg-slate-800 text-white placeholder-slate-500"
+                    placeholder="e.g. Kitchen Remodel"
+                  />
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-xs font-medium text-slate-300 mb-1">Project Size</label>
+                    <input
+                      type="text"
+                      value={form.project_size}
+                      onChange={(e) => update('project_size', e.target.value)}
+                      className="w-full px-3 py-2 border border-slate-700 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#D6FF03] bg-slate-800 text-white placeholder-slate-500"
+                      placeholder="e.g. Large"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-slate-300 mb-1">Timeline</label>
+                    <input
+                      type="text"
+                      value={form.timeline}
+                      onChange={(e) => update('timeline', e.target.value)}
+                      className="w-full px-3 py-2 border border-slate-700 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#D6FF03] bg-slate-800 text-white placeholder-slate-500"
+                      placeholder="e.g. 2-3 months"
+                    />
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
 
           <div className="flex gap-2 pt-1">
             <button
               type="submit"
-              disabled={loading || !form.name || !form.client_id || !form.lead_source}
-              className="flex-1 px-4 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium text-sm disabled:opacity-50 transition-colors"
+              disabled={loading || !form.name || !form.client_id || !form.lead_source || (isBooked && !appointmentDate)}
+              className="flex-1 px-4 py-2.5 text-black rounded-lg font-bold text-sm disabled:opacity-50 transition-colors hover:opacity-90"
+              style={{backgroundColor:'#D6FF03'}}
             >
-              {loading ? 'Adding...' : 'Add Lead'}
+              {loading ? 'Adding...' : isBooked ? 'Add Lead & Book' : 'Add Lead'}
             </button>
             <button
               type="button"
               onClick={() => onOpenChange(false)}
-              className="px-4 py-2.5 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 font-medium text-sm transition-colors"
+              className="px-4 py-2.5 bg-slate-800 text-slate-300 rounded-lg hover:bg-slate-700 font-medium text-sm transition-colors border border-slate-700"
             >
               Cancel
             </button>
