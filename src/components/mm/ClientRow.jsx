@@ -23,22 +23,22 @@ export default function ClientRow({ client, onClick }) {
   return (
     <tr
       onClick={onClick}
-      className={`cursor-pointer transition-colors hover:bg-blue-50 ${hasAlert ? 'bg-red-50/40' : ''}`}
+      className={`cursor-pointer transition-colors hover:bg-slate-700/20 ${hasAlert ? 'bg-red-500/5' : ''}`}
     >
       <td className="px-3 py-2.5 whitespace-nowrap">
         <div className="flex items-center gap-2">
           {hasAlert && <AlertTriangle className="w-3.5 h-3.5 text-red-500 flex-shrink-0" />}
-          <span className="text-sm font-medium text-gray-900 truncate max-w-[180px]">{name}</span>
+          <span className="text-sm font-medium text-slate-200 truncate max-w-[180px]">{name}</span>
         </div>
       </td>
       {/* Goal progress */}
       <td className="px-3 py-2.5 text-right whitespace-nowrap">
         {goalType && goalValue ? (
-          <span className="text-xs font-semibold text-gray-700">
-            {goalActual ?? 0}/{goalValue} <span className="text-[10px] text-gray-400">{GOAL_TYPE_LABELS[goalType]}</span>
+          <span className="text-xs font-semibold text-slate-300">
+            {goalActual ?? 0}/{goalValue} <span className="text-[10px] text-slate-500">{GOAL_TYPE_LABELS[goalType]}</span>
           </span>
         ) : (
-          <span className="text-[10px] text-gray-300">—</span>
+          <span className="text-[10px] text-slate-600">—</span>
         )}
       </td>
       {/* Goal status */}
@@ -48,12 +48,12 @@ export default function ClientRow({ client, onClick }) {
             {statusCfg.label}
           </span>
         ) : (
-          <span className="text-[10px] text-gray-300">—</span>
+          <span className="text-[10px] text-slate-600">—</span>
         )}
       </td>
-      <td className="px-3 py-2.5 text-sm text-gray-700 text-right whitespace-nowrap">${spendCur.toLocaleString()}</td>
-      <td className="px-3 py-2.5 text-sm text-gray-700 text-right whitespace-nowrap">{leadsCur}</td>
-      <td className="px-3 py-2.5 text-sm text-gray-700 text-right whitespace-nowrap">{apptsCur}</td>
+      <td className="px-3 py-2.5 text-sm text-slate-300 text-right whitespace-nowrap">${spendCur.toLocaleString()}</td>
+      <td className="px-3 py-2.5 text-sm text-slate-300 text-right whitespace-nowrap">{leadsCur}</td>
+      <td className="px-3 py-2.5 text-sm text-slate-300 text-right whitespace-nowrap">{apptsCur}</td>
       <td className="px-3 py-2.5 text-right whitespace-nowrap">
         <div className="flex flex-col items-end">
           <span className={`text-sm font-semibold ${cpaCur > 300 ? 'text-red-600' : cpaCur > 200 ? 'text-amber-600' : 'text-green-600'}`}>
@@ -71,7 +71,7 @@ export default function ClientRow({ client, onClick }) {
           {stl === null ? '—' : `${stl.toFixed(0)}m`}
         </span>
       </td>
-      <td className="px-3 py-2.5 text-sm text-gray-700 text-right whitespace-nowrap">{showRateCur}</td>
+      <td className="px-3 py-2.5 text-sm text-slate-300 text-right whitespace-nowrap">{showRateCur}</td>
       <td className="px-3 py-2.5 text-right whitespace-nowrap">
         {alerts.length > 0 ? (
           <span className="text-xs bg-red-100 text-red-700 px-1.5 py-0.5 rounded font-medium">{alerts.length}</span>
@@ -80,7 +80,7 @@ export default function ClientRow({ client, onClick }) {
         )}
       </td>
       <td className="px-2 py-2.5">
-        <ChevronRight className="w-4 h-4 text-gray-300" />
+        <ChevronRight className="w-4 h-4 text-slate-600" />
       </td>
     </tr>
   );

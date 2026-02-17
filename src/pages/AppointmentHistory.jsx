@@ -175,7 +175,7 @@ export default function AppointmentHistory() {
         <div className="md:hidden space-y-3">
           <h2 className="text-xl font-bold text-white">Completed & Cancelled</h2>
           {filteredLeads.length === 0 ? (
-            <div className="bg-white rounded-lg shadow border border-gray-200 p-6 text-center text-gray-500">No appointments match the selected filters</div>
+            <div className="bg-slate-800/50 rounded-lg shadow border border-slate-700/50 p-6 text-center text-slate-500">No appointments match the selected filters</div>
           ) : (
             filteredLeads.map((lead) => (
               <AppointmentCard
@@ -188,32 +188,32 @@ export default function AppointmentHistory() {
         </div>
 
         {/* Desktop table view */}
-        <div className="hidden md:block bg-white rounded-lg shadow border border-gray-200">
-          <div className="px-6 py-4 border-b border-gray-200">
-            <h2 className="text-xl font-bold text-gray-900">Completed & Cancelled Appointments</h2>
+        <div className="hidden md:block bg-slate-800/50 rounded-lg shadow border border-slate-700/50">
+          <div className="px-6 py-4 border-b border-slate-700/50">
+            <h2 className="text-xl font-bold text-white">Completed & Cancelled Appointments</h2>
           </div>
           <div className="overflow-x-auto">
             <table className="w-full">
-              <thead className="bg-gray-50">
+              <thead className="bg-slate-900/50">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Lead Name</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Contact</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Appointment Date</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Disposition</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Outcome</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Revenue</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-slate-400 uppercase">Lead Name</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-slate-400 uppercase">Contact</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-slate-400 uppercase">Appointment Date</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-slate-400 uppercase">Disposition</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-slate-400 uppercase">Outcome</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-slate-400 uppercase">Revenue</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-200">
+              <tbody className="divide-y divide-slate-700/30">
                 {filteredLeads.length === 0 ? (
                   <tr>
-                    <td colSpan="6" className="px-6 py-8 text-center text-gray-500">
+                    <td colSpan="6" className="px-6 py-8 text-center text-slate-500">
                       No appointments match the selected filters
                     </td>
                   </tr>
                 ) : (
                   filteredLeads.map((lead) => (
-                    <tr key={lead.id} className="hover:bg-gray-50">
+                    <tr key={lead.id} className="hover:bg-slate-700/20">
                       <td className="px-6 py-4">
                         <button
                           onClick={() => { setSelectedLeadId(lead.id); setDrawerOpen(true); }}
@@ -222,11 +222,11 @@ export default function AppointmentHistory() {
                           {lead.name}
                         </button>
                       </td>
-                      <td className="px-6 py-4 text-sm text-gray-600">
+                      <td className="px-6 py-4 text-sm text-slate-400">
                         <div>{lead.email}</div>
                         <div>{lead.phone}</div>
                       </td>
-                      <td className="px-6 py-4 text-sm text-gray-600">
+                      <td className="px-6 py-4 text-sm text-slate-400">
                         {new Date(lead.appointment_date).toLocaleString()}
                       </td>
                       <td className="px-6 py-4">
@@ -249,9 +249,9 @@ export default function AppointmentHistory() {
                       </td>
                       <td className="px-6 py-4">
                         {lead.sale_amount > 0 ? (
-                          <span className="text-sm font-bold text-green-700">${lead.sale_amount.toLocaleString()}</span>
+                          <span className="text-sm font-bold text-green-400">${lead.sale_amount.toLocaleString()}</span>
                         ) : (
-                          <span className="text-sm text-gray-400">—</span>
+                          <span className="text-sm text-slate-600">—</span>
                         )}
                       </td>
                     </tr>

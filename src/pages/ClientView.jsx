@@ -191,9 +191,9 @@ export default function ClientView() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
           <ClientSettingsCard client={client} />
           {canEditBilling && (
-            <div className="bg-white rounded-lg border border-gray-200 p-4 flex flex-col">
-              <h3 className="text-sm font-bold text-gray-900 mb-2">Billing Management</h3>
-              <p className="text-xs text-gray-500 mb-3">
+            <div className="bg-slate-800/50 rounded-lg border border-slate-700/50 p-4 flex flex-col">
+              <h3 className="text-sm font-bold text-white mb-2">Billing Management</h3>
+              <p className="text-xs text-slate-400 mb-3">
                 {client?.billing_type === 'retainer'
                   ? `Retainer: $${client?.retainer_amount || 0}/mo · Due on the ${client?.retainer_due_day || 1}${client?.retainer_due_day === 1 ? 'st' : client?.retainer_due_day === 2 ? 'nd' : client?.retainer_due_day === 3 ? 'rd' : 'th'}`
                   : client?.billing_type === 'pay_per_set'

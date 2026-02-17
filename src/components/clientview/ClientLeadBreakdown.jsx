@@ -51,10 +51,10 @@ function BreakdownCard({ title, data, labels, total, emptyMsg }) {
   const entries = Object.entries(data).sort((a, b) => b[1] - a[1]);
 
   return (
-    <div className="bg-white rounded-lg border border-gray-200 p-4">
-      <h3 className="text-sm font-bold text-gray-900 mb-3">{title}</h3>
+    <div className="bg-slate-800/50 rounded-lg border border-slate-700/50 p-4">
+      <h3 className="text-sm font-bold text-white mb-3">{title}</h3>
       {entries.length === 0 ? (
-        <p className="text-xs text-gray-400">{emptyMsg || 'No data'}</p>
+        <p className="text-xs text-slate-500">{emptyMsg || 'No data'}</p>
       ) : (
         <div className="space-y-2">
           {entries.map(([key, count]) => {
@@ -62,10 +62,10 @@ function BreakdownCard({ title, data, labels, total, emptyMsg }) {
             return (
               <div key={key}>
                 <div className="flex items-center justify-between text-xs mb-0.5">
-                  <span className="text-gray-600">{labels[key] || key}</span>
-                  <span className="font-medium text-gray-900">{count} <span className="text-gray-400">({pct}%)</span></span>
+                  <span className="text-slate-300">{labels[key] || key}</span>
+                  <span className="font-medium text-white">{count} <span className="text-slate-500">({pct}%)</span></span>
                 </div>
-                <div className="w-full bg-gray-100 rounded-full h-1.5">
+                <div className="w-full bg-slate-700 rounded-full h-1.5">
                   <div className="bg-blue-500 h-1.5 rounded-full" style={{ width: `${pct}%` }} />
                 </div>
               </div>

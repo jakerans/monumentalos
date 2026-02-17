@@ -5,16 +5,16 @@ function KPICard({ label, value, subtitle, icon: Icon, color, alert, onClick }) 
   return (
     <div
       onClick={onClick}
-      className={`bg-white rounded-lg border p-3 transition-all ${alert ? 'border-red-300 bg-red-50/30' : 'border-gray-200'} ${onClick ? 'cursor-pointer hover:shadow-md hover:border-blue-300' : ''}`}
+      className={`bg-slate-800/50 rounded-lg border p-3 transition-all ${alert ? 'border-red-500/30 bg-red-500/10' : 'border-slate-700/50'} ${onClick ? 'cursor-pointer hover:shadow-md hover:border-slate-600' : ''}`}
     >
       <div className="flex items-center gap-2 mb-1">
-        <div className={`p-1 rounded ${color || 'bg-gray-100'}`}>
+        <div className={`p-1 rounded ${color || 'bg-slate-700'}`}>
           <Icon className="w-3.5 h-3.5 text-current" />
         </div>
-        <span className="text-[11px] text-gray-500 font-medium">{label}</span>
+        <span className="text-[11px] text-slate-400 font-medium">{label}</span>
       </div>
-      <p className={`text-lg font-bold ${alert ? 'text-red-600' : 'text-gray-900'}`}>{value}</p>
-      {subtitle && <p className="text-[10px] text-gray-400 mt-0.5">{subtitle}</p>}
+      <p className={`text-lg font-bold ${alert ? 'text-red-400' : 'text-white'}`}>{value}</p>
+      {subtitle && <p className="text-[10px] text-slate-500 mt-0.5">{subtitle}</p>}
     </div>
   );
 }
