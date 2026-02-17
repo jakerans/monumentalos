@@ -182,23 +182,7 @@ export default function LeadDetailsDrawer({ leadId, open, onOpenChange, onLeadUp
           <>
             {/* Header */}
             <SheetHeader className="p-6 pb-4 border-b border-gray-200 bg-gray-50">
-              <div className="flex items-center justify-between">
-                <SheetTitle className="text-xl font-bold">{lead.name}</SheetTitle>
-                {!editing ? (
-                  <button onClick={() => setEditing(true)} className="p-1.5 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded-md transition-colors">
-                    <Pencil className="w-4 h-4" />
-                  </button>
-                ) : (
-                  <div className="flex gap-1.5">
-                    <button onClick={() => setShowConfirm(true)} className="px-3 py-1.5 text-xs font-medium bg-blue-600 text-white rounded-md hover:bg-blue-700 flex items-center gap-1">
-                      <Save className="w-3 h-3" /> Save
-                    </button>
-                    <button onClick={() => { setEditing(false); setEditData({ name: lead.name || '', email: lead.email || '', phone: lead.phone || '', appointment_date: lead.appointment_date ? lead.appointment_date.slice(0, 16) : '', date_appointment_set: lead.date_appointment_set ? lead.date_appointment_set.slice(0, 16) : '', lead_received_date: lead.lead_received_date ? lead.lead_received_date.slice(0, 16) : '', project_type: lead.project_type || '', project_size: lead.project_size || '', budget_range: lead.budget_range || '', timeline: lead.timeline || '', sale_amount: lead.sale_amount || '', date_sold: lead.date_sold || '', notes: lead.notes || '' }); }} className="px-3 py-1.5 text-xs font-medium bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300">
-                      Cancel
-                    </button>
-                  </div>
-                )}
-              </div>
+              <SheetTitle className="text-xl font-bold">{lead.name}</SheetTitle>
               <div className="flex flex-wrap gap-2 mt-2">
                 <span className={`px-2 py-1 text-xs font-medium rounded-full ${
                   lead.disposition === 'showed' ? 'bg-green-100 text-green-800' :
@@ -307,15 +291,13 @@ export default function LeadDetailsDrawer({ leadId, open, onOpenChange, onLeadUp
               </div>
 
               {/* Appointment */}
-              {(lead.appointment_date || lead.date_appointment_set || editing) && (
-                <div>
+              <div>
                   <h3 className="text-xs font-semibold text-gray-500 uppercase mb-3">Appointment</h3>
                   <div className="space-y-3">
                     <InfoRow icon={Calendar} label="Appointment Date" value={lead.appointment_date ? new Date(lead.appointment_date).toLocaleString() : null} editing={editing} editValue={editData.appointment_date} onEditChange={(v) => setEditData(d => ({...d, appointment_date: v}))} type="datetime-local" />
                     <InfoRow icon={Calendar} label="Date Appointment Set" value={lead.date_appointment_set ? new Date(lead.date_appointment_set).toLocaleString() : null} editing={editing} editValue={editData.date_appointment_set} onEditChange={(v) => setEditData(d => ({...d, date_appointment_set: v}))} type="datetime-local" />
                   </div>
                 </div>
-              )}
 
               {/* Lead Timing */}
               {(lead.lead_received_date || speedToLead || editing) && (
@@ -370,6 +352,24 @@ export default function LeadDetailsDrawer({ leadId, open, onOpenChange, onLeadUp
                   )}
                 </div>
               )}
+
+              {/* Edit / Save buttons at bottom */}
+              <div className="pt-4 border-t border-gray-200">
+                {!editing ? (
+                  <button onClick={() => setEditing(true)} className="w-full px-4 py-2.5 text-sm font-medium text-blue-700 bg-blue-50 border border-blue-200 rounded-lg hover:bg-blue-100 transition-colors flex items-center justify-center gap-2">
+                    <Pencil className="w-4 h-4" /> Edit Lead Details
+                  </button>
+                ) : (
+                  <div className="flex gap-2">
+                    <button onClick={() => setShowConfirm(true)} className="flex-1 px-4 py-2.5 text-sm font-medium bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center justify-center gap-2">
+                      <Save className="w-4 h-4" /> Save Changes
+                    </button>
+                    <button onClick={() => { setEditing(false); setEditData({ name: lead.name || '', email: lead.email || '', phone: lead.phone || '', appointment_date: lead.appointment_date ? lead.appointment_date.slice(0, 16) : '', date_appointment_set: lead.date_appointment_set ? lead.date_appointment_set.slice(0, 16) : '', lead_received_date: lead.lead_received_date ? lead.lead_received_date.slice(0, 16) : '', project_type: lead.project_type || '', project_size: lead.project_size || '', budget_range: lead.budget_range || '', timeline: lead.timeline || '', sale_amount: lead.sale_amount || '', date_sold: lead.date_sold || '', notes: lead.notes || '' }); }} className="flex-1 px-4 py-2.5 text-sm font-medium bg-gray-100 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-200">
+                      Cancel
+                    </button>
+                  </div>
+                )}
+              </div>
 
               {/* Metadata */}
               <div className="pt-4 border-t border-gray-100">
