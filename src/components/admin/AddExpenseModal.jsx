@@ -8,7 +8,7 @@ export default function AddExpenseModal({ open, onOpenChange, clients, onCreated
   const [description, setDescription] = useState('');
   const [amount, setAmount] = useState('');
   const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
-  const [clientId, setClientId] = useState('');
+
   const [vendor, setVendor] = useState('');
   const [recurring, setRecurring] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -22,12 +22,12 @@ export default function AddExpenseModal({ open, onOpenChange, clients, onCreated
       description: description || undefined,
       amount: Number(amount),
       date,
-      client_id: clientId || undefined,
+
       vendor: vendor || undefined,
       recurring,
     });
     setSaving(false);
-    setDescription(''); setAmount(''); setVendor(''); setClientId('');
+    setDescription(''); setAmount(''); setVendor('');
     onCreated();
     onOpenChange(false);
   };
@@ -78,13 +78,7 @@ export default function AddExpenseModal({ open, onOpenChange, clients, onCreated
             <label className="text-xs font-medium text-gray-700">Vendor</label>
             <input type="text" value={vendor} onChange={e => setVendor(e.target.value)} className="w-full mt-1 px-3 py-2 text-sm border border-gray-300 rounded-md" placeholder="e.g. Meta, Gusto" />
           </div>
-          <div>
-            <label className="text-xs font-medium text-gray-700">Client (optional)</label>
-            <select value={clientId} onChange={e => setClientId(e.target.value)} className="w-full mt-1 px-3 py-2 text-sm border border-gray-300 rounded-md">
-              <option value="">None (company-wide)</option>
-              {clients.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
-            </select>
-          </div>
+
           <label className="flex items-center gap-2 text-sm text-gray-700">
             <input type="checkbox" checked={recurring} onChange={e => setRecurring(e.target.checked)} className="rounded" />
             Recurring expense
