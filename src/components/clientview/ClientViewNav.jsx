@@ -11,22 +11,22 @@ export default function ClientViewNav({ user, clientName }) {
   const backLabel = user?.app_role === 'marketing_manager' ? 'MM Dashboard' : 'Admin Dashboard';
 
   return (
-    <nav className="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-30">
+    <nav className="bg-slate-900 shadow-lg sticky top-0 z-30">
       <div className="max-w-[1400px] mx-auto px-4 sm:px-6">
         <div className="flex items-center justify-between h-14">
           <div className="flex items-center gap-3">
             <Link
               to={createPageUrl(backPage)}
-              className="text-sm text-blue-600 hover:text-blue-700 inline-flex items-center gap-1"
+              className="text-sm text-cyan-400 hover:text-cyan-300 inline-flex items-center gap-1"
             >
               <ArrowLeft className="w-4 h-4" /> {backLabel}
             </Link>
-            <span className="text-gray-300">|</span>
-            <h1 className="text-base font-bold text-gray-900 truncate">{clientName || 'Client'}</h1>
+            <span className="text-slate-600">|</span>
+            <h1 className="text-base font-bold text-white truncate">{clientName || 'Client'}</h1>
           </div>
           <div className="flex items-center gap-3">
-            <span className="text-xs text-gray-500">{user?.full_name}</span>
-            <button onClick={() => base44.auth.logout()} className="text-xs text-gray-500 hover:text-gray-700">Logout</button>
+            <span className="text-xs text-slate-400">{user?.full_name}</span>
+            <button onClick={() => base44.auth.logout()} className="text-xs text-slate-500 hover:text-white transition-colors">Logout</button>
           </div>
         </div>
       </div>
