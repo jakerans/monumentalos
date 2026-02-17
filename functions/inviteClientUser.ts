@@ -20,16 +20,18 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'email and client_id are required' }, { status: 400 });
     }
 
-    // Invite the user as a "client" role
-    await base44.users.inviteUser(email.trim(), 'client');
+    // Invite the user with base "user" role (API only allows "user" or "admin")
+    await base44.users.inviteUser(email.trim(), 'user');
 
-    // Now find the newly created user by email and set their client_id
-    // Use service role to access all users
+    // Now find the newly created user by email and set their client_id + role to "client"
     const allUsers = await base44.asServiceRole.entities.User.filter({ email: email.trim().toLowerCase() });
     
     if (allUsers.length > 0) {
       const invitedUser = allUsers[0];
-      await base44.asServiceRole.entities.User.update(invitedUser.id, { client_id });
+      await base44.asServiceRole.entities.User.update(invitedUser.id, { 
+        client_id,
+        role: 'client'
+      });
     }
 
     return Response.json({ success: true, email: email.trim(), client_id });
