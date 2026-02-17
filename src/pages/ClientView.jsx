@@ -192,7 +192,7 @@ export default function ClientView() {
         <ClientInvoiceHistory clientId={clientId} />
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-          <ClientSettingsCard client={client} />
+          <ClientSettingsCard client={client} userRole={user?.app_role} onUpdated={refetchClient} />
           {canEditBilling && (
             <div className="bg-slate-800/50 rounded-lg border border-slate-700/50 p-4 flex flex-col">
               <h3 className="text-sm font-bold text-white mb-2">Billing Management</h3>
