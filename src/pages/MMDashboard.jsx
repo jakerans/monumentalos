@@ -12,6 +12,7 @@ import ClientQuickView from '../components/mm/ClientQuickView';
 import ClientBreakdownChart from '../components/mm/ClientBreakdownChart';
 import PageErrorBoundary from '../components/shared/PageErrorBoundary';
 import PageLoader from '../components/shared/PageLoader';
+import { motion } from 'framer-motion';
 
 const PERIOD_OPTIONS = [
   { label: 'This Month', days: 'this_month' },
@@ -265,11 +266,18 @@ export default function MMDashboard() {
 
       <main className="flex-1 max-w-[1600px] w-full mx-auto px-3 sm:px-5 py-3 flex flex-col min-h-0">
         {/* Period toggle */}
-        <div className="flex items-center justify-between mb-3">
+        <motion.div
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.35 }}
+          className="flex items-center justify-between mb-3"
+        >
           <div className="flex items-center gap-1 bg-slate-800 rounded-lg p-0.5">
             {PERIOD_OPTIONS.map(opt => (
-              <button
+              <motion.button
                 key={opt.days}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
                 onClick={() => setPeriodDays(opt.days)}
                 className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${
                   periodDays === opt.days
@@ -278,10 +286,10 @@ export default function MMDashboard() {
                 }`}
               >
                 {opt.label}
-              </button>
+              </motion.button>
             ))}
           </div>
-        </div>
+        </motion.div>
         <MMTopStats stats={topStats} />
 
         {/* Chart toggle + chart */}
@@ -306,7 +314,13 @@ export default function MMDashboard() {
           </div>
         )}
 
-        <div className="flex-1 flex gap-3 min-h-0" style={{ height: showChart ? 'calc(100vh - 180px)' : 'calc(100vh - 180px)' }}>
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.15, duration: 0.4 }}
+          className="flex-1 flex gap-3 min-h-0"
+          style={{ height: showChart ? 'calc(100vh - 180px)' : 'calc(100vh - 180px)' }}
+        >
           {/* Main table — always visible */}
           <div className="flex-1 min-w-0">
             <ClientTable
@@ -327,7 +341,7 @@ export default function MMDashboard() {
               <MMTaskBoard clients={clients} />
             )}
           </div>
-        </div>
+        </motion.div>
       </main>
     </div>
     </PageErrorBoundary>
