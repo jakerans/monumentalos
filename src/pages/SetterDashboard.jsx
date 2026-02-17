@@ -1,13 +1,25 @@
 import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
-import { useQuery } from '@tanstack/react-query';
-import { Link, useNavigate } from 'react-router-dom';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
-import { Phone, Calendar, CheckCircle, Clock } from 'lucide-react';
+import { Search, Filter } from 'lucide-react';
+import SetterNav from '../components/setter/SetterNav';
+import SetterStats from '../components/setter/SetterStats';
+import PipelineColumn from '../components/setter/PipelineColumn';
+import LeadDetailPanel from '../components/setter/LeadDetailPanel';
+import BookAppointmentModal from '../components/setter/BookAppointmentModal';
 
 export default function SetterDashboard() {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const [user, setUser] = useState(null);
+  const [search, setSearch] = useState('');
+  const [clientFilter, setClientFilter] = useState('all');
+  const [selectedLead, setSelectedLead] = useState(null);
+  const [detailOpen, setDetailOpen] = useState(false);
+  const [bookingLead, setBookingLead] = useState(null);
+  const [bookingOpen, setBookingOpen] = useState(false);
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -25,7 +37,7 @@ export default function SetterDashboard() {
   }, [navigate]);
 
   const { data: leads = [], refetch } = useQuery({
-    queryKey: ['leads'],
+    queryKey: ['setter-leads'],
     queryFn: () => base44.entities.Lead.list('-created_date'),
   });
 
@@ -34,12 +46,21 @@ export default function SetterDashboard() {
     queryFn: () => base44.entities.Client.list(),
   });
 
-  const handleMarkFirstCall = async (leadId) => {
-    await base44.entities.Lead.update(leadId, {
-      status: 'first_call_made',
-      first_call_made_date: new Date().toISOString()
-    });
-    refetch();
+  const handleAction = async (action, lead) => {
+    if (action === 'first_call') {
+      const speedMinutes = lead.lead_received_date
+        ? Math.floor((new Date() - new Date(lead.lead_received_date)) / 60000)
+        : null;
+      await base44.entities.Lead.update(lead.id, {
+        status: 'first_call_made',
+        first_call_made_date: new Date().toISOString(),
+        ...(speedMinutes != null ? { speed_to_lead_minutes: speedMinutes } : {}),
+      });
+      refetch();
+    } else if (action === 'book') {
+      setBookingLead(lead);
+      setBookingOpen(true);
+    }
   };
 
   const handleBookAppointment = async (leadId, appointmentDate) => {
@@ -47,9 +68,14 @@ export default function SetterDashboard() {
       status: 'appointment_booked',
       appointment_date: appointmentDate,
       date_appointment_set: new Date().toISOString(),
-      disposition: 'scheduled'
+      disposition: 'scheduled',
     });
     refetch();
+  };
+
+  const handleSelectLead = (lead) => {
+    setSelectedLead(lead);
+    setDetailOpen(true);
   };
 
   if (!user) return null;
@@ -59,141 +85,106 @@ export default function SetterDashboard() {
     return client?.name || 'Unknown';
   };
 
-  const newLeads = leads.filter(l => l.status === 'new');
-  const contactedLeads = leads.filter(l => l.status === 'first_call_made' || l.status === 'contacted');
-  const bookedLeads = leads.filter(l => l.status === 'appointment_booked');
+  // Filter leads
+  const filtered = leads.filter(l => {
+    const matchSearch = !search || l.name?.toLowerCase().includes(search.toLowerCase()) || l.phone?.includes(search) || l.email?.toLowerCase().includes(search.toLowerCase());
+    const matchClient = clientFilter === 'all' || l.client_id === clientFilter;
+    return matchSearch && matchClient;
+  });
+
+  const newLeads = filtered.filter(l => l.status === 'new');
+  const inProgressLeads = filtered.filter(l => l.status === 'first_call_made' || l.status === 'contacted');
+  const bookedLeads = filtered.filter(l => l.status === 'appointment_booked');
+
+  const today = new Date();
+  const todayStr = today.toISOString().split('T')[0];
+  const todayAppts = leads.filter(l => l.appointment_date && l.appointment_date.startsWith(todayStr));
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <nav className="bg-white shadow-sm border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between h-16">
-            <div className="flex items-center">
-              <h1 className="text-xl font-bold text-gray-900">Setter Dashboard</h1>
-            </div>
-            <div className="flex items-center gap-4">
-              {user.role === 'admin' && (
-                <select
-                  defaultValue="setter"
-                  onChange={(e) => {
-                    if (e.target.value === 'admin') navigate(createPageUrl('AdminDashboard'));
-                    else if (e.target.value === 'client') navigate(createPageUrl('ClientPortal'));
-                  }}
-                  className="px-3 py-1.5 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                >
-                  <option value="admin">View as Admin</option>
-                  <option value="setter">View as Setter</option>
-                  <option value="client">View as Client</option>
-                </select>
-              )}
-              <span className="text-sm text-gray-600">{user.full_name}</span>
-              <button
-                onClick={() => base44.auth.logout()}
-                className="text-sm text-gray-600 hover:text-gray-900"
-              >
-                Logout
-              </button>
-            </div>
-          </div>
-        </div>
-      </nav>
+    <div className="min-h-screen bg-gray-50 flex flex-col">
+      <SetterNav user={user} />
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-          <div className="bg-blue-50 rounded-lg p-6 border-2 border-blue-200">
-            <div className="flex items-center gap-3 mb-2">
-              <Phone className="w-5 h-5 text-blue-600" />
-              <p className="text-sm font-medium text-blue-900">New Leads</p>
-            </div>
-            <p className="text-3xl font-bold text-blue-900">{newLeads.length}</p>
+      <main className="flex-1 max-w-7xl w-full mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-6">
+        <SetterStats
+          newCount={newLeads.length}
+          inProgressCount={inProgressLeads.length}
+          bookedCount={bookedLeads.length}
+          todayCount={todayAppts.length}
+        />
+
+        {/* Search & Filter Bar */}
+        <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 mb-4 sm:mb-6">
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+            <input
+              type="text"
+              placeholder="Search leads by name, phone, or email..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="w-full pl-9 pr-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+            />
           </div>
-          <div className="bg-yellow-50 rounded-lg p-6 border-2 border-yellow-200">
-            <div className="flex items-center gap-3 mb-2">
-              <Clock className="w-5 h-5 text-yellow-600" />
-              <p className="text-sm font-medium text-yellow-900">In Progress</p>
-            </div>
-            <p className="text-3xl font-bold text-yellow-900">{contactedLeads.length}</p>
-          </div>
-          <div className="bg-green-50 rounded-lg p-6 border-2 border-green-200">
-            <div className="flex items-center gap-3 mb-2">
-              <Calendar className="w-5 h-5 text-green-600" />
-              <p className="text-sm font-medium text-green-900">Booked</p>
-            </div>
-            <p className="text-3xl font-bold text-green-900">{bookedLeads.length}</p>
+          <div className="flex items-center gap-2">
+            <Filter className="w-4 h-4 text-gray-400" />
+            <select
+              value={clientFilter}
+              onChange={(e) => setClientFilter(e.target.value)}
+              className="px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+            >
+              <option value="all">All Clients</option>
+              {clients.map(c => (
+                <option key={c.id} value={c.id}>{c.name}</option>
+              ))}
+            </select>
           </div>
         </div>
 
-        <div className="bg-white rounded-lg shadow border border-gray-200">
-          <div className="px-6 py-4 border-b border-gray-200">
-            <h2 className="text-xl font-bold text-gray-900">All Leads</h2>
-          </div>
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Lead</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Client</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Contact</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Appointment</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-200">
-                {leads.map((lead) => (
-                  <tr key={lead.id} className="hover:bg-gray-50">
-                    <td className="px-6 py-4">
-                      <div className="font-medium text-gray-900">{lead.name}</div>
-                    </td>
-                    <td className="px-6 py-4 text-sm text-gray-600">
-                      {getClientName(lead.client_id)}
-                    </td>
-                    <td className="px-6 py-4 text-sm text-gray-600">
-                      <div>{lead.email}</div>
-                      <div>{lead.phone}</div>
-                    </td>
-                    <td className="px-6 py-4">
-                      <span className={`px-2 py-1 text-xs font-medium rounded-full ${
-                        lead.status === 'new' ? 'bg-blue-100 text-blue-800' :
-                        lead.status === 'appointment_booked' ? 'bg-green-100 text-green-800' :
-                        'bg-yellow-100 text-yellow-800'
-                      }`}>
-                        {lead.status.replace('_', ' ')}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 text-sm text-gray-600">
-                      {lead.appointment_date ? new Date(lead.appointment_date).toLocaleDateString() : '-'}
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="flex gap-2">
-                        {lead.status === 'new' && (
-                          <button
-                            onClick={() => handleMarkFirstCall(lead.id)}
-                            className="text-xs px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700"
-                          >
-                            Mark First Call
-                          </button>
-                        )}
-                        {(lead.status === 'first_call_made' || lead.status === 'contacted') && !lead.appointment_date && (
-                          <button
-                            onClick={() => {
-                              const date = prompt('Enter appointment date (YYYY-MM-DD HH:MM)');
-                              if (date) handleBookAppointment(lead.id, new Date(date).toISOString());
-                            }}
-                            className="text-xs px-3 py-1 bg-green-600 text-white rounded hover:bg-green-700"
-                          >
-                            Book Appointment
-                          </button>
-                        )}
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+        {/* Pipeline Columns */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
+          <PipelineColumn
+            title="New Leads"
+            count={newLeads.length}
+            color="bg-blue-500"
+            leads={newLeads}
+            clients={clients}
+            onAction={handleAction}
+            onSelect={handleSelectLead}
+          />
+          <PipelineColumn
+            title="In Progress"
+            count={inProgressLeads.length}
+            color="bg-amber-500"
+            leads={inProgressLeads}
+            clients={clients}
+            onAction={handleAction}
+            onSelect={handleSelectLead}
+          />
+          <PipelineColumn
+            title="Appointment Booked"
+            count={bookedLeads.length}
+            color="bg-green-500"
+            leads={bookedLeads}
+            clients={clients}
+            onAction={handleAction}
+            onSelect={handleSelectLead}
+          />
         </div>
       </main>
+
+      <LeadDetailPanel
+        lead={selectedLead}
+        clientName={selectedLead ? getClientName(selectedLead.client_id) : ''}
+        open={detailOpen}
+        onOpenChange={setDetailOpen}
+        onAction={handleAction}
+      />
+
+      <BookAppointmentModal
+        lead={bookingLead}
+        open={bookingOpen}
+        onOpenChange={setBookingOpen}
+        onBook={handleBookAppointment}
+      />
     </div>
   );
 }
