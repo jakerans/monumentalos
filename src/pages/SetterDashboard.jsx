@@ -34,11 +34,12 @@ export default function SetterDashboard() {
       try {
         const currentUser = await base44.auth.me();
         setUser(currentUser);
-        if (currentUser.role !== 'setter' && currentUser.role !== 'admin') {
-          if (currentUser.role === 'client') navigate(createPageUrl('ClientPortal'));
-          else if (currentUser.role === 'marketing_manager') navigate(createPageUrl('MMDashboard'));
-          else if (currentUser.role === 'onboard_admin') navigate(createPageUrl('OnboardDashboard'));
-          else if (currentUser.role === 'user') navigate(createPageUrl('AccountPending'));
+        const appRole = currentUser.app_role;
+        if (!appRole) { navigate(createPageUrl('AccountPending')); return; }
+        if (appRole !== 'setter' && appRole !== 'admin') {
+          if (appRole === 'client') navigate(createPageUrl('ClientPortal'));
+          else if (appRole === 'marketing_manager') navigate(createPageUrl('MMDashboard'));
+          else if (appRole === 'onboard_admin') navigate(createPageUrl('OnboardDashboard'));
           else navigate(createPageUrl('AdminDashboard'));
         }
       } catch (error) {

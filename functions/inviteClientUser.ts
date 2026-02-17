@@ -28,7 +28,7 @@ Deno.serve(async (req) => {
     }
 
     // Only admins and onboard_admins can invite users
-    if (user.role !== 'admin' && user.role !== 'onboard_admin') {
+    if (user.app_role !== 'admin' && user.app_role !== 'onboard_admin') {
       return Response.json({ error: 'Forbidden' }, { status: 403 });
     }
 

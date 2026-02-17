@@ -17,7 +17,7 @@ export default function ClientPerformance() {
       try {
         const currentUser = await base44.auth.me();
         setUser(currentUser);
-        if (currentUser.role !== 'admin') {
+        if (currentUser.app_role !== 'admin') {
           navigate(createPageUrl('AdminDashboard'));
         }
       } catch { base44.auth.redirectToLogin(); }

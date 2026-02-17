@@ -10,7 +10,7 @@ Deno.serve(async (req) => {
     }
 
     // Only admins and onboard_admins can list team users
-    if (user.role !== 'admin' && user.role !== 'onboard_admin') {
+    if (user.app_role !== 'admin' && user.app_role !== 'onboard_admin') {
       return Response.json({ error: 'Forbidden' }, { status: 403 });
     }
 
@@ -22,6 +22,7 @@ Deno.serve(async (req) => {
       full_name: u.full_name,
       email: u.email,
       role: u.role,
+      app_role: u.app_role,
     }));
 
     return Response.json({ users: safeUsers });

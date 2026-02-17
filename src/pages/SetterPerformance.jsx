@@ -19,8 +19,8 @@ export default function SetterPerformance() {
       try {
         const currentUser = await base44.auth.me();
         setUser(currentUser);
-        if (currentUser.role !== 'admin') {
-          if (currentUser.role === 'marketing_manager') navigate(createPageUrl('MMDashboard'));
+        if (currentUser.app_role !== 'admin') {
+          if (currentUser.app_role === 'marketing_manager') navigate(createPageUrl('MMDashboard'));
           else navigate(createPageUrl('SetterDashboard'));
         }
       } catch (error) { base44.auth.redirectToLogin(); }

@@ -36,7 +36,7 @@ export default function UserTable({ users, clients = [], onUpdated }) {
 
   const startEdit = (user) => {
     setEditingId(user.id);
-    setEditRole(user.role || 'user');
+    setEditRole(user.app_role || 'user');
   };
 
   const cancelEdit = () => {
@@ -46,7 +46,7 @@ export default function UserTable({ users, clients = [], onUpdated }) {
 
   const saveRole = async (userId) => {
     setSaving(true);
-    await base44.entities.User.update(userId, { role: editRole });
+    await base44.entities.User.update(userId, { app_role: editRole });
     setSaving(false);
     setEditingId(null);
     if (onUpdated) onUpdated();
@@ -110,14 +110,14 @@ export default function UserTable({ users, clients = [], onUpdated }) {
                     </div>
                   ) : (
                     <div className="flex items-center gap-1.5">
-                      {getRoleBadge(user.role)}
+                      {getRoleBadge(user.app_role || 'user')}
                       <button onClick={() => startEdit(user)} className="p-0.5 text-gray-400 hover:text-gray-600 rounded">
                         <Pencil className="w-3 h-3" />
                       </button>
                     </div>
                   )}
                 </td>
-                <td className="px-4 py-3 text-xs text-gray-600">{user.role === 'client' ? getClientName(user.client_id) : '—'}</td>
+                <td className="px-4 py-3 text-xs text-gray-600">{user.app_role === 'client' ? getClientName(user.client_id) : '—'}</td>
                 <td className="px-4 py-3 text-xs text-gray-400">
                   {user.created_date ? new Date(user.created_date).toLocaleDateString() : '—'}
                 </td>

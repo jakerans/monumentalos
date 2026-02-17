@@ -31,7 +31,9 @@ export default function OnboardDashboard() {
       try {
         const currentUser = await base44.auth.me();
         setUser(currentUser);
-        if (currentUser.role !== 'onboard_admin' && currentUser.role !== 'admin') {
+        const appRole = currentUser.app_role;
+        if (!appRole) { navigate(createPageUrl('AccountPending')); return; }
+        if (appRole !== 'onboard_admin' && appRole !== 'admin') {
           navigate(createPageUrl('AdminDashboard'));
         }
       } catch (error) {
@@ -69,7 +71,7 @@ export default function OnboardDashboard() {
     },
   });
 
-  const mmUsers = users.filter(u => u.role === 'marketing_manager' || u.role === 'admin');
+  const mmUsers = users.filter(u => u.app_role === 'marketing_manager' || u.app_role === 'admin');
 
   const handleCreateProject = async (projectData, template) => {
     const project = await base44.entities.OnboardProject.create(projectData);

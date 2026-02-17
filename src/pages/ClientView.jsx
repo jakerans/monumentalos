@@ -35,7 +35,7 @@ export default function ClientView() {
       try {
         const currentUser = await base44.auth.me();
         setUser(currentUser);
-        if (currentUser.role !== 'admin' && currentUser.role !== 'marketing_manager') {
+        if (currentUser.app_role !== 'admin' && currentUser.app_role !== 'marketing_manager') {
           navigate(createPageUrl('SetterDashboard'));
         }
       } catch (error) {
@@ -119,7 +119,7 @@ export default function ClientView() {
   const handleCardClick = (key) => setDrilldown(key);
   const handleRefresh = () => { refetchLeads(); refetchSpend(); };
   const refetchClient = () => queryClient.invalidateQueries({ queryKey: ['client', clientId] });
-  const canEditBilling = user?.role === 'admin' || user?.role === 'onboard_admin';
+  const canEditBilling = user?.app_role === 'admin' || user?.app_role === 'onboard_admin';
 
   const metrics = useMemo(() => {
     const totalSpend = spendInRange.reduce((s, r) => s + (r.amount || 0), 0);

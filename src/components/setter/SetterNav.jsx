@@ -14,7 +14,7 @@ export default function SetterNav({ user }) {
             <h1 className="text-lg sm:text-xl font-bold text-gray-900">MonumentalOS</h1>
           </div>
           <div className="flex items-center gap-2 sm:gap-4">
-            {user.role === 'admin' && (
+            {user.app_role === 'admin' && (
               <select
                 defaultValue="setter"
                 onChange={(e) => {

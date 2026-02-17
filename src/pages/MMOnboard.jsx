@@ -14,7 +14,7 @@ export default function MMOnboard() {
       try {
         const currentUser = await base44.auth.me();
         setUser(currentUser);
-        if (currentUser.role !== 'marketing_manager' && currentUser.role !== 'admin') {
+        if (currentUser.app_role !== 'marketing_manager' && currentUser.app_role !== 'admin') {
           navigate(createPageUrl('SetterDashboard'));
         }
       } catch (error) {
@@ -42,7 +42,7 @@ export default function MMOnboard() {
   if (!user) return null;
 
   // Filter to projects assigned to this MM (or all if admin)
-  const myProjects = user.role === 'admin'
+  const myProjects = user.app_role === 'admin'
     ? allProjects
     : allProjects.filter(p => p.assigned_mm_id === user.id);
 

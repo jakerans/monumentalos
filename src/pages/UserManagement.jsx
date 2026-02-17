@@ -19,8 +19,8 @@ export default function UserManagement() {
       try {
         const currentUser = await base44.auth.me();
         setUser(currentUser);
-        if (currentUser.role !== 'admin') {
-          navigate(createPageUrl('SetterDashboard'));
+        if (currentUser.app_role !== 'admin') {
+          navigate(createPageUrl('AccountPending'));
         }
       } catch {
         base44.auth.redirectToLogin();
@@ -43,10 +43,10 @@ export default function UserManagement() {
 
   const filteredUsers = roleFilter === 'all'
     ? users
-    : users.filter(u => u.role === roleFilter);
+    : users.filter(u => u.app_role === roleFilter);
 
   const roleCounts = users.reduce((acc, u) => {
-    acc[u.role] = (acc[u.role] || 0) + 1;
+    acc[u.app_role || 'unassigned'] = (acc[u.app_role || 'unassigned'] || 0) + 1;
     return acc;
   }, {});
 

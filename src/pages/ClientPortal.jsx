@@ -21,16 +21,16 @@ export default function ClientPortal() {
         const currentUser = await base44.auth.me();
         setUser(currentUser);
         
-        // If role is 'user' (no app role assigned yet), go to AccountPending to apply pending invite
-        if (!currentUser.role || currentUser.role === 'user') {
+        const appRole = currentUser.app_role;
+        if (!appRole) {
           navigate(createPageUrl('AccountPending'));
           return;
         }
         
-        if (currentUser.role !== 'client' && currentUser.role !== 'admin') {
-          if (currentUser.role === 'setter') navigate(createPageUrl('SetterDashboard'));
-          else if (currentUser.role === 'marketing_manager') navigate(createPageUrl('MMDashboard'));
-          else if (currentUser.role === 'onboard_admin') navigate(createPageUrl('OnboardDashboard'));
+        if (appRole !== 'client' && appRole !== 'admin') {
+          if (appRole === 'setter') navigate(createPageUrl('SetterDashboard'));
+          else if (appRole === 'marketing_manager') navigate(createPageUrl('MMDashboard'));
+          else if (appRole === 'onboard_admin') navigate(createPageUrl('OnboardDashboard'));
           else navigate(createPageUrl('AdminDashboard'));
         }
       } catch (error) {
@@ -41,7 +41,7 @@ export default function ClientPortal() {
   }, []);
 
   const getClientId = () => {
-    if (user?.role === 'admin') {
+    if (user?.app_role === 'admin') {
       return localStorage.getItem('admin_view_client_id');
     }
     return user?.client_id;
@@ -129,7 +129,7 @@ export default function ClientPortal() {
             <div className="flex items-center justify-between h-14 sm:h-16">
               <h1 className="text-lg sm:text-xl font-bold text-gray-900">MonumentalOS</h1>
               <div className="flex items-center gap-2 sm:hidden">
-                {user.role === 'admin' && (
+                {user.app_role === 'admin' && (
                   <button
                     onClick={() => {
                       localStorage.removeItem('admin_view_client_id');
@@ -156,12 +156,12 @@ export default function ClientPortal() {
               <Link to={createPageUrl('ClientSettings')} className="px-2 sm:px-3 py-1.5 sm:py-2 rounded-md text-xs sm:text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-50 whitespace-nowrap">
                 Settings
               </Link>
-              {user.role === 'admin' && clientInfo && (
+              {user.app_role === 'admin' && clientInfo && (
                 <span className="text-xs text-gray-500 whitespace-nowrap ml-2">(Viewing: {clientInfo.name})</span>
               )}
             </div>
             <div className="hidden sm:flex items-center gap-4">
-              {user.role === 'admin' && (
+              {user.app_role === 'admin' && (
                 <button
                   onClick={() => {
                     localStorage.removeItem('admin_view_client_id');

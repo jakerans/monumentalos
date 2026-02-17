@@ -27,9 +27,12 @@ export default function MMDashboard() {
       try {
         const currentUser = await base44.auth.me();
         setUser(currentUser);
-        if (currentUser.role !== 'marketing_manager' && currentUser.role !== 'admin') {
-          if (currentUser.role === 'setter') navigate(createPageUrl('SetterDashboard'));
-          else if (currentUser.role === 'client') navigate(createPageUrl('ClientPortal'));
+        const appRole = currentUser.app_role;
+        if (!appRole) { navigate(createPageUrl('AccountPending')); return; }
+        if (appRole !== 'marketing_manager' && appRole !== 'admin') {
+          if (appRole === 'setter') navigate(createPageUrl('SetterDashboard'));
+          else if (appRole === 'client') navigate(createPageUrl('ClientPortal'));
+          else navigate(createPageUrl('AdminDashboard'));
         }
       } catch (error) {
         base44.auth.redirectToLogin();
@@ -66,7 +69,7 @@ export default function MMDashboard() {
 
   const pendingOnboardCount = useMemo(() => {
     if (!user) return 0;
-    const myProjectIds = user.role === 'admin'
+    const myProjectIds = user.app_role === 'admin'
       ? onboardProjects.map(p => p.id)
       : onboardProjects.filter(p => p.assigned_mm_id === user.id).map(p => p.id);
     return onboardTasks.filter(t =>

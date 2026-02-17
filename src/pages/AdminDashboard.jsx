@@ -24,10 +24,13 @@ export default function AdminDashboard() {
       try {
         const currentUser = await base44.auth.me();
         setUser(currentUser);
-        if (currentUser.role === 'user') { navigate(createPageUrl('AccountPending')); return; }
-        if (currentUser.role === 'marketing_manager') { navigate(createPageUrl('MMDashboard')); return; }
-        if (currentUser.role === 'onboard_admin') { navigate(createPageUrl('OnboardDashboard')); return; }
-        if (currentUser.role !== 'admin') { navigate(createPageUrl('SetterDashboard')); }
+        const appRole = currentUser.app_role;
+        if (!appRole) { navigate(createPageUrl('AccountPending')); return; }
+        if (appRole === 'marketing_manager') { navigate(createPageUrl('MMDashboard')); return; }
+        if (appRole === 'onboard_admin') { navigate(createPageUrl('OnboardDashboard')); return; }
+        if (appRole === 'setter') { navigate(createPageUrl('SetterDashboard')); return; }
+        if (appRole === 'client') { navigate(createPageUrl('ClientPortal')); return; }
+        if (appRole !== 'admin') { navigate(createPageUrl('AccountPending')); }
       } catch { base44.auth.redirectToLogin(); }
     };
     checkAuth();
@@ -76,7 +79,7 @@ export default function AdminDashboard() {
   }, [clients, leads, payments, expenses]);
 
   // Setter leaderboard
-  const setters = users.filter(u => u.role === 'setter');
+  const setters = users.filter(u => u.app_role === 'setter');
   const mtdStart = new Date(now.getFullYear(), now.getMonth(), 1);
   const setterStats = setters.map(setter => {
     const booked = leads.filter(l => l.booked_by_setter_id === setter.id && l.date_appointment_set && new Date(l.date_appointment_set) >= mtdStart).length;

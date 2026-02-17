@@ -29,7 +29,7 @@ export default function MMNav({ user, clients, pendingOnboardCount = 0 }) {
             </Link>
           </div>
           <div className="flex items-center gap-3">
-            {user?.role === 'admin' && (
+            {user?.app_role === 'admin' && (
               <select
                 onChange={(e) => {
                   if (e.target.value === 'admin') navigate(createPageUrl('AdminDashboard'));

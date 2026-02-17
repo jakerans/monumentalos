@@ -26,7 +26,7 @@ export default function MonthlyBilling() {
       try {
         const currentUser = await base44.auth.me();
         setUser(currentUser);
-        if (currentUser.role !== 'admin' && currentUser.role !== 'onboard_admin') {
+        if (currentUser.app_role !== 'admin' && currentUser.app_role !== 'onboard_admin') {
           navigate(createPageUrl('AdminDashboard'));
         }
       } catch { base44.auth.redirectToLogin(); }
