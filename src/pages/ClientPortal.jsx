@@ -86,7 +86,7 @@ export default function ClientPortal() {
   // Upcoming: appointment date is in the future, still scheduled/rescheduled, no final outcome
   const upcomingLeads = leads.filter(l =>
     l.appointment_date && new Date(l.appointment_date) > now &&
-    (lead => !lead.disposition || lead.disposition === 'scheduled' || lead.disposition === 'rescheduled')(l)
+    (!l.disposition || l.disposition === 'scheduled' || l.disposition === 'rescheduled')
   );
   const upcomingCount = upcomingLeads.length;
 
