@@ -90,6 +90,45 @@ function SpiffProgressBar({ spiff, leads, users }) {
   );
 }
 
+function checkSpiffGoalMet(spiff, leads, users) {
+  const now = new Date();
+  const mtdStart = new Date(now.getFullYear(), now.getMonth(), 1);
+  const setters = users.filter(u => u.app_role === 'setter');
+
+  const getProgress = (setterId) => {
+    if (spiff.qualifier === 'appointments') {
+      return leads.filter(l => l.booked_by_setter_id === setterId && l.date_appointment_set && new Date(l.date_appointment_set) >= mtdStart).length;
+    }
+    const stlLeads = leads.filter(l => l.setter_id === setterId && l.speed_to_lead_minutes != null && new Date(l.created_date) >= mtdStart);
+    return stlLeads.length > 0 ? Math.round(stlLeads.reduce((s, l) => s + l.speed_to_lead_minutes, 0) / stlLeads.length) : null;
+  };
+
+  const getTeamProgress = () => {
+    if (spiff.qualifier === 'appointments') {
+      return leads.filter(l => l.date_appointment_set && new Date(l.date_appointment_set) >= mtdStart).length;
+    }
+    const stlLeads = leads.filter(l => l.speed_to_lead_minutes != null && new Date(l.created_date) >= mtdStart);
+    return stlLeads.length > 0 ? Math.round(stlLeads.reduce((s, l) => s + l.speed_to_lead_minutes, 0) / stlLeads.length) : null;
+  };
+
+  const isSTL = spiff.qualifier === 'stl';
+  const goal = spiff.goal_value;
+
+  const isMet = (progress) => {
+    if (progress == null) return false;
+    return isSTL ? progress <= goal : progress >= goal;
+  };
+
+  if (spiff.scope === 'individual') {
+    return isMet(getProgress(spiff.assigned_setter_id));
+  }
+  if (spiff.scope === 'team_company') {
+    return isMet(getTeamProgress());
+  }
+  // team_each: met if ALL setters meet it
+  return setters.length > 0 && setters.every(s => isMet(getProgress(s.id)));
+}
+
 export default function SpiffManager({ leads, users }) {
   const queryClient = useQueryClient();
   const [createOpen, setCreateOpen] = useState(false);
@@ -102,6 +141,24 @@ export default function SpiffManager({ leads, users }) {
     queryKey: ['admin-spiffs'],
     queryFn: () => base44.entities.Spiff.list('-created_date'),
   });
+
+  // Auto-update spiff statuses
+  React.useEffect(() => {
+    if (spiffs.length === 0 || !leads.length) return;
+    const now = new Date();
+    const todayStr = now.toISOString().split('T')[0];
+
+    spiffs.filter(s => s.status === 'active').forEach(async (spiff) => {
+      const goalMet = checkSpiffGoalMet(spiff, leads, users);
+      if (goalMet) {
+        await base44.entities.Spiff.update(spiff.id, { status: 'completed' });
+        refetch();
+      } else if (spiff.due_date && spiff.due_date < todayStr) {
+        await base44.entities.Spiff.update(spiff.id, { status: 'expired' });
+        refetch();
+      }
+    });
+  }, [spiffs, leads, users]);
 
   const createMutation = useMutation({
     mutationFn: (data) => base44.entities.Spiff.create(data),
