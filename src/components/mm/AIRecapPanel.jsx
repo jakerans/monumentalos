@@ -36,7 +36,10 @@ export default function AIRecapPanel({ clientMetrics, leads, spendRecords }) {
     if (clientMetrics.length === 0) return;
     setLoading(true);
 
-    const summaryData = clientMetrics.slice(0, 30).map(c => ({
+    const alertClients = clientMetrics.filter(c => c.alerts && c.alerts.length > 0);
+
+    // Only include clients that have alerts — healthy accounts don't need tasks
+    const alertData = alertClients.map(c => ({
       name: c.name,
       spend7d: c.spend7d,
       leads7d: c.leads7d,
@@ -47,36 +50,43 @@ export default function AIRecapPanel({ clientMetrics, leads, spendRecords }) {
       alerts: c.alerts,
     }));
 
+    // Brief summary of healthy clients for context
+    const healthyCount = clientMetrics.length - alertClients.length;
     const totalSpend = clientMetrics.reduce((s, c) => s + c.spend7d, 0);
     const totalAppts = clientMetrics.reduce((s, c) => s + c.appts7d, 0);
-    const alertClients = clientMetrics.filter(c => c.alerts.length > 0);
 
-    // Build context from recent task history
+    // Build context from ALL recent task history (tasks + manual tasks)
     const recentTaskContext = recentLogs.map(l => ({
       task: l.task_text,
       type: l.type,
       status: l.status,
       client_id: l.client_id,
       date: l.created_date?.split('T')[0],
-      notes: l.notes || null,
     }));
 
-    const prompt = `You are a marketing agency performance analyst. Based on the following 7-day performance data for ${clientMetrics.length} clients, give a concise daily recap and a prioritized task list.
+    const prompt = `You are a marketing agency performance analyst. Your job is to identify ONLY accounts that are truly struggling and need immediate attention.
 
-OVERALL: $${totalSpend} spend, ${totalAppts} appts set, ${alertClients.length} clients with alerts.
+PORTFOLIO OVERVIEW: ${clientMetrics.length} total clients, $${totalSpend} total spend (7d), ${totalAppts} appts set (7d). ${healthyCount} clients are performing fine and need NO tasks.
 
-CLIENT DATA (top 30):
-${JSON.stringify(summaryData, null, 1)}
+STRUGGLING CLIENTS WITH ALERTS (${alertClients.length}):
+${alertData.length > 0 ? JSON.stringify(alertData, null, 1) : 'None — all clients are healthy.'}
 
-IMPORTANT - RECENT TASK HISTORY (last 14 days):
-The following tasks and insights were previously generated. DO NOT repeat tasks that are still "pending" or "in_progress" — they are already being worked on. For "done" tasks, you may suggest follow-ups if relevant. For "dismissed" tasks, do not suggest similar tasks unless circumstances have clearly changed. Marketing changes can take days or weeks to take effect, so avoid recommending the same optimization repeatedly.
+EXISTING TASK HISTORY (last 14 days — includes AI-generated AND manually created tasks):
+${recentTaskContext.length > 0 ? JSON.stringify(recentTaskContext, null, 1) : 'No previous tasks.'}
 
-${recentTaskContext.length > 0 ? JSON.stringify(recentTaskContext, null, 1) : 'No previous tasks logged.'}
+STRICT RULES:
+- ONLY create tasks for clients listed above (those with alerts). Do NOT create tasks for healthy clients.
+- If all clients are healthy, return an EMPTY tasks array.
+- Do NOT repeat or rephrase any task that is "pending", "in_progress", or was created in the last 7 days (even if "done"). Marketing changes take time — do not re-suggest the same thing.
+- Maximum 1-2 tasks per struggling client. Only the most impactful action.
+- If a client already has an active task, do NOT add another unless it addresses a completely different alert.
+- Keep total tasks to 1-4 maximum. Fewer is better. Zero is acceptable.
+- Each task must be specific, actionable, and reference the client name.
 
 Provide:
-1. "recap": A brief 3-5 bullet point summary of overall portfolio health, notable wins, and concerns (plain text, each bullet on its own line starting with •). Reference progress on active tasks where relevant.
-2. "tasks": A list of 3-6 NEW specific actionable tasks for today, prioritized by urgency. Each task should reference a specific client name and be actionable. DO NOT duplicate any active/pending tasks. Only suggest genuinely new actions.
-3. "task_client_ids": For each task, provide the client name it relates to (or "portfolio" if it's a general task). This should be an array with the same length as "tasks".`;
+1. "recap": 2-4 bullet points on portfolio health. Mention which clients are struggling and why. Keep it brief. Each bullet starts with •.
+2. "tasks": Array of specific actionable tasks ONLY for struggling clients. Can be empty [].
+3. "task_client_ids": Array of client names matching each task (same length as "tasks").`;
 
     const result = await base44.integrations.Core.InvokeLLM({
       prompt,
