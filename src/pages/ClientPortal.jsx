@@ -115,36 +115,39 @@ export default function ClientPortal() {
     <div className="min-h-screen bg-gray-50">
       <nav className="bg-white shadow-sm border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between h-16">
-            <div className="flex items-center gap-8">
-              <h1 className="text-xl font-bold text-gray-900">Client Portal</h1>
-              <div className="flex gap-4">
-                <Link
-                  to={createPageUrl('ClientPortal')}
-                  className="px-3 py-2 rounded-md text-sm font-medium bg-blue-50 text-blue-700"
-                >
-                  My Appointments
-                </Link>
-                <Link
-                  to={createPageUrl('AppointmentHistory')}
-                  className="px-3 py-2 rounded-md text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-50"
-                >
-                  History
-                </Link>
-                <Link
-                  to={createPageUrl('ClientReport')}
-                  className="px-3 py-2 rounded-md text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-50"
-                >
-                  Report
-                </Link>
+          <div className="flex flex-col sm:flex-row sm:justify-between sm:h-16">
+            <div className="flex items-center justify-between h-14 sm:h-16">
+              <h1 className="text-lg sm:text-xl font-bold text-gray-900">Client Portal</h1>
+              <div className="flex items-center gap-2 sm:hidden">
+                {user.role === 'admin' && (
+                  <button
+                    onClick={() => {
+                      localStorage.removeItem('admin_view_client_id');
+                      navigate(createPageUrl('AdminDashboard'));
+                    }}
+                    className="px-2 py-1 text-xs border border-gray-300 rounded-md hover:bg-gray-50"
+                  >
+                    Admin
+                  </button>
+                )}
+                <button onClick={() => base44.auth.logout()} className="text-xs text-gray-600 hover:text-gray-900">Logout</button>
               </div>
+            </div>
+            <div className="flex items-center gap-1 sm:gap-4 pb-2 sm:pb-0 overflow-x-auto">
+              <Link to={createPageUrl('ClientPortal')} className="px-2 sm:px-3 py-1.5 sm:py-2 rounded-md text-xs sm:text-sm font-medium bg-blue-50 text-blue-700 whitespace-nowrap">
+                Appointments
+              </Link>
+              <Link to={createPageUrl('AppointmentHistory')} className="px-2 sm:px-3 py-1.5 sm:py-2 rounded-md text-xs sm:text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-50 whitespace-nowrap">
+                History
+              </Link>
+              <Link to={createPageUrl('ClientReport')} className="px-2 sm:px-3 py-1.5 sm:py-2 rounded-md text-xs sm:text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-50 whitespace-nowrap">
+                Report
+              </Link>
               {user.role === 'admin' && clientInfo && (
-                <span className="text-sm text-gray-500">
-                  (Viewing as: {clientInfo.name})
-                </span>
+                <span className="text-xs text-gray-500 whitespace-nowrap ml-2">(Viewing: {clientInfo.name})</span>
               )}
             </div>
-            <div className="flex items-center gap-4">
+            <div className="hidden sm:flex items-center gap-4">
               {user.role === 'admin' && (
                 <button
                   onClick={() => {
@@ -157,19 +160,14 @@ export default function ClientPortal() {
                 </button>
               )}
               <span className="text-sm text-gray-600">{user.full_name}</span>
-              <button
-                onClick={() => base44.auth.logout()}
-                className="text-sm text-gray-600 hover:text-gray-900"
-              >
-                Logout
-              </button>
+              <button onClick={() => base44.auth.logout()} className="text-sm text-gray-600 hover:text-gray-900">Logout</button>
             </div>
           </div>
         </div>
       </nav>
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+      <main className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-8">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-2 sm:gap-4 mb-6 sm:mb-8">
           <StatCard icon={Calendar} iconColor="text-blue-600" label="Scheduled" thisMonth={stats.scheduledThis} lastMonth={stats.scheduledLast} />
           <StatCard icon={CheckCircle} iconColor="text-green-600" label="Showed" thisMonth={stats.showedThis} lastMonth={stats.showedLast} />
           <StatCard icon={CheckCircle} iconColor="text-green-600" label="Sold" thisMonth={stats.soldThis} lastMonth={stats.soldLast} />
