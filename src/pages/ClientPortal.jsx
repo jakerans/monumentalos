@@ -6,6 +6,7 @@ import { createPageUrl } from '@/utils';
 import { Calendar, CheckCircle, DollarSign } from 'lucide-react';
 import LeadDetailsDrawer from '../components/LeadDetailsDrawer';
 import AppointmentCard from '../components/client/AppointmentCard';
+import StatCard from '../components/client/StatCard';
 
 export default function ClientPortal() {
   const navigate = useNavigate();
@@ -64,10 +65,32 @@ export default function ClientPortal() {
     (lead.disposition === 'scheduled' || lead.disposition === 'rescheduled') &&
     (!lead.outcome || lead.outcome === 'pending')
   );
-  const scheduledLeads = leads.filter(l => l.disposition === 'scheduled');
-  const showedLeads = leads.filter(l => l.disposition === 'showed');
-  const soldLeads = leads.filter(l => l.outcome === 'sold');
-  const totalSoldAmount = soldLeads.reduce((sum, lead) => sum + (lead.sale_amount || 0), 0);
+
+  // Month boundaries
+  const now = new Date();
+  const thisMonthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+  const lastMonthStart = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+  const lastMonthEnd = new Date(now.getFullYear(), now.getMonth(), 0, 23, 59, 59);
+
+  const inRange = (dateStr, start, end) => {
+    if (!dateStr) return false;
+    const d = new Date(dateStr);
+    return d >= start && d <= end;
+  };
+
+  const thisMonthLeads = leads.filter(l => inRange(l.appointment_date, thisMonthStart, now));
+  const lastMonthLeads = leads.filter(l => inRange(l.appointment_date, lastMonthStart, lastMonthEnd));
+
+  const stats = {
+    scheduledThis: thisMonthLeads.filter(l => l.disposition === 'scheduled' || l.disposition === 'rescheduled').length,
+    scheduledLast: lastMonthLeads.filter(l => l.disposition === 'scheduled' || l.disposition === 'rescheduled').length,
+    showedThis: thisMonthLeads.filter(l => l.disposition === 'showed').length,
+    showedLast: lastMonthLeads.filter(l => l.disposition === 'showed').length,
+    soldThis: thisMonthLeads.filter(l => l.outcome === 'sold').length,
+    soldLast: lastMonthLeads.filter(l => l.outcome === 'sold').length,
+    revenueThis: thisMonthLeads.filter(l => l.outcome === 'sold').reduce((s, l) => s + (l.sale_amount || 0), 0),
+    revenueLast: lastMonthLeads.filter(l => l.outcome === 'sold').reduce((s, l) => s + (l.sale_amount || 0), 0),
+  };
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -128,34 +151,10 @@ export default function ClientPortal() {
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-          <div className="bg-white rounded-lg shadow p-4 md:p-6 border border-gray-200">
-            <div className="flex items-center gap-2 mb-1">
-              <Calendar className="w-4 h-4 text-blue-600" />
-              <p className="text-xs md:text-sm font-medium text-gray-600">Scheduled</p>
-            </div>
-            <p className="text-2xl md:text-3xl font-bold text-gray-900">{scheduledLeads.length}</p>
-          </div>
-          <div className="bg-white rounded-lg shadow p-4 md:p-6 border border-gray-200">
-            <div className="flex items-center gap-2 mb-1">
-              <CheckCircle className="w-4 h-4 text-green-600" />
-              <p className="text-xs md:text-sm font-medium text-gray-600">Showed</p>
-            </div>
-            <p className="text-2xl md:text-3xl font-bold text-gray-900">{showedLeads.length}</p>
-          </div>
-          <div className="bg-white rounded-lg shadow p-4 md:p-6 border border-gray-200">
-            <div className="flex items-center gap-2 mb-1">
-              <CheckCircle className="w-4 h-4 text-green-600" />
-              <p className="text-xs md:text-sm font-medium text-gray-600">Sold</p>
-            </div>
-            <p className="text-2xl md:text-3xl font-bold text-gray-900">{soldLeads.length}</p>
-          </div>
-          <div className="bg-white rounded-lg shadow p-4 md:p-6 border border-gray-200">
-            <div className="flex items-center gap-2 mb-1">
-              <DollarSign className="w-4 h-4 text-emerald-600" />
-              <p className="text-xs md:text-sm font-medium text-gray-600">Revenue</p>
-            </div>
-            <p className="text-2xl md:text-3xl font-bold text-emerald-700">${totalSoldAmount.toLocaleString()}</p>
-          </div>
+          <StatCard icon={Calendar} iconColor="text-blue-600" label="Scheduled" thisMonth={stats.scheduledThis} lastMonth={stats.scheduledLast} />
+          <StatCard icon={CheckCircle} iconColor="text-green-600" label="Showed" thisMonth={stats.showedThis} lastMonth={stats.showedLast} />
+          <StatCard icon={CheckCircle} iconColor="text-green-600" label="Sold" thisMonth={stats.soldThis} lastMonth={stats.soldLast} />
+          <StatCard icon={DollarSign} iconColor="text-emerald-600" label="Revenue" thisMonth={stats.revenueThis} lastMonth={stats.revenueLast} format="currency" />
         </div>
 
         {/* Mobile card view */}
