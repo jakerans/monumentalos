@@ -41,10 +41,15 @@ export default function RevenueDashboard() {
     checkAuth();
   }, [navigate]);
 
-  const { data: clients = [], isLoading: l1 } = useQuery({ queryKey: ['rev-clients'], queryFn: () => base44.entities.Client.list() });
-  const { data: leads = [], isLoading: l2 } = useQuery({ queryKey: ['rev-leads'], queryFn: () => base44.entities.Lead.list('-created_date', 5000) });
-  const { data: payments = [], refetch: refetchPayments, isLoading: l3 } = useQuery({ queryKey: ['rev-payments'], queryFn: () => base44.entities.Payment.list('-date', 5000) });
-  const { data: expenses = [], refetch: refetchExpenses, isLoading: l4 } = useQuery({ queryKey: ['rev-expenses'], queryFn: () => base44.entities.Expense.list('-date', 5000) });
+  // Scope fetches to selected date range (with buffer for prior period comparisons)
+  const fetchRangeStart = new Date(startDate);
+  fetchRangeStart.setMonth(fetchRangeStart.getMonth() - 6); // 6-month lookback for P&L charts
+  const revFetchStart = fetchRangeStart.toISOString().split('T')[0];
+
+  const { data: clients = [], isLoading: l1 } = useQuery({ queryKey: ['rev-clients'], queryFn: () => base44.entities.Client.list(), staleTime: 5 * 60 * 1000 });
+  const { data: leads = [], isLoading: l2 } = useQuery({ queryKey: ['rev-leads', revFetchStart], queryFn: () => base44.entities.Lead.filter({ created_date: { $gte: revFetchStart } }, '-created_date', 5000), staleTime: 2 * 60 * 1000 });
+  const { data: payments = [], refetch: refetchPayments, isLoading: l3 } = useQuery({ queryKey: ['rev-payments', revFetchStart], queryFn: () => base44.entities.Payment.filter({ date: { $gte: revFetchStart } }, '-date', 5000), staleTime: 2 * 60 * 1000 });
+  const { data: expenses = [], refetch: refetchExpenses, isLoading: l4 } = useQuery({ queryKey: ['rev-expenses', revFetchStart], queryFn: () => base44.entities.Expense.filter({ date: { $gte: revFetchStart } }, '-date', 5000), staleTime: 2 * 60 * 1000 });
 
   const isLoading = l1 || l2 || l3 || l4;
 

@@ -55,25 +55,34 @@ export default function SetterDashboard() {
     checkAuth();
   }, [navigate]);
 
+  // Only fetch active pipeline leads (exclude completed/sold/lost) + recent 90 days for leaderboard
+  const pipelineFetchStart = new Date();
+  pipelineFetchStart.setDate(pipelineFetchStart.getDate() - 90);
+  const pipelineStartStr = pipelineFetchStart.toISOString().split('T')[0];
+
   const { data: leads = [], refetch, isLoading: l1 } = useQuery({
-    queryKey: ['setter-leads'],
-    queryFn: () => base44.entities.Lead.list('-created_date'),
+    queryKey: ['setter-leads', pipelineStartStr],
+    queryFn: () => base44.entities.Lead.filter({ created_date: { $gte: pipelineStartStr } }, '-created_date', 5000),
+    staleTime: 60 * 1000,
   });
 
   const { data: clients = [], isLoading: l2 } = useQuery({
     queryKey: ['clients'],
     queryFn: () => base44.entities.Client.list(),
+    staleTime: 5 * 60 * 1000,
   });
 
   const { data: users = [] } = useQuery({
     queryKey: ['all-users'],
     queryFn: () => base44.entities.User.list(),
     initialData: [],
+    staleTime: 5 * 60 * 1000,
   });
 
   const { data: spiffs = [] } = useQuery({
     queryKey: ['setter-spiffs'],
     queryFn: () => base44.entities.Spiff.filter({ status: 'active' }),
+    staleTime: 5 * 60 * 1000,
   });
 
   const getUserName = (userId) => {

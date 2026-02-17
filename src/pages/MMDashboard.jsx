@@ -43,19 +43,27 @@ export default function MMDashboard() {
     checkAuth();
   }, [navigate]);
 
+  // Scope data fetches to 60-day window (covers 30d period + prior 30d comparison)
+  const mmFetchStart = new Date();
+  mmFetchStart.setDate(mmFetchStart.getDate() - 60);
+  const mmStartStr = mmFetchStart.toISOString().split('T')[0];
+
   const { data: clients = [], refetch: refetchClients, isLoading: l1 } = useQuery({
     queryKey: ['mm-clients'],
     queryFn: () => base44.entities.Client.filter({ status: 'active' }),
+    staleTime: 5 * 60 * 1000,
   });
 
   const { data: allLeads = [], isLoading: l2 } = useQuery({
-    queryKey: ['mm-leads'],
-    queryFn: () => base44.entities.Lead.list('-created_date', 2000),
+    queryKey: ['mm-leads', mmStartStr],
+    queryFn: () => base44.entities.Lead.filter({ created_date: { $gte: mmStartStr } }, '-created_date', 5000),
+    staleTime: 2 * 60 * 1000,
   });
 
   const { data: allSpend = [], isLoading: l3 } = useQuery({
-    queryKey: ['mm-spend'],
-    queryFn: () => base44.entities.Spend.list('-date', 2000),
+    queryKey: ['mm-spend', mmStartStr],
+    queryFn: () => base44.entities.Spend.filter({ date: { $gte: mmStartStr } }, '-date', 5000),
+    staleTime: 2 * 60 * 1000,
   });
 
   // Fetch pending onboard tasks for this MM
