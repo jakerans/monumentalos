@@ -84,6 +84,14 @@ export default function MMDashboard() {
     const priorStartStr = priorStart.toISOString();
     const priorStartDate = priorStart.toISOString().split('T')[0];
 
+    // Fixed date cutoffs for 7d and 30d (used by ClientQuickView)
+    const d7 = new Date(now); d7.setDate(d7.getDate() - 7);
+    const d30 = new Date(now); d30.setDate(d30.getDate() - 30);
+    const d7Str = d7.toISOString();
+    const d7Date = d7.toISOString().split('T')[0];
+    const d30Str = d30.toISOString();
+    const d30Date = d30.toISOString().split('T')[0];
+
     return clients.map(client => {
       const cLeads = allLeads.filter(l => l.client_id === client.id);
       const cSpend = allSpend.filter(s => s.client_id === client.id);
@@ -99,10 +107,25 @@ export default function MMDashboard() {
       const apptsPrior = cLeads.filter(l => l.date_appointment_set && l.date_appointment_set >= priorStartStr && l.date_appointment_set < pStartStr).length;
       const cpaPrior = apptsPrior > 0 ? spendPrior / apptsPrior : Infinity;
 
-      // Show rate
+      // Show rate (current period)
       const apptLeadsCur = cLeads.filter(l => l.appointment_date && l.appointment_date >= pStartStr);
       const showedCur = apptLeadsCur.filter(l => l.disposition === 'showed' || l.outcome === 'sold' || l.outcome === 'lost').length;
       const showRateCur = apptLeadsCur.length > 0 ? `${((showedCur / apptLeadsCur.length) * 100).toFixed(0)}%` : '—';
+
+      // 7-day stats
+      const spend7d = cSpend.filter(s => s.date >= d7Date).reduce((s, r) => s + (r.amount || 0), 0);
+      const leads7d = cLeads.filter(l => l.created_date >= d7Str).length;
+      const appts7d = cLeads.filter(l => l.date_appointment_set && l.date_appointment_set >= d7Str).length;
+      const cpa7d = appts7d > 0 ? spend7d / appts7d : Infinity;
+      const apptLeads7d = cLeads.filter(l => l.appointment_date && l.appointment_date >= d7Str);
+      const showed7d = apptLeads7d.filter(l => l.disposition === 'showed' || l.outcome === 'sold' || l.outcome === 'lost').length;
+      const showRate7d = apptLeads7d.length > 0 ? `${((showed7d / apptLeads7d.length) * 100).toFixed(0)}%` : '—';
+
+      // 30-day stats
+      const spend30d = cSpend.filter(s => s.date >= d30Date).reduce((s, r) => s + (r.amount || 0), 0);
+      const leads30d = cLeads.filter(l => l.created_date >= d30Str).length;
+      const appts30d = cLeads.filter(l => l.date_appointment_set && l.date_appointment_set >= d30Str).length;
+      const cpa30d = appts30d > 0 ? spend30d / appts30d : Infinity;
 
       // Avg STL
       const stlLeads = cLeads.filter(l => l.speed_to_lead_minutes != null && l.created_date >= pStartStr);
@@ -126,6 +149,8 @@ export default function MMDashboard() {
         ...client,
         leadsCur, spendCur, apptsCur, cpaCur, cpaPrior, cpaChange,
         showRateCur, stl, alerts,
+        spend7d, leads7d, appts7d, cpa7d, showRate7d,
+        spend30d, leads30d, appts30d, cpa30d,
       };
     });
   }, [clients, allLeads, allSpend, periodDays]);
