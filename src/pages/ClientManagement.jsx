@@ -138,7 +138,7 @@ export default function ClientManagement() {
                 Cancel
               </button>
               <button type="submit" disabled={isSubmitting}
-                className="px-6 py-2 text-black rounded-md hover:opacity-90 disabled:opacity-50 font-bold" style={{backgroundColor:'#D6FF03'}}">
+                className="px-6 py-2 text-black rounded-md hover:opacity-90 disabled:opacity-50 font-bold" style={{backgroundColor:'#D6FF03'}}>
                 {isSubmitting ? 'Creating...' : 'Create Client'}
               </button>
             </div>
