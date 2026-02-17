@@ -48,9 +48,11 @@ export default function MMDashboard() {
   }, [navigate]);
 
   // Scope data fetches to 90-day window (covers last month + prior month comparison)
-  const mmFetchStart = new Date();
-  mmFetchStart.setDate(mmFetchStart.getDate() - 90);
-  const mmStartStr = mmFetchStart.toISOString();
+  const mmStartStr = useMemo(() => {
+    const d = new Date();
+    d.setDate(d.getDate() - 90);
+    return d.toISOString().split('T')[0] + 'T00:00:00.000Z';
+  }, []);
 
   const { data: clients = [], refetch: refetchClients, isLoading: l1 } = useQuery({
     queryKey: ['mm-clients'],
