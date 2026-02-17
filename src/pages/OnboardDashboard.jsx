@@ -14,6 +14,8 @@ import ClientContactsPanel from '../components/onboard/ClientContactsPanel';
 import TemplateManager from '../components/onboard/TemplateManager';
 import ClientList from '../components/onboard/ClientList';
 import InviteClientUserModal from '../components/onboard/InviteClientUserModal';
+import PageErrorBoundary from '../components/shared/PageErrorBoundary';
+import PageLoader from '../components/shared/PageLoader';
 
 export default function OnboardDashboard() {
   const navigate = useNavigate();
@@ -43,12 +45,12 @@ export default function OnboardDashboard() {
     checkAuth();
   }, [navigate]);
 
-  const { data: projects = [], refetch: refetchProjects } = useQuery({
+  const { data: projects = [], refetch: refetchProjects, isLoading: l1 } = useQuery({
     queryKey: ['onboard-projects'],
     queryFn: () => base44.entities.OnboardProject.list('-created_date', 200),
   });
 
-  const { data: tasks = [], refetch: refetchTasks } = useQuery({
+  const { data: tasks = [], refetch: refetchTasks, isLoading: l2 } = useQuery({
     queryKey: ['onboard-tasks'],
     queryFn: () => base44.entities.OnboardTask.list('-created_date', 1000),
   });
@@ -99,6 +101,7 @@ export default function OnboardDashboard() {
   };
 
   if (!user) return null;
+  if (l1 || l2) return <PageLoader message="Loading onboarding..." />;
 
   const filteredProjects = statusFilter === 'all'
     ? projects
@@ -108,6 +111,7 @@ export default function OnboardDashboard() {
   const freshSelectedProject = selectedProject ? projects.find(p => p.id === selectedProject.id) : null;
 
   return (
+    <PageErrorBoundary>
     <div className="min-h-screen bg-[#0B0F1A] flex flex-col">
       <OnboardNav user={user} activeTab={tab} onTabChange={setTab} />
 
@@ -221,5 +225,6 @@ export default function OnboardDashboard() {
         )}
       </main>
     </div>
+    </PageErrorBoundary>
   );
 }

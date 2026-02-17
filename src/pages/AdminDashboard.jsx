@@ -10,6 +10,8 @@ import RevenueBreakdownChart from '../components/admin/RevenueBreakdownChart';
 import MTDGoalProgress from '../components/admin/MTDGoalProgress';
 import GoalManagementModal from '../components/admin/GoalManagementModal';
 import { Settings, Trophy } from 'lucide-react';
+import PageErrorBoundary from '../components/shared/PageErrorBoundary';
+import PageLoader from '../components/shared/PageLoader';
 
 export default function AdminDashboard() {
   const navigate = useNavigate();
@@ -33,14 +35,16 @@ export default function AdminDashboard() {
     checkAuth();
   }, [navigate]);
 
-  const { data: clients = [] } = useQuery({ queryKey: ['admin-clients'], queryFn: () => base44.entities.Client.list() });
-  const { data: leads = [] } = useQuery({ queryKey: ['admin-leads'], queryFn: () => base44.entities.Lead.list('-created_date', 5000) });
-  const { data: spend = [] } = useQuery({ queryKey: ['admin-spend'], queryFn: () => base44.entities.Spend.list('-date', 5000) });
-  const { data: payments = [] } = useQuery({ queryKey: ['admin-payments'], queryFn: () => base44.entities.Payment.list('-date', 5000) });
-  const { data: expenses = [] } = useQuery({ queryKey: ['admin-expenses'], queryFn: () => base44.entities.Expense.list('-date', 200) });
+  const { data: clients = [], isLoading: l1 } = useQuery({ queryKey: ['admin-clients'], queryFn: () => base44.entities.Client.list() });
+  const { data: leads = [], isLoading: l2 } = useQuery({ queryKey: ['admin-leads'], queryFn: () => base44.entities.Lead.list('-created_date', 5000) });
+  const { data: spend = [], isLoading: l3 } = useQuery({ queryKey: ['admin-spend'], queryFn: () => base44.entities.Spend.list('-date', 5000) });
+  const { data: payments = [], isLoading: l4 } = useQuery({ queryKey: ['admin-payments'], queryFn: () => base44.entities.Payment.list('-date', 5000) });
+  const { data: expenses = [], isLoading: l5 } = useQuery({ queryKey: ['admin-expenses'], queryFn: () => base44.entities.Expense.list('-date', 200) });
   const { data: goals = [], refetch: refetchGoals } = useQuery({ queryKey: ['admin-goals'], queryFn: () => base44.entities.CompanyGoal.list() });
   const { data: billingRecords = [] } = useQuery({ queryKey: ['admin-billing'], queryFn: () => base44.entities.MonthlyBilling.list('-billing_month', 500) });
   const { data: users = [] } = useQuery({ queryKey: ['admin-users'], queryFn: () => base44.entities.User.list() });
+
+  const isLoading = l1 || l2 || l3 || l4 || l5;
 
   const now = new Date();
   const currentMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
@@ -93,8 +97,10 @@ export default function AdminDashboard() {
   }).sort((a, b) => b.booked - a.booked);
 
   if (!user) return null;
+  if (isLoading) return <PageLoader message="Loading dashboard..." />;
 
   return (
+    <PageErrorBoundary>
     <div className="min-h-screen bg-[#0B0F1A]">
       <AdminNav user={user} currentPage="AdminDashboard" clients={clients} />
 
@@ -199,5 +205,6 @@ export default function AdminDashboard() {
 
       <GoalManagementModal open={goalsOpen} onOpenChange={setGoalsOpen} goals={goals} onSaved={refetchGoals} />
     </div>
+    </PageErrorBoundary>
   );
 }

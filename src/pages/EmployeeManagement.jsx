@@ -12,6 +12,8 @@ import PerformancePayWidget from '../components/employee/PerformancePayWidget';
 import PerformancePayDetailPanel from '../components/employee/PerformancePayDetailPanel';
 import PayrollSettingsModal from '../components/employee/PayrollSettingsModal';
 import { getCyclesPerYear } from '../components/employee/payUtils';
+import PageErrorBoundary from '../components/shared/PageErrorBoundary';
+import PageLoader from '../components/shared/PageLoader';
 
 export default function EmployeeManagement() {
   const navigate = useNavigate();
@@ -39,7 +41,7 @@ export default function EmployeeManagement() {
     checkAuth();
   }, [navigate]);
 
-  const { data: employees = [], refetch } = useQuery({
+  const { data: employees = [], refetch, isLoading: empLoading } = useQuery({
     queryKey: ['employees'],
     queryFn: () => base44.entities.Employee.list(),
   });
@@ -126,12 +128,14 @@ export default function EmployeeManagement() {
   };
 
   if (!user) return null;
+  if (empLoading) return <PageLoader message="Loading employees..." />;
 
   const filtered = showDismissed
     ? employees.filter(e => e.status === 'dismissed')
     : employees.filter(e => e.status !== 'dismissed');
 
   return (
+    <PageErrorBoundary>
     <div className="min-h-screen bg-[#0B0F1A]">
       <AdminNav user={user} currentPage="EmployeeManagement" clients={clients} />
 
@@ -222,5 +226,6 @@ export default function EmployeeManagement() {
         onSaved={refetchSettings}
       />
     </div>
+    </PageErrorBoundary>
   );
 }

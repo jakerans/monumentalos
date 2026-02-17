@@ -14,6 +14,8 @@ import FirstCallModal from '../components/setter/FirstCallModal';
 import DisqualifyModal from '../components/setter/DisqualifyModal';
 import LeaderboardWidget from '../components/setter/LeaderboardWidget';
 import CelebrationOverlay from '../components/setter/CelebrationOverlay';
+import PageErrorBoundary from '../components/shared/PageErrorBoundary';
+import PageLoader from '../components/shared/PageLoader';
 
 export default function SetterDashboard() {
   const navigate = useNavigate();
@@ -53,12 +55,12 @@ export default function SetterDashboard() {
     checkAuth();
   }, [navigate]);
 
-  const { data: leads = [], refetch } = useQuery({
+  const { data: leads = [], refetch, isLoading: l1 } = useQuery({
     queryKey: ['setter-leads'],
     queryFn: () => base44.entities.Lead.list('-created_date'),
   });
 
-  const { data: clients = [] } = useQuery({
+  const { data: clients = [], isLoading: l2 } = useQuery({
     queryKey: ['clients'],
     queryFn: () => base44.entities.Client.list(),
   });
@@ -215,6 +217,7 @@ export default function SetterDashboard() {
   }, [myCurrentRank]);
 
   if (!user) return null;
+  if (l1 || l2) return <PageLoader message="Loading pipeline..." />;
 
   // Filter leads — hide leads with a final outcome (sold/lost) or completed status
   const filtered = leads.filter(l => {
@@ -234,6 +237,7 @@ export default function SetterDashboard() {
   const todayAppts = leads.filter(l => l.appointment_date && l.appointment_date.startsWith(todayStr));
 
   return (
+    <PageErrorBoundary>
     <div className="min-h-screen bg-[#0B0F1A] flex flex-col">
       <SetterNav user={user} />
 
@@ -384,5 +388,6 @@ export default function SetterDashboard() {
         />
       )}
     </div>
+    </PageErrorBoundary>
   );
 }

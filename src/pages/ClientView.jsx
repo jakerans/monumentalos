@@ -14,6 +14,8 @@ import ClientBillingEditor from '../components/clientview/ClientBillingEditor';
 import ClientInvoiceHistory from '../components/clientview/ClientInvoiceHistory';
 import LeadDrilldownDialog from '../components/clientview/LeadDrilldownDialog';
 import SpendDrilldownDialog from '../components/clientview/SpendDrilldownDialog';
+import PageErrorBoundary from '../components/shared/PageErrorBoundary';
+import PageLoader from '../components/shared/PageLoader';
 
 export default function ClientView() {
   const navigate = useNavigate();
@@ -55,13 +57,13 @@ export default function ClientView() {
     enabled: !!clientId,
   });
 
-  const { data: allLeads = [], refetch: refetchLeads } = useQuery({
+  const { data: allLeads = [], refetch: refetchLeads, isLoading: l1 } = useQuery({
     queryKey: ['client-all-leads', clientId],
     queryFn: () => base44.entities.Lead.filter({ client_id: clientId }, '-created_date', 2000),
     enabled: !!clientId,
   });
 
-  const { data: allSpend = [], refetch: refetchSpend } = useQuery({
+  const { data: allSpend = [], refetch: refetchSpend, isLoading: l2 } = useQuery({
     queryKey: ['client-all-spend', clientId],
     queryFn: () => base44.entities.Spend.filter({ client_id: clientId }, '-date', 2000),
     enabled: !!clientId,
@@ -150,8 +152,10 @@ export default function ClientView() {
   }, [leads, bookedLeads, apptLeads, spendInRange, soldLeads]);
 
   if (!user) return null;
+  if (l1 || l2) return <PageLoader message="Loading client data..." />;
 
   return (
+    <PageErrorBoundary>
     <div className="min-h-screen bg-[#0B0F1A] flex flex-col">
       <ClientViewNav user={user} clientName={client?.name} />
 
@@ -243,5 +247,6 @@ export default function ClientView() {
         )}
       </main>
     </div>
+    </PageErrorBoundary>
   );
 }

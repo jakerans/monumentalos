@@ -7,6 +7,8 @@ import AdminNav from '../components/admin/AdminNav';
 import ClientOverviewTable from '../components/admin/ClientOverviewTable';
 import ClientPerfKPIs from '../components/admin/ClientPerfKPIs';
 import ClientPerfCharts from '../components/admin/ClientPerfCharts';
+import PageErrorBoundary from '../components/shared/PageErrorBoundary';
+import PageLoader from '../components/shared/PageLoader';
 
 export default function ClientPerformance() {
   const navigate = useNavigate();
@@ -25,12 +27,12 @@ export default function ClientPerformance() {
     checkAuth();
   }, [navigate]);
 
-  const { data: clients = [] } = useQuery({
+  const { data: clients = [], isLoading: l1 } = useQuery({
     queryKey: ['perf-clients'],
     queryFn: () => base44.entities.Client.list(),
   });
 
-  const { data: leads = [] } = useQuery({
+  const { data: leads = [], isLoading: l2 } = useQuery({
     queryKey: ['perf-leads'],
     queryFn: () => base44.entities.Lead.list('-created_date', 5000),
   });
@@ -46,8 +48,10 @@ export default function ClientPerformance() {
   });
 
   if (!user) return null;
+  if (l1 || l2) return <PageLoader message="Loading client performance..." />;
 
   return (
+    <PageErrorBoundary>
     <div className="min-h-screen bg-[#0B0F1A]">
       <AdminNav user={user} currentPage="ClientPerformance" clients={clients} />
       <main className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
@@ -61,5 +65,6 @@ export default function ClientPerformance() {
         <ClientOverviewTable clients={clients} leads={leads} spend={spend} payments={payments} />
       </main>
     </div>
+    </PageErrorBoundary>
   );
 }

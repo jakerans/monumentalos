@@ -9,6 +9,8 @@ import MMTopStats from '../components/mm/MMTopStats';
 import ClientTable from '../components/mm/ClientTable';
 import MMTaskBoard from '../components/mm/MMTaskBoard';
 import ClientQuickView from '../components/mm/ClientQuickView';
+import PageErrorBoundary from '../components/shared/PageErrorBoundary';
+import PageLoader from '../components/shared/PageLoader';
 
 const PERIOD_OPTIONS = [
   { label: '7 Days', days: 7 },
@@ -41,17 +43,17 @@ export default function MMDashboard() {
     checkAuth();
   }, [navigate]);
 
-  const { data: clients = [], refetch: refetchClients } = useQuery({
+  const { data: clients = [], refetch: refetchClients, isLoading: l1 } = useQuery({
     queryKey: ['mm-clients'],
     queryFn: () => base44.entities.Client.filter({ status: 'active' }),
   });
 
-  const { data: allLeads = [] } = useQuery({
+  const { data: allLeads = [], isLoading: l2 } = useQuery({
     queryKey: ['mm-leads'],
     queryFn: () => base44.entities.Lead.list('-created_date', 2000),
   });
 
-  const { data: allSpend = [] } = useQuery({
+  const { data: allSpend = [], isLoading: l3 } = useQuery({
     queryKey: ['mm-spend'],
     queryFn: () => base44.entities.Spend.list('-date', 2000),
   });
@@ -214,8 +216,10 @@ export default function MMDashboard() {
   }, [clientMetrics, periodDays, allLeads, allSpend]);
 
   if (!user) return null;
+  if (l1 || l2 || l3) return <PageLoader message="Loading dashboard..." />;
 
   return (
+    <PageErrorBoundary>
     <div className="min-h-screen bg-[#0B0F1A] flex flex-col">
       <MMNav user={user} clients={clients} pendingOnboardCount={pendingOnboardCount} />
 
@@ -264,5 +268,6 @@ export default function MMDashboard() {
         </div>
       </main>
     </div>
+    </PageErrorBoundary>
   );
 }

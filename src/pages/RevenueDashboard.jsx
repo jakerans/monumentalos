@@ -14,6 +14,8 @@ import PaymentLedger from '../components/admin/PaymentLedger';
 import CashFlowAnalysis from '../components/admin/CashFlowAnalysis';
 import AddPaymentModal from '../components/admin/AddPaymentModal';
 import AddExpenseModal from '../components/admin/AddExpenseModal';
+import PageErrorBoundary from '../components/shared/PageErrorBoundary';
+import PageLoader from '../components/shared/PageLoader';
 
 export default function RevenueDashboard() {
   const navigate = useNavigate();
@@ -39,14 +41,18 @@ export default function RevenueDashboard() {
     checkAuth();
   }, [navigate]);
 
-  const { data: clients = [] } = useQuery({ queryKey: ['rev-clients'], queryFn: () => base44.entities.Client.list() });
-  const { data: leads = [] } = useQuery({ queryKey: ['rev-leads'], queryFn: () => base44.entities.Lead.list('-created_date', 5000) });
-  const { data: payments = [], refetch: refetchPayments } = useQuery({ queryKey: ['rev-payments'], queryFn: () => base44.entities.Payment.list('-date', 5000) });
-  const { data: expenses = [], refetch: refetchExpenses } = useQuery({ queryKey: ['rev-expenses'], queryFn: () => base44.entities.Expense.list('-date', 5000) });
+  const { data: clients = [], isLoading: l1 } = useQuery({ queryKey: ['rev-clients'], queryFn: () => base44.entities.Client.list() });
+  const { data: leads = [], isLoading: l2 } = useQuery({ queryKey: ['rev-leads'], queryFn: () => base44.entities.Lead.list('-created_date', 5000) });
+  const { data: payments = [], refetch: refetchPayments, isLoading: l3 } = useQuery({ queryKey: ['rev-payments'], queryFn: () => base44.entities.Payment.list('-date', 5000) });
+  const { data: expenses = [], refetch: refetchExpenses, isLoading: l4 } = useQuery({ queryKey: ['rev-expenses'], queryFn: () => base44.entities.Expense.list('-date', 5000) });
+
+  const isLoading = l1 || l2 || l3 || l4;
 
   if (!user) return null;
+  if (isLoading) return <PageLoader message="Loading accounting..." />;
 
   return (
+    <PageErrorBoundary>
     <div className="min-h-screen bg-[#0B0F1A]">
       <AdminNav user={user} currentPage="RevenueDashboard" clients={clients} />
 
@@ -119,5 +125,6 @@ export default function RevenueDashboard() {
       <AddPaymentModal open={paymentOpen} onOpenChange={setPaymentOpen} clients={clients} onCreated={refetchPayments} />
       <AddExpenseModal open={expenseOpen} onOpenChange={setExpenseOpen} clients={clients} onCreated={refetchExpenses} />
     </div>
+    </PageErrorBoundary>
   );
 }

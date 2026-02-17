@@ -7,6 +7,8 @@ import { RefreshCw } from 'lucide-react';
 import AdminNav from '../components/admin/AdminNav';
 import BillingMonthSelector from '../components/admin/BillingMonthSelector';
 import BillingTable from '../components/admin/BillingTable';
+import PageErrorBoundary from '../components/shared/PageErrorBoundary';
+import PageLoader from '../components/shared/PageLoader';
 
 function getPrevMonth() {
   const d = new Date();
@@ -39,12 +41,12 @@ export default function MonthlyBilling() {
     queryFn: () => base44.entities.Client.list(),
   });
 
-  const { data: billingRecords = [], refetch: refetchBilling } = useQuery({
+  const { data: billingRecords = [], refetch: refetchBilling, isLoading: l1 } = useQuery({
     queryKey: ['billing-records', selectedMonth],
     queryFn: () => base44.entities.MonthlyBilling.filter({ billing_month: selectedMonth }),
   });
 
-  const { data: leads = [] } = useQuery({
+  const { data: leads = [], isLoading: l2 } = useQuery({
     queryKey: ['billing-leads'],
     queryFn: () => base44.entities.Lead.list('-created_date', 5000),
   });
@@ -123,8 +125,10 @@ export default function MonthlyBilling() {
   };
 
   if (!user) return null;
+  if (l1 || l2) return <PageLoader message="Loading billing..." />;
 
   return (
+    <PageErrorBoundary>
     <div className="min-h-screen bg-[#0B0F1A]">
       <AdminNav user={user} currentPage="MonthlyBilling" clients={clients} />
 
@@ -173,5 +177,6 @@ export default function MonthlyBilling() {
         />
       </main>
     </div>
+    </PageErrorBoundary>
   );
 }

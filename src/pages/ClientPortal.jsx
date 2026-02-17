@@ -7,6 +7,8 @@ import { Calendar, CheckCircle, Clock, AlertTriangle } from 'lucide-react';
 import LeadDetailsDrawer from '../components/LeadDetailsDrawer';
 import AppointmentCard from '../components/client/AppointmentCard';
 import OutstandingInvoiceAlert from '../components/client/OutstandingInvoiceAlert';
+import PageErrorBoundary from '../components/shared/PageErrorBoundary';
+import PageLoader from '../components/shared/PageLoader';
 
 export default function ClientPortal() {
   const navigate = useNavigate();
@@ -49,7 +51,7 @@ export default function ClientPortal() {
 
   const clientId = getClientId();
 
-  const { data: allClientLeads = [], refetch } = useQuery({
+  const { data: allClientLeads = [], refetch, isLoading: leadsLoading } = useQuery({
     queryKey: ['client-leads', clientId],
     queryFn: async () => {
       if (!clientId) return [];
@@ -71,6 +73,7 @@ export default function ClientPortal() {
   });
 
   if (!user) return null;
+  if (leadsLoading) return <PageLoader message="Loading appointments..." />;
 
   const now = new Date();
   const thisMonthStart = new Date(now.getFullYear(), now.getMonth(), 1);
@@ -120,6 +123,7 @@ export default function ClientPortal() {
   });
 
   return (
+    <PageErrorBoundary>
     <div className="min-h-screen bg-[#0B0F1A]">
       <nav className="bg-slate-900 shadow-lg">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -323,5 +327,6 @@ export default function ClientPortal() {
         />
       </main>
     </div>
+    </PageErrorBoundary>
   );
 }

@@ -7,6 +7,8 @@ import { UserPlus, Users } from 'lucide-react';
 import AdminNav from '../components/admin/AdminNav';
 import UserTable from '../components/admin/UserTable';
 import InviteUserModal from '../components/admin/InviteUserModal';
+import PageErrorBoundary from '../components/shared/PageErrorBoundary';
+import PageLoader from '../components/shared/PageLoader';
 
 export default function UserManagement() {
   const navigate = useNavigate();
@@ -29,7 +31,7 @@ export default function UserManagement() {
     checkAuth();
   }, [navigate]);
 
-  const { data: users = [], refetch: refetchUsers } = useQuery({
+  const { data: users = [], refetch: refetchUsers, isLoading: usersLoading } = useQuery({
     queryKey: ['manage-users'],
     queryFn: () => base44.entities.User.list(),
   });
@@ -40,6 +42,7 @@ export default function UserManagement() {
   });
 
   if (!user) return null;
+  if (usersLoading) return <PageLoader message="Loading users..." />;
 
   const filteredUsers = roleFilter === 'all'
     ? users
@@ -51,6 +54,7 @@ export default function UserManagement() {
   }, {});
 
   return (
+    <PageErrorBoundary>
     <div className="min-h-screen bg-[#0B0F1A]">
       <AdminNav user={user} currentPage="UserManagement" clients={clients} />
 
@@ -110,5 +114,6 @@ export default function UserManagement() {
         onInvited={refetchUsers}
       />
     </div>
+    </PageErrorBoundary>
   );
 }

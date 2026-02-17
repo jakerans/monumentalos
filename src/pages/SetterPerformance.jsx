@@ -7,6 +7,8 @@ import AdminNav from '../components/admin/AdminNav';
 import SetterPerformanceTable from '../components/admin/SetterPerformanceTable';
 import DateRangePicker from '../components/admin/DateRangePicker';
 import SpiffManager from '../components/admin/SpiffManager';
+import PageErrorBoundary from '../components/shared/PageErrorBoundary';
+import PageLoader from '../components/shared/PageLoader';
 
 export default function SetterPerformance() {
   const navigate = useNavigate();
@@ -34,7 +36,7 @@ export default function SetterPerformance() {
     queryFn: () => base44.entities.Client.list(),
   });
 
-  const { data: leads = [] } = useQuery({
+  const { data: leads = [], isLoading: leadsLoading } = useQuery({
     queryKey: ['sp-leads'],
     queryFn: () => base44.entities.Lead.list('-created_date', 5000),
   });
@@ -45,8 +47,10 @@ export default function SetterPerformance() {
   });
 
   if (!user) return null;
+  if (leadsLoading) return <PageLoader message="Loading setter performance..." />;
 
   return (
+    <PageErrorBoundary>
     <div className="min-h-screen bg-[#0B0F1A]">
       <AdminNav user={user} currentPage="SetterPerformance" clients={clients} />
 
@@ -64,5 +68,6 @@ export default function SetterPerformance() {
         <SpiffManager leads={leads} users={users} />
       </main>
     </div>
+    </PageErrorBoundary>
   );
 }
