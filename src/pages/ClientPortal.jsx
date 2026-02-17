@@ -91,7 +91,7 @@ export default function ClientPortal() {
   const lastMonthBooked = leads.filter(l => inRange(l.date_appointment_set, lastMonthStart, lastMonthEnd));
 
   // Showed uses appointment_date in range + disposition showed or outcome sold/lost
-  const thisMonthAppts = leads.filter(l => inRange(l.appointment_date, thisMonthStart, now));
+  const thisMonthAppts = leads.filter(l => inRange(l.appointment_date, thisMonthStart, thisMonthEnd));
   const lastMonthAppts = leads.filter(l => inRange(l.appointment_date, lastMonthStart, lastMonthEnd));
   const thisMonthShowed = thisMonthAppts.filter(l => l.disposition === 'showed' || l.outcome === 'sold' || l.outcome === 'lost');
   const lastMonthShowed = lastMonthAppts.filter(l => l.disposition === 'showed' || l.outcome === 'sold' || l.outcome === 'lost');
