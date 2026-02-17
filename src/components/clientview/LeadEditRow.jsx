@@ -24,6 +24,7 @@ const toLocalDatetime = (isoStr) => {
 
 export default function LeadEditRow({ lead, expanded, onToggle, onSave }) {
   const [saving, setSaving] = useState(false);
+  const [saved, setSaved] = useState(false);
   const [form, setForm] = useState({
     name: lead.name || '',
     email: lead.email || '',
