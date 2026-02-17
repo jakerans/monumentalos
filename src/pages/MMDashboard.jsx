@@ -3,6 +3,7 @@ import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
+import dayjs from 'dayjs';
 
 import MMNav from '../components/mm/MMNav';
 import MMTopStats from '../components/mm/MMTopStats';
@@ -102,23 +103,23 @@ export default function MMDashboard() {
 
   // Resolve period start/end for both "days ago" and "this/last month" modes
   const periodRange = useMemo(() => {
-    const now = new Date();
+    const now = dayjs();
     if (periodDays === 'this_month') {
-      const start = new Date(now.getFullYear(), now.getMonth(), 1);
-      const priorStart = new Date(now.getFullYear(), now.getMonth() - 1, 1);
-      const priorEnd = new Date(now.getFullYear(), now.getMonth(), 0, 23, 59, 59);
-      return { periodStart: start, periodEnd: now, priorStart, priorEnd, label: 'MTD' };
+      const start = now.startOf('month');
+      const priorStart = now.subtract(1, 'month').startOf('month');
+      const priorEnd = now.subtract(1, 'month').endOf('month');
+      return { periodStart: start.toDate(), periodEnd: now.toDate(), priorStart: priorStart.toDate(), priorEnd: priorEnd.toDate(), label: 'MTD' };
     }
     if (periodDays === 'last_month') {
-      const start = new Date(now.getFullYear(), now.getMonth() - 1, 1);
-      const end = new Date(now.getFullYear(), now.getMonth(), 0, 23, 59, 59);
-      const priorStart = new Date(now.getFullYear(), now.getMonth() - 2, 1);
-      const priorEnd = new Date(start.getTime() - 1);
-      return { periodStart: start, periodEnd: end, priorStart, priorEnd, label: 'Last Mo' };
+      const start = now.subtract(1, 'month').startOf('month');
+      const end = now.subtract(1, 'month').endOf('month');
+      const priorStart = now.subtract(2, 'month').startOf('month');
+      const priorEnd = start.subtract(1, 'millisecond');
+      return { periodStart: start.toDate(), periodEnd: end.toDate(), priorStart: priorStart.toDate(), priorEnd: priorEnd.toDate(), label: 'Last Mo' };
     }
-    const periodStart = new Date(now); periodStart.setDate(periodStart.getDate() - periodDays);
-    const priorStart = new Date(periodStart); priorStart.setDate(priorStart.getDate() - periodDays);
-    return { periodStart, periodEnd: now, priorStart, priorEnd: new Date(periodStart.getTime() - 1), label: `${periodDays}d` };
+    const periodStart = now.subtract(periodDays, 'day');
+    const priorStart = periodStart.subtract(periodDays, 'day');
+    return { periodStart: periodStart.toDate(), periodEnd: now.toDate(), priorStart: priorStart.toDate(), priorEnd: periodStart.subtract(1, 'millisecond').toDate(), label: `${periodDays}d` };
   }, [periodDays]);
 
   const clientMetrics = useMemo(() => {
