@@ -21,13 +21,13 @@ export default function PipelineColumn({ title, count, color, leads, clients, on
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
           <div className={`w-2 h-2 rounded-full ${color}`} />
-          <h3 className="text-sm font-semibold text-gray-700">{title}</h3>
+          <h3 className="text-sm font-semibold text-slate-200">{title}</h3>
         </div>
-        <span className="text-xs font-medium text-gray-500 bg-gray-100 px-2 py-0.5 rounded-full">{count}</span>
+        <span className="text-xs font-medium text-slate-400 bg-slate-800 px-2 py-0.5 rounded-full">{count}</span>
       </div>
       <div className="space-y-2 flex-1 overflow-y-auto max-h-[calc(100vh-280px)] pr-1">
         {leads.length === 0 ? (
-          <div className="text-center py-8 text-xs text-gray-400 bg-gray-50 rounded-lg border border-dashed border-gray-200">
+          <div className="text-center py-8 text-xs text-slate-500 bg-slate-800/30 rounded-lg border border-dashed border-slate-700">
             No leads
           </div>
         ) : (

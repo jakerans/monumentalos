@@ -122,7 +122,7 @@ export default function ClientPortal() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="min-h-screen bg-[#0B0F1A]">
       <nav className="bg-slate-900 shadow-lg">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col sm:flex-row sm:justify-between sm:h-16">
@@ -181,10 +181,10 @@ export default function ClientPortal() {
 
       <main className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-8">
         <div className="mb-6 sm:mb-8">
-          <h2 className="text-2xl sm:text-3xl font-bold text-gray-900">
+          <h2 className="text-2xl sm:text-3xl font-bold text-white">
             Welcome{user?.full_name ? `, ${user.full_name.split(' ')[0]}` : ''}!
           </h2>
-          <p className="text-sm text-gray-500 mt-1">
+          <p className="text-sm text-slate-400 mt-1">
             Here's your appointment overview for {new Date().toLocaleString('default', { month: 'long', year: 'numeric' })}.
           </p>
         </div>
@@ -197,9 +197,9 @@ export default function ClientPortal() {
 
         {/* Mobile card view */}
         <div className="md:hidden space-y-3">
-          <h2 className="text-xl font-bold text-gray-900">My Appointments</h2>
+          <h2 className="text-xl font-bold text-white">My Appointments</h2>
           {activeLeads.length === 0 ? (
-            <div className="bg-white rounded-lg shadow border border-gray-200 p-6 text-center text-gray-500">No active appointments</div>
+            <div className="bg-slate-800/50 rounded-lg shadow border border-slate-700/50 p-6 text-center text-slate-500">No active appointments</div>
           ) : (
             activeLeads.map((lead) => (
               <AppointmentCard
@@ -212,30 +212,30 @@ export default function ClientPortal() {
         </div>
 
         {/* Desktop table view */}
-        <div className="hidden md:block bg-white rounded-lg shadow border border-gray-200">
-          <div className="px-6 py-4 border-b border-gray-200">
-            <h2 className="text-xl font-bold text-gray-900">My Appointments</h2>
+        <div className="hidden md:block bg-slate-800/50 rounded-lg shadow border border-slate-700/50">
+          <div className="px-6 py-4 border-b border-slate-700/50">
+            <h2 className="text-xl font-bold text-white">My Appointments</h2>
           </div>
           <div className="overflow-x-auto">
             <table className="w-full">
-              <thead className="bg-gray-50">
+              <thead className="bg-slate-900/50">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Lead Name</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Contact</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Appointment Date</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Disposition</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Outcome</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Revenue</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-slate-400 uppercase">Lead Name</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-slate-400 uppercase">Contact</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-slate-400 uppercase">Appointment Date</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-slate-400 uppercase">Disposition</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-slate-400 uppercase">Outcome</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-slate-400 uppercase">Revenue</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-200">
+              <tbody className="divide-y divide-slate-700/30">
                 {activeLeads.length === 0 ? (
                   <tr>
-                    <td colSpan="6" className="px-6 py-8 text-center text-gray-500">No active appointments</td>
+                    <td colSpan="6" className="px-6 py-8 text-center text-slate-500">No active appointments</td>
                   </tr>
                 ) : (
                   activeLeads.map((lead) => (
-                    <tr key={lead.id} className="hover:bg-gray-50">
+                    <tr key={lead.id} className="hover:bg-slate-700/20">
                       <td className="px-6 py-4">
                         <button
                           onClick={() => { setSelectedLeadId(lead.id); setDrawerOpen(true); }}
@@ -244,11 +244,11 @@ export default function ClientPortal() {
                           {lead.name}
                         </button>
                       </td>
-                      <td className="px-6 py-4 text-sm text-gray-600">
+                      <td className="px-6 py-4 text-sm text-slate-400">
                         <div>{lead.email}</div>
                         <div>{lead.phone}</div>
                       </td>
-                      <td className="px-6 py-4 text-sm text-gray-600">
+                      <td className="px-6 py-4 text-sm text-slate-400">
                         {new Date(lead.appointment_date).toLocaleString()}
                       </td>
                       <td className="px-6 py-4">

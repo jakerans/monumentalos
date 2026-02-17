@@ -115,7 +115,7 @@ export default function ClientReport() {
     : '0.0';
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="min-h-screen bg-[#0B0F1A]">
       <nav className="bg-slate-900 shadow-lg">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col sm:flex-row sm:justify-between sm:h-16">
@@ -175,8 +175,8 @@ export default function ClientReport() {
       <main className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-8">
         <div className="mb-4 sm:mb-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4">
           <div>
-            <h1 className="text-xl sm:text-3xl font-bold text-gray-900">Performance Report</h1>
-            <p className="text-sm sm:text-base text-gray-600 mt-0.5 sm:mt-1">{clientInfo?.name || 'Loading...'}</p>
+            <h1 className="text-xl sm:text-3xl font-bold text-white">Performance Report</h1>
+            <p className="text-sm sm:text-base text-slate-400 mt-0.5 sm:mt-1">{clientInfo?.name || 'Loading...'}</p>
           </div>
           <DateRangePicker
             startDate={startDate}

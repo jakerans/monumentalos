@@ -151,15 +151,15 @@ export default function ClientView() {
   if (!user) return null;
 
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col">
+    <div className="min-h-screen bg-[#0B0F1A] flex flex-col">
       <ClientViewNav user={user} clientName={client?.name} />
 
       <main className="flex-1 max-w-[1400px] w-full mx-auto px-3 sm:px-5 py-4 space-y-4">
         {/* Header + Date Picker */}
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
           <div>
-            <h1 className="text-xl sm:text-2xl font-bold text-gray-900">{client?.name || 'Loading...'}</h1>
-            <p className="text-xs text-gray-500 mt-0.5">
+            <h1 className="text-xl sm:text-2xl font-bold text-white">{client?.name || 'Loading...'}</h1>
+            <p className="text-xs text-slate-400 mt-0.5">
               {client?.billing_type === 'pay_per_set' ? `$${client?.price_per_set_appointment || 0} / appt set` :
                client?.billing_type === 'retainer' ? `$${client?.retainer_amount || 0}/mo retainer` :
                `$${client?.price_per_shown_appointment || 0} / shown appt`} · {client?.status || 'active'}

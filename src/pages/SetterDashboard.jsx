@@ -181,7 +181,7 @@ export default function SetterDashboard() {
   const todayAppts = leads.filter(l => l.appointment_date && l.appointment_date.startsWith(todayStr));
 
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col">
+    <div className="min-h-screen bg-[#0B0F1A] flex flex-col">
       <SetterNav user={user} />
 
       <main className="flex-1 max-w-7xl w-full mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-6">
@@ -195,21 +195,21 @@ export default function SetterDashboard() {
         {/* Search & Filter Bar */}
         <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 mb-4 sm:mb-6">
           <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
             <input
               type="text"
               placeholder="Search leads by name, phone, or email..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full pl-9 pr-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+              className="w-full pl-9 pr-3 py-2 text-sm border border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#D6FF03] bg-slate-800 text-white placeholder-slate-500"
             />
           </div>
           <div className="flex items-center gap-2">
-            <Filter className="w-4 h-4 text-gray-400" />
+            <Filter className="w-4 h-4 text-slate-500" />
             <select
               value={clientFilter}
               onChange={(e) => setClientFilter(e.target.value)}
-              className="px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+              className="px-3 py-2 text-sm border border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#D6FF03] bg-slate-800 text-white"
             >
               <option value="all">All Clients</option>
               {clients.map(c => (
@@ -219,14 +219,14 @@ export default function SetterDashboard() {
             <button
               onClick={() => setShowDQ(!showDQ)}
               className={`px-3 py-2 text-sm border rounded-lg font-medium transition-colors ${
-                showDQ ? 'bg-red-50 border-red-300 text-red-700' : 'border-gray-300 text-gray-600 hover:bg-gray-50'
+                showDQ ? 'bg-red-500/10 border-red-500/30 text-red-400' : 'border-slate-700 text-slate-400 hover:bg-slate-800'
               }`}
             >
               <Ban className="w-3.5 h-3.5 inline mr-1" />DQ
             </button>
             <button
               onClick={() => setAddOpen(true)}
-              className="px-3 py-2 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium transition-colors"
+              className="px-3 py-2 text-sm text-black rounded-lg font-bold transition-colors hover:opacity-90" style={{backgroundColor:'#D6FF03'}}
             >
               <Plus className="w-4 h-4 inline mr-1" />Add Lead
             </button>

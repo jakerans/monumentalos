@@ -9,16 +9,16 @@ function ProgressRow({ label, current, goal, format = 'dollar' }) {
   return (
     <div className="space-y-1">
       <div className="flex items-center justify-between">
-        <span className="text-xs text-gray-600">{label}</span>
+        <span className="text-xs text-slate-300">{label}</span>
         <div className="flex items-center gap-2">
-          <span className="text-xs font-bold text-gray-900">{formatVal(current)}</span>
-          <span className="text-[10px] text-gray-400">/ {formatVal(goal)}</span>
+          <span className="text-xs font-bold text-white">{formatVal(current)}</span>
+          <span className="text-[10px] text-slate-500">/ {formatVal(goal)}</span>
           <span className={`text-[10px] font-bold ${pct >= 100 ? 'text-emerald-600' : pct >= 70 ? 'text-blue-600' : 'text-amber-600'}`}>
             {pct.toFixed(0)}%
           </span>
         </div>
       </div>
-      <div className="w-full h-2 bg-gray-100 rounded-full">
+      <div className="w-full h-2 bg-slate-700 rounded-full">
         <div className={`h-2 rounded-full ${barColor} transition-all`} style={{ width: `${pct}%` }} />
       </div>
     </div>
@@ -34,10 +34,10 @@ export default function MTDGoalProgress({ currentGoal, mtdData }) {
   if (!hasAnyGoal) return null;
 
   return (
-    <div className="bg-white rounded-lg border border-gray-200 p-4">
+    <div className="bg-slate-800/50 rounded-lg border border-slate-700/50 p-4">
       <div className="flex items-center gap-2 mb-4">
-        <Target className="w-4 h-4 text-blue-600" />
-        <h3 className="text-sm font-bold text-gray-900">Monthly Goal Progress</h3>
+        <Target className="w-4 h-4" style={{color:'#D6FF03'}} />
+        <h3 className="text-sm font-bold text-white">Monthly Goal Progress</h3>
       </div>
       <div className="space-y-3">
         {currentGoal.gross_revenue_goal > 0 && (

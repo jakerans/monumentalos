@@ -75,7 +75,7 @@ export default function ClientSettings() {
   if (!user) return null;
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="min-h-screen bg-[#0B0F1A]">
       <nav className="bg-slate-900 shadow-lg">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col sm:flex-row sm:justify-between sm:h-16">
@@ -113,72 +113,72 @@ export default function ClientSettings() {
 
       <main className="max-w-3xl mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-8">
         <div className="flex items-center gap-2 mb-6">
-          <Settings className="w-5 h-5 text-gray-700" />
-          <h1 className="text-xl sm:text-2xl font-bold text-gray-900">Company Settings</h1>
+          <Settings className="w-5 h-5 text-slate-300" />
+          <h1 className="text-xl sm:text-2xl font-bold text-white">Company Settings</h1>
         </div>
 
         <div className="space-y-6">
           {/* Booking Link */}
-          <div className="bg-white rounded-lg shadow border border-gray-200 p-5">
+          <div className="bg-slate-800/50 rounded-lg shadow border border-slate-700/50 p-5">
             <div className="flex items-center gap-2 mb-3">
-              <Link2 className="w-4 h-4 text-blue-600" />
-              <h2 className="text-sm font-semibold text-gray-800">Booking Link</h2>
+              <Link2 className="w-4 h-4 text-blue-400" />
+              <h2 className="text-sm font-semibold text-white">Booking Link</h2>
             </div>
-            <p className="text-xs text-gray-500 mb-3">This URL will be shown to setters as an embedded window when they book appointments.</p>
+            <p className="text-xs text-slate-400 mb-3">This URL will be shown to setters as an embedded window when they book appointments.</p>
             <input
               type="url"
               value={form.booking_link}
               onChange={(e) => setForm(f => ({ ...f, booking_link: e.target.value }))}
               placeholder="https://calendly.com/your-link"
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-slate-700 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#D6FF03] bg-slate-900 text-white placeholder-slate-500"
             />
           </div>
 
           {/* Service Radius */}
-          <div className="bg-white rounded-lg shadow border border-gray-200 p-5">
+          <div className="bg-slate-800/50 rounded-lg shadow border border-slate-700/50 p-5">
             <div className="flex items-center gap-2 mb-3">
-              <MapPin className="w-4 h-4 text-green-600" />
-              <h2 className="text-sm font-semibold text-gray-800">Advertising & Setting Radius</h2>
+              <MapPin className="w-4 h-4 text-green-400" />
+              <h2 className="text-sm font-semibold text-white">Advertising & Setting Radius</h2>
             </div>
-            <p className="text-xs text-gray-500 mb-3">The radius we target for advertising and setting appointments.</p>
+            <p className="text-xs text-slate-400 mb-3">The radius we target for advertising and setting appointments.</p>
             <input
               type="text"
               value={form.service_radius}
               onChange={(e) => setForm(f => ({ ...f, service_radius: e.target.value }))}
               placeholder="e.g. 25 miles"
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-slate-700 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#D6FF03] bg-slate-900 text-white placeholder-slate-500"
             />
           </div>
 
           {/* Target Zip Codes */}
-          <div className="bg-white rounded-lg shadow border border-gray-200 p-5">
+          <div className="bg-slate-800/50 rounded-lg shadow border border-slate-700/50 p-5">
             <div className="flex items-center gap-2 mb-3">
-              <Map className="w-4 h-4 text-indigo-600" />
-              <h2 className="text-sm font-semibold text-gray-800">Target Zip Codes</h2>
+              <Map className="w-4 h-4 text-indigo-400" />
+              <h2 className="text-sm font-semibold text-white">Target Zip Codes</h2>
             </div>
-            <p className="text-xs text-gray-500 mb-3">Zip codes we want to target for advertising and setting. Separate with commas.</p>
+            <p className="text-xs text-slate-400 mb-3">Zip codes we want to target for advertising and setting. Separate with commas.</p>
             <textarea
               value={form.target_zip_codes}
               onChange={(e) => setForm(f => ({ ...f, target_zip_codes: e.target.value }))}
               placeholder="10001, 10002, 10003..."
               rows={3}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-slate-700 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#D6FF03] bg-slate-900 text-white placeholder-slate-500"
             />
           </div>
 
           {/* Negative Zip Codes */}
-          <div className="bg-white rounded-lg shadow border border-gray-200 p-5">
+          <div className="bg-slate-800/50 rounded-lg shadow border border-slate-700/50 p-5">
             <div className="flex items-center gap-2 mb-3">
-              <Map className="w-4 h-4 text-red-600" />
-              <h2 className="text-sm font-semibold text-gray-800">Negative Zip Codes</h2>
+              <Map className="w-4 h-4 text-red-400" />
+              <h2 className="text-sm font-semibold text-white">Negative Zip Codes</h2>
             </div>
-            <p className="text-xs text-gray-500 mb-3">Zip codes to exclude — never book or advertise in these areas. Separate with commas.</p>
+            <p className="text-xs text-slate-400 mb-3">Zip codes to exclude — never book or advertise in these areas. Separate with commas.</p>
             <textarea
               value={form.negative_zip_codes}
               onChange={(e) => setForm(f => ({ ...f, negative_zip_codes: e.target.value }))}
               placeholder="90210, 90211..."
               rows={3}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-slate-700 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#D6FF03] bg-slate-900 text-white placeholder-slate-500"
             />
           </div>
 
@@ -186,11 +186,12 @@ export default function ClientSettings() {
           <button
             onClick={handleSave}
             disabled={saving}
-            className={`w-full px-4 py-3 rounded-lg font-medium text-sm transition-all flex items-center justify-center gap-2 ${
+            className={`w-full px-4 py-3 rounded-lg font-bold text-sm transition-all flex items-center justify-center gap-2 ${
               saved
                 ? 'bg-green-600 text-white'
-                : 'bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50'
+                : 'text-black hover:opacity-90 disabled:opacity-50'
             }`}
+            style={!saved ? {backgroundColor:'#D6FF03'} : {}}
           >
             {saved ? <><Check className="w-4 h-4" /> Saved!</> : saving ? 'Saving...' : <><Save className="w-4 h-4" /> Save Settings</>}
           </button>

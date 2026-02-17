@@ -216,21 +216,21 @@ export default function MMDashboard() {
   if (!user) return null;
 
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col">
+    <div className="min-h-screen bg-[#0B0F1A] flex flex-col">
       <MMNav user={user} clients={clients} pendingOnboardCount={pendingOnboardCount} />
 
       <main className="flex-1 max-w-[1600px] w-full mx-auto px-3 sm:px-5 py-3 flex flex-col min-h-0">
         {/* Period toggle */}
         <div className="flex items-center justify-between mb-3">
-          <div className="flex items-center gap-1 bg-gray-100 rounded-lg p-0.5">
+          <div className="flex items-center gap-1 bg-slate-800 rounded-lg p-0.5">
             {PERIOD_OPTIONS.map(opt => (
               <button
                 key={opt.days}
                 onClick={() => setPeriodDays(opt.days)}
                 className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${
                   periodDays === opt.days
-                    ? 'bg-white text-blue-700 shadow-sm'
-                    : 'text-gray-500 hover:text-gray-700'
+                    ? 'bg-slate-700 text-white shadow-sm'
+                    : 'text-slate-400 hover:text-white'
                 }`}
               >
                 {opt.label}

@@ -34,14 +34,14 @@ export default function RevenueBreakdownChart({ clients, leads, spend }) {
   const totalRevenue = breakdown.reduce((s, b) => s + b.value, 0);
 
   return (
-    <div className="bg-white rounded-lg border border-gray-200 p-4">
+    <div className="bg-slate-800/50 rounded-lg border border-slate-700/50 p-4">
       <div className="flex items-center gap-2 mb-4">
-        <DollarSign className="w-4 h-4 text-emerald-600" />
-        <h3 className="text-sm font-bold text-gray-900">Revenue by Billing Type (MTD)</h3>
+        <DollarSign className="w-4 h-4 text-emerald-400" />
+        <h3 className="text-sm font-bold text-white">Revenue by Billing Type (MTD)</h3>
       </div>
 
       {totalRevenue === 0 ? (
-        <p className="text-xs text-gray-400 text-center py-8">No revenue data yet this month</p>
+        <p className="text-xs text-slate-500 text-center py-8">No revenue data yet this month</p>
       ) : (
         <div className="flex items-center gap-6">
           <div className="w-36 h-36 relative">
@@ -66,8 +66,8 @@ export default function RevenueBreakdownChart({ clients, leads, spend }) {
               </PieChart>
             </ResponsiveContainer>
             <div className="absolute inset-0 flex flex-col items-center justify-center">
-              <span className="text-lg font-bold text-gray-900">${totalRevenue.toLocaleString()}</span>
-              <span className="text-[9px] text-gray-400">total</span>
+              <span className="text-lg font-bold text-white">${totalRevenue.toLocaleString()}</span>
+              <span className="text-[9px] text-slate-400">total</span>
             </div>
           </div>
 
@@ -79,12 +79,12 @@ export default function RevenueBreakdownChart({ clients, leads, spend }) {
                   <div className="flex items-center justify-between mb-0.5">
                     <div className="flex items-center gap-2">
                       <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: d.color }} />
-                      <span className="text-xs text-gray-600">{d.name}</span>
-                      <span className="text-[10px] text-gray-400">({d.count} clients)</span>
+                      <span className="text-xs text-slate-300">{d.name}</span>
+                      <span className="text-[10px] text-slate-500">({d.count} clients)</span>
                     </div>
-                    <span className="text-xs font-bold text-gray-900">{pct}%</span>
+                    <span className="text-xs font-bold text-white">{pct}%</span>
                   </div>
-                  <div className="w-full h-1.5 bg-gray-100 rounded-full">
+                  <div className="w-full h-1.5 bg-slate-700 rounded-full">
                     <div className="h-1.5 rounded-full transition-all" style={{ width: `${pct}%`, backgroundColor: d.color }} />
                   </div>
                 </div>

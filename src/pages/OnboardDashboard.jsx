@@ -108,7 +108,7 @@ export default function OnboardDashboard() {
   const freshSelectedProject = selectedProject ? projects.find(p => p.id === selectedProject.id) : null;
 
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col">
+    <div className="min-h-screen bg-[#0B0F1A] flex flex-col">
       <OnboardNav user={user} activeTab={tab} onTabChange={setTab} />
 
       <main className="flex-1 max-w-[1400px] w-full mx-auto px-3 sm:px-5 py-4 space-y-4">
@@ -123,7 +123,7 @@ export default function OnboardDashboard() {
                     key={s}
                     onClick={() => setStatusFilter(s)}
                     className={`px-2.5 py-1 text-xs font-medium rounded-md transition-colors ${
-                      statusFilter === s ? 'bg-indigo-100 text-indigo-700' : 'text-gray-500 hover:bg-gray-100'
+                      statusFilter === s ? 'bg-slate-700 text-white' : 'text-slate-400 hover:bg-slate-800'
                     }`}
                   >
                     {s === 'in_progress' ? 'Active' : s === 'on_hold' ? 'On Hold' : s === 'completed' ? 'Completed' : 'All'}
@@ -133,13 +133,13 @@ export default function OnboardDashboard() {
               <div className="flex gap-2">
                 <button
                   onClick={() => setShowCreateClient(true)}
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium border border-indigo-300 text-indigo-600 rounded-md hover:bg-indigo-50"
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium border border-slate-600 text-slate-300 rounded-md hover:bg-slate-800"
                 >
                   <Building2 className="w-3.5 h-3.5" /> Create Client
                 </button>
                 <button
                   onClick={() => setShowNew(true)}
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium bg-indigo-600 text-white rounded-md hover:bg-indigo-700"
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-black rounded-md hover:opacity-90" style={{backgroundColor:'#D6FF03'}}
                 >
                   <Plus className="w-3.5 h-3.5" /> New Client Onboard
                 </button>
@@ -147,7 +147,7 @@ export default function OnboardDashboard() {
             </div>
 
             {filteredProjects.length === 0 ? (
-              <div className="bg-white rounded-lg border border-gray-200 p-8 text-center text-xs text-gray-400">
+              <div className="bg-slate-800/50 rounded-lg border border-slate-700/50 p-8 text-center text-xs text-slate-500">
                 {statusFilter === 'in_progress' ? 'No active onboarding projects.' : 'No projects found.'}
               </div>
             ) : (

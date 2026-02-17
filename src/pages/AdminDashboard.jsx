@@ -93,14 +93,14 @@ export default function AdminDashboard() {
   if (!user) return null;
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="min-h-screen bg-[#0B0F1A]">
       <AdminNav user={user} currentPage="AdminDashboard" clients={clients} />
 
       <main className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-5">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">Company Dashboard</h1>
-            <p className="text-sm text-gray-500">
+            <h1 className="text-2xl font-bold text-white">Company Dashboard</h1>
+            <p className="text-sm text-slate-400">
               {now.toLocaleString('default', { month: 'long', year: 'numeric' })} overview
             </p>
           </div>
@@ -129,21 +129,21 @@ export default function AdminDashboard() {
         {/* P&L + Setter Leaderboard */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
           {/* P&L Snapshot */}
-          <div className="lg:col-span-2 bg-white rounded-lg border border-gray-200 p-4">
-            <h3 className="text-sm font-bold text-gray-900 mb-3">P&L Snapshot (MTD)</h3>
+          <div className="lg:col-span-2 bg-slate-800/50 rounded-lg border border-slate-700/50 p-4">
+            <h3 className="text-sm font-bold text-white mb-3">P&L Snapshot (MTD)</h3>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
               {[
-                { label: 'Gross Revenue', value: mtd.grossRevenue, color: 'text-blue-600' },
-                { label: 'Cash Collected', value: mtd.collected, color: 'text-emerald-600' },
-                { label: 'COGS', value: mtd.cogs, color: 'text-orange-600', negative: true },
-                { label: 'Overhead', value: mtd.overhead, color: 'text-red-600', negative: true },
-                { label: 'Gross Profit', value: mtd.grossProfit, color: 'text-purple-600' },
-                { label: 'Net Profit', value: mtd.netProfit, color: mtd.netProfit >= 0 ? 'text-green-600' : 'text-red-600' },
-                { label: 'Gross Margin', value: null, display: `${mtd.grossMargin.toFixed(1)}%`, color: 'text-indigo-600' },
-                { label: 'Net Margin', value: null, display: `${mtd.netMargin.toFixed(1)}%`, color: 'text-purple-600' },
+                { label: 'Gross Revenue', value: mtd.grossRevenue, color: 'text-blue-400' },
+                { label: 'Cash Collected', value: mtd.collected, color: 'text-emerald-400' },
+                { label: 'COGS', value: mtd.cogs, color: 'text-orange-400', negative: true },
+                { label: 'Overhead', value: mtd.overhead, color: 'text-red-400', negative: true },
+                { label: 'Gross Profit', value: mtd.grossProfit, color: 'text-purple-400' },
+                { label: 'Net Profit', value: mtd.netProfit, color: mtd.netProfit >= 0 ? 'text-green-400' : 'text-red-400' },
+                { label: 'Gross Margin', value: null, display: `${mtd.grossMargin.toFixed(1)}%`, color: 'text-indigo-400' },
+                { label: 'Net Margin', value: null, display: `${mtd.netMargin.toFixed(1)}%`, color: 'text-purple-400' },
               ].map(item => (
-                <div key={item.label} className="bg-gray-50 rounded-lg p-3">
-                  <p className="text-[10px] font-medium text-gray-500 uppercase">{item.label}</p>
+                <div key={item.label} className="bg-slate-900/50 rounded-lg p-3">
+                  <p className="text-[10px] font-medium text-slate-400 uppercase">{item.label}</p>
                   <p className={`text-lg font-bold ${item.color}`}>
                     {item.display || `${item.negative ? '-' : ''}$${Math.abs(item.value).toLocaleString()}`}
                   </p>
@@ -153,23 +153,23 @@ export default function AdminDashboard() {
           </div>
 
           {/* Setter leaderboard */}
-          <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
-            <div className="px-4 py-3 border-b border-gray-200 flex items-center gap-2">
-              <Trophy className="w-4 h-4 text-amber-500" />
-              <h3 className="text-sm font-bold text-gray-900">Setter Leaderboard (MTD)</h3>
+          <div className="bg-slate-800/50 rounded-lg border border-slate-700/50 overflow-hidden">
+            <div className="px-4 py-3 border-b border-slate-700/50 flex items-center gap-2">
+              <Trophy className="w-4 h-4 text-amber-400" />
+              <h3 className="text-sm font-bold text-white">Setter Leaderboard (MTD)</h3>
             </div>
-            <div className="divide-y divide-gray-100">
+            <div className="divide-y divide-slate-700/30">
               {setterStats.length === 0 ? (
-                <div className="px-4 py-6 text-xs text-gray-400 text-center">No setters found</div>
+                <div className="px-4 py-6 text-xs text-slate-500 text-center">No setters found</div>
               ) : setterStats.slice(0, 8).map((s, i) => (
                 <div key={i} className="px-4 py-2.5 flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <span className={`w-5 h-5 flex items-center justify-center rounded-full text-[10px] font-bold ${
-                      i === 0 ? 'bg-yellow-100 text-yellow-700' : i === 1 ? 'bg-gray-200 text-gray-600' : i === 2 ? 'bg-orange-100 text-orange-700' : 'bg-gray-100 text-gray-500'
+                      i === 0 ? 'bg-yellow-500/20 text-yellow-400' : i === 1 ? 'bg-slate-600 text-slate-300' : i === 2 ? 'bg-orange-500/20 text-orange-400' : 'bg-slate-700 text-slate-400'
                     }`}>{i + 1}</span>
-                    <span className="text-xs font-medium text-gray-900">{s.name}</span>
+                    <span className="text-xs font-medium text-slate-200">{s.name}</span>
                   </div>
-                  <span className="text-xs font-bold text-blue-600">{s.booked} booked</span>
+                  <span className="text-xs font-bold" style={{color:'#D6FF03'}}>{s.booked} booked</span>
                 </div>
               ))}
             </div>
@@ -178,12 +178,12 @@ export default function AdminDashboard() {
 
         {/* No goal prompt */}
         {!currentGoal && (
-          <div className="bg-indigo-50 border border-indigo-200 rounded-lg px-5 py-4 flex items-center justify-between">
+          <div className="bg-slate-800/50 border border-slate-700/50 rounded-lg px-5 py-4 flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-indigo-800">No goals set for {now.toLocaleString('default', { month: 'long' })}</p>
-              <p className="text-xs text-indigo-600 mt-0.5">Set monthly targets to track progress toward revenue, margins, and profit.</p>
+              <p className="text-sm font-medium text-white">No goals set for {now.toLocaleString('default', { month: 'long' })}</p>
+              <p className="text-xs text-slate-400 mt-0.5">Set monthly targets to track progress toward revenue, margins, and profit.</p>
             </div>
-            <button onClick={() => setGoalsOpen(true)} className="px-4 py-2 text-xs font-medium bg-indigo-600 text-white rounded-lg hover:bg-indigo-700">
+            <button onClick={() => setGoalsOpen(true)} className="px-4 py-2 text-xs font-bold text-black rounded-lg hover:opacity-90" style={{backgroundColor:'#D6FF03'}}>
               Set Goals
             </button>
           </div>

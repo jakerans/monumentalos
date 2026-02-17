@@ -73,7 +73,7 @@ export default function AppointmentHistory() {
   });
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="min-h-screen bg-[#0B0F1A]">
       <nav className="bg-slate-900 shadow-lg">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col sm:flex-row sm:justify-between sm:h-16">
@@ -138,16 +138,16 @@ export default function AppointmentHistory() {
           <ArrowLeft className="w-4 h-4" /> Back to Portal
         </Link>
 
-        <div className="bg-white rounded-lg shadow border border-gray-200 mb-6">
+        <div className="bg-slate-800/50 rounded-lg shadow border border-slate-700/50 mb-6">
           <div className="px-6 py-4">
-            <h3 className="text-sm font-medium text-gray-700 mb-3">Filters</h3>
+            <h3 className="text-sm font-medium text-slate-300 mb-3">Filters</h3>
             <div className="flex gap-4">
               <div>
-                <label className="block text-xs text-gray-600 mb-1">Disposition</label>
+                <label className="block text-xs text-slate-400 mb-1">Disposition</label>
                 <select
                   value={filterDisposition}
                   onChange={(e) => setFilterDisposition(e.target.value)}
-                  className="px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="px-3 py-2 text-sm border border-slate-700 rounded-md focus:outline-none focus:ring-2 focus:ring-[#D6FF03] bg-slate-800 text-white"
                 >
                   <option value="all">All</option>
                   <option value="showed">Showed</option>
@@ -155,11 +155,11 @@ export default function AppointmentHistory() {
                 </select>
               </div>
               <div>
-                <label className="block text-xs text-gray-600 mb-1">Outcome</label>
+                <label className="block text-xs text-slate-400 mb-1">Outcome</label>
                 <select
                   value={filterOutcome}
                   onChange={(e) => setFilterOutcome(e.target.value)}
-                  className="px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="px-3 py-2 text-sm border border-slate-700 rounded-md focus:outline-none focus:ring-2 focus:ring-[#D6FF03] bg-slate-800 text-white"
                 >
                   <option value="all">All</option>
                   <option value="pending">Pending</option>
@@ -173,7 +173,7 @@ export default function AppointmentHistory() {
 
         {/* Mobile card view */}
         <div className="md:hidden space-y-3">
-          <h2 className="text-xl font-bold text-gray-900">Completed & Cancelled</h2>
+          <h2 className="text-xl font-bold text-white">Completed & Cancelled</h2>
           {filteredLeads.length === 0 ? (
             <div className="bg-white rounded-lg shadow border border-gray-200 p-6 text-center text-gray-500">No appointments match the selected filters</div>
           ) : (

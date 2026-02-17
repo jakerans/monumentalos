@@ -28,10 +28,10 @@ export default function ClientGoalChart({ clients }) {
   const healthyPct = total > 0 ? (((goalMet + onTrack) / total) * 100).toFixed(0) : 0;
 
   return (
-    <div className="bg-white rounded-lg border border-gray-200 p-4">
+    <div className="bg-slate-800/50 rounded-lg border border-slate-700/50 p-4">
       <div className="flex items-center gap-2 mb-4">
-        <Target className="w-4 h-4 text-indigo-600" />
-        <h3 className="text-sm font-bold text-gray-900">Client Goal Health</h3>
+        <Target className="w-4 h-4" style={{color:'#D6FF03'}} />
+        <h3 className="text-sm font-bold text-white">Client Goal Health</h3>
       </div>
 
       <div className="flex items-center gap-6">
@@ -57,8 +57,8 @@ export default function ClientGoalChart({ clients }) {
             </PieChart>
           </ResponsiveContainer>
           <div className="absolute inset-0 flex flex-col items-center justify-center">
-            <span className="text-xl font-bold text-gray-900">{healthyPct}%</span>
-            <span className="text-[9px] text-gray-400">healthy</span>
+            <span className="text-xl font-bold text-white">{healthyPct}%</span>
+            <span className="text-[9px] text-slate-400">healthy</span>
           </div>
         </div>
 
@@ -67,9 +67,9 @@ export default function ClientGoalChart({ clients }) {
             <div key={d.name} className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <div className={`w-2.5 h-2.5 rounded-full ${d.bg}`} />
-                <span className="text-xs text-gray-600">{d.name}</span>
+                <span className="text-xs text-slate-300">{d.name}</span>
               </div>
-              <span className="text-xs font-bold text-gray-900">{d.value}</span>
+              <span className="text-xs font-bold text-white">{d.value}</span>
             </div>
           ))}
         </div>
