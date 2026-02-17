@@ -4,19 +4,16 @@ import { useQuery } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import AdminNav from '../components/admin/AdminNav';
-import DashboardKPIs from '../components/admin/DashboardKPIs';
-import GoalProgressCard from '../components/admin/GoalProgressCard';
-import SetGoalsModal from '../components/admin/SetGoalsModal';
-import CompactClientOverview from '../components/admin/CompactClientOverview';
-import AddPaymentModal from '../components/admin/AddPaymentModal';
-import AddExpenseModal from '../components/admin/AddExpenseModal';
-import { DollarSign, Receipt, Settings } from 'lucide-react';
+import BusinessHealthKPIs from '../components/admin/BusinessHealthKPIs';
+import ClientGoalChart from '../components/admin/ClientGoalChart';
+import RevenueBreakdownChart from '../components/admin/RevenueBreakdownChart';
+import MTDGoalProgress from '../components/admin/MTDGoalProgress';
+import GoalManagementModal from '../components/admin/GoalManagementModal';
+import { Settings, Trophy } from 'lucide-react';
 
 export default function AdminDashboard() {
   const navigate = useNavigate();
   const [user, setUser] = useState(null);
-  const [paymentOpen, setPaymentOpen] = useState(false);
-  const [expenseOpen, setExpenseOpen] = useState(false);
   const [goalsOpen, setGoalsOpen] = useState(false);
 
   useEffect(() => {
@@ -39,14 +36,21 @@ export default function AdminDashboard() {
   const { data: clients = [] } = useQuery({ queryKey: ['admin-clients'], queryFn: () => base44.entities.Client.list() });
   const { data: leads = [] } = useQuery({ queryKey: ['admin-leads'], queryFn: () => base44.entities.Lead.list('-created_date', 5000) });
   const { data: spend = [] } = useQuery({ queryKey: ['admin-spend'], queryFn: () => base44.entities.Spend.list('-date', 5000) });
-  const { data: payments = [], refetch: refetchPayments } = useQuery({ queryKey: ['admin-payments'], queryFn: () => base44.entities.Payment.list('-date', 5000) });
-  const { data: expenses = [], refetch: refetchExpenses } = useQuery({ queryKey: ['admin-expenses'], queryFn: () => base44.entities.Expense.list('-date', 200) });
+  const { data: payments = [] } = useQuery({ queryKey: ['admin-payments'], queryFn: () => base44.entities.Payment.list('-date', 5000) });
+  const { data: expenses = [] } = useQuery({ queryKey: ['admin-expenses'], queryFn: () => base44.entities.Expense.list('-date', 200) });
   const { data: goals = [], refetch: refetchGoals } = useQuery({ queryKey: ['admin-goals'], queryFn: () => base44.entities.CompanyGoal.list() });
+  const { data: billingRecords = [] } = useQuery({ queryKey: ['admin-billing'], queryFn: () => base44.entities.MonthlyBilling.list('-billing_month', 500) });
   const { data: users = [] } = useQuery({ queryKey: ['admin-users'], queryFn: () => base44.entities.User.list() });
 
   const now = new Date();
   const currentMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+  const lastMonth = (() => {
+    const d = new Date(now.getFullYear(), now.getMonth() - 1);
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+  })();
+
   const currentGoal = goals.find(g => g.month === currentMonth);
+  const lastMonthBilling = billingRecords.filter(b => b.billing_month === lastMonth);
 
   const mtd = useMemo(() => {
     const mtdStart = new Date(now.getFullYear(), now.getMonth(), 1);
@@ -88,8 +92,6 @@ export default function AdminDashboard() {
 
   if (!user) return null;
 
-  const hasGoal = currentGoal && (currentGoal.gross_revenue_goal || currentGoal.cash_collected_goal || currentGoal.net_profit_goal);
-
   return (
     <div className="min-h-screen bg-gray-50">
       <AdminNav user={user} currentPage="AdminDashboard" clients={clients} />
@@ -102,107 +104,93 @@ export default function AdminDashboard() {
               {now.toLocaleString('default', { month: 'long', year: 'numeric' })} overview
             </p>
           </div>
-          <div className="flex gap-2">
-            <button onClick={() => setGoalsOpen(true)} className="px-3 py-1.5 text-xs font-medium border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 flex items-center gap-1">
-              <Settings className="w-3.5 h-3.5" /> Goals
-            </button>
-            <button onClick={() => setPaymentOpen(true)} className="px-3 py-1.5 text-xs font-medium bg-emerald-600 text-white rounded-md hover:bg-emerald-700 flex items-center gap-1">
-              <DollarSign className="w-3.5 h-3.5" /> Record Payment
-            </button>
-            <button onClick={() => setExpenseOpen(true)} className="px-3 py-1.5 text-xs font-medium bg-red-600 text-white rounded-md hover:bg-red-700 flex items-center gap-1">
-              <Receipt className="w-3.5 h-3.5" /> Add Expense
-            </button>
+          <button onClick={() => setGoalsOpen(true)} className="px-4 py-2 text-xs font-medium bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 flex items-center gap-1.5 shadow-sm">
+            <Settings className="w-3.5 h-3.5" /> Manage Goals
+          </button>
+        </div>
+
+        {/* Business Health KPIs */}
+        <BusinessHealthKPIs
+          clients={clients}
+          leads={leads}
+          spend={spend}
+          payments={payments}
+          billingRecords={billingRecords}
+          lastMonthBilling={lastMonthBilling}
+        />
+
+        {/* Charts row */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+          <ClientGoalChart clients={clients} />
+          <RevenueBreakdownChart clients={clients} leads={leads} spend={spend} />
+          <MTDGoalProgress currentGoal={currentGoal} mtdData={mtd} />
+        </div>
+
+        {/* P&L + Setter Leaderboard */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+          {/* P&L Snapshot */}
+          <div className="lg:col-span-2 bg-white rounded-lg border border-gray-200 p-4">
+            <h3 className="text-sm font-bold text-gray-900 mb-3">P&L Snapshot (MTD)</h3>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+              {[
+                { label: 'Gross Revenue', value: mtd.grossRevenue, color: 'text-blue-600' },
+                { label: 'Cash Collected', value: mtd.collected, color: 'text-emerald-600' },
+                { label: 'COGS', value: mtd.cogs, color: 'text-orange-600', negative: true },
+                { label: 'Overhead', value: mtd.overhead, color: 'text-red-600', negative: true },
+                { label: 'Gross Profit', value: mtd.grossProfit, color: 'text-purple-600' },
+                { label: 'Net Profit', value: mtd.netProfit, color: mtd.netProfit >= 0 ? 'text-green-600' : 'text-red-600' },
+                { label: 'Gross Margin', value: null, display: `${mtd.grossMargin.toFixed(1)}%`, color: 'text-indigo-600' },
+                { label: 'Net Margin', value: null, display: `${mtd.netMargin.toFixed(1)}%`, color: 'text-purple-600' },
+              ].map(item => (
+                <div key={item.label} className="bg-gray-50 rounded-lg p-3">
+                  <p className="text-[10px] font-medium text-gray-500 uppercase">{item.label}</p>
+                  <p className={`text-lg font-bold ${item.color}`}>
+                    {item.display || `${item.negative ? '-' : ''}$${Math.abs(item.value).toLocaleString()}`}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Setter leaderboard */}
+          <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+            <div className="px-4 py-3 border-b border-gray-200 flex items-center gap-2">
+              <Trophy className="w-4 h-4 text-amber-500" />
+              <h3 className="text-sm font-bold text-gray-900">Setter Leaderboard (MTD)</h3>
+            </div>
+            <div className="divide-y divide-gray-100">
+              {setterStats.length === 0 ? (
+                <div className="px-4 py-6 text-xs text-gray-400 text-center">No setters found</div>
+              ) : setterStats.slice(0, 8).map((s, i) => (
+                <div key={i} className="px-4 py-2.5 flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <span className={`w-5 h-5 flex items-center justify-center rounded-full text-[10px] font-bold ${
+                      i === 0 ? 'bg-yellow-100 text-yellow-700' : i === 1 ? 'bg-gray-200 text-gray-600' : i === 2 ? 'bg-orange-100 text-orange-700' : 'bg-gray-100 text-gray-500'
+                    }`}>{i + 1}</span>
+                    <span className="text-xs font-medium text-gray-900">{s.name}</span>
+                  </div>
+                  <span className="text-xs font-bold text-blue-600">{s.booked} booked</span>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
 
-        {/* High-level KPIs */}
-        <DashboardKPIs clients={clients} leads={leads} spend={spend} payments={payments} />
-
-        {/* Goal progress */}
-        {hasGoal && (
-          <div>
-            <h2 className="text-sm font-bold text-gray-900 mb-3">Monthly Goal Progress</h2>
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
-              {currentGoal.gross_revenue_goal > 0 && (
-                <GoalProgressCard label="Gross Revenue" current={mtd.grossRevenue} goal={currentGoal.gross_revenue_goal} color="blue" />
-              )}
-              {currentGoal.cash_collected_goal > 0 && (
-                <GoalProgressCard label="Cash Collected" current={mtd.collected} goal={currentGoal.cash_collected_goal} color="emerald" />
-              )}
-              {currentGoal.gross_margin_goal > 0 && (
-                <GoalProgressCard label="Gross Margin" current={mtd.grossMargin} goal={currentGoal.gross_margin_goal} format="percent" color="purple" />
-              )}
-              {currentGoal.net_margin_goal > 0 && (
-                <GoalProgressCard label="Net Margin" current={mtd.netMargin} goal={currentGoal.net_margin_goal} format="percent" color="indigo" />
-              )}
-              {currentGoal.net_profit_goal > 0 && (
-                <GoalProgressCard label="Net Profit" current={mtd.netProfit} goal={currentGoal.net_profit_goal} color="green" />
-              )}
+        {/* No goal prompt */}
+        {!currentGoal && (
+          <div className="bg-indigo-50 border border-indigo-200 rounded-lg px-5 py-4 flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-indigo-800">No goals set for {now.toLocaleString('default', { month: 'long' })}</p>
+              <p className="text-xs text-indigo-600 mt-0.5">Set monthly targets to track progress toward revenue, margins, and profit.</p>
             </div>
-          </div>
-        )}
-
-        {!hasGoal && (
-          <div className="bg-blue-50 border border-blue-200 rounded-lg px-4 py-3 flex items-center justify-between">
-            <span className="text-blue-700 text-xs font-medium">Set monthly goals to track progress toward key financial KPIs.</span>
-            <button onClick={() => setGoalsOpen(true)} className="px-3 py-1.5 text-xs font-medium bg-blue-600 text-white rounded-md hover:bg-blue-700">
+            <button onClick={() => setGoalsOpen(true)} className="px-4 py-2 text-xs font-medium bg-indigo-600 text-white rounded-lg hover:bg-indigo-700">
               Set Goals
             </button>
           </div>
         )}
-
-        {/* Financial snapshot + Setter leaderboard */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-          <div className="lg:col-span-2">
-            <CompactClientOverview clients={clients} leads={leads} spend={spend} />
-          </div>
-          <div className="space-y-4">
-            {/* Financial snapshot card */}
-            <div className="bg-white rounded-lg border border-gray-200 p-4">
-              <h3 className="text-sm font-bold text-gray-900 mb-3">P&L Snapshot (MTD)</h3>
-              <div className="space-y-2">
-                {[
-                  { label: 'Gross Revenue', value: mtd.grossRevenue, color: 'text-blue-600' },
-                  { label: 'COGS', value: -mtd.cogs, color: 'text-orange-600' },
-                  { label: 'Gross Profit', value: mtd.grossProfit, color: 'text-purple-600', bold: true },
-                  { label: 'Overhead', value: -mtd.overhead, color: 'text-red-600' },
-                  { label: 'Cash Collected', value: mtd.collected, color: 'text-emerald-600' },
-                  { label: 'Net Profit', value: mtd.netProfit, color: mtd.netProfit >= 0 ? 'text-green-600' : 'text-red-600', bold: true },
-                ].map(item => (
-                  <div key={item.label} className={`flex justify-between text-xs ${item.bold ? 'font-bold border-t border-gray-100 pt-1.5' : ''}`}>
-                    <span className="text-gray-600">{item.label}</span>
-                    <span className={item.color}>{item.value < 0 ? '-' : ''}${Math.abs(item.value).toLocaleString()}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Setter leaderboard */}
-            <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
-              <div className="px-4 py-3 border-b border-gray-200">
-                <h3 className="text-sm font-bold text-gray-900">Setter Leaderboard (MTD)</h3>
-              </div>
-              <div className="divide-y divide-gray-100">
-                {setterStats.length === 0 ? (
-                  <div className="px-4 py-4 text-xs text-gray-400 text-center">No setters found</div>
-                ) : setterStats.slice(0, 5).map((s, i) => (
-                  <div key={i} className="px-4 py-2.5 flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <span className={`w-5 h-5 flex items-center justify-center rounded-full text-[10px] font-bold ${i === 0 ? 'bg-yellow-100 text-yellow-700' : 'bg-gray-100 text-gray-500'}`}>{i + 1}</span>
-                      <span className="text-xs font-medium text-gray-900">{s.name}</span>
-                    </div>
-                    <span className="text-xs font-bold text-blue-600">{s.booked} booked</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        </div>
       </main>
 
-      <SetGoalsModal open={goalsOpen} onOpenChange={setGoalsOpen} currentGoal={currentGoal} month={currentMonth} onSaved={refetchGoals} />
-      <AddPaymentModal open={paymentOpen} onOpenChange={setPaymentOpen} clients={clients} onCreated={refetchPayments} />
-      <AddExpenseModal open={expenseOpen} onOpenChange={setExpenseOpen} clients={clients} onCreated={refetchExpenses} />
+      <GoalManagementModal open={goalsOpen} onOpenChange={setGoalsOpen} goals={goals} onSaved={refetchGoals} />
     </div>
   );
 }
