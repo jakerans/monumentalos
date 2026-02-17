@@ -1,0 +1,96 @@
+import React from 'react';
+import { CircleDot } from 'lucide-react';
+
+function getPayDisplay(emp) {
+  if (emp.classification === 'salary') {
+    const monthly = emp.salary_monthly || 0;
+    return { monthly: `$${monthly.toLocaleString()}`, annual: `$${(monthly * 12).toLocaleString()}` };
+  }
+  if (emp.classification === 'hourly') {
+    const monthly = (emp.hourly_rate || 0) * (emp.standard_monthly_hours || 0);
+    return { monthly: `$${monthly.toLocaleString()}`, annual: `$${(monthly * 12).toLocaleString()}` };
+  }
+  if (emp.classification === 'contractor') {
+    if (emp.contractor_billing_type === 'per_project') return { monthly: 'Per Project', annual: 'Per Project' };
+    if (emp.contractor_billing_type === 'hourly') {
+      const monthly = (emp.contractor_rate || 0) * 160; // estimated
+      return { monthly: `~$${monthly.toLocaleString()}/mo`, annual: `~$${(monthly * 12).toLocaleString()}/yr` };
+    }
+    const monthly = emp.contractor_rate || 0;
+    return { monthly: `$${monthly.toLocaleString()}`, annual: `$${(monthly * 12).toLocaleString()}` };
+  }
+  return { monthly: '—', annual: '—' };
+}
+
+const DISC_COLORS = {
+  green: 'text-green-400',
+  yellow: 'text-yellow-400',
+  red: 'text-red-400',
+};
+
+const ROLE_LABELS = {
+  admin: 'Admin', marketing_manager: 'MM', setter: 'Setter',
+  onboard_admin: 'Onboard', client: 'Client',
+};
+
+export default function EmployeeTable({ employees, onSelect }) {
+  return (
+    <div className="bg-slate-800/50 rounded-lg border border-slate-700/50 overflow-hidden">
+      <div className="overflow-x-auto">
+        <table className="w-full">
+          <thead className="bg-slate-900/50">
+            <tr>
+              <th className="px-4 py-3 text-left text-[10px] font-medium text-slate-400 uppercase">Name</th>
+              <th className="px-4 py-3 text-left text-[10px] font-medium text-slate-400 uppercase">Role</th>
+              <th className="px-4 py-3 text-left text-[10px] font-medium text-slate-400 uppercase">Classification</th>
+              <th className="px-4 py-3 text-left text-[10px] font-medium text-slate-400 uppercase">Monthly</th>
+              <th className="px-4 py-3 text-left text-[10px] font-medium text-slate-400 uppercase">Annual</th>
+              <th className="px-4 py-3 text-left text-[10px] font-medium text-slate-400 uppercase">Cost Type</th>
+              <th className="px-4 py-3 text-center text-[10px] font-medium text-slate-400 uppercase">Discipline</th>
+              <th className="px-4 py-3 text-center text-[10px] font-medium text-slate-400 uppercase">Perf Pay</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-slate-700/30">
+            {employees.length === 0 ? (
+              <tr><td colSpan="8" className="px-4 py-8 text-center text-sm text-slate-500">No employees found</td></tr>
+            ) : employees.map(emp => {
+              const pay = getPayDisplay(emp);
+              return (
+                <tr key={emp.id} onClick={() => onSelect(emp)} className="hover:bg-slate-700/20 cursor-pointer transition-colors">
+                  <td className="px-4 py-3">
+                    <p className="text-sm font-medium text-white">{emp.full_name}</p>
+                    {emp.email && <p className="text-[10px] text-slate-500">{emp.email}</p>}
+                  </td>
+                  <td className="px-4 py-3 text-xs text-slate-300">{ROLE_LABELS[emp.app_role] || emp.app_role || '—'}</td>
+                  <td className="px-4 py-3">
+                    <span className="text-xs font-medium text-slate-300 capitalize">{emp.classification}</span>
+                    {emp.classification === 'contractor' && emp.contractor_billing_type && (
+                      <span className="text-[10px] text-slate-500 ml-1">({emp.contractor_billing_type})</span>
+                    )}
+                  </td>
+                  <td className="px-4 py-3 text-xs font-medium text-slate-200">{pay.monthly}</td>
+                  <td className="px-4 py-3 text-xs text-slate-400">{pay.annual}</td>
+                  <td className="px-4 py-3">
+                    <span className={`text-[10px] font-bold uppercase px-2 py-0.5 rounded-full ${emp.cost_type === 'cogs' ? 'bg-orange-500/15 text-orange-400' : 'bg-blue-500/15 text-blue-400'}`}>
+                      {emp.cost_type || 'overhead'}
+                    </span>
+                  </td>
+                  <td className="px-4 py-3 text-center">
+                    <CircleDot className={`w-4 h-4 inline ${DISC_COLORS[emp.discipline_status] || 'text-slate-500'}`} />
+                  </td>
+                  <td className="px-4 py-3 text-center">
+                    {emp.has_performance_pay ? (
+                      <span className="text-[10px] font-bold text-purple-400 bg-purple-500/15 px-2 py-0.5 rounded-full">YES</span>
+                    ) : (
+                      <span className="text-[10px] text-slate-500">—</span>
+                    )}
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
