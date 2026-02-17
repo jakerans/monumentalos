@@ -73,12 +73,12 @@ export default function RevenueDashboard() {
 
         <MonthlyPLChart clients={clients} leads={leads} payments={payments} expenses={expenses} />
 
+        <CashFlowAnalysis payments={payments} expenses={expenses} />
+
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <PaymentLedger payments={payments} clients={clients} startDate={startDate} endDate={endDate} onRefresh={refetchPayments} />
           <ExpenseBreakdown expenses={expenses} clients={clients} startDate={startDate} endDate={endDate} onRefresh={refetchExpenses} />
         </div>
-
-        <CashFlowAnalysis payments={payments} expenses={expenses} />
 
         <RevenueClientTable clients={clients} leads={leads} payments={payments} />
       </main>
