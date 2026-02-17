@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Mail, Phone, Calendar, DollarSign, Clock, Briefcase, Ruler, FileText, X, Pencil, Save, Tag } from 'lucide-react';
-import toast from 'react-hot-toast';
+import { toast } from '@/components/ui/use-toast';
 import confetti from 'canvas-confetti';
 import {
   Sheet,
@@ -114,7 +114,7 @@ export default function LeadDetailsDrawer({ leadId, open, onOpenChange, onLeadUp
     if (!updates.date_sold) delete updates.date_sold;
 
     await base44.entities.Lead.update(lead.id, updates);
-    toast.success('Lead updated');
+    toast({ title: 'Lead Updated', description: `${lead.name} has been saved.`, variant: 'success' });
     setEditing(false);
     setShowConfirm(false);
     queryClient.invalidateQueries({ queryKey: ['lead', leadId] });
@@ -124,7 +124,7 @@ export default function LeadDetailsDrawer({ leadId, open, onOpenChange, onLeadUp
   const handleDispositionChange = async (newDisposition) => {
     if (!lead) return;
     await base44.entities.Lead.update(lead.id, { disposition: newDisposition });
-    toast.success(`Disposition updated to "${newDisposition}"`);
+    toast({ title: 'Disposition Updated', description: `Set to "${newDisposition}"`, variant: 'success' });
     queryClient.invalidateQueries({ queryKey: ['lead', leadId] });
     if (onLeadUpdated) onLeadUpdated();
   };
@@ -138,18 +138,18 @@ export default function LeadDetailsDrawer({ leadId, open, onOpenChange, onLeadUp
       return;
     }
     await base44.entities.Lead.update(lead.id, { outcome: newOutcome });
-    toast.success(`Outcome updated to "${newOutcome}"`);
+    toast({ title: 'Outcome Updated', description: `Set to "${newOutcome}"`, variant: 'success' });
     queryClient.invalidateQueries({ queryKey: ['lead', leadId] });
     if (onLeadUpdated) onLeadUpdated();
   };
 
   const handleSaveSaleForm = async () => {
     if (!saleAmount) {
-      toast.error('Please enter the sale amount');
+      toast({ title: 'Missing Info', description: 'Please enter the sale amount', variant: 'warning' });
       return;
     }
     if (showSaleForm === 'sold' && !dateSold) {
-      toast.error('Please enter the date sold');
+      toast({ title: 'Missing Info', description: 'Please enter the date sold', variant: 'warning' });
       return;
     }
     const updates = { outcome: showSaleForm, sale_amount: parseFloat(saleAmount) };
@@ -157,7 +157,7 @@ export default function LeadDetailsDrawer({ leadId, open, onOpenChange, onLeadUp
     await base44.entities.Lead.update(lead.id, updates);
     if (showSaleForm === 'sold') {
       confetti({ particleCount: 150, spread: 100, origin: { y: 0.6 }, colors: ['#22c55e', '#10b981', '#059669', '#FFD700', '#FFA500'] });
-      toast.success('🎉 Sale recorded! Great job!', { duration: 4000 });
+      toast({ title: '🎉 Sale Recorded!', description: `$${Number(saleAmount).toLocaleString()} — Great job!`, variant: 'success', duration: 6000 });
     }
     setShowSaleForm(false);
     setSaleAmount('');
