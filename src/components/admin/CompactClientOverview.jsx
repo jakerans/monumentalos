@@ -1,9 +1,15 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
-import { AlertTriangle } from 'lucide-react';
+import { AlertTriangle, Copy, Check } from 'lucide-react';
 
 export default function CompactClientOverview({ clients, leads, spend }) {
+  const [copiedId, setCopiedId] = useState(null);
+  const handleCopy = (id) => {
+    navigator.clipboard.writeText(id);
+    setCopiedId(id);
+    setTimeout(() => setCopiedId(null), 2000);
+  };
   const now = new Date();
   const mtdStart = new Date(now.getFullYear(), now.getMonth(), 1);
 
@@ -28,6 +34,7 @@ export default function CompactClientOverview({ clients, leads, spend }) {
           <thead className="bg-gray-50 text-xs text-gray-500 uppercase">
             <tr>
               <th className="px-4 py-2 text-left">Client</th>
+              <th className="px-3 py-2 text-left">ID (Zapier)</th>
               <th className="px-3 py-2 text-right">Leads</th>
               <th className="px-3 py-2 text-right">Booked</th>
               <th className="px-3 py-2 text-right">Spend</th>
@@ -43,6 +50,14 @@ export default function CompactClientOverview({ clients, leads, spend }) {
                     <Link to={createPageUrl('ClientView') + `?clientId=${r.id}`} className="text-xs font-medium text-blue-600 hover:text-blue-700 truncate max-w-[160px]">{r.name}</Link>
                   </div>
                 </td>
+                <td className="px-3 py-2 whitespace-nowrap">
+                  <div className="flex items-center gap-1">
+                    <code className="text-[10px] bg-gray-100 px-1.5 py-0.5 rounded font-mono text-gray-600 select-all truncate max-w-[100px]">{r.id}</code>
+                    <button onClick={(e) => { e.stopPropagation(); handleCopy(r.id); }} className="p-0.5 hover:bg-gray-200 rounded">
+                      {copiedId === r.id ? <Check className="w-3 h-3 text-green-600" /> : <Copy className="w-3 h-3 text-gray-400" />}
+                    </button>
+                  </div>
+                </td>
                 <td className="px-3 py-2 text-xs text-right text-gray-700">{r.mtdLeads}</td>
                 <td className="px-3 py-2 text-xs text-right text-gray-700">{r.mtdBooked}</td>
                 <td className="px-3 py-2 text-xs text-right text-gray-700">${r.mtdSpend.toLocaleString()}</td>
@@ -54,7 +69,7 @@ export default function CompactClientOverview({ clients, leads, spend }) {
               </tr>
             ))}
             {rows.length === 0 && (
-              <tr><td colSpan={5} className="px-4 py-6 text-center text-xs text-gray-400">No active clients</td></tr>
+              <tr><td colSpan={6} className="px-4 py-6 text-center text-xs text-gray-400">No active clients</td></tr>
             )}
           </tbody>
         </table>
