@@ -216,7 +216,7 @@ export default function MMDashboard() {
   if (!user) return null;
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col">
+    <div className="min-h-screen bg-slate-50 flex flex-col">
       <MMNav user={user} clients={clients} pendingOnboardCount={pendingOnboardCount} />
 
       <main className="flex-1 max-w-[1600px] w-full mx-auto px-3 sm:px-5 py-3 flex flex-col min-h-0">

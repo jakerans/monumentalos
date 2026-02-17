@@ -151,7 +151,7 @@ export default function ClientView() {
   if (!user) return null;
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col">
+    <div className="min-h-screen bg-slate-50 flex flex-col">
       <ClientViewNav user={user} clientName={client?.name} />
 
       <main className="flex-1 max-w-[1400px] w-full mx-auto px-3 sm:px-5 py-4 space-y-4">
