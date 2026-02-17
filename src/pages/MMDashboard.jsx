@@ -47,9 +47,9 @@ export default function MMDashboard() {
     checkAuth();
   }, [navigate]);
 
-  // Scope data fetches to 60-day window (covers 30d period + prior 30d comparison)
+  // Scope data fetches to 90-day window (covers last month + prior month comparison)
   const mmFetchStart = new Date();
-  mmFetchStart.setDate(mmFetchStart.getDate() - 60);
+  mmFetchStart.setDate(mmFetchStart.getDate() - 90);
   const mmStartStr = mmFetchStart.toISOString().split('T')[0];
 
   const { data: clients = [], refetch: refetchClients, isLoading: l1 } = useQuery({
@@ -220,7 +220,7 @@ export default function MMDashboard() {
         goalActual, effectiveGoalStatus, goalStatusSort, goalProgress,
       };
     });
-  }, [clients, allLeads, allSpend, periodDays]);
+  }, [clients, allLeads, allSpend, periodRange]);
 
   const topStats = useMemo(() => {
     const activeClients = clientMetrics.length;
