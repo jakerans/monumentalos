@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
@@ -13,6 +13,7 @@ import AddLeadModal from '../components/setter/AddLeadModal';
 import FirstCallModal from '../components/setter/FirstCallModal';
 import DisqualifyModal from '../components/setter/DisqualifyModal';
 import LeaderboardWidget from '../components/setter/LeaderboardWidget';
+import CelebrationOverlay from '../components/setter/CelebrationOverlay';
 
 export default function SetterDashboard() {
   const navigate = useNavigate();
