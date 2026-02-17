@@ -50,7 +50,7 @@ export default function MMDashboard() {
   // Scope data fetches to 90-day window (covers last month + prior month comparison)
   const mmFetchStart = new Date();
   mmFetchStart.setDate(mmFetchStart.getDate() - 90);
-  const mmStartStr = mmFetchStart.toISOString().split('T')[0];
+  const mmStartStr = mmFetchStart.toISOString();
 
   const { data: clients = [], refetch: refetchClients, isLoading: l1 } = useQuery({
     queryKey: ['mm-clients'],

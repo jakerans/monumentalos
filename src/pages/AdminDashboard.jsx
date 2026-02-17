@@ -37,7 +37,7 @@ export default function AdminDashboard() {
   }, [navigate]);
 
   // Scoped date range: fetch only last 60 days of transactional data
-  const fetchStart = new Date(now.getFullYear(), now.getMonth() - 1, 1).toISOString().split('T')[0];
+  const fetchStart = new Date(now.getFullYear(), now.getMonth() - 1, 1).toISOString();
 
   const { data: clients = [], isLoading: l1 } = useQuery({ queryKey: ['admin-clients'], queryFn: () => base44.entities.Client.list(), staleTime: 5 * 60 * 1000 });
   const { data: leads = [], isLoading: l2 } = useQuery({ queryKey: ['admin-leads', fetchStart], queryFn: () => base44.entities.Lead.filter({ created_date: { $gte: fetchStart } }, '-created_date', 5000), staleTime: 2 * 60 * 1000 });
