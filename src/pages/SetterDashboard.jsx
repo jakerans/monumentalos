@@ -4,6 +4,7 @@ import { useQuery } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import { Search, Filter, Plus, Ban } from 'lucide-react';
+import { toast } from '@/components/ui/use-toast';
 import SetterNav from '../components/setter/SetterNav';
 import SetterStats from '../components/setter/SetterStats';
 import PipelineColumn from '../components/setter/PipelineColumn';
@@ -114,11 +115,13 @@ export default function SetterDashboard() {
   };
 
   const handleDisqualify = async (leadId, dqReason) => {
+    const lead = leads.find(l => l.id === leadId);
     await base44.entities.Lead.update(leadId, {
       status: 'disqualified',
       dq_reason: dqReason,
     });
     refetch();
+    toast({ title: 'Lead Disqualified', description: `${lead?.name || 'Lead'} marked as DQ.`, variant: 'warning' });
   };
 
   const handleFirstCallResult = async (leadId, result, dqReason) => {
@@ -137,13 +140,14 @@ export default function SetterDashboard() {
       ...(speedMinutes != null && speedMinutes !== undefined ? { speed_to_lead_minutes: speedMinutes } : {}),
     };
 
+    const leadName = leads.find(l => l.id === leadId)?.name || 'Lead';
     if (result === 'scheduled') {
-      // Connected & wants to schedule — open booking modal next
       await base44.entities.Lead.update(leadId, {
         ...baseUpdates,
         status: 'first_call_made',
       });
       refetch();
+      toast({ title: 'Call Logged', description: `${leadName} — ready to book.`, variant: 'success' });
       const updatedLead = leads.find(l => l.id === leadId);
       if (updatedLead) {
         setBookingLead({ ...updatedLead, status: 'first_call_made' });
@@ -155,6 +159,7 @@ export default function SetterDashboard() {
         status: 'first_call_made',
       });
       refetch();
+      toast({ title: 'Call Logged', description: `${leadName} — not connected, moved to In Progress.`, variant: 'info' });
     } else if (result === 'disqualified') {
       await base44.entities.Lead.update(leadId, {
         ...baseUpdates,
@@ -162,10 +167,12 @@ export default function SetterDashboard() {
         dq_reason: dqReason,
       });
       refetch();
+      toast({ title: 'Lead Disqualified', description: `${leadName} marked as DQ.`, variant: 'warning' });
     }
   };
 
   const handleBookAppointment = async (leadId, appointmentDate) => {
+    const lead = leads.find(l => l.id === leadId);
     await base44.entities.Lead.update(leadId, {
       status: 'appointment_booked',
       appointment_date: appointmentDate,
@@ -175,11 +182,13 @@ export default function SetterDashboard() {
     });
     refetch();
     setCelebration({ type: 'booking' });
+    toast({ title: '🗓️ Appointment Booked!', description: `${lead?.name || 'Lead'} is scheduled.`, variant: 'success', duration: 5000 });
   };
 
   const handleAddLead = async (leadData) => {
     await base44.entities.Lead.create(leadData);
     refetch();
+    toast({ title: 'Lead Added', description: `${leadData.name} added to the pipeline.`, variant: 'success' });
   };
 
   const handleSelectLead = (lead) => {
