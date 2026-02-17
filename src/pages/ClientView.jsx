@@ -10,6 +10,7 @@ import ClientFunnel from '../components/clientview/ClientFunnel';
 import ClientLeadBreakdown from '../components/clientview/ClientLeadBreakdown';
 import ClientSpendChart from '../components/clientview/ClientSpendChart';
 import ClientSettingsCard from '../components/clientview/ClientSettingsCard';
+import ClientBillingEditor from '../components/clientview/ClientBillingEditor';
 import LeadDrilldownDialog from '../components/clientview/LeadDrilldownDialog';
 import SpendDrilldownDialog from '../components/clientview/SpendDrilldownDialog';
 
@@ -17,7 +18,8 @@ export default function ClientView() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [user, setUser] = useState(null);
-  const [drilldown, setDrilldown] = useState(null); // 'leads' | 'booked' | 'showed' | 'cancelled' | 'sold' | 'spend' | null
+  const [drilldown, setDrilldown] = useState(null);
+  const [billingEditorOpen, setBillingEditorOpen] = useState(false);
 
   const today = new Date();
   const thirtyDaysAgo = new Date(today);
@@ -116,6 +118,8 @@ export default function ClientView() {
 
   const handleCardClick = (key) => setDrilldown(key);
   const handleRefresh = () => { refetchLeads(); refetchSpend(); };
+  const refetchClient = () => queryClient.invalidateQueries({ queryKey: ['client', clientId] });
+  const canEditBilling = user?.role === 'admin' || user?.role === 'onboard_admin';
 
   const metrics = useMemo(() => {
     const totalSpend = spendInRange.reduce((s, r) => s + (r.amount || 0), 0);
@@ -186,7 +190,34 @@ export default function ClientView() {
         {/* Settings */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
           <ClientSettingsCard client={client} />
+          {canEditBilling && (
+            <div className="bg-white rounded-lg border border-gray-200 p-4 flex flex-col">
+              <h3 className="text-sm font-bold text-gray-900 mb-2">Billing Management</h3>
+              <p className="text-xs text-gray-500 mb-3">
+                {client?.billing_type === 'retainer'
+                  ? `Retainer: $${client?.retainer_amount || 0}/mo · Due on the ${client?.retainer_due_day || 1}${client?.retainer_due_day === 1 ? 'st' : client?.retainer_due_day === 2 ? 'nd' : client?.retainer_due_day === 3 ? 'rd' : 'th'}`
+                  : client?.billing_type === 'pay_per_set'
+                  ? `Pay Per Set: $${client?.price_per_set_appointment || 0}/appt`
+                  : `Pay Per Show: $${client?.price_per_shown_appointment || 0}/show`}
+              </p>
+              <button
+                onClick={() => setBillingEditorOpen(true)}
+                className="mt-auto px-3 py-1.5 text-xs font-medium bg-blue-600 text-white rounded-md hover:bg-blue-700"
+              >
+                View / Edit Billing
+              </button>
+            </div>
+          )}
         </div>
+
+        {canEditBilling && (
+          <ClientBillingEditor
+            client={client}
+            open={billingEditorOpen}
+            onOpenChange={setBillingEditorOpen}
+            onUpdated={refetchClient}
+          />
+        )}
         {/* Drilldown dialogs */}
         {drilldown && drilldown !== 'spend' && drilldownMap[drilldown] && (
           <LeadDrilldownDialog
