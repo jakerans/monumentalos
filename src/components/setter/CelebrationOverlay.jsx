@@ -59,7 +59,7 @@ export default function CelebrationOverlay({ type, onDone }) {
             <motion.div
               className="relative flex flex-col items-center gap-3"
               initial={{ scale: 0, rotate: -10 }}
-              animate={{ scale: [0, 1.2, 1], rotate: [−10, 5, 0] }}
+              animate={{ scale: [0, 1.2, 1], rotate: [-10, 5, 0] }}
               transition={{ duration: 0.6, ease: 'easeOut' }}
             >
               {/* Glowing ring */}
