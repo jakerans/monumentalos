@@ -58,6 +58,8 @@ import LeadDetails from './pages/LeadDetails';
 import MMDashboard from './pages/MMDashboard';
 import RevenueDashboard from './pages/RevenueDashboard';
 import SetterDashboard from './pages/SetterDashboard';
+import OnboardDashboard from './pages/OnboardDashboard';
+import MMOnboard from './pages/MMOnboard';
 
 
 export const PAGES = {
@@ -72,6 +74,8 @@ export const PAGES = {
     "MMDashboard": MMDashboard,
     "RevenueDashboard": RevenueDashboard,
     "SetterDashboard": SetterDashboard,
+    "OnboardDashboard": OnboardDashboard,
+    "MMOnboard": MMOnboard,
 }
 
 export const pagesConfig = {
