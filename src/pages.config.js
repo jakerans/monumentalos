@@ -60,6 +60,7 @@ import RevenueDashboard from './pages/RevenueDashboard';
 import SetterDashboard from './pages/SetterDashboard';
 import OnboardDashboard from './pages/OnboardDashboard';
 import MMOnboard from './pages/MMOnboard';
+import SetterPerformance from './pages/SetterPerformance';
 
 
 export const PAGES = {
@@ -76,6 +77,7 @@ export const PAGES = {
     "SetterDashboard": SetterDashboard,
     "OnboardDashboard": OnboardDashboard,
     "MMOnboard": MMOnboard,
+    "SetterPerformance": SetterPerformance,
 }
 
 export const pagesConfig = {

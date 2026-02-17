@@ -1,18 +1,26 @@
 import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
-import { DollarSign, TrendingUp, Users, Edit2, Check, X } from 'lucide-react';
+import { DollarSign, Receipt } from 'lucide-react';
+import AdminNav from '../components/admin/AdminNav';
 import DateRangePicker from '../components/admin/DateRangePicker';
+import RevenueKPIs from '../components/admin/RevenueKPIs';
+import RevenueClientTable from '../components/admin/RevenueClientTable';
+import ExpenseBreakdown from '../components/admin/ExpenseBreakdown';
+import PaymentLedger from '../components/admin/PaymentLedger';
+import AddPaymentModal from '../components/admin/AddPaymentModal';
+import AddExpenseModal from '../components/admin/AddExpenseModal';
 
 export default function RevenueDashboard() {
   const navigate = useNavigate();
   const [user, setUser] = useState(null);
-  const [startDate, setStartDate] = useState('2024-01-01');
-  const [endDate, setEndDate] = useState('2024-12-31');
-  const [editingClientId, setEditingClientId] = useState(null);
-  const [editPrice, setEditPrice] = useState(0);
+  const now = new Date();
+  const [startDate, setStartDate] = useState(new Date(now.getFullYear(), now.getMonth(), 1).toISOString().split('T')[0]);
+  const [endDate, setEndDate] = useState(now.toISOString().split('T')[0]);
+  const [paymentOpen, setPaymentOpen] = useState(false);
+  const [expenseOpen, setExpenseOpen] = useState(false);
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -23,246 +31,94 @@ export default function RevenueDashboard() {
           if (currentUser.role === 'marketing_manager') navigate(createPageUrl('MMDashboard'));
           else navigate(createPageUrl('SetterDashboard'));
         }
-      } catch (error) {
-        navigate(createPageUrl('Login'));
-      }
+      } catch (error) { base44.auth.redirectToLogin(); }
     };
     checkAuth();
   }, [navigate]);
 
-  const { data: clients = [], refetch: refetchClients } = useQuery({
-    queryKey: ['clients'],
-    queryFn: () => base44.entities.Client.filter({ status: 'active' }),
+  const { data: clients = [] } = useQuery({
+    queryKey: ['rev-clients'],
+    queryFn: () => base44.entities.Client.list(),
   });
 
-  const { data: appointments = [] } = useQuery({
-    queryKey: ['appointments', startDate, endDate],
-    queryFn: () => base44.entities.Lead.filter({
-      appointment_date: { $gte: new Date(startDate).toISOString(), $lte: new Date(endDate + 'T23:59:59').toISOString() }
-    }),
+  const { data: leads = [] } = useQuery({
+    queryKey: ['rev-leads'],
+    queryFn: () => base44.entities.Lead.list('-created_date', 5000),
   });
 
-  const { data: spendRecords = [] } = useQuery({
-    queryKey: ['spend', startDate, endDate],
-    queryFn: () => base44.entities.Spend.filter({
-      date: { $gte: startDate, $lte: endDate }
-    }),
+  const { data: payments = [], refetch: refetchPayments } = useQuery({
+    queryKey: ['rev-payments'],
+    queryFn: () => base44.entities.Payment.list('-date', 5000),
+  });
+
+  const { data: expenses = [], refetch: refetchExpenses } = useQuery({
+    queryKey: ['rev-expenses'],
+    queryFn: () => base44.entities.Expense.list('-date', 5000),
   });
 
   if (!user) return null;
 
-  // Calculate metrics per client
-  const clientMetrics = clients.map(client => {
-    const clientAppointments = appointments.filter(a => a.client_id === client.id);
-    const showedCount = clientAppointments.filter(a => a.disposition === 'showed').length;
-    const agencyRevenue = showedCount * client.price_per_shown_appointment;
-    const clientSpend = spendRecords
-      .filter(s => s.client_id === client.id)
-      .reduce((sum, s) => sum + (s.amount || 0), 0);
-
-    return {
-      ...client,
-      showedCount,
-      agencyRevenue,
-      clientSpend,
-    };
-  });
-
-  const totalRevenue = clientMetrics.reduce((sum, c) => sum + c.agencyRevenue, 0);
-  const totalShowed = clientMetrics.reduce((sum, c) => sum + c.showedCount, 0);
-
-  const handleEditPrice = (clientId, currentPrice) => {
-    setEditingClientId(clientId);
-    setEditPrice(currentPrice);
-  };
-
-  const handleSavePrice = async (clientId) => {
-    await base44.entities.Client.update(clientId, { price_per_shown_appointment: editPrice });
-    setEditingClientId(null);
-    refetchClients();
-  };
-
   return (
     <div className="min-h-screen bg-gray-50">
-      <nav className="bg-white shadow-sm border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between h-16">
-            <div className="flex items-center gap-8">
-              <h1 className="text-xl font-bold text-gray-900">MonumentalOS</h1>
-              <div className="flex gap-4">
-                <Link
-                  to={createPageUrl('AdminDashboard')}
-                  className="px-3 py-2 rounded-md text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-50"
-                >
-                  Dashboard
-                </Link>
-                <Link
-                  to={createPageUrl('RevenueDashboard')}
-                  className="px-3 py-2 rounded-md text-sm font-medium bg-blue-50 text-blue-700"
-                >
-                  Revenue
-                </Link>
-              </div>
-            </div>
-            <div className="flex items-center gap-4">
-              <select
-                onChange={(e) => {
-                  if (e.target.value === 'setter') navigate(createPageUrl('SetterDashboard'));
-                  else if (e.target.value === 'client') navigate(createPageUrl('ClientPortal'));
-                  else if (e.target.value === 'admin') navigate(createPageUrl('AdminDashboard'));
-                }}
-                className="px-3 py-1.5 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
-                <option value="admin">View as Admin</option>
-                <option value="setter">View as Setter</option>
-                <option value="client">View as Client</option>
-              </select>
-              <span className="text-sm text-gray-600">{user.full_name}</span>
-              <button
-                onClick={() => base44.auth.logout()}
-                className="text-sm text-gray-600 hover:text-gray-900"
-              >
-                Logout
-              </button>
-            </div>
+      <AdminNav user={user} currentPage="RevenueDashboard" clients={clients} />
+
+      <main className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900">Revenue & Accounting</h1>
+            <p className="text-sm text-gray-500">Full financial overview with billing, payments, and expenses</p>
+          </div>
+          <div className="flex items-center gap-2">
+            <DateRangePicker startDate={startDate} endDate={endDate} onStartChange={setStartDate} onEndChange={setEndDate} />
           </div>
         </div>
-      </nav>
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="mb-6 flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900">Revenue Dashboard</h1>
-            <p className="text-gray-600 mt-1">Agency revenue by client</p>
-          </div>
-          <DateRangePicker
+        <div className="flex gap-2 justify-end">
+          <button onClick={() => setPaymentOpen(true)} className="px-3 py-1.5 text-xs font-medium bg-emerald-600 text-white rounded-md hover:bg-emerald-700 flex items-center gap-1">
+            <DollarSign className="w-3.5 h-3.5" /> Record Payment
+          </button>
+          <button onClick={() => setExpenseOpen(true)} className="px-3 py-1.5 text-xs font-medium bg-red-600 text-white rounded-md hover:bg-red-700 flex items-center gap-1">
+            <Receipt className="w-3.5 h-3.5" /> Add Expense
+          </button>
+        </div>
+
+        <RevenueKPIs
+          clients={clients}
+          leads={leads}
+          payments={payments}
+          expenses={expenses}
+          startDate={startDate}
+          endDate={endDate}
+        />
+
+        <RevenueClientTable
+          clients={clients}
+          leads={leads}
+          payments={payments}
+          startDate={startDate}
+          endDate={endDate}
+        />
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <PaymentLedger
+            payments={payments}
+            clients={clients}
             startDate={startDate}
             endDate={endDate}
-            onStartChange={setStartDate}
-            onEndChange={setEndDate}
+            onRefresh={refetchPayments}
+          />
+          <ExpenseBreakdown
+            expenses={expenses}
+            clients={clients}
+            startDate={startDate}
+            endDate={endDate}
+            onRefresh={refetchExpenses}
           />
         </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-          <div className="bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg shadow-lg p-6 text-white border border-blue-600">
-            <div className="flex items-center gap-3 mb-2">
-              <DollarSign className="w-6 h-6" />
-              <p className="text-sm font-medium opacity-90">Total Agency Revenue</p>
-            </div>
-            <p className="text-4xl font-bold">${totalRevenue.toLocaleString()}</p>
-          </div>
-          <div className="bg-white rounded-lg shadow p-6 border border-gray-200">
-            <div className="flex items-center gap-3 mb-2">
-              <TrendingUp className="w-5 h-5 text-gray-600" />
-              <p className="text-sm font-medium text-gray-600">Total Showed Appointments</p>
-            </div>
-            <p className="text-4xl font-bold text-gray-900">{totalShowed}</p>
-          </div>
-          <div className="bg-white rounded-lg shadow p-6 border border-gray-200">
-            <div className="flex items-center gap-3 mb-2">
-              <Users className="w-5 h-5 text-gray-600" />
-              <p className="text-sm font-medium text-gray-600">Active Clients</p>
-            </div>
-            <p className="text-4xl font-bold text-gray-900">{clients.length}</p>
-          </div>
-        </div>
-
-        <div className="bg-white rounded-lg shadow overflow-hidden border border-gray-200">
-          <div className="px-6 py-4 border-b border-gray-200">
-            <h2 className="text-xl font-bold text-gray-900">Client Revenue Breakdown</h2>
-          </div>
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Client
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Price per Shown Appmt
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Showed Count
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Agency Revenue
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Client Spend
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Actions
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {clientMetrics.map((client) => (
-                  <tr key={client.id} className="hover:bg-gray-50">
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <Link
-                        to={createPageUrl('ClientView') + `?clientId=${client.id}`}
-                        className="text-blue-600 hover:text-blue-700 font-medium"
-                      >
-                        {client.name}
-                      </Link>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      {editingClientId === client.id ? (
-                        <div className="flex items-center gap-2">
-                          <span className="text-gray-600">$</span>
-                          <input
-                            type="number"
-                            value={editPrice}
-                            onChange={(e) => setEditPrice(Number(e.target.value))}
-                            className="w-24 px-2 py-1 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-                          />
-                          <button
-                            onClick={() => handleSavePrice(client.id)}
-                            className="text-green-600 hover:text-green-700"
-                          >
-                            <Check className="w-4 h-4" />
-                          </button>
-                          <button
-                            onClick={() => setEditingClientId(null)}
-                            className="text-gray-600 hover:text-gray-700"
-                          >
-                            <X className="w-4 h-4" />
-                          </button>
-                        </div>
-                      ) : (
-                        <span className="text-gray-900 font-medium">
-                          ${client.price_per_shown_appointment}
-                        </span>
-                      )}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className="text-gray-900 font-semibold">{client.showedCount}</span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className="text-green-600 font-bold text-lg">
-                        ${client.agencyRevenue.toLocaleString()}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className="text-gray-900">
-                        ${client.clientSpend.toLocaleString()}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <button
-                        onClick={() => handleEditPrice(client.id, client.price_per_shown_appointment)}
-                        className="text-blue-600 hover:text-blue-700 text-sm font-medium inline-flex items-center gap-1"
-                      >
-                        <Edit2 className="w-3 h-3" /> Edit Price
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
       </main>
+
+      <AddPaymentModal open={paymentOpen} onOpenChange={setPaymentOpen} clients={clients} onCreated={refetchPayments} />
+      <AddExpenseModal open={expenseOpen} onOpenChange={setExpenseOpen} clients={clients} onCreated={refetchExpenses} />
     </div>
   );
 }

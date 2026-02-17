@@ -1,0 +1,65 @@
+import React, { useState, useEffect } from 'react';
+import { base44 } from '@/api/base44Client';
+import { useQuery } from '@tanstack/react-query';
+import { useNavigate } from 'react-router-dom';
+import { createPageUrl } from '@/utils';
+import AdminNav from '../components/admin/AdminNav';
+import SetterPerformanceTable from '../components/admin/SetterPerformanceTable';
+import DateRangePicker from '../components/admin/DateRangePicker';
+
+export default function SetterPerformance() {
+  const navigate = useNavigate();
+  const [user, setUser] = useState(null);
+  const now = new Date();
+  const [startDate, setStartDate] = useState(new Date(now.getFullYear(), now.getMonth(), 1).toISOString().split('T')[0]);
+  const [endDate, setEndDate] = useState(now.toISOString().split('T')[0]);
+
+  useEffect(() => {
+    const checkAuth = async () => {
+      try {
+        const currentUser = await base44.auth.me();
+        setUser(currentUser);
+        if (currentUser.role !== 'admin') {
+          if (currentUser.role === 'marketing_manager') navigate(createPageUrl('MMDashboard'));
+          else navigate(createPageUrl('SetterDashboard'));
+        }
+      } catch (error) { base44.auth.redirectToLogin(); }
+    };
+    checkAuth();
+  }, [navigate]);
+
+  const { data: clients = [] } = useQuery({
+    queryKey: ['sp-clients'],
+    queryFn: () => base44.entities.Client.list(),
+  });
+
+  const { data: leads = [] } = useQuery({
+    queryKey: ['sp-leads'],
+    queryFn: () => base44.entities.Lead.list('-created_date', 5000),
+  });
+
+  const { data: users = [] } = useQuery({
+    queryKey: ['sp-users'],
+    queryFn: () => base44.entities.User.list(),
+  });
+
+  if (!user) return null;
+
+  return (
+    <div className="min-h-screen bg-gray-50">
+      <AdminNav user={user} currentPage="SetterPerformance" clients={clients} />
+
+      <main className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900">Setter Performance</h1>
+            <p className="text-sm text-gray-500">Track setter productivity, speed-to-lead, and conversion rates</p>
+          </div>
+          <DateRangePicker startDate={startDate} endDate={endDate} onStartChange={setStartDate} onEndChange={setEndDate} />
+        </div>
+
+        <SetterPerformanceTable users={users} leads={leads} clients={clients} startDate={startDate} endDate={endDate} />
+      </main>
+    </div>
+  );
+}
