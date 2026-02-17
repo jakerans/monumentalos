@@ -27,40 +27,20 @@ export default function InviteUserModal({ open, onOpenChange, clients = [], onIn
 
     setSaving(true);
     try {
-      // inviteUser only accepts "user" or "admin", so invite as the base role first
       const inviteRole = role === 'admin' ? 'admin' : 'user';
       await base44.users.inviteUser(email.trim(), inviteRole);
 
-      // Wait a moment for the user record to be created, then update their custom role
-      if (role !== 'admin' && role !== 'user') {
-        // Retry a few times to find the newly created user
-        let newUser = null;
-        for (let i = 0; i < 5; i++) {
-          await new Promise(r => setTimeout(r, 1000));
-          const allUsers = await base44.entities.User.list();
-          newUser = allUsers.find(u => u.email?.toLowerCase() === email.trim().toLowerCase());
-          if (newUser) break;
+      // Store a PendingInvite so role is applied when the user signs up
+      if (role !== 'admin') {
+        const inviteData = {
+          email: email.trim().toLowerCase(),
+          intended_role: role,
+          status: 'pending',
+        };
+        if (role === 'client' && clientId) {
+          inviteData.client_id = clientId;
         }
-
-        if (newUser) {
-          const updateData = { role };
-          if (role === 'client' && clientId) {
-            updateData.client_id = clientId;
-          }
-          await base44.entities.User.update(newUser.id, updateData);
-        }
-      } else if (role === 'user' && clientId) {
-        // For client role invited as 'user', also assign client_id
-        let newUser = null;
-        for (let i = 0; i < 5; i++) {
-          await new Promise(r => setTimeout(r, 1000));
-          const allUsers = await base44.entities.User.list();
-          newUser = allUsers.find(u => u.email?.toLowerCase() === email.trim().toLowerCase());
-          if (newUser) break;
-        }
-        if (newUser) {
-          await base44.entities.User.update(newUser.id, { client_id: clientId });
-        }
+        await base44.entities.PendingInvite.create(inviteData);
       }
 
       setSuccess(`Invitation sent to ${email}`);
