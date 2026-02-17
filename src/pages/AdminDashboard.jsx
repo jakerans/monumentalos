@@ -36,15 +36,12 @@ export default function AdminDashboard() {
     checkAuth();
   }, [navigate]);
 
-  // Scoped date range: fetch only last 60 days of transactional data
-  const fetchStart = useMemo(() => new Date(now.getFullYear(), now.getMonth() - 1, 1).toISOString().split('T')[0] + 'T00:00:00.000Z', []);
-
   const retryConfig = { retry: 2, retryDelay: (attempt) => Math.min(1000 * 2 ** attempt, 10000) };
   const { data: clients = [], isLoading: l1 } = useQuery({ queryKey: ['admin-clients'], queryFn: () => base44.entities.Client.list(), staleTime: 5 * 60 * 1000, ...retryConfig });
-  const { data: leads = [], isLoading: l2 } = useQuery({ queryKey: ['admin-leads', fetchStart], queryFn: () => base44.entities.Lead.filter({ created_date: { $gte: fetchStart } }, '-created_date', 5000), staleTime: 2 * 60 * 1000, ...retryConfig });
-  const { data: spend = [], isLoading: l3 } = useQuery({ queryKey: ['admin-spend', fetchStart], queryFn: () => base44.entities.Spend.filter({ date: { $gte: fetchStart } }, '-date', 5000), staleTime: 2 * 60 * 1000, ...retryConfig });
-  const { data: payments = [], isLoading: l4 } = useQuery({ queryKey: ['admin-payments', fetchStart], queryFn: () => base44.entities.Payment.filter({ date: { $gte: fetchStart } }, '-date', 5000), staleTime: 2 * 60 * 1000, ...retryConfig });
-  const { data: expenses = [], isLoading: l5 } = useQuery({ queryKey: ['admin-expenses', fetchStart], queryFn: () => base44.entities.Expense.filter({ date: { $gte: fetchStart } }, '-date', 1000), staleTime: 2 * 60 * 1000, ...retryConfig });
+  const { data: leads = [], isLoading: l2 } = useQuery({ queryKey: ['admin-leads'], queryFn: () => base44.entities.Lead.list('-created_date', 5000), staleTime: 2 * 60 * 1000, ...retryConfig });
+  const { data: spend = [], isLoading: l3 } = useQuery({ queryKey: ['admin-spend'], queryFn: () => base44.entities.Spend.list('-date', 5000), staleTime: 2 * 60 * 1000, ...retryConfig });
+  const { data: payments = [], isLoading: l4 } = useQuery({ queryKey: ['admin-payments'], queryFn: () => base44.entities.Payment.list('-date', 5000), staleTime: 2 * 60 * 1000, ...retryConfig });
+  const { data: expenses = [], isLoading: l5 } = useQuery({ queryKey: ['admin-expenses'], queryFn: () => base44.entities.Expense.list('-date', 1000), staleTime: 2 * 60 * 1000, ...retryConfig });
   const { data: goals = [], refetch: refetchGoals } = useQuery({ queryKey: ['admin-goals'], queryFn: () => base44.entities.CompanyGoal.list(), staleTime: 10 * 60 * 1000, ...retryConfig });
   const { data: billingRecords = [] } = useQuery({ queryKey: ['admin-billing'], queryFn: () => base44.entities.MonthlyBilling.list('-billing_month', 100), staleTime: 5 * 60 * 1000, ...retryConfig });
   const { data: users = [] } = useQuery({ queryKey: ['admin-users'], queryFn: () => base44.entities.User.list(), staleTime: 5 * 60 * 1000, ...retryConfig });

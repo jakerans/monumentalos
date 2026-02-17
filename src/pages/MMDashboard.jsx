@@ -47,13 +47,6 @@ export default function MMDashboard() {
     checkAuth();
   }, [navigate]);
 
-  // Scope data fetches to 90-day window (covers last month + prior month comparison)
-  const mmStartStr = useMemo(() => {
-    const d = new Date();
-    d.setDate(d.getDate() - 90);
-    return d.toISOString().split('T')[0] + 'T00:00:00.000Z';
-  }, []);
-
   const { data: clients = [], refetch: refetchClients, isLoading: l1 } = useQuery({
     queryKey: ['mm-clients'],
     queryFn: () => base44.entities.Client.filter({ status: 'active' }),
@@ -63,16 +56,16 @@ export default function MMDashboard() {
   });
 
   const { data: allLeads = [], isLoading: l2 } = useQuery({
-    queryKey: ['mm-leads', mmStartStr],
-    queryFn: () => base44.entities.Lead.filter({ created_date: { $gte: mmStartStr } }, '-created_date', 5000),
+    queryKey: ['mm-leads'],
+    queryFn: () => base44.entities.Lead.list('-created_date', 5000),
     staleTime: 2 * 60 * 1000,
     retry: 2,
     retryDelay: (attempt) => Math.min(1000 * 2 ** attempt, 10000),
   });
 
   const { data: allSpend = [], isLoading: l3 } = useQuery({
-    queryKey: ['mm-spend', mmStartStr],
-    queryFn: () => base44.entities.Spend.filter({ date: { $gte: mmStartStr } }, '-date', 5000),
+    queryKey: ['mm-spend'],
+    queryFn: () => base44.entities.Spend.list('-date', 5000),
     staleTime: 2 * 60 * 1000,
     retry: 2,
     retryDelay: (attempt) => Math.min(1000 * 2 ** attempt, 10000),
