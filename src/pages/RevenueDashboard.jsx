@@ -3,6 +3,7 @@ import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
+import dayjs from 'dayjs';
 import { DollarSign, Receipt, BarChart3, TrendingUp, Users } from 'lucide-react';
 import AdminNav from '../components/admin/AdminNav';
 import DateRangePicker from '../components/admin/DateRangePicker';
@@ -20,9 +21,8 @@ import PageLoader from '../components/shared/PageLoader';
 export default function RevenueDashboard() {
   const navigate = useNavigate();
   const [user, setUser] = useState(null);
-  const now = new Date();
-  const [startDate, setStartDate] = useState(new Date(now.getFullYear(), now.getMonth(), 1).toISOString().split('T')[0]);
-  const [endDate, setEndDate] = useState(now.toISOString().split('T')[0]);
+  const [startDate, setStartDate] = useState(dayjs().startOf('month').format('YYYY-MM-DD'));
+  const [endDate, setEndDate] = useState(dayjs().format('YYYY-MM-DD'));
   const [paymentOpen, setPaymentOpen] = useState(false);
   const [expenseOpen, setExpenseOpen] = useState(false);
   const [activeTab, setActiveTab] = useState('pl');
@@ -42,9 +42,7 @@ export default function RevenueDashboard() {
   }, [navigate]);
 
   // Scope fetches to selected date range (with buffer for prior period comparisons)
-  const fetchRangeStart = new Date(startDate);
-  fetchRangeStart.setMonth(fetchRangeStart.getMonth() - 6); // 6-month lookback for P&L charts
-  const revFetchStart = fetchRangeStart.toISOString().split('T')[0];
+  const revFetchStart = dayjs(startDate).subtract(6, 'month').format('YYYY-MM-DD');
 
   const { data: clients = [], isLoading: l1 } = useQuery({ queryKey: ['rev-clients'], queryFn: () => base44.entities.Client.list(), staleTime: 5 * 60 * 1000 });
   const { data: leads = [], isLoading: l2 } = useQuery({ queryKey: ['rev-leads', revFetchStart], queryFn: () => base44.entities.Lead.filter({ created_date: { $gte: revFetchStart } }, '-created_date', 5000), staleTime: 2 * 60 * 1000 });

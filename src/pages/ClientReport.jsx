@@ -3,6 +3,7 @@ import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import { Link, useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
+import dayjs from 'dayjs';
 import DateRangePicker from '../components/admin/DateRangePicker';
 import ReportKPICards from '../components/report/ReportKPICards';
 import ReportCalculations from '../components/report/ReportCalculations';
@@ -11,10 +12,8 @@ import ReportCharts from '../components/report/ReportCharts';
 export default function ClientReport() {
   const navigate = useNavigate();
   const [user, setUser] = useState(null);
-  const today = new Date();
-  const firstOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
-  const [startDate, setStartDate] = useState(firstOfMonth.toISOString().split('T')[0]);
-  const [endDate, setEndDate] = useState(today.toISOString().split('T')[0]);
+  const [startDate, setStartDate] = useState(dayjs().startOf('month').format('YYYY-MM-DD'));
+  const [endDate, setEndDate] = useState(dayjs().format('YYYY-MM-DD'));
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -63,7 +62,7 @@ export default function ClientReport() {
     queryKey: ['report-booked', clientId, startDate, endDate],
     queryFn: () => base44.entities.Lead.filter({
       client_id: clientId,
-      date_appointment_set: { $gte: new Date(startDate).toISOString(), $lte: new Date(endDate + 'T23:59:59').toISOString() }
+      date_appointment_set: { $gte: dayjs(startDate).toISOString(), $lte: dayjs(endDate).endOf('day').toISOString() }
     }),
     enabled: !!clientId,
   });
@@ -73,7 +72,7 @@ export default function ClientReport() {
     queryKey: ['report-appointments', clientId, startDate, endDate],
     queryFn: () => base44.entities.Lead.filter({
       client_id: clientId,
-      appointment_date: { $gte: new Date(startDate).toISOString(), $lte: new Date(endDate + 'T23:59:59').toISOString() }
+      appointment_date: { $gte: dayjs(startDate).toISOString(), $lte: dayjs(endDate).endOf('day').toISOString() }
     }),
     enabled: !!clientId,
   });

@@ -3,6 +3,7 @@ import { base44 } from '@/api/base44Client';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
+import dayjs from 'dayjs';
 import DateRangePicker from '../components/admin/DateRangePicker';
 import ClientViewNav from '../components/clientview/ClientViewNav';
 import ClientKPIGrid from '../components/clientview/ClientKPIGrid';
@@ -24,11 +25,8 @@ export default function ClientView() {
   const [drilldown, setDrilldown] = useState(null);
   const [billingEditorOpen, setBillingEditorOpen] = useState(false);
 
-  const today = new Date();
-  const thirtyDaysAgo = new Date(today);
-  thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-  const [startDate, setStartDate] = useState(thirtyDaysAgo.toISOString().split('T')[0]);
-  const [endDate, setEndDate] = useState(today.toISOString().split('T')[0]);
+  const [startDate, setStartDate] = useState(dayjs().subtract(30, 'day').format('YYYY-MM-DD'));
+  const [endDate, setEndDate] = useState(dayjs().format('YYYY-MM-DD'));
 
   const urlParams = new URLSearchParams(window.location.search);
   const clientId = urlParams.get('clientId');

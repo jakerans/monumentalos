@@ -3,6 +3,7 @@ import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
+import dayjs from 'dayjs';
 import AdminNav from '../components/admin/AdminNav';
 import SetterPerformanceTable from '../components/admin/SetterPerformanceTable';
 import DateRangePicker from '../components/admin/DateRangePicker';
@@ -13,9 +14,8 @@ import PageLoader from '../components/shared/PageLoader';
 export default function SetterPerformance() {
   const navigate = useNavigate();
   const [user, setUser] = useState(null);
-  const now = new Date();
-  const [startDate, setStartDate] = useState(new Date(now.getFullYear(), now.getMonth(), 1).toISOString().split('T')[0]);
-  const [endDate, setEndDate] = useState(now.toISOString().split('T')[0]);
+  const [startDate, setStartDate] = useState(dayjs().startOf('month').format('YYYY-MM-DD'));
+  const [endDate, setEndDate] = useState(dayjs().format('YYYY-MM-DD'));
 
   useEffect(() => {
     const checkAuth = async () => {
