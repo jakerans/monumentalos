@@ -5,43 +5,60 @@ import { createPageUrl } from '@/utils';
 const BILLING_LABELS = { pay_per_show: 'Per Show', pay_per_set: 'Per Set', retainer: 'Retainer' };
 const BILLING_COLORS = { pay_per_show: 'bg-blue-500/15 text-blue-400', pay_per_set: 'bg-purple-500/15 text-purple-400', retainer: 'bg-amber-500/15 text-amber-400' };
 
-export default function RevenueClientTable({ clients, leads, payments, startDate, endDate }) {
+function calcRevenue(client, leads, startDate, endDate) {
   const start = new Date(startDate);
   const end = new Date(endDate + 'T23:59:59');
   const inRange = (d) => { if (!d) return false; const dt = new Date(d); return dt >= start && dt <= end; };
+  const bt = client.billing_type || 'pay_per_show';
+  const cLeads = leads.filter(l => l.client_id === client.id);
+
+  if (bt === 'pay_per_show') return cLeads.filter(l => l.disposition === 'showed' && inRange(l.appointment_date)).length * (client.price_per_shown_appointment || 0);
+  if (bt === 'pay_per_set') return cLeads.filter(l => l.date_appointment_set && inRange(l.date_appointment_set)).length * (client.price_per_set_appointment || 0);
+  if (bt === 'retainer') return client.retainer_amount || 0;
+  return 0;
+}
+
+export default function RevenueClientTable({ clients, leads, payments }) {
+  const now = new Date();
+  const lastMonthStart = new Date(now.getFullYear(), now.getMonth() - 1, 1).toISOString().split('T')[0];
+  const lastMonthEnd = new Date(now.getFullYear(), now.getMonth(), 0).toISOString().split('T')[0];
 
   const rows = clients.filter(c => c.status === 'active').map(client => {
     const bt = client.billing_type || 'pay_per_show';
+    const revLastMonth = calcRevenue(client, leads, lastMonthStart, lastMonthEnd);
+
+    // LTV = all-time collected payments
+    const ltv = payments.filter(p => p.client_id === client.id).reduce((s, p) => s + (p.amount || 0), 0);
+
+    // Outstanding = all-time billed minus all-time collected
     const cLeads = leads.filter(l => l.client_id === client.id);
-    const booked = cLeads.filter(l => l.date_appointment_set && inRange(l.date_appointment_set));
-    const showed = cLeads.filter(l => l.disposition === 'showed' && inRange(l.appointment_date));
-
-    let billed = 0;
-    if (bt === 'pay_per_show') billed = showed.length * (client.price_per_shown_appointment || 0);
-    else if (bt === 'pay_per_set') billed = booked.length * (client.price_per_set_appointment || 0);
+    let allTimeBilled = 0;
+    if (bt === 'pay_per_show') allTimeBilled = cLeads.filter(l => l.disposition === 'showed').length * (client.price_per_shown_appointment || 0);
+    else if (bt === 'pay_per_set') allTimeBilled = cLeads.filter(l => l.date_appointment_set).length * (client.price_per_set_appointment || 0);
     else if (bt === 'retainer') {
-      const months = Math.max(1, Math.ceil((end - start) / (30 * 24 * 60 * 60 * 1000)));
-      billed = (client.retainer_amount || 0) * months;
+      // Estimate months active from earliest payment or lead
+      const dates = [...payments.filter(p => p.client_id === client.id).map(p => p.date), ...cLeads.map(l => l.created_date)].filter(Boolean).sort();
+      if (dates.length > 0) {
+        const first = new Date(dates[0]);
+        const months = Math.max(1, Math.ceil((now - first) / (30 * 24 * 60 * 60 * 1000)));
+        allTimeBilled = (client.retainer_amount || 0) * months;
+      }
     }
+    const outstanding = Math.max(0, allTimeBilled - ltv);
 
-    const collected = payments.filter(p => p.client_id === client.id && inRange(p.date)).reduce((s, p) => s + (p.amount || 0), 0);
-    const outstanding = billed - collected;
-
-    return { ...client, bt, booked: booked.length, showed: showed.length, billed, collected, outstanding };
-  });
+    return { ...client, bt, revLastMonth, ltv, outstanding };
+  }).sort((a, b) => b.ltv - a.ltv);
 
   const totals = rows.reduce((acc, r) => ({
-    booked: acc.booked + r.booked,
-    showed: acc.showed + r.showed,
-    billed: acc.billed + r.billed,
-    collected: acc.collected + r.collected,
+    revLastMonth: acc.revLastMonth + r.revLastMonth,
+    ltv: acc.ltv + r.ltv,
     outstanding: acc.outstanding + r.outstanding,
-  }), { booked: 0, showed: 0, billed: 0, collected: 0, outstanding: 0 });
+  }), { revLastMonth: 0, ltv: 0, outstanding: 0 });
 
   return (
     <div className="bg-slate-800/50 rounded-lg border border-slate-700/50 overflow-hidden">
       <div className="px-4 py-3 border-b border-slate-700/50">
-        <h2 className="text-sm font-bold text-white">Client Revenue Breakdown</h2>
+        <h2 className="text-sm font-bold text-white">Client Revenue</h2>
       </div>
       <div className="overflow-x-auto">
         <table className="w-full text-sm">
@@ -49,10 +66,8 @@ export default function RevenueClientTable({ clients, leads, payments, startDate
             <tr>
               <th className="px-4 py-2 text-left">Client</th>
               <th className="px-3 py-2 text-left">Billing</th>
-              <th className="px-3 py-2 text-right">Booked</th>
-              <th className="px-3 py-2 text-right">Showed</th>
-              <th className="px-3 py-2 text-right">To Be Billed</th>
-              <th className="px-3 py-2 text-right">Collected</th>
+              <th className="px-3 py-2 text-right">Rev Last Month</th>
+              <th className="px-3 py-2 text-right">Lifetime Value</th>
               <th className="px-3 py-2 text-right">Outstanding</th>
             </tr>
           </thead>
@@ -67,11 +82,9 @@ export default function RevenueClientTable({ clients, leads, payments, startDate
                     {BILLING_LABELS[r.bt] || r.bt}
                   </span>
                 </td>
-                <td className="px-3 py-2.5 text-right text-slate-300">{r.booked}</td>
-                <td className="px-3 py-2.5 text-right text-slate-300">{r.showed}</td>
-                <td className="px-3 py-2.5 text-right font-medium text-white">${r.billed.toLocaleString()}</td>
-                <td className="px-3 py-2.5 text-right font-medium text-emerald-400">${r.collected.toLocaleString()}</td>
-                <td className="px-3 py-2.5 text-right font-medium text-amber-400">${r.outstanding.toLocaleString()}</td>
+                <td className="px-3 py-2.5 text-right font-medium text-white">${r.revLastMonth.toLocaleString()}</td>
+                <td className="px-3 py-2.5 text-right font-medium text-emerald-400">${r.ltv.toLocaleString()}</td>
+                <td className="px-3 py-2.5 text-right font-medium text-amber-400">{r.outstanding > 0 ? `$${r.outstanding.toLocaleString()}` : '—'}</td>
               </tr>
             ))}
           </tbody>
@@ -79,11 +92,9 @@ export default function RevenueClientTable({ clients, leads, payments, startDate
             <tr>
               <td className="px-4 py-2">TOTALS</td>
               <td></td>
-              <td className="px-3 py-2 text-right">{totals.booked}</td>
-              <td className="px-3 py-2 text-right">{totals.showed}</td>
-              <td className="px-3 py-2 text-right">${totals.billed.toLocaleString()}</td>
-              <td className="px-3 py-2 text-right text-emerald-400">${totals.collected.toLocaleString()}</td>
-              <td className="px-3 py-2 text-right text-amber-400">${totals.outstanding.toLocaleString()}</td>
+              <td className="px-3 py-2 text-right">${totals.revLastMonth.toLocaleString()}</td>
+              <td className="px-3 py-2 text-right text-emerald-400">${totals.ltv.toLocaleString()}</td>
+              <td className="px-3 py-2 text-right text-amber-400">{totals.outstanding > 0 ? `$${totals.outstanding.toLocaleString()}` : '—'}</td>
             </tr>
           </tfoot>
         </table>
