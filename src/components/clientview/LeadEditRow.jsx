@@ -53,6 +53,8 @@ export default function LeadEditRow({ lead, expanded, onToggle, onSave }) {
 
     await base44.entities.Lead.update(lead.id, updates);
     setSaving(false);
+    setSaved(true);
+    setTimeout(() => setSaved(false), 2500);
     if (onSave) onSave();
   };
 
