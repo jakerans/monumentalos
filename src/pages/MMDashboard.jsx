@@ -175,7 +175,7 @@ export default function MMDashboard() {
       // Alerts (still use current period)
       const alerts = [];
       if (cpaCur > 300 && apptsCur > 0) alerts.push(`High CPA: $${cpaCur.toFixed(0)}`);
-      if (spendCur > 0 && apptsCur === 0) alerts.push(`Spending but 0 appts in ${periodDays}d`);
+      if (spendCur > 0 && apptsCur === 0) alerts.push(`Spending but 0 appts (${periodRange.label})`);
       if (stl !== null && stl > 15) alerts.push(`Slow STL: ${stl.toFixed(0)} min avg`);
       const newUncontacted = cLeads.filter(l => l.status === 'new' && l.created_date >= pStartStr).length;
       if (newUncontacted >= 5) alerts.push(`${newUncontacted} new leads not yet contacted`);
