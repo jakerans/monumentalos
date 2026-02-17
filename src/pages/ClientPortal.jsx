@@ -60,6 +60,10 @@ export default function ClientPortal() {
 
   if (!user) return null;
 
+  const activeLeads = leads.filter(lead =>
+    (lead.disposition === 'scheduled' || lead.disposition === 'rescheduled') &&
+    (!lead.outcome || lead.outcome === 'pending')
+  );
   const scheduledLeads = leads.filter(l => l.disposition === 'scheduled');
   const showedLeads = leads.filter(l => l.disposition === 'showed');
   const soldLeads = leads.filter(l => l.outcome === 'sold');
@@ -123,28 +127,34 @@ export default function ClientPortal() {
       </nav>
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-          <div className="bg-white rounded-lg shadow p-6 border border-gray-200">
-            <div className="flex items-center gap-3 mb-2">
-              <Calendar className="w-5 h-5 text-blue-600" />
-              <p className="text-sm font-medium text-gray-600">Scheduled</p>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+          <div className="bg-white rounded-lg shadow p-4 md:p-6 border border-gray-200">
+            <div className="flex items-center gap-2 mb-1">
+              <Calendar className="w-4 h-4 text-blue-600" />
+              <p className="text-xs md:text-sm font-medium text-gray-600">Scheduled</p>
             </div>
-            <p className="text-3xl font-bold text-gray-900">{scheduledLeads.length}</p>
+            <p className="text-2xl md:text-3xl font-bold text-gray-900">{scheduledLeads.length}</p>
           </div>
-          <div className="bg-white rounded-lg shadow p-6 border border-gray-200">
-            <div className="flex items-center gap-3 mb-2">
-              <CheckCircle className="w-5 h-5 text-green-600" />
-              <p className="text-sm font-medium text-gray-600">Showed</p>
+          <div className="bg-white rounded-lg shadow p-4 md:p-6 border border-gray-200">
+            <div className="flex items-center gap-2 mb-1">
+              <CheckCircle className="w-4 h-4 text-green-600" />
+              <p className="text-xs md:text-sm font-medium text-gray-600">Showed</p>
             </div>
-            <p className="text-3xl font-bold text-gray-900">{showedLeads.length}</p>
+            <p className="text-2xl md:text-3xl font-bold text-gray-900">{showedLeads.length}</p>
           </div>
-          <div className="bg-white rounded-lg shadow p-6 border border-gray-200">
-            <div className="flex items-center gap-3 mb-2">
-              <CheckCircle className="w-5 h-5 text-green-600" />
-              <p className="text-sm font-medium text-gray-600">Sold</p>
+          <div className="bg-white rounded-lg shadow p-4 md:p-6 border border-gray-200">
+            <div className="flex items-center gap-2 mb-1">
+              <CheckCircle className="w-4 h-4 text-green-600" />
+              <p className="text-xs md:text-sm font-medium text-gray-600">Sold</p>
             </div>
-            <p className="text-3xl font-bold text-gray-900">{soldLeads.length}</p>
-            <p className="text-sm text-green-600 font-semibold mt-1">${totalSoldAmount.toLocaleString()}</p>
+            <p className="text-2xl md:text-3xl font-bold text-gray-900">{soldLeads.length}</p>
+          </div>
+          <div className="bg-white rounded-lg shadow p-4 md:p-6 border border-gray-200">
+            <div className="flex items-center gap-2 mb-1">
+              <DollarSign className="w-4 h-4 text-emerald-600" />
+              <p className="text-xs md:text-sm font-medium text-gray-600">Revenue</p>
+            </div>
+            <p className="text-2xl md:text-3xl font-bold text-emerald-700">${totalSoldAmount.toLocaleString()}</p>
           </div>
         </div>
 
