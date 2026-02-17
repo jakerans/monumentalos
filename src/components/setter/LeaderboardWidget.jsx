@@ -4,13 +4,17 @@ import { Trophy, ChevronLeft, ChevronRight, TrendingUp, TrendingDown, Minus, Clo
 export default function LeaderboardWidget({ user, leaderboard, lastMonthBoard, spiffs, leads }) {
   const [open, setOpen] = useState(false);
 
-  const myRank = leaderboard.findIndex(s => s.id === user.id) + 1;
-  const myStats = leaderboard.find(s => s.id === user.id);
+  const myIndex = leaderboard.findIndex(s => s.id === user.id);
+  const isOnBoard = myIndex !== -1;
+  const myRank = isOnBoard ? myIndex + 1 : null;
+  const myStats = isOnBoard ? leaderboard[myIndex] : null;
   const lastMyStats = lastMonthBoard.find(s => s.id === user.id);
   const lastRank = lastMyStats ? lastMonthBoard.findIndex(s => s.id === user.id) + 1 : null;
 
-  const rankChange = lastRank ? lastRank - myRank : null;
-  const isFirst = myRank === 1;
+  const rankChange = (lastRank && myRank) ? lastRank - myRank : null;
+  // For admins viewing setter dashboard, show the #1 setter's rank context
+  const displayRank = myRank || (leaderboard.length > 0 ? 1 : null);
+  const isFirst = displayRank === 1;
 
   // Calculate spiff progress for current user
   const now = new Date();
