@@ -77,6 +77,8 @@ export default function AdminDashboard() {
                     navigate(createPageUrl('SetterDashboard'));
                   } else if (e.target.value === 'mm') {
                     navigate(createPageUrl('MMDashboard'));
+                  } else if (e.target.value === 'onboard') {
+                    navigate(createPageUrl('OnboardDashboard'));
                   } else if (e.target.value.startsWith('client-')) {
                     const clientId = e.target.value.replace('client-', '');
                     localStorage.setItem('admin_view_client_id', clientId);
@@ -87,6 +89,7 @@ export default function AdminDashboard() {
               >
                 <option value="admin">View as Admin</option>
                 <option value="mm">View as Marketing Manager</option>
+                <option value="onboard">View as Onboard Admin</option>
                 <option value="setter">View as Setter</option>
                 <optgroup label="View as Client">
                   {clients.map(client => (

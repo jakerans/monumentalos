@@ -2,6 +2,7 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import { base44 } from '@/api/base44Client';
+import { Link } from 'react-router-dom';
 import { LayoutDashboard, LogOut } from 'lucide-react';
 
 export default function MMNav({ user, clients }) {
@@ -15,6 +16,12 @@ export default function MMNav({ user, clients }) {
             <LayoutDashboard className="w-5 h-5 text-blue-600" />
             <h1 className="text-base font-bold text-gray-900">Marketing Manager</h1>
             <span className="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full font-medium">{clients?.length || 0} clients</span>
+            <Link
+              to={createPageUrl('MMOnboard')}
+              className="text-xs text-purple-600 hover:text-purple-700 font-medium px-2 py-0.5 bg-purple-50 rounded-full"
+            >
+              Onboarding
+            </Link>
           </div>
           <div className="flex items-center gap-3">
             {user?.role === 'admin' && (
