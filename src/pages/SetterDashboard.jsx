@@ -1,18 +1,19 @@
 import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
-import { Search, Filter } from 'lucide-react';
+import { Search, Filter, Plus, Ban } from 'lucide-react';
 import SetterNav from '../components/setter/SetterNav';
 import SetterStats from '../components/setter/SetterStats';
 import PipelineColumn from '../components/setter/PipelineColumn';
 import LeadDetailPanel from '../components/setter/LeadDetailPanel';
 import BookAppointmentModal from '../components/setter/BookAppointmentModal';
+import AddLeadModal from '../components/setter/AddLeadModal';
+import FirstCallModal from '../components/setter/FirstCallModal';
 
 export default function SetterDashboard() {
   const navigate = useNavigate();
-  const queryClient = useQueryClient();
   const [user, setUser] = useState(null);
   const [search, setSearch] = useState('');
   const [clientFilter, setClientFilter] = useState('all');
@@ -20,6 +21,10 @@ export default function SetterDashboard() {
   const [detailOpen, setDetailOpen] = useState(false);
   const [bookingLead, setBookingLead] = useState(null);
   const [bookingOpen, setBookingOpen] = useState(false);
+  const [addOpen, setAddOpen] = useState(false);
+  const [firstCallLead, setFirstCallLead] = useState(null);
+  const [firstCallOpen, setFirstCallOpen] = useState(false);
+  const [showDQ, setShowDQ] = useState(false);
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -46,20 +51,74 @@ export default function SetterDashboard() {
     queryFn: () => base44.entities.Client.list(),
   });
 
-  const handleAction = async (action, lead) => {
+  const { data: users = [] } = useQuery({
+    queryKey: ['all-users'],
+    queryFn: () => base44.entities.User.list(),
+    initialData: [],
+  });
+
+  const getUserName = (userId) => {
+    if (!userId) return null;
+    const u = users.find(u => u.id === userId);
+    return u?.full_name || null;
+  };
+
+  const getClientName = (clientId) => {
+    const client = clients.find(c => c.id === clientId);
+    return client?.name || 'Unknown';
+  };
+
+  const handleAction = (action, lead) => {
     if (action === 'first_call') {
-      const speedMinutes = lead.lead_received_date
-        ? Math.floor((new Date() - new Date(lead.lead_received_date)) / 60000)
-        : null;
-      await base44.entities.Lead.update(lead.id, {
-        status: 'first_call_made',
-        first_call_made_date: new Date().toISOString(),
-        ...(speedMinutes != null ? { speed_to_lead_minutes: speedMinutes } : {}),
-      });
-      refetch();
+      setFirstCallLead(lead);
+      setFirstCallOpen(true);
     } else if (action === 'book') {
       setBookingLead(lead);
       setBookingOpen(true);
+    }
+  };
+
+  const handleFirstCallResult = async (leadId, result, dqReason) => {
+    const speedMinutes = (() => {
+      const lead = leads.find(l => l.id === leadId);
+      if (!lead) return null;
+      const received = lead.lead_received_date || lead.created_date;
+      // Only calc STL if this is the very first call (no first_call_made_date yet)
+      if (lead.first_call_made_date) return undefined;
+      return Math.floor((new Date() - new Date(received)) / 60000);
+    })();
+
+    const baseUpdates = {
+      first_call_made_date: new Date().toISOString(),
+      setter_id: user.id,
+      ...(speedMinutes != null && speedMinutes !== undefined ? { speed_to_lead_minutes: speedMinutes } : {}),
+    };
+
+    if (result === 'scheduled') {
+      // Connected & wants to schedule — open booking modal next
+      await base44.entities.Lead.update(leadId, {
+        ...baseUpdates,
+        status: 'first_call_made',
+      });
+      refetch();
+      const updatedLead = leads.find(l => l.id === leadId);
+      if (updatedLead) {
+        setBookingLead({ ...updatedLead, status: 'first_call_made' });
+        setBookingOpen(true);
+      }
+    } else if (result === 'not_connected') {
+      await base44.entities.Lead.update(leadId, {
+        ...baseUpdates,
+        status: 'first_call_made',
+      });
+      refetch();
+    } else if (result === 'disqualified') {
+      await base44.entities.Lead.update(leadId, {
+        ...baseUpdates,
+        status: 'disqualified',
+        dq_reason: dqReason,
+      });
+      refetch();
     }
   };
 
@@ -69,7 +128,13 @@ export default function SetterDashboard() {
       appointment_date: appointmentDate,
       date_appointment_set: new Date().toISOString(),
       disposition: 'scheduled',
+      booked_by_setter_id: user.id,
     });
+    refetch();
+  };
+
+  const handleAddLead = async (leadData) => {
+    await base44.entities.Lead.create(leadData);
     refetch();
   };
 
@@ -79,11 +144,6 @@ export default function SetterDashboard() {
   };
 
   if (!user) return null;
-
-  const getClientName = (clientId) => {
-    const client = clients.find(c => c.id === clientId);
-    return client?.name || 'Unknown';
-  };
 
   // Filter leads
   const filtered = leads.filter(l => {
@@ -95,6 +155,7 @@ export default function SetterDashboard() {
   const newLeads = filtered.filter(l => l.status === 'new');
   const inProgressLeads = filtered.filter(l => l.status === 'first_call_made' || l.status === 'contacted');
   const bookedLeads = filtered.filter(l => l.status === 'appointment_booked');
+  const dqLeads = filtered.filter(l => l.status === 'disqualified');
 
   const today = new Date();
   const todayStr = today.toISOString().split('T')[0];
@@ -136,11 +197,25 @@ export default function SetterDashboard() {
                 <option key={c.id} value={c.id}>{c.name}</option>
               ))}
             </select>
+            <button
+              onClick={() => setShowDQ(!showDQ)}
+              className={`px-3 py-2 text-sm border rounded-lg font-medium transition-colors ${
+                showDQ ? 'bg-red-50 border-red-300 text-red-700' : 'border-gray-300 text-gray-600 hover:bg-gray-50'
+              }`}
+            >
+              <Ban className="w-3.5 h-3.5 inline mr-1" />DQ
+            </button>
+            <button
+              onClick={() => setAddOpen(true)}
+              className="px-3 py-2 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium transition-colors"
+            >
+              <Plus className="w-4 h-4 inline mr-1" />Add Lead
+            </button>
           </div>
         </div>
 
         {/* Pipeline Columns */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
+        <div className={`grid grid-cols-1 gap-4 sm:gap-6 ${showDQ ? 'md:grid-cols-4' : 'md:grid-cols-3'}`}>
           <PipelineColumn
             title="New Leads"
             count={newLeads.length}
@@ -168,15 +243,35 @@ export default function SetterDashboard() {
             onAction={handleAction}
             onSelect={handleSelectLead}
           />
+          {showDQ && (
+            <PipelineColumn
+              title="Disqualified"
+              count={dqLeads.length}
+              color="bg-red-500"
+              leads={dqLeads}
+              clients={clients}
+              onAction={handleAction}
+              onSelect={handleSelectLead}
+            />
+          )}
         </div>
       </main>
 
       <LeadDetailPanel
         lead={selectedLead}
         clientName={selectedLead ? getClientName(selectedLead.client_id) : ''}
+        setterName={selectedLead ? getUserName(selectedLead.setter_id) : null}
+        bookedByName={selectedLead ? getUserName(selectedLead.booked_by_setter_id) : null}
         open={detailOpen}
         onOpenChange={setDetailOpen}
         onAction={handleAction}
+      />
+
+      <FirstCallModal
+        lead={firstCallLead}
+        open={firstCallOpen}
+        onOpenChange={setFirstCallOpen}
+        onResult={handleFirstCallResult}
       />
 
       <BookAppointmentModal
@@ -184,6 +279,13 @@ export default function SetterDashboard() {
         open={bookingOpen}
         onOpenChange={setBookingOpen}
         onBook={handleBookAppointment}
+      />
+
+      <AddLeadModal
+        open={addOpen}
+        onOpenChange={setAddOpen}
+        clients={clients}
+        onAdd={handleAddLead}
       />
     </div>
   );
