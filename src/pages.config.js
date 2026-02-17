@@ -62,6 +62,7 @@ import RevenueDashboard from './pages/RevenueDashboard';
 import SetterDashboard from './pages/SetterDashboard';
 import SetterPerformance from './pages/SetterPerformance';
 import MonthlyBilling from './pages/MonthlyBilling';
+import ClientPerformance from './pages/ClientPerformance';
 
 
 export const PAGES = {
@@ -80,6 +81,7 @@ export const PAGES = {
     "SetterDashboard": SetterDashboard,
     "SetterPerformance": SetterPerformance,
     "MonthlyBilling": MonthlyBilling,
+    "ClientPerformance": ClientPerformance,
 }
 
 export const pagesConfig = {
