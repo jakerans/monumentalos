@@ -125,14 +125,14 @@ export default function MonthlyBilling() {
   if (!user) return null;
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-[#0B0F1A]">
       <AdminNav user={user} currentPage="MonthlyBilling" clients={clients} />
 
       <main className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-5">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">Monthly Billing</h1>
-            <p className="text-xs text-gray-500">
+            <h1 className="text-2xl font-bold text-white">Monthly Billing</h1>
+            <p className="text-xs text-slate-400">
               Retainer clients are billed on their due day. Set/show clients billed for the previous month.
             </p>
           </div>
@@ -141,8 +141,8 @@ export default function MonthlyBilling() {
 
         {/* Overdue banner */}
         {isOverdueMonth && billingRecords.some(r => r.status === 'pending' || r.status === 'overdue') && (
-          <div className="bg-red-50 border border-red-200 rounded-lg px-4 py-3 flex items-center gap-2">
-            <span className="text-red-600 text-xs font-medium">
+          <div className="bg-red-500/10 border border-red-500/20 rounded-lg px-4 py-3 flex items-center gap-2">
+            <span className="text-red-400 text-xs font-medium">
               ⚠ This billing period is past due (due by {new Date(selYear, selMonth, 5).toLocaleDateString()}). Unpaid invoices are overdue.
             </span>
           </div>
@@ -150,8 +150,8 @@ export default function MonthlyBilling() {
 
         {/* Generate button if there are missing clients */}
         {missingClients.length > 0 && (
-          <div className="bg-blue-50 border border-blue-200 rounded-lg px-4 py-3 flex items-center justify-between">
-            <span className="text-blue-700 text-xs font-medium">
+          <div className="bg-blue-500/10 border border-blue-500/20 rounded-lg px-4 py-3 flex items-center justify-between">
+            <span className="text-blue-400 text-xs font-medium">
               {missingClients.length} active client{missingClients.length > 1 ? 's' : ''} don't have billing records for this month yet.
             </span>
             <button

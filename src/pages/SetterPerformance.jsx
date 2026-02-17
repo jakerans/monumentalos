@@ -46,14 +46,14 @@ export default function SetterPerformance() {
   if (!user) return null;
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-[#0B0F1A]">
       <AdminNav user={user} currentPage="SetterPerformance" clients={clients} />
 
       <main className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">Setter Performance</h1>
-            <p className="text-sm text-gray-500">Track setter productivity, speed-to-lead, and conversion rates</p>
+            <h1 className="text-2xl font-bold text-white">Setter Performance</h1>
+            <p className="text-sm text-slate-400">Track setter productivity, speed-to-lead, and conversion rates</p>
           </div>
           <DateRangePicker startDate={startDate} endDate={endDate} onStartChange={setStartDate} onEndChange={setEndDate} />
         </div>

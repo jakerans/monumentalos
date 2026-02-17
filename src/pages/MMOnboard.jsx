@@ -85,18 +85,18 @@ export default function MMOnboard() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <nav className="bg-white border-b border-gray-200 sticky top-0 z-30">
+    <div className="min-h-screen bg-[#0B0F1A]">
+      <nav className="bg-slate-900 border-b border-slate-800 sticky top-0 z-30">
         <div className="max-w-3xl mx-auto px-4 sm:px-6">
           <div className="flex items-center justify-between h-14">
             <div className="flex items-center gap-3">
-              <button onClick={() => navigate(createPageUrl('MMDashboard'))} className="text-gray-400 hover:text-gray-600">
+              <button onClick={() => navigate(createPageUrl('MMDashboard'))} className="text-slate-400 hover:text-white">
                 <ArrowLeft className="w-4 h-4" />
               </button>
-              <ClipboardCheck className="w-5 h-5 text-purple-600" />
-              <h1 className="text-base font-bold text-gray-900">My Onboarding Tasks</h1>
+              <ClipboardCheck className="w-5 h-5" style={{color:'#D6FF03'}} />
+              <h1 className="text-base font-bold text-white">My Onboarding Tasks</h1>
             </div>
-            <span className="text-xs text-gray-500">{user?.full_name}</span>
+            <span className="text-xs text-slate-400">{user?.full_name}</span>
           </div>
         </div>
       </nav>
@@ -104,24 +104,24 @@ export default function MMOnboard() {
       <main className="max-w-3xl mx-auto px-4 sm:px-6 py-6 space-y-6">
         {/* Pending tasks */}
         <div>
-          <h2 className="text-sm font-semibold text-gray-900 mb-3">
+          <h2 className="text-sm font-semibold text-white mb-3">
             Action Required ({pendingTasks.length})
           </h2>
           {pendingTasks.length === 0 ? (
-            <div className="bg-white rounded-lg border border-gray-200 p-6 text-center text-xs text-gray-400">
+            <div className="bg-slate-800/50 rounded-lg border border-slate-700/50 p-6 text-center text-xs text-slate-500">
               No pending onboarding tasks assigned to you.
             </div>
           ) : (
             <div className="space-y-2">
               {pendingTasks.map(task => (
-                <div key={task.id} className="bg-white rounded-lg border border-gray-200 p-3">
+                <div key={task.id} className="bg-slate-800/60 rounded-lg border border-slate-700/50 p-3">
                   <div className="flex items-start gap-3">
                     <div className={`mt-0.5 p-1 rounded-full ${task.status === 'in_progress' ? 'bg-blue-100' : 'bg-gray-100'}`}>
                       {task.status === 'in_progress' ? <Play className="w-3 h-3 text-blue-600" /> : <Circle className="w-3 h-3 text-gray-400" />}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-gray-900">{task.title}</p>
-                      {task.description && <p className="text-xs text-gray-400 mt-0.5">{task.description}</p>}
+                      <p className="text-sm font-medium text-white">{task.title}</p>
+                      {task.description && <p className="text-xs text-slate-500 mt-0.5">{task.description}</p>}
                       <p className="text-[10px] text-indigo-600 font-medium mt-1">Client: {getProjectName(task.project_id)}</p>
                     </div>
                     <div className="flex gap-1 flex-shrink-0">
@@ -150,7 +150,7 @@ export default function MMOnboard() {
         {/* Completed tasks */}
         {completedTasks.length > 0 && (
           <div>
-            <h2 className="text-sm font-semibold text-gray-500 mb-3">Completed ({completedTasks.length})</h2>
+            <h2 className="text-sm font-semibold text-slate-400 mb-3">Completed ({completedTasks.length})</h2>
             <div className="space-y-1.5">
               {completedTasks.slice(0, 20).map(task => (
                 <div key={task.id} className="bg-green-50/50 rounded-lg border border-green-200 p-2.5">

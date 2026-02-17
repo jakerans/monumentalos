@@ -35,12 +35,12 @@ export default function ClientManagement() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <nav className="bg-white shadow-sm border-b border-gray-200">
+    <div className="min-h-screen bg-[#0B0F1A]">
+      <nav className="bg-slate-900 shadow-lg border-b border-slate-800">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between h-16">
             <div className="flex items-center">
-              <h1 className="text-xl font-bold text-gray-900">MonumentalOS</h1>
+              <h1 className="text-xl font-bold text-white">Monumental<span style={{color:'#D6FF03'}}>OS</span></h1>
             </div>
           </div>
         </div>
@@ -54,17 +54,17 @@ export default function ClientManagement() {
           <ArrowLeft className="w-4 h-4" /> Back to Dashboard
         </button>
 
-        <div className="bg-white rounded-lg shadow-lg p-8 border border-gray-200">
-          <h1 className="text-2xl font-bold text-gray-900 mb-6">Add New Client</h1>
+        <div className="bg-slate-800/50 rounded-lg shadow-lg p-8 border border-slate-700/50">
+          <h1 className="text-2xl font-bold text-white mb-6">Add New Client</h1>
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Client Name</label>
+              <label className="block text-sm font-medium text-slate-300 mb-2">Client Name</label>
               <input
                 type="text"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 required
-                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-4 py-2 border border-slate-700 rounded-md focus:outline-none focus:ring-2 focus:ring-[#D6FF03] bg-slate-900 text-white placeholder-slate-500"
                 placeholder="ABC Roofing Co."
               />
             </div>
@@ -134,11 +134,11 @@ export default function ClientManagement() {
 
             <div className="flex gap-4">
               <button type="button" onClick={() => navigate(createPageUrl('AdminDashboard'))}
-                className="px-6 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50">
+                className="px-6 py-2 border border-slate-700 rounded-md text-slate-300 hover:bg-slate-800">
                 Cancel
               </button>
               <button type="submit" disabled={isSubmitting}
-                className="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50">
+                className="px-6 py-2 text-black rounded-md hover:opacity-90 disabled:opacity-50 font-bold" style={{backgroundColor:'#D6FF03'}}">
                 {isSubmitting ? 'Creating...' : 'Create Client'}
               </button>
             </div>

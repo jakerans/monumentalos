@@ -51,21 +51,21 @@ export default function UserManagement() {
   }, {});
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-[#0B0F1A]">
       <AdminNav user={user} currentPage="UserManagement" clients={clients} />
 
       <main className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-5">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <Users className="w-6 h-6 text-gray-700" />
+            <Users className="w-6 h-6 text-slate-300" />
             <div>
-              <h1 className="text-2xl font-bold text-gray-900">User Management</h1>
-              <p className="text-sm text-gray-500">{users.length} total users</p>
+              <h1 className="text-2xl font-bold text-white">User Management</h1>
+              <p className="text-sm text-slate-400">{users.length} total users</p>
             </div>
           </div>
           <button
             onClick={() => setInviteOpen(true)}
-            className="px-4 py-2 text-sm font-medium bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center gap-2"
+            className="px-4 py-2 text-sm font-bold text-black rounded-lg hover:opacity-90 flex items-center gap-2" style={{backgroundColor:'#D6FF03'}}
           >
             <UserPlus className="w-4 h-4" /> Invite User
           </button>
@@ -76,7 +76,7 @@ export default function UserManagement() {
           <button
             onClick={() => setRoleFilter('all')}
             className={`px-3 py-1.5 text-xs font-medium rounded-full border transition-colors ${
-              roleFilter === 'all' ? 'bg-gray-900 text-white border-gray-900' : 'bg-white text-gray-600 border-gray-300 hover:bg-gray-50'
+              roleFilter === 'all' ? 'bg-slate-700 text-white border-slate-600' : 'bg-slate-800 text-slate-400 border-slate-700 hover:bg-slate-700'
             }`}
           >
             All ({users.length})
@@ -92,7 +92,7 @@ export default function UserManagement() {
               key={r.value}
               onClick={() => setRoleFilter(r.value)}
               className={`px-3 py-1.5 text-xs font-medium rounded-full border transition-colors ${
-                roleFilter === r.value ? 'bg-gray-900 text-white border-gray-900' : 'bg-white text-gray-600 border-gray-300 hover:bg-gray-50'
+                roleFilter === r.value ? 'bg-slate-700 text-white border-slate-600' : 'bg-slate-800 text-slate-400 border-slate-700 hover:bg-slate-700'
               }`}
             >
               {r.label} ({roleCounts[r.value] || 0})

@@ -40,26 +40,26 @@ export default function LeadDetails() {
   if (!user || !lead) return null;
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <nav className="bg-white shadow-sm border-b border-gray-200">
+    <div className="min-h-screen bg-[#0B0F1A]">
+      <nav className="bg-slate-900 shadow-lg border-b border-slate-800">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between h-16">
             <div className="flex items-center">
-              <h1 className="text-xl font-bold text-gray-900">Lead Details</h1>
+              <h1 className="text-xl font-bold text-white">Lead Details</h1>
             </div>
             <div className="flex items-center gap-4">
               {user.app_role === 'admin' && (
                 <button
                   onClick={() => navigate(createPageUrl('AdminDashboard'))}
-                  className="px-3 py-1.5 text-sm border border-gray-300 rounded-md hover:bg-gray-50"
+                  className="px-3 py-1.5 text-sm border border-slate-700 text-slate-300 rounded-md hover:bg-white/5"
                 >
                   Back to Admin
                 </button>
               )}
-              <span className="text-sm text-gray-600">{user.full_name}</span>
+              <span className="text-sm text-slate-400">{user.full_name}</span>
               <button
                 onClick={() => base44.auth.logout()}
-                className="text-sm text-gray-600 hover:text-gray-900"
+                className="text-sm text-slate-500 hover:text-white"
               >
                 Logout
               </button>
@@ -76,9 +76,9 @@ export default function LeadDetails() {
           <ArrowLeft className="w-4 h-4" /> Back to {returnTo === 'AppointmentHistory' ? 'History' : 'My Appointments'}
         </Link>
 
-        <div className="bg-white rounded-lg shadow border border-gray-200">
-          <div className="px-6 py-4 border-b border-gray-200 bg-gray-50">
-            <h2 className="text-2xl font-bold text-gray-900">{lead.name}</h2>
+        <div className="bg-slate-800/50 rounded-lg shadow border border-slate-700/50">
+          <div className="px-6 py-4 border-b border-slate-700/50 bg-slate-900/50">
+            <h2 className="text-2xl font-bold text-white">{lead.name}</h2>
             <div className="flex gap-2 mt-2">
               <span className={`px-2 py-1 text-xs font-medium rounded-full ${
                 lead.disposition === 'showed' ? 'bg-green-100 text-green-800' :
@@ -102,20 +102,20 @@ export default function LeadDetails() {
 
           <div className="p-6 space-y-6">
             <div>
-              <h3 className="text-sm font-semibold text-gray-500 uppercase mb-3">Contact Information</h3>
+              <h3 className="text-sm font-semibold text-slate-400 uppercase mb-3">Contact Information</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="flex items-center gap-3">
-                  <Mail className="w-5 h-5 text-gray-400" />
+                  <Mail className="w-5 h-5 text-slate-500" />
                   <div>
-                    <p className="text-xs text-gray-500">Email</p>
-                    <p className="text-sm font-medium text-gray-900">{lead.email || 'Not provided'}</p>
+                    <p className="text-xs text-slate-500">Email</p>
+                    <p className="text-sm font-medium text-white">{lead.email || 'Not provided'}</p>
                   </div>
                 </div>
                 <div className="flex items-center gap-3">
-                  <Phone className="w-5 h-5 text-gray-400" />
+                  <Phone className="w-5 h-5 text-slate-500" />
                   <div>
-                    <p className="text-xs text-gray-500">Phone</p>
-                    <p className="text-sm font-medium text-gray-900">{lead.phone || 'Not provided'}</p>
+                    <p className="text-xs text-slate-500">Phone</p>
+                    <p className="text-sm font-medium text-white">{lead.phone || 'Not provided'}</p>
                   </div>
                 </div>
               </div>
@@ -123,23 +123,23 @@ export default function LeadDetails() {
 
             {lead.appointment_date && (
               <div>
-                <h3 className="text-sm font-semibold text-gray-500 uppercase mb-3">Appointment Information</h3>
+                <h3 className="text-sm font-semibold text-slate-400 uppercase mb-3">Appointment Information</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="flex items-center gap-3">
-                    <Calendar className="w-5 h-5 text-gray-400" />
+                    <Calendar className="w-5 h-5 text-slate-500" />
                     <div>
-                      <p className="text-xs text-gray-500">Appointment Date</p>
-                      <p className="text-sm font-medium text-gray-900">
+                      <p className="text-xs text-slate-500">Appointment Date</p>
+                      <p className="text-sm font-medium text-white">
                         {new Date(lead.appointment_date).toLocaleString()}
                       </p>
                     </div>
                   </div>
                   {lead.date_appointment_set && (
                     <div className="flex items-center gap-3">
-                      <Calendar className="w-5 h-5 text-gray-400" />
+                      <Calendar className="w-5 h-5 text-slate-500" />
                       <div>
-                        <p className="text-xs text-gray-500">Date Booked</p>
-                        <p className="text-sm font-medium text-gray-900">
+                        <p className="text-xs text-slate-500">Date Booked</p>
+                        <p className="text-sm font-medium text-white">
                           {new Date(lead.date_appointment_set).toLocaleString()}
                         </p>
                       </div>
@@ -151,24 +151,24 @@ export default function LeadDetails() {
 
             {(lead.project_type || lead.project_size || lead.timeline) && (
               <div>
-                <h3 className="text-sm font-semibold text-gray-500 uppercase mb-3">Project Details</h3>
+                <h3 className="text-sm font-semibold text-slate-400 uppercase mb-3">Project Details</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {lead.project_type && (
                     <div>
-                      <p className="text-xs text-gray-500">Project Type</p>
-                      <p className="text-sm font-medium text-gray-900">{lead.project_type}</p>
+                      <p className="text-xs text-slate-500">Project Type</p>
+                      <p className="text-sm font-medium text-white">{lead.project_type}</p>
                     </div>
                   )}
                   {lead.project_size && (
                     <div>
-                      <p className="text-xs text-gray-500">Project Size</p>
-                      <p className="text-sm font-medium text-gray-900">{lead.project_size}</p>
+                      <p className="text-xs text-slate-500">Project Size</p>
+                      <p className="text-sm font-medium text-white">{lead.project_size}</p>
                     </div>
                   )}
                   {lead.timeline && (
                     <div>
-                      <p className="text-xs text-gray-500">Timeline</p>
-                      <p className="text-sm font-medium text-gray-900">{lead.timeline}</p>
+                      <p className="text-xs text-slate-500">Timeline</p>
+                      <p className="text-sm font-medium text-white">{lead.timeline}</p>
                     </div>
                   )}
                 </div>
@@ -177,14 +177,14 @@ export default function LeadDetails() {
 
             {(lead.sale_amount || lead.date_sold) && (
               <div>
-                <h3 className="text-sm font-semibold text-gray-500 uppercase mb-3">Sale Information</h3>
+                <h3 className="text-sm font-semibold text-slate-400 uppercase mb-3">Sale Information</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {lead.sale_amount && (
                     <div className="flex items-center gap-3">
                       <DollarSign className="w-5 h-5 text-green-600" />
                       <div>
-                        <p className="text-xs text-gray-500">Sale Amount</p>
-                        <p className="text-lg font-bold text-green-700">
+                        <p className="text-xs text-slate-500">Sale Amount</p>
+                        <p className="text-lg font-bold text-green-400">
                           ${lead.sale_amount.toLocaleString()}
                         </p>
                       </div>
@@ -192,10 +192,10 @@ export default function LeadDetails() {
                   )}
                   {lead.date_sold && (
                     <div className="flex items-center gap-3">
-                      <Calendar className="w-5 h-5 text-gray-400" />
+                      <Calendar className="w-5 h-5 text-slate-500" />
                       <div>
-                        <p className="text-xs text-gray-500">Date Sold</p>
-                        <p className="text-sm font-medium text-gray-900">
+                        <p className="text-xs text-slate-500">Date Sold</p>
+                        <p className="text-sm font-medium text-white">
                           {new Date(lead.date_sold).toLocaleDateString()}
                         </p>
                       </div>
@@ -207,9 +207,9 @@ export default function LeadDetails() {
 
             {lead.notes && (
               <div>
-                <h3 className="text-sm font-semibold text-gray-500 uppercase mb-3">Notes</h3>
-                <div className="bg-gray-50 rounded-md p-4 border border-gray-200">
-                  <p className="text-sm text-gray-700 whitespace-pre-wrap">{lead.notes}</p>
+                <h3 className="text-sm font-semibold text-slate-400 uppercase mb-3">Notes</h3>
+                <div className="bg-slate-900/50 rounded-md p-4 border border-slate-700/50">
+                  <p className="text-sm text-slate-300 whitespace-pre-wrap">{lead.notes}</p>
                 </div>
               </div>
             )}
