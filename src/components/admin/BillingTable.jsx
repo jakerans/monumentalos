@@ -70,6 +70,7 @@ export default function BillingTable({ billingRecords, clients, onRefresh, isOve
               <tr>
                 <th className="px-4 py-2.5 text-left">Client</th>
                 <th className="px-3 py-2.5 text-left">Type</th>
+                <th className="px-3 py-2.5 text-center">Due Day</th>
                 <th className="px-3 py-2.5 text-right">Qty</th>
                 <th className="px-3 py-2.5 text-right">Rate</th>
                 <th className="px-3 py-2.5 text-right">Amount</th>
@@ -80,7 +81,7 @@ export default function BillingTable({ billingRecords, clients, onRefresh, isOve
             </thead>
             <tbody className="divide-y divide-gray-100">
               {rows.length === 0 ? (
-                <tr><td colSpan={8} className="px-4 py-8 text-center text-gray-400">No billing records for this month</td></tr>
+                <tr><td colSpan={9} className="px-4 py-8 text-center text-gray-400">No billing records for this month</td></tr>
               ) : rows.map(r => {
                 const sc = STATUS_CONFIG[r.displayStatus] || STATUS_CONFIG.pending;
                 return (
@@ -92,6 +93,11 @@ export default function BillingTable({ billingRecords, clients, onRefresh, isOve
                       <span className={`px-1.5 py-0.5 text-[10px] font-medium rounded ${BILLING_COLORS[r.billing_type]}`}>
                         {BILLING_LABELS[r.billing_type]}
                       </span>
+                    </td>
+                    <td className="px-3 py-3 text-center text-gray-700 text-xs">
+                      {r.billing_type === 'retainer' && r.client?.retainer_due_day
+                        ? `${r.client.retainer_due_day}${r.client.retainer_due_day === 1 ? 'st' : r.client.retainer_due_day === 2 ? 'nd' : r.client.retainer_due_day === 3 ? 'rd' : 'th'}`
+                        : r.billing_type === 'retainer' ? '1st' : '—'}
                     </td>
                     <td className="px-3 py-3 text-right text-gray-700">
                       {r.billing_type === 'retainer' ? '—' : (r.quantity || 0)}

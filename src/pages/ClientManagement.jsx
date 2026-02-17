@@ -11,6 +11,7 @@ export default function ClientManagement() {
   const [pricePerShow, setPricePerShow] = useState('');
   const [pricePerSet, setPricePerSet] = useState('');
   const [retainerAmount, setRetainerAmount] = useState('');
+  const [retainerDueDay, setRetainerDueDay] = useState('1');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = async (e) => {
@@ -23,7 +24,10 @@ export default function ClientManagement() {
     };
     if (billingType === 'pay_per_show') data.price_per_shown_appointment = Number(pricePerShow);
     if (billingType === 'pay_per_set') data.price_per_set_appointment = Number(pricePerSet);
-    if (billingType === 'retainer') data.retainer_amount = Number(retainerAmount);
+    if (billingType === 'retainer') {
+      data.retainer_amount = Number(retainerAmount);
+      data.retainer_due_day = Number(retainerDueDay);
+    }
 
     await base44.entities.Client.create(data);
     setIsSubmitting(false);
@@ -103,15 +107,29 @@ export default function ClientManagement() {
             )}
 
             {billingType === 'retainer' && (
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Monthly Retainer Amount ($)</label>
-                <input
-                  type="number" value={retainerAmount} onChange={(e) => setRetainerAmount(e.target.value)}
-                  required min="0" step="0.01"
-                  className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="2000.00"
-                />
-              </div>
+              <>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Monthly Retainer Amount ($)</label>
+                  <input
+                    type="number" value={retainerAmount} onChange={(e) => setRetainerAmount(e.target.value)}
+                    required min="0" step="0.01"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    placeholder="2000.00"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Retainer Due Day (of month)</label>
+                  <select
+                    value={retainerDueDay}
+                    onChange={(e) => setRetainerDueDay(e.target.value)}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  >
+                    {Array.from({ length: 28 }, (_, i) => i + 1).map(d => (
+                      <option key={d} value={d}>{d}{d === 1 ? 'st' : d === 2 ? 'nd' : d === 3 ? 'rd' : 'th'}</option>
+                    ))}
+                  </select>
+                </div>
+              </>
             )}
 
             <div className="flex gap-4">

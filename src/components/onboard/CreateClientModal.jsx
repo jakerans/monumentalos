@@ -9,6 +9,7 @@ export default function CreateClientModal({ open, onOpenChange, onCreated }) {
   const [price, setPrice] = useState('');
   const [pricePerSet, setPricePerSet] = useState('');
   const [retainerAmount, setRetainerAmount] = useState('');
+  const [retainerDueDay, setRetainerDueDay] = useState('1');
   const [bookingLink, setBookingLink] = useState('');
   const [serviceRadius, setServiceRadius] = useState('');
   const [contacts, setContacts] = useState([{ name: '', email: '', role: 'Owner' }]);
@@ -39,7 +40,10 @@ export default function CreateClientModal({ open, onOpenChange, onCreated }) {
     };
     if (billingType === 'pay_per_show') data.price_per_shown_appointment = parseFloat(price) || 0;
     if (billingType === 'pay_per_set') data.price_per_set_appointment = parseFloat(pricePerSet) || 0;
-    if (billingType === 'retainer') data.retainer_amount = parseFloat(retainerAmount) || 0;
+    if (billingType === 'retainer') {
+      data.retainer_amount = parseFloat(retainerAmount) || 0;
+      data.retainer_due_day = parseInt(retainerDueDay) || 1;
+    }
     const client = await base44.entities.Client.create(data);
     setSaving(false);
     onCreated(client);
@@ -71,6 +75,7 @@ export default function CreateClientModal({ open, onOpenChange, onCreated }) {
     setPrice('');
     setPricePerSet('');
     setRetainerAmount('');
+    setRetainerDueDay('1');
     setBookingLink('');
     setServiceRadius('');
     setContacts([{ name: '', email: '', role: 'Owner' }]);
@@ -108,10 +113,20 @@ export default function CreateClientModal({ open, onOpenChange, onCreated }) {
             </div>
           )}
           {billingType === 'retainer' && (
-            <div>
-              <label className="text-xs font-medium text-gray-700">Monthly Retainer Amount *</label>
-              <input type="number" value={retainerAmount} onChange={e => setRetainerAmount(e.target.value)} className="w-full mt-1 px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="e.g. 2000" />
-            </div>
+            <>
+              <div>
+                <label className="text-xs font-medium text-gray-700">Monthly Retainer Amount *</label>
+                <input type="number" value={retainerAmount} onChange={e => setRetainerAmount(e.target.value)} className="w-full mt-1 px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="e.g. 2000" />
+              </div>
+              <div>
+                <label className="text-xs font-medium text-gray-700">Retainer Due Day</label>
+                <select value={retainerDueDay} onChange={e => setRetainerDueDay(e.target.value)} className="w-full mt-1 px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                  {Array.from({ length: 28 }, (_, i) => i + 1).map(d => (
+                    <option key={d} value={d}>{d}{d === 1 ? 'st' : d === 2 ? 'nd' : d === 3 ? 'rd' : 'th'}</option>
+                  ))}
+                </select>
+              </div>
+            </>
           )}
           <div className="grid grid-cols-2 gap-2">
             <div>

@@ -133,7 +133,7 @@ export default function MonthlyBilling() {
           <div>
             <h1 className="text-2xl font-bold text-gray-900">Monthly Billing</h1>
             <p className="text-xs text-gray-500">
-              Bill at start of month for the previous month. Due by the 5th.
+              Retainer clients are billed on their due day. Set/show clients billed for the previous month.
             </p>
           </div>
           <BillingMonthSelector selectedMonth={selectedMonth} onChange={setSelectedMonth} />
