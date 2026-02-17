@@ -3,8 +3,9 @@ import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import { Link, useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Calendar, Phone, Mail } from 'lucide-react';
 import LeadDetailsDrawer from '../components/LeadDetailsDrawer';
+import AppointmentCard from '../components/client/AppointmentCard';
 
 export default function AppointmentHistory() {
   const navigate = useNavigate();
@@ -169,7 +170,24 @@ export default function AppointmentHistory() {
           </div>
         </div>
 
-        <div className="bg-white rounded-lg shadow border border-gray-200">
+        {/* Mobile card view */}
+        <div className="md:hidden space-y-3">
+          <h2 className="text-xl font-bold text-gray-900">Completed & Cancelled</h2>
+          {filteredLeads.length === 0 ? (
+            <div className="bg-white rounded-lg shadow border border-gray-200 p-6 text-center text-gray-500">No appointments match the selected filters</div>
+          ) : (
+            filteredLeads.map((lead) => (
+              <AppointmentCard
+                key={lead.id}
+                lead={lead}
+                onSelect={(id) => { setSelectedLeadId(id); setDrawerOpen(true); }}
+              />
+            ))
+          )}
+        </div>
+
+        {/* Desktop table view */}
+        <div className="hidden md:block bg-white rounded-lg shadow border border-gray-200">
           <div className="px-6 py-4 border-b border-gray-200">
             <h2 className="text-xl font-bold text-gray-900">Completed & Cancelled Appointments</h2>
           </div>
@@ -182,12 +200,13 @@ export default function AppointmentHistory() {
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Appointment Date</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Disposition</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Outcome</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Revenue</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200">
                 {filteredLeads.length === 0 ? (
                   <tr>
-                    <td colSpan="5" className="px-6 py-8 text-center text-gray-500">
+                    <td colSpan="6" className="px-6 py-8 text-center text-gray-500">
                       No appointments match the selected filters
                     </td>
                   </tr>
@@ -196,10 +215,7 @@ export default function AppointmentHistory() {
                     <tr key={lead.id} className="hover:bg-gray-50">
                       <td className="px-6 py-4">
                         <button
-                          onClick={() => {
-                            setSelectedLeadId(lead.id);
-                            setDrawerOpen(true);
-                          }}
+                          onClick={() => { setSelectedLeadId(lead.id); setDrawerOpen(true); }}
                           className="font-medium text-blue-600 hover:text-blue-700 hover:underline text-left"
                         >
                           {lead.name}
@@ -222,22 +238,20 @@ export default function AppointmentHistory() {
                         </span>
                       </td>
                       <td className="px-6 py-4">
-                        <div className="inline-flex flex-col gap-1.5">
-                          <span className={`px-2 py-1 text-xs font-medium rounded-full ${
-                            lead.outcome === 'sold' ? 'bg-green-100 text-green-800' :
-                            lead.outcome === 'lost' ? 'bg-red-100 text-red-800' :
-                            'bg-yellow-100 text-yellow-800'
-                          }`}>
-                            {lead.outcome || 'pending'}
-                          </span>
-                          {lead.sale_amount && (
-                            <div className="bg-green-50 border border-green-200 rounded-md px-2 py-1">
-                              <span className="text-sm font-semibold text-green-700">
-                                ${lead.sale_amount.toLocaleString()}
-                              </span>
-                            </div>
-                          )}
-                        </div>
+                        <span className={`px-2 py-1 text-xs font-medium rounded-full ${
+                          lead.outcome === 'sold' ? 'bg-green-100 text-green-800' :
+                          lead.outcome === 'lost' ? 'bg-red-100 text-red-800' :
+                          'bg-yellow-100 text-yellow-800'
+                        }`}>
+                          {lead.outcome || 'pending'}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4">
+                        {lead.sale_amount > 0 ? (
+                          <span className="text-sm font-bold text-green-700">${lead.sale_amount.toLocaleString()}</span>
+                        ) : (
+                          <span className="text-sm text-gray-400">—</span>
+                        )}
                       </td>
                     </tr>
                   ))
