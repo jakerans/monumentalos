@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Trophy, ChevronLeft, ChevronRight, TrendingUp, TrendingDown, Minus, Clock, Calendar, Gift } from 'lucide-react';
+import { motion } from 'framer-motion';
 
 export default function LeaderboardWidget({ user, leaderboard, lastMonthBoard, spiffs, leads }) {
   const [open, setOpen] = useState(false);
@@ -48,26 +49,7 @@ export default function LeaderboardWidget({ user, leaderboard, lastMonthBoard, s
 
   return (
     <>
-      {/* Gold liquid animation styles */}
-      {isFirst && (
-        <style>{`
-          @keyframes goldSlosh1 {
-            0%, 100% { d: path("M0,28 C8,24 16,32 24,28 C32,24 40,30 48,26 C56,22 64,28 72,26 C80,24 88,30 96,28 L96,48 L0,48 Z"); }
-            25% { d: path("M0,30 C8,26 16,22 24,26 C32,30 40,24 48,28 C56,32 64,24 72,28 C80,32 88,26 96,30 L96,48 L0,48 Z"); }
-            50% { d: path("M0,26 C8,30 16,24 24,30 C32,26 40,32 48,28 C56,24 64,30 72,24 C80,28 88,32 96,26 L96,48 L0,48 Z"); }
-            75% { d: path("M0,32 C8,28 16,30 24,24 C32,28 40,26 48,32 C56,28 64,26 72,30 C80,26 88,28 96,24 L96,48 L0,48 Z"); }
-          }
-          @keyframes goldSlosh2 {
-            0%, 100% { d: path("M0,32 C10,28 20,34 30,30 C40,26 50,34 60,30 C70,26 80,32 90,28 L96,30 L96,48 L0,48 Z"); }
-            33% { d: path("M0,28 C10,32 20,26 30,32 C40,28 50,26 60,32 C70,28 80,26 90,32 L96,28 L96,48 L0,48 Z"); }
-            66% { d: path("M0,34 C10,30 20,32 30,26 C40,32 50,28 60,26 C70,32 80,28 90,26 L96,32 L96,48 L0,48 Z"); }
-          }
-          @keyframes goldShimmer {
-            0%, 100% { opacity: 0.3; }
-            50% { opacity: 0.7; }
-          }
-        `}</style>
-      )}
+      {/* No extra styles needed — animations handled by framer-motion */}
 
       {/* Tab on the left edge */}
       <button
@@ -80,24 +62,25 @@ export default function LeaderboardWidget({ user, leaderboard, lastMonthBoard, s
       >
         {/* Animated gold liquid background for #1 */}
         {isFirst && (
-          <div className="absolute inset-0 pointer-events-none">
-            <svg className="absolute inset-0 w-full h-full" viewBox="0 0 96 48" preserveAspectRatio="none">
-              <defs>
-                <linearGradient id="gold1" x1="0%" y1="0%" x2="100%" y2="100%">
-                  <stop offset="0%" stopColor="#FFD700" stopOpacity="0.5" />
-                  <stop offset="50%" stopColor="#FFA500" stopOpacity="0.4" />
-                  <stop offset="100%" stopColor="#FFD700" stopOpacity="0.5" />
-                </linearGradient>
-                <linearGradient id="gold2" x1="100%" y1="0%" x2="0%" y2="100%">
-                  <stop offset="0%" stopColor="#FFEC8B" stopOpacity="0.3" />
-                  <stop offset="50%" stopColor="#DAA520" stopOpacity="0.35" />
-                  <stop offset="100%" stopColor="#FFEC8B" stopOpacity="0.3" />
-                </linearGradient>
-              </defs>
-              <path fill="url(#gold1)" style={{ animation: 'goldSlosh1 3s ease-in-out infinite' }} d="M0,28 C8,24 16,32 24,28 C32,24 40,30 48,26 C56,22 64,28 72,26 C80,24 88,30 96,28 L96,48 L0,48 Z" />
-              <path fill="url(#gold2)" style={{ animation: 'goldSlosh2 3.5s ease-in-out infinite' }} d="M0,32 C10,28 20,34 30,30 C40,26 50,34 60,30 C70,26 80,32 90,28 L96,30 L96,48 L0,48 Z" />
-            </svg>
-            <div className="absolute inset-0 bg-gradient-to-t from-amber-500/10 to-transparent" style={{ animation: 'goldShimmer 2s ease-in-out infinite' }} />
+          <div className="absolute inset-0 pointer-events-none overflow-hidden rounded-r-2xl">
+            <motion.div
+              className="absolute inset-0"
+              style={{ background: 'linear-gradient(135deg, rgba(255,215,0,0.25) 0%, rgba(255,165,0,0.15) 50%, rgba(255,215,0,0.25) 100%)' }}
+              animate={{ opacity: [0.4, 0.7, 0.4] }}
+              transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
+            />
+            <motion.div
+              className="absolute bottom-0 left-0 right-0 h-[60%]"
+              style={{ background: 'linear-gradient(0deg, rgba(255,215,0,0.4) 0%, rgba(255,165,0,0.2) 40%, transparent 100%)' }}
+              animate={{ y: [0, -4, 2, -2, 0] }}
+              transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
+            />
+            <motion.div
+              className="absolute bottom-0 left-0 right-0 h-[40%]"
+              style={{ background: 'linear-gradient(0deg, rgba(255,236,139,0.3) 0%, transparent 100%)' }}
+              animate={{ y: [2, -3, 1, -1, 2], opacity: [0.5, 0.8, 0.5] }}
+              transition={{ duration: 3.5, repeat: Infinity, ease: 'easeInOut' }}
+            />
           </div>
         )}
 
