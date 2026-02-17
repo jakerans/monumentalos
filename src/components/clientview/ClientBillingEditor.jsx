@@ -10,6 +10,7 @@ export default function ClientBillingEditor({ client, open, onOpenChange, onUpda
   const [pricePerSet, setPricePerSet] = useState('');
   const [retainerAmount, setRetainerAmount] = useState('');
   const [retainerDueDay, setRetainerDueDay] = useState('1');
+  const [clientStatus, setClientStatus] = useState('active');
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
@@ -20,12 +21,19 @@ export default function ClientBillingEditor({ client, open, onOpenChange, onUpda
       setPricePerSet(String(client.price_per_set_appointment || ''));
       setRetainerAmount(String(client.retainer_amount || ''));
       setRetainerDueDay(String(client.retainer_due_day || 1));
+      setClientStatus(client.status || 'active');
     }
   }, [client]);
 
   const handleSave = async () => {
     setSaving(true);
-    const updates = { billing_type: billingType, industries };
+    const updates = { billing_type: billingType, industries, status: clientStatus };
+    if (clientStatus === 'inactive' && client.status !== 'inactive') {
+      updates.deactivated_date = new Date().toISOString().split('T')[0];
+    }
+    if (clientStatus === 'active' && client.status === 'inactive') {
+      updates.deactivated_date = null;
+    }
     if (billingType === 'pay_per_show') updates.price_per_shown_appointment = Number(pricePerShow) || 0;
     if (billingType === 'pay_per_set') updates.price_per_set_appointment = Number(pricePerSet) || 0;
     if (billingType === 'retainer') {
@@ -54,6 +62,13 @@ export default function ClientBillingEditor({ client, open, onOpenChange, onUpda
             <div className="mt-1">
               <IndustryPicker selected={industries} onChange={setIndustries} />
             </div>
+          </div>
+          <div>
+            <label className="text-xs font-medium text-gray-700">Client Status</label>
+            <select value={clientStatus} onChange={e => setClientStatus(e.target.value)} className="w-full mt-1 px-3 py-2 text-sm border border-gray-300 rounded-md">
+              <option value="active">Active</option>
+              <option value="inactive">Inactive</option>
+            </select>
           </div>
           <div>
             <label className="text-xs font-medium text-gray-700">Billing Type</label>

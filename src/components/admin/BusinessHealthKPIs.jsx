@@ -31,9 +31,14 @@ export default function BusinessHealthKPIs({ clients, leads, spend, payments, bi
   // New clients this month (created_date in current month)
   const newClientsThisMonth = clients.filter(c => inMTD(c.created_date)).length;
 
-  // Churned = inactive clients (simple metric)
-  const churnedCount = inactiveClients.length;
-  const churnRate = clients.length > 0 ? ((churnedCount / clients.length) * 100).toFixed(0) : 0;
+  // Churned in last 90 days (clients with deactivated_date within 90 days)
+  const ninetyDaysAgo = new Date(now);
+  ninetyDaysAgo.setDate(ninetyDaysAgo.getDate() - 90);
+  const churnedRecently = inactiveClients.filter(c => c.deactivated_date && new Date(c.deactivated_date) >= ninetyDaysAgo);
+  const churnedCount = churnedRecently.length;
+  // Churn rate = churned in 90d / (active + churned in 90d) to approximate starting client count
+  const baseCount = activeClients.length + churnedCount;
+  const churnRate = baseCount > 0 ? ((churnedCount / baseCount) * 100).toFixed(0) : 0;
 
   // Alerts: clients with goal_status behind_wont_meet or high CPA
   const alertClients = activeClients.filter(c => {
@@ -62,7 +67,7 @@ export default function BusinessHealthKPIs({ clients, leads, spend, payments, bi
     <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-3">
       <KPICard label="Active Clients" value={activeClients.length} subtitle={`${newClientsThisMonth} new this month`} icon={Users} iconBg="bg-blue-500/10" iconColor="text-blue-400" />
       <KPICard label="Alerts" value={alertClients.length} subtitle="Clients needing attention" icon={AlertTriangle} iconBg="bg-red-500/10" iconColor="text-red-400" />
-      <KPICard label="Churn Rate" value={`${churnRate}%`} subtitle={`${churnedCount} inactive`} icon={UserMinus} iconBg="bg-orange-500/10" iconColor="text-orange-400" />
+      <KPICard label="Churn Rate (90d)" value={`${churnRate}%`} subtitle={`${churnedCount} churned`} icon={UserMinus} iconBg="bg-orange-500/10" iconColor="text-orange-400" />
       <KPICard label="New This Month" value={newClientsThisMonth} icon={UserPlus} iconBg="bg-green-500/10" iconColor="text-green-400" />
       <KPICard label="Last Mo. Billed" value={`$${lastMonthTotal.toLocaleString()}`} subtitle="Performance billing" icon={DollarSign} iconBg="bg-indigo-500/10" iconColor="text-indigo-400" />
       <KPICard label="Collection Rate" value={`${collectionRate}%`} subtitle={`$${lastMonthCollected.toLocaleString()} collected`} icon={Percent} iconBg="bg-emerald-500/10" iconColor="text-emerald-400" />
