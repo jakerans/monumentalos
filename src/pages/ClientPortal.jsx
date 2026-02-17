@@ -6,7 +6,6 @@ import { createPageUrl } from '@/utils';
 import { Calendar, CheckCircle, Clock, AlertTriangle } from 'lucide-react';
 import LeadDetailsDrawer from '../components/LeadDetailsDrawer';
 import AppointmentCard from '../components/client/AppointmentCard';
-import StatCard from '../components/client/StatCard';
 
 export default function ClientPortal() {
   const navigate = useNavigate();
