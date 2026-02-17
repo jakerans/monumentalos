@@ -46,12 +46,13 @@ export default function LeaderboardWidget({ user, leaderboard, lastMonthBoard, s
       {/* Tab on the left edge */}
       <button
         onClick={() => setOpen(true)}
-        className="fixed left-0 top-[40%] -translate-y-1/2 z-40 flex items-center gap-2 px-3 py-5 rounded-r-xl shadow-lg border border-l-0 border-slate-700 bg-slate-800 hover:bg-slate-700 transition-colors"
-        style={{ writingMode: 'vertical-rl', textOrientation: 'mixed' }}
+        className="fixed left-0 top-[38%] -translate-y-1/2 z-40 flex items-center gap-3 pl-4 pr-5 py-4 rounded-r-2xl shadow-xl border border-l-0 border-slate-600 bg-slate-800 hover:bg-slate-700 transition-colors"
       >
-        <Trophy className="w-5 h-5 text-amber-400 rotate-90" />
-        <span className="text-sm font-bold text-white">#{myRank || '—'}</span>
-        <span className="text-[10px] text-slate-400">Rank</span>
+        <Trophy className="w-6 h-6 text-amber-400" />
+        <div className="flex flex-col items-start">
+          <span className="text-lg font-black leading-tight" style={{ color: '#D6FF03' }}>#{myRank || '—'}</span>
+          <span className="text-[10px] text-slate-400 font-medium">Leaderboard</span>
+        </div>
       </button>
 
       {/* Overlay */}
