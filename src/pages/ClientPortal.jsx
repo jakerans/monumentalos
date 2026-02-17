@@ -78,18 +78,29 @@ export default function ClientPortal() {
     return d >= start && d <= end;
   };
 
-  const thisMonthLeads = leads.filter(l => inRange(l.appointment_date, thisMonthStart, now));
-  const lastMonthLeads = leads.filter(l => inRange(l.appointment_date, lastMonthStart, lastMonthEnd));
+  const inDateRange = (dateStr, start, end) => {
+    if (!dateStr) return false;
+    const d = new Date(dateStr + 'T00:00:00');
+    return d >= start && d <= end;
+  };
+
+  // Scheduled/showed use appointment_date
+  const thisMonthAppts = leads.filter(l => inRange(l.appointment_date, thisMonthStart, now));
+  const lastMonthAppts = leads.filter(l => inRange(l.appointment_date, lastMonthStart, lastMonthEnd));
+
+  // Sold/revenue use date_sold
+  const thisMonthSold = leads.filter(l => l.outcome === 'sold' && inDateRange(l.date_sold, thisMonthStart, now));
+  const lastMonthSold = leads.filter(l => l.outcome === 'sold' && inDateRange(l.date_sold, lastMonthStart, lastMonthEnd));
 
   const stats = {
-    scheduledThis: thisMonthLeads.filter(l => l.disposition === 'scheduled' || l.disposition === 'rescheduled').length,
-    scheduledLast: lastMonthLeads.filter(l => l.disposition === 'scheduled' || l.disposition === 'rescheduled').length,
-    showedThis: thisMonthLeads.filter(l => l.disposition === 'showed').length,
-    showedLast: lastMonthLeads.filter(l => l.disposition === 'showed').length,
-    soldThis: thisMonthLeads.filter(l => l.outcome === 'sold').length,
-    soldLast: lastMonthLeads.filter(l => l.outcome === 'sold').length,
-    revenueThis: thisMonthLeads.filter(l => l.outcome === 'sold').reduce((s, l) => s + (l.sale_amount || 0), 0),
-    revenueLast: lastMonthLeads.filter(l => l.outcome === 'sold').reduce((s, l) => s + (l.sale_amount || 0), 0),
+    scheduledThis: thisMonthAppts.filter(l => l.disposition === 'scheduled' || l.disposition === 'rescheduled').length,
+    scheduledLast: lastMonthAppts.filter(l => l.disposition === 'scheduled' || l.disposition === 'rescheduled').length,
+    showedThis: thisMonthAppts.filter(l => l.disposition === 'showed' || l.outcome === 'sold' || l.outcome === 'lost').length,
+    showedLast: lastMonthAppts.filter(l => l.disposition === 'showed' || l.outcome === 'sold' || l.outcome === 'lost').length,
+    soldThis: thisMonthSold.length,
+    soldLast: lastMonthSold.length,
+    revenueThis: thisMonthSold.reduce((s, l) => s + (l.sale_amount || 0), 0),
+    revenueLast: lastMonthSold.reduce((s, l) => s + (l.sale_amount || 0), 0),
   };
 
   return (

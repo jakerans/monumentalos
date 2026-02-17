@@ -51,11 +51,11 @@ import AdminDashboard from './pages/AdminDashboard';
 import AppointmentHistory from './pages/AppointmentHistory';
 import ClientManagement from './pages/ClientManagement';
 import ClientPortal from './pages/ClientPortal';
+import ClientReport from './pages/ClientReport';
 import ClientView from './pages/ClientView';
 import LeadDetails from './pages/LeadDetails';
 import RevenueDashboard from './pages/RevenueDashboard';
 import SetterDashboard from './pages/SetterDashboard';
-import ClientReport from './pages/ClientReport';
 
 
 export const PAGES = {
@@ -63,11 +63,11 @@ export const PAGES = {
     "AppointmentHistory": AppointmentHistory,
     "ClientManagement": ClientManagement,
     "ClientPortal": ClientPortal,
+    "ClientReport": ClientReport,
     "ClientView": ClientView,
     "LeadDetails": LeadDetails,
     "RevenueDashboard": RevenueDashboard,
     "SetterDashboard": SetterDashboard,
-    "ClientReport": ClientReport,
 }
 
 export const pagesConfig = {
