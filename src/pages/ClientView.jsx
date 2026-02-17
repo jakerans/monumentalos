@@ -55,18 +55,21 @@ export default function ClientView() {
       return clients[0];
     },
     enabled: !!clientId,
+    staleTime: 5 * 60 * 1000,
   });
 
   const { data: allLeads = [], refetch: refetchLeads, isLoading: l1 } = useQuery({
     queryKey: ['client-all-leads', clientId],
     queryFn: () => base44.entities.Lead.filter({ client_id: clientId }, '-created_date', 2000),
     enabled: !!clientId,
+    staleTime: 2 * 60 * 1000,
   });
 
   const { data: allSpend = [], refetch: refetchSpend, isLoading: l2 } = useQuery({
     queryKey: ['client-all-spend', clientId],
     queryFn: () => base44.entities.Spend.filter({ client_id: clientId }, '-date', 2000),
     enabled: !!clientId,
+    staleTime: 2 * 60 * 1000,
   });
 
   const startISO = new Date(startDate).toISOString();

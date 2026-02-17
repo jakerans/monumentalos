@@ -55,9 +55,10 @@ export default function ClientPortal() {
     queryKey: ['client-leads', clientId],
     queryFn: async () => {
       if (!clientId) return [];
-      return await base44.entities.Lead.filter({ client_id: clientId });
+      return await base44.entities.Lead.filter({ client_id: clientId }, '-created_date', 500);
     },
     enabled: !!clientId,
+    staleTime: 2 * 60 * 1000,
   });
 
   const leads = allClientLeads.filter(lead => lead.appointment_date);
@@ -70,6 +71,7 @@ export default function ClientPortal() {
       return clients[0] || null;
     },
     enabled: !!clientId,
+    staleTime: 5 * 60 * 1000,
   });
 
   if (!user) return null;
