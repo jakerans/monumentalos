@@ -265,9 +265,10 @@ export default function ClientPortal() {
                       <td className="px-6 py-4">
                         <button
                           onClick={() => { setSelectedLeadId(lead.id); setDrawerOpen(true); }}
-                          className="font-medium text-blue-600 hover:text-blue-700 hover:underline text-left"
+                          className={`font-medium hover:underline text-left ${isNeedsOutcome ? 'text-red-400 hover:text-red-300' : 'text-blue-600 hover:text-blue-700'}`}
                         >
                           {lead.name}
+                          {isNeedsOutcome && <span className="ml-1.5 text-[10px] font-bold text-red-400 bg-red-500/15 px-1.5 py-0.5 rounded-full">NEEDS OUTCOME</span>}
                         </button>
                       </td>
                       <td className="px-6 py-4 text-sm text-slate-400">
