@@ -375,6 +375,13 @@ export default function SetterDashboard() {
         spiffs={spiffs}
         leads={leads}
       />
+
+      {celebration && (
+        <CelebrationOverlay
+          type={celebration.type}
+          onDone={() => setCelebration(null)}
+        />
+      )}
     </div>
   );
 }
