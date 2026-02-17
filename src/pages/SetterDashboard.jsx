@@ -199,6 +199,20 @@ export default function SetterDashboard() {
   const leaderboard = buildBoard(mtdStart, null);
   const lastMonthBoard = buildBoard(lastMtdStart, lastMtdEnd);
 
+  // Track rank changes for #1 celebration
+  const myCurrentRank = leaderboard.findIndex(s => s.id === user?.id) + 1 || null;
+  useEffect(() => {
+    if (!myCurrentRank || !prevRankRef.current) {
+      prevRankRef.current = myCurrentRank;
+      return;
+    }
+    // Went from 2nd/3rd (or lower) to 1st
+    if (prevRankRef.current > 1 && myCurrentRank === 1) {
+      setCelebration({ type: 'rank_up' });
+    }
+    prevRankRef.current = myCurrentRank;
+  }, [myCurrentRank]);
+
   if (!user) return null;
 
   // Filter leads
