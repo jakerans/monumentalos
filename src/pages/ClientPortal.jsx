@@ -224,11 +224,13 @@ export default function ClientPortal() {
             <div className="bg-slate-800/50 rounded-lg shadow border border-slate-700/50 p-6 text-center text-slate-500">No active appointments</div>
           ) : (
             activeLeads.map((lead) => (
-              <AppointmentCard
-                key={lead.id}
-                lead={lead}
-                onSelect={(id) => { setSelectedLeadId(id); setDrawerOpen(true); }}
-              />
+              <div key={lead.id} className={needsOutcomeIds.has(lead.id) ? 'ring-1 ring-red-500/50 rounded-lg' : ''}>
+                <AppointmentCard
+                  lead={lead}
+                  onSelect={(id) => { setSelectedLeadId(id); setDrawerOpen(true); }}
+                  needsOutcome={needsOutcomeIds.has(lead.id)}
+                />
+              </div>
             ))
           )}
         </div>
