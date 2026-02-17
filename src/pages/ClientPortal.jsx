@@ -20,8 +20,18 @@ export default function ClientPortal() {
       try {
         const currentUser = await base44.auth.me();
         setUser(currentUser);
+        
+        // If role is 'user' (no app role assigned yet), go to AccountPending to apply pending invite
+        if (!currentUser.role || currentUser.role === 'user') {
+          navigate(createPageUrl('AccountPending'));
+          return;
+        }
+        
         if (currentUser.role !== 'client' && currentUser.role !== 'admin') {
-          if (currentUser.role === 'setter') window.location.href = '/SetterDashboard';
+          if (currentUser.role === 'setter') navigate(createPageUrl('SetterDashboard'));
+          else if (currentUser.role === 'marketing_manager') navigate(createPageUrl('MMDashboard'));
+          else if (currentUser.role === 'onboard_admin') navigate(createPageUrl('OnboardDashboard'));
+          else navigate(createPageUrl('AdminDashboard'));
         }
       } catch (error) {
         base44.auth.redirectToLogin();
