@@ -290,6 +290,7 @@ export default function SetterDashboard() {
 
       <BookAppointmentModal
         lead={bookingLead}
+        bookingLink={bookingLead ? clients.find(c => c.id === bookingLead.client_id)?.booking_link : null}
         open={bookingOpen}
         onOpenChange={setBookingOpen}
         onBook={handleBookAppointment}
