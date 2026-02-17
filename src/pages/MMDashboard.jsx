@@ -11,23 +11,17 @@ import ClientTable from '../components/mm/ClientTable';
 import MMTaskBoard from '../components/mm/MMTaskBoard';
 import ClientQuickView from '../components/mm/ClientQuickView';
 import ClientBreakdownChart from '../components/mm/ClientBreakdownChart';
+import DateRangePicker from '../components/admin/DateRangePicker';
 import PageErrorBoundary from '../components/shared/PageErrorBoundary';
 import PageLoader from '../components/shared/PageLoader';
 import { motion } from 'framer-motion';
-
-const PERIOD_OPTIONS = [
-  { label: 'This Month', days: 'this_month' },
-  { label: 'Last Month', days: 'last_month' },
-  { label: '7 Days', days: 7 },
-  { label: '14 Days', days: 14 },
-  { label: '30 Days', days: 30 },
-];
 
 export default function MMDashboard() {
   const navigate = useNavigate();
   const [user, setUser] = useState(null);
   const [selectedClient, setSelectedClient] = useState(null);
-  const [periodDays, setPeriodDays] = useState(30);
+  const [dateStart, setDateStart] = useState(dayjs().subtract(29, 'day').format('YYYY-MM-DD'));
+  const [dateEnd, setDateEnd] = useState(dayjs().format('YYYY-MM-DD'));
   const [showChart, setShowChart] = useState(false);
 
   useEffect(() => {
@@ -101,26 +95,16 @@ export default function MMDashboard() {
     ).length;
   }, [user, onboardTasks, onboardProjects]);
 
-  // Resolve period start/end for both "days ago" and "this/last month" modes
+  // Resolve period start/end from the DateRangePicker
   const periodRange = useMemo(() => {
-    const now = dayjs();
-    if (periodDays === 'this_month') {
-      const start = now.startOf('month');
-      const priorStart = now.subtract(1, 'month').startOf('month');
-      const priorEnd = now.subtract(1, 'month').endOf('month');
-      return { periodStart: start.toDate(), periodEnd: now.toDate(), priorStart: priorStart.toDate(), priorEnd: priorEnd.toDate(), label: 'MTD' };
-    }
-    if (periodDays === 'last_month') {
-      const start = now.subtract(1, 'month').startOf('month');
-      const end = now.subtract(1, 'month').endOf('month');
-      const priorStart = now.subtract(2, 'month').startOf('month');
-      const priorEnd = start.subtract(1, 'millisecond');
-      return { periodStart: start.toDate(), periodEnd: end.toDate(), priorStart: priorStart.toDate(), priorEnd: priorEnd.toDate(), label: 'Last Mo' };
-    }
-    const periodStart = now.subtract(periodDays, 'day');
-    const priorStart = periodStart.subtract(periodDays, 'day');
-    return { periodStart: periodStart.toDate(), periodEnd: now.toDate(), priorStart: priorStart.toDate(), priorEnd: periodStart.subtract(1, 'millisecond').toDate(), label: `${periodDays}d` };
-  }, [periodDays]);
+    const s = dayjs(dateStart).startOf('day');
+    const e = dayjs(dateEnd).endOf('day');
+    const rangeDays = e.diff(s, 'day') + 1;
+    const priorEnd = s.subtract(1, 'millisecond');
+    const priorStart = s.subtract(rangeDays, 'day');
+    const label = `${rangeDays}d`;
+    return { periodStart: s.toDate(), periodEnd: e.toDate(), priorStart: priorStart.toDate(), priorEnd: priorEnd.toDate(), label };
+  }, [dateStart, dateEnd]);
 
   const clientMetrics = useMemo(() => {
     const now = new Date();
@@ -266,30 +250,19 @@ export default function MMDashboard() {
       <MMNav user={user} clients={clients} pendingOnboardCount={pendingOnboardCount} />
 
       <main className="flex-1 max-w-[1600px] w-full mx-auto px-3 sm:px-5 py-3 flex flex-col min-h-0">
-        {/* Period toggle */}
+        {/* Date range picker */}
         <motion.div
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.35 }}
           className="flex items-center justify-between mb-3"
         >
-          <div className="flex items-center gap-1 bg-slate-800 rounded-lg p-0.5">
-            {PERIOD_OPTIONS.map(opt => (
-              <motion.button
-                key={opt.days}
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                onClick={() => setPeriodDays(opt.days)}
-                className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${
-                  periodDays === opt.days
-                    ? 'bg-slate-700 text-white shadow-sm'
-                    : 'text-slate-400 hover:text-white'
-                }`}
-              >
-                {opt.label}
-              </motion.button>
-            ))}
-          </div>
+          <DateRangePicker
+            startDate={dateStart}
+            endDate={dateEnd}
+            onStartChange={setDateStart}
+            onEndChange={setDateEnd}
+          />
         </motion.div>
         <MMTopStats stats={topStats} />
 
