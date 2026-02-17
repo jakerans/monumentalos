@@ -50,6 +50,7 @@
 import AdminDashboard from './pages/AdminDashboard';
 import AppointmentHistory from './pages/AppointmentHistory';
 import ClientManagement from './pages/ClientManagement';
+import ClientPerformance from './pages/ClientPerformance';
 import ClientPortal from './pages/ClientPortal';
 import ClientReport from './pages/ClientReport';
 import ClientSettings from './pages/ClientSettings';
@@ -57,12 +58,11 @@ import ClientView from './pages/ClientView';
 import LeadDetails from './pages/LeadDetails';
 import MMDashboard from './pages/MMDashboard';
 import MMOnboard from './pages/MMOnboard';
+import MonthlyBilling from './pages/MonthlyBilling';
 import OnboardDashboard from './pages/OnboardDashboard';
 import RevenueDashboard from './pages/RevenueDashboard';
 import SetterDashboard from './pages/SetterDashboard';
 import SetterPerformance from './pages/SetterPerformance';
-import MonthlyBilling from './pages/MonthlyBilling';
-import ClientPerformance from './pages/ClientPerformance';
 import UserManagement from './pages/UserManagement';
 
 
@@ -70,6 +70,7 @@ export const PAGES = {
     "AdminDashboard": AdminDashboard,
     "AppointmentHistory": AppointmentHistory,
     "ClientManagement": ClientManagement,
+    "ClientPerformance": ClientPerformance,
     "ClientPortal": ClientPortal,
     "ClientReport": ClientReport,
     "ClientSettings": ClientSettings,
@@ -77,12 +78,11 @@ export const PAGES = {
     "LeadDetails": LeadDetails,
     "MMDashboard": MMDashboard,
     "MMOnboard": MMOnboard,
+    "MonthlyBilling": MonthlyBilling,
     "OnboardDashboard": OnboardDashboard,
     "RevenueDashboard": RevenueDashboard,
     "SetterDashboard": SetterDashboard,
     "SetterPerformance": SetterPerformance,
-    "MonthlyBilling": MonthlyBilling,
-    "ClientPerformance": ClientPerformance,
     "UserManagement": UserManagement,
 }
 

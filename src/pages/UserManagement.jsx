@@ -100,7 +100,7 @@ export default function UserManagement() {
           ))}
         </div>
 
-        <UserTable users={filteredUsers} clients={clients} />
+        <UserTable users={filteredUsers} clients={clients} onUpdated={refetchUsers} />
       </main>
 
       <InviteUserModal
