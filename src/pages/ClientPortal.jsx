@@ -72,17 +72,8 @@ export default function ClientPortal() {
 
   if (!user) return null;
 
-  const activeLeads = leads.filter(lead =>
-    (lead.disposition === 'scheduled' || lead.disposition === 'rescheduled') &&
-    (!lead.outcome || lead.outcome === 'pending')
-  );
-
-  // Month boundaries
   const now = new Date();
   const thisMonthStart = new Date(now.getFullYear(), now.getMonth(), 1);
-  const thisMonthEnd = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59);
-  const lastMonthStart = new Date(now.getFullYear(), now.getMonth() - 1, 1);
-  const lastMonthEnd = new Date(now.getFullYear(), now.getMonth(), 0, 23, 59, 59);
 
   const inRange = (dateStr, start, end) => {
     if (!dateStr) return false;
@@ -90,36 +81,43 @@ export default function ClientPortal() {
     return d >= start && d <= end;
   };
 
-  const inDateRange = (dateStr, start, end) => {
-    if (!dateStr) return false;
-    const d = new Date(dateStr + 'T00:00:00');
-    return d >= start && d <= end;
-  };
+  // Scheduled MTD: appointments booked (date_appointment_set) this month
+  const scheduledMTD = leads.filter(l => inRange(l.date_appointment_set, thisMonthStart, now)).length;
 
-  // Booked uses date_appointment_set
-  const thisMonthBooked = leads.filter(l => inRange(l.date_appointment_set, thisMonthStart, now));
-  const lastMonthBooked = leads.filter(l => inRange(l.date_appointment_set, lastMonthStart, lastMonthEnd));
+  // Upcoming: appointment date is in the future, still scheduled/rescheduled, no final outcome
+  const upcomingLeads = leads.filter(l =>
+    l.appointment_date && new Date(l.appointment_date) > now &&
+    (lead => !lead.disposition || lead.disposition === 'scheduled' || lead.disposition === 'rescheduled')(l)
+  );
+  const upcomingCount = upcomingLeads.length;
 
-  // Showed uses appointment_date in range + disposition showed or outcome sold/lost
-  const thisMonthAppts = leads.filter(l => inRange(l.appointment_date, thisMonthStart, thisMonthEnd));
-  const lastMonthAppts = leads.filter(l => inRange(l.appointment_date, lastMonthStart, lastMonthEnd));
-  const thisMonthShowed = thisMonthAppts.filter(l => l.disposition === 'showed' || l.outcome === 'sold' || l.outcome === 'lost');
-  const lastMonthShowed = lastMonthAppts.filter(l => l.disposition === 'showed' || l.outcome === 'sold' || l.outcome === 'lost');
+  // Showed MTD: showed or sold/lost this month
+  const showedMTD = leads.filter(l =>
+    inRange(l.appointment_date, thisMonthStart, now) &&
+    (l.disposition === 'showed' || l.outcome === 'sold' || l.outcome === 'lost')
+  ).length;
 
-  // Sold/revenue use date_sold
-  const thisMonthSold = leads.filter(l => l.outcome === 'sold' && inDateRange(l.date_sold, thisMonthStart, now));
-  const lastMonthSold = leads.filter(l => l.outcome === 'sold' && inDateRange(l.date_sold, lastMonthStart, lastMonthEnd));
+  // Needs Outcome: appointment date has passed but no outcome assigned (or pending)
+  const needsOutcomeLeads = leads.filter(l =>
+    l.appointment_date && new Date(l.appointment_date) <= now &&
+    (!l.outcome || l.outcome === 'pending') &&
+    l.disposition !== 'cancelled'
+  );
+  const needsOutcomeCount = needsOutcomeLeads.length;
+  const needsOutcomeIds = new Set(needsOutcomeLeads.map(l => l.id));
 
-  const stats = {
-    scheduledThis: thisMonthBooked.length,
-    scheduledLast: lastMonthBooked.length,
-    showedThis: thisMonthShowed.length,
-    showedLast: lastMonthShowed.length,
-    soldThis: thisMonthSold.length,
-    soldLast: lastMonthSold.length,
-    revenueThis: thisMonthSold.reduce((s, l) => s + (l.sale_amount || 0), 0),
-    revenueLast: lastMonthSold.reduce((s, l) => s + (l.sale_amount || 0), 0),
-  };
+  // Active leads = upcoming + needs outcome, sorted so needs outcome is first
+  const activeLeads = leads.filter(lead => {
+    const isUpcoming = lead.appointment_date && new Date(lead.appointment_date) > now &&
+      (!lead.disposition || lead.disposition === 'scheduled' || lead.disposition === 'rescheduled');
+    const isNeedsOutcome = needsOutcomeIds.has(lead.id);
+    return isUpcoming || isNeedsOutcome;
+  }).sort((a, b) => {
+    const aNO = needsOutcomeIds.has(a.id) ? 0 : 1;
+    const bNO = needsOutcomeIds.has(b.id) ? 0 : 1;
+    if (aNO !== bNO) return aNO - bNO;
+    return new Date(a.appointment_date) - new Date(b.appointment_date);
+  });
 
   return (
     <div className="min-h-screen bg-[#0B0F1A]">
