@@ -1,4 +1,6 @@
-import React from 'react';
+import React, { useState } from 'react';
+import { base44 } from '@/api/base44Client';
+import { Pencil, Check, X } from 'lucide-react';
 
 const ROLE_LABELS = {
   admin: { label: 'Admin', bg: 'bg-purple-100 text-purple-700' },
@@ -9,7 +11,37 @@ const ROLE_LABELS = {
   user: { label: 'User', bg: 'bg-gray-100 text-gray-500' },
 };
 
-export default function UserTable({ users, clients = [] }) {
+const ROLE_OPTIONS = [
+  { value: 'admin', label: 'Admin' },
+  { value: 'marketing_manager', label: 'Marketing Manager' },
+  { value: 'setter', label: 'Setter' },
+  { value: 'onboard_admin', label: 'Onboard Admin' },
+  { value: 'client', label: 'Client' },
+  { value: 'user', label: 'User' },
+];
+
+export default function UserTable({ users, clients = [], onUpdated }) {
+  const [editingId, setEditingId] = useState(null);
+  const [editRole, setEditRole] = useState('');
+  const [saving, setSaving] = useState(false);
+
+  const startEdit = (user) => {
+    setEditingId(user.id);
+    setEditRole(user.role || 'user');
+  };
+
+  const cancelEdit = () => {
+    setEditingId(null);
+    setEditRole('');
+  };
+
+  const saveRole = async (userId) => {
+    setSaving(true);
+    await base44.entities.User.update(userId, { role: editRole });
+    setSaving(false);
+    setEditingId(null);
+    if (onUpdated) onUpdated();
+  };
   const getClientName = (clientId) => {
     if (!clientId) return '—';
     const c = clients.find(cl => cl.id === clientId);
