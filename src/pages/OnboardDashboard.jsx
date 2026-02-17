@@ -63,7 +63,10 @@ export default function OnboardDashboard() {
 
   const { data: users = [] } = useQuery({
     queryKey: ['all-users-onboard'],
-    queryFn: () => base44.entities.User.list(),
+    queryFn: async () => {
+      const res = await base44.functions.invoke('listTeamUsers');
+      return res.data?.users || [];
+    },
   });
 
   const mmUsers = users.filter(u => u.role === 'marketing_manager' || u.role === 'admin');
