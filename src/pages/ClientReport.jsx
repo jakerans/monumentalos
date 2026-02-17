@@ -146,6 +146,9 @@ export default function ClientReport() {
               <Link to={createPageUrl('ClientReport')} className="px-2 sm:px-3 py-1.5 sm:py-2 rounded-md text-xs sm:text-sm font-medium bg-blue-50 text-blue-700 whitespace-nowrap">
                 Report
               </Link>
+              <Link to={createPageUrl('ClientSettings')} className="px-2 sm:px-3 py-1.5 sm:py-2 rounded-md text-xs sm:text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-50 whitespace-nowrap">
+                Settings
+              </Link>
               {user.role === 'admin' && clientInfo && (
                 <span className="text-xs text-gray-500 whitespace-nowrap ml-2">(Viewing: {clientInfo.name})</span>
               )}
