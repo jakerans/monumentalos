@@ -38,6 +38,7 @@ export default function ClientContactsPanel({ open, onOpenChange, client, onUpda
       // Use backend function to invite and auto-link client_id
       await base44.functions.invoke('inviteClientUser', {
         email: contact.email.trim(),
+        intended_role: 'client',
         client_id: client.id,
       });
       const updated = [...contacts];
