@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 
 const BILLING_LABELS = { pay_per_show: 'Per Show', pay_per_set: 'Per Set', retainer: 'Retainer' };
-const BILLING_COLORS = { pay_per_show: 'bg-blue-100 text-blue-700', pay_per_set: 'bg-purple-100 text-purple-700', retainer: 'bg-amber-100 text-amber-700' };
+const BILLING_COLORS = { pay_per_show: 'bg-blue-500/15 text-blue-400', pay_per_set: 'bg-purple-500/15 text-purple-400', retainer: 'bg-amber-500/15 text-amber-400' };
 
 export default function RevenueClientTable({ clients, leads, payments, startDate, endDate }) {
   const start = new Date(startDate);
@@ -60,18 +60,18 @@ export default function RevenueClientTable({ clients, leads, payments, startDate
             {rows.map(r => (
               <tr key={r.id} className="hover:bg-slate-700/20">
                 <td className="px-4 py-2.5">
-                  <Link to={createPageUrl('ClientView') + `?clientId=${r.id}`} className="font-medium text-blue-600 hover:text-blue-700">{r.name}</Link>
+                  <Link to={createPageUrl('ClientView') + `?clientId=${r.id}`} className="font-medium text-blue-400 hover:text-blue-300">{r.name}</Link>
                 </td>
                 <td className="px-3 py-2.5">
-                  <span className={`px-1.5 py-0.5 text-[10px] font-medium rounded ${BILLING_COLORS[r.bt] || 'bg-gray-100 text-gray-600'}`}>
+                  <span className={`px-1.5 py-0.5 text-[10px] font-medium rounded ${BILLING_COLORS[r.bt] || 'bg-slate-700 text-slate-400'}`}>
                     {BILLING_LABELS[r.bt] || r.bt}
                   </span>
                 </td>
-                <td className="px-3 py-2.5 text-right">{r.booked}</td>
-                <td className="px-3 py-2.5 text-right">{r.showed}</td>
-                <td className="px-3 py-2.5 text-right font-medium">${r.billed.toLocaleString()}</td>
-                <td className="px-3 py-2.5 text-right font-medium text-emerald-700">${r.collected.toLocaleString()}</td>
-                <td className="px-3 py-2.5 text-right font-medium text-amber-700">${r.outstanding.toLocaleString()}</td>
+                <td className="px-3 py-2.5 text-right text-slate-300">{r.booked}</td>
+                <td className="px-3 py-2.5 text-right text-slate-300">{r.showed}</td>
+                <td className="px-3 py-2.5 text-right font-medium text-white">${r.billed.toLocaleString()}</td>
+                <td className="px-3 py-2.5 text-right font-medium text-emerald-400">${r.collected.toLocaleString()}</td>
+                <td className="px-3 py-2.5 text-right font-medium text-amber-400">${r.outstanding.toLocaleString()}</td>
               </tr>
             ))}
           </tbody>
@@ -82,8 +82,8 @@ export default function RevenueClientTable({ clients, leads, payments, startDate
               <td className="px-3 py-2 text-right">{totals.booked}</td>
               <td className="px-3 py-2 text-right">{totals.showed}</td>
               <td className="px-3 py-2 text-right">${totals.billed.toLocaleString()}</td>
-              <td className="px-3 py-2 text-right text-emerald-700">${totals.collected.toLocaleString()}</td>
-              <td className="px-3 py-2 text-right text-amber-700">${totals.outstanding.toLocaleString()}</td>
+              <td className="px-3 py-2 text-right text-emerald-400">${totals.collected.toLocaleString()}</td>
+              <td className="px-3 py-2 text-right text-amber-400">${totals.outstanding.toLocaleString()}</td>
             </tr>
           </tfoot>
         </table>

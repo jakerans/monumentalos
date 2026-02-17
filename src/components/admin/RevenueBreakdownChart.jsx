@@ -61,7 +61,7 @@ export default function RevenueBreakdownChart({ clients, leads, spend }) {
                 </Pie>
                 <Tooltip
                   formatter={(value) => [`$${value.toLocaleString()}`, '']}
-                  contentStyle={{ fontSize: '11px', borderRadius: '8px' }}
+                  contentStyle={{ fontSize: '11px', borderRadius: '8px', backgroundColor: '#1e293b', border: '1px solid #334155', color: '#fff' }}
                 />
               </PieChart>
             </ResponsiveContainer>

@@ -13,7 +13,7 @@ function ProgressRow({ label, current, goal, format = 'dollar' }) {
         <div className="flex items-center gap-2">
           <span className="text-xs font-bold text-white">{formatVal(current)}</span>
           <span className="text-[10px] text-slate-500">/ {formatVal(goal)}</span>
-          <span className={`text-[10px] font-bold ${pct >= 100 ? 'text-emerald-600' : pct >= 70 ? 'text-blue-600' : 'text-amber-600'}`}>
+          <span className={`text-[10px] font-bold ${pct >= 100 ? 'text-emerald-400' : pct >= 70 ? 'text-blue-400' : 'text-amber-400'}`}>
             {pct.toFixed(0)}%
           </span>
         </div>
