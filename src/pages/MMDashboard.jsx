@@ -58,29 +58,41 @@ export default function MMDashboard() {
     queryKey: ['mm-clients'],
     queryFn: () => base44.entities.Client.filter({ status: 'active' }),
     staleTime: 5 * 60 * 1000,
+    retry: 2,
+    retryDelay: (attempt) => Math.min(1000 * 2 ** attempt, 10000),
   });
 
   const { data: allLeads = [], isLoading: l2 } = useQuery({
     queryKey: ['mm-leads', mmStartStr],
     queryFn: () => base44.entities.Lead.filter({ created_date: { $gte: mmStartStr } }, '-created_date', 5000),
     staleTime: 2 * 60 * 1000,
+    retry: 2,
+    retryDelay: (attempt) => Math.min(1000 * 2 ** attempt, 10000),
   });
 
   const { data: allSpend = [], isLoading: l3 } = useQuery({
     queryKey: ['mm-spend', mmStartStr],
     queryFn: () => base44.entities.Spend.filter({ date: { $gte: mmStartStr } }, '-date', 5000),
     staleTime: 2 * 60 * 1000,
+    retry: 2,
+    retryDelay: (attempt) => Math.min(1000 * 2 ** attempt, 10000),
   });
 
   // Fetch pending onboard tasks for this MM
   const { data: onboardTasks = [] } = useQuery({
     queryKey: ['mm-onboard-tasks-nav'],
     queryFn: () => base44.entities.OnboardTask.filter({ assigned_to: 'marketing_manager' }),
+    staleTime: 5 * 60 * 1000,
+    retry: 2,
+    retryDelay: (attempt) => Math.min(1000 * 2 ** attempt, 10000),
   });
 
   const { data: onboardProjects = [] } = useQuery({
     queryKey: ['mm-onboard-projects-nav'],
     queryFn: () => base44.entities.OnboardProject.filter({ status: 'in_progress' }),
+    staleTime: 5 * 60 * 1000,
+    retry: 2,
+    retryDelay: (attempt) => Math.min(1000 * 2 ** attempt, 10000),
   });
 
   const pendingOnboardCount = useMemo(() => {

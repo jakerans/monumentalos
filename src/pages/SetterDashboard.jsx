@@ -66,12 +66,16 @@ export default function SetterDashboard() {
     queryKey: ['setter-leads', pipelineStartStr],
     queryFn: () => base44.entities.Lead.filter({ created_date: { $gte: pipelineStartStr } }, '-created_date', 5000),
     staleTime: 60 * 1000,
+    retry: 2,
+    retryDelay: (attempt) => Math.min(1000 * 2 ** attempt, 10000),
   });
 
   const { data: clients = [], isLoading: l2 } = useQuery({
     queryKey: ['clients'],
     queryFn: () => base44.entities.Client.list(),
     staleTime: 5 * 60 * 1000,
+    retry: 2,
+    retryDelay: (attempt) => Math.min(1000 * 2 ** attempt, 10000),
   });
 
   const { data: users = [] } = useQuery({
@@ -79,12 +83,16 @@ export default function SetterDashboard() {
     queryFn: () => base44.entities.User.list(),
     initialData: [],
     staleTime: 5 * 60 * 1000,
+    retry: 2,
+    retryDelay: (attempt) => Math.min(1000 * 2 ** attempt, 10000),
   });
 
   const { data: spiffs = [] } = useQuery({
     queryKey: ['setter-spiffs'],
     queryFn: () => base44.entities.Spiff.filter({ status: 'active' }),
     staleTime: 5 * 60 * 1000,
+    retry: 2,
+    retryDelay: (attempt) => Math.min(1000 * 2 ** attempt, 10000),
   });
 
   const getUserName = (userId) => {
