@@ -71,7 +71,7 @@ export default function MMTaskBoard({ clients = [] }) {
   const getClientName = (id) => clients.find(c => c.id === id)?.name || null;
 
   return (
-    <div className="bg-white rounded-xl border border-gray-200 shadow-sm flex flex-col h-full overflow-hidden">
+    <div className="bg-slate-800/50 rounded-xl border border-slate-700/50 shadow-sm flex flex-col h-full overflow-hidden">
       {/* Header */}
       <div className="px-4 py-3 border-b border-gray-100 bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-500">
         <div className="flex items-center justify-between">
@@ -95,7 +95,7 @@ export default function MMTaskBoard({ clients = [] }) {
               <div className="flex items-center justify-between mb-1.5">
                 <div className="flex items-center gap-1.5">
                   <span className="text-sm">{col.emoji}</span>
-                  <span className="text-[11px] font-bold text-gray-700 uppercase tracking-wider">{col.label}</span>
+                  <span className="text-[11px] font-bold text-slate-300 uppercase tracking-wider">{col.label}</span>
                   <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-gradient-to-r ${col.gradient} text-white`}>
                     {colTasks.length}
                   </span>
@@ -103,7 +103,7 @@ export default function MMTaskBoard({ clients = [] }) {
                 {col.key !== 'done' && (
                   <button
                     onClick={() => setAddingTo(addingTo === col.key ? null : col.key)}
-                    className="text-gray-400 hover:text-indigo-600 transition-colors"
+                    className="text-slate-500 hover:text-[#D6FF03] transition-colors"
                   >
                     <Plus className="w-3.5 h-3.5" />
                   </button>
@@ -175,7 +175,7 @@ export default function MMTaskBoard({ clients = [] }) {
                   ))}
                 </AnimatePresence>
                 {colTasks.length === 0 && (
-                  <p className="text-[10px] text-gray-300 text-center py-2 italic">No tasks</p>
+                  <p className="text-[10px] text-slate-600 text-center py-2 italic">No tasks</p>
                 )}
               </div>
             </div>
@@ -199,10 +199,10 @@ function TaskCard({ task, column, clientName, onMove, onDelete, onCyclePriority 
       transition={{ duration: 0.2 }}
       className={`group relative p-2 rounded-lg border transition-all hover:shadow-md ${
         column === 'done'
-          ? 'bg-gray-50 border-gray-200 opacity-60 hover:opacity-100'
+          ? 'bg-slate-900/40 border-slate-700 opacity-60 hover:opacity-100'
           : isOverdue
-          ? 'bg-red-50 border-red-300 shadow-sm shadow-red-100'
-          : `bg-white ${pri.border} shadow-sm`
+          ? 'bg-red-500/10 border-red-500/30 shadow-sm'
+          : 'bg-slate-900/50 border-slate-700/50 shadow-sm'
       }`}
     >
       <div className="flex items-start gap-1.5">
@@ -213,7 +213,7 @@ function TaskCard({ task, column, clientName, onMove, onDelete, onCyclePriority 
           title={`Priority: ${pri.label} (click to change)`}
         />
         <div className="flex-1 min-w-0">
-          <p className={`text-xs font-medium leading-tight ${column === 'done' ? 'line-through text-gray-400' : 'text-gray-800'}`}>
+          <p className={`text-xs font-medium leading-tight ${column === 'done' ? 'line-through text-slate-500' : 'text-slate-200'}`}>
             {task.title}
           </p>
           <div className="flex items-center gap-1.5 mt-1 flex-wrap">
@@ -234,7 +234,7 @@ function TaskCard({ task, column, clientName, onMove, onDelete, onCyclePriority 
       </div>
 
       {/* Action buttons — appear on hover */}
-      <div className="absolute top-1 right-1 hidden group-hover:flex items-center gap-0.5 bg-white/90 backdrop-blur-sm rounded-md border border-gray-200 shadow-sm px-0.5 py-0.5">
+      <div className="absolute top-1 right-1 hidden group-hover:flex items-center gap-0.5 bg-slate-800/90 backdrop-blur-sm rounded-md border border-slate-600 shadow-sm px-0.5 py-0.5">
         {column === 'todo' && (
           <button onClick={() => onMove(task, 'in_progress')} className="p-1 text-blue-500 hover:bg-blue-50 rounded" title="Start">
             <ArrowRight className="w-3 h-3" />

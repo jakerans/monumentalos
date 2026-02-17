@@ -6,9 +6,9 @@ import ClientGoalEditor from './ClientGoalEditor';
 
 function Stat({ label, value, color }) {
   return (
-    <div className="bg-gray-50 rounded-md p-2">
-      <p className="text-[10px] text-gray-500 uppercase font-medium">{label}</p>
-      <p className={`text-sm font-bold ${color || 'text-gray-900'}`}>{value}</p>
+    <div className="bg-slate-900/50 rounded-md p-2">
+      <p className="text-[10px] text-slate-400 uppercase font-medium">{label}</p>
+      <p className={`text-sm font-bold ${color || 'text-white'}`}>{value}</p>
     </div>
   );
 }
@@ -17,10 +17,10 @@ export default function ClientQuickView({ client, onClose, onClientUpdated }) {
   if (!client) return null;
 
   return (
-    <div className="bg-white rounded-lg border border-gray-200 shadow-sm flex flex-col h-full">
-      <div className="px-3 py-2.5 border-b border-gray-200 flex items-center justify-between">
-        <h3 className="text-sm font-bold text-gray-900 truncate">{client.name}</h3>
-        <button onClick={onClose} className="text-gray-400 hover:text-gray-600"><X className="w-4 h-4" /></button>
+    <div className="bg-slate-800/50 rounded-lg border border-slate-700/50 shadow-sm flex flex-col h-full">
+      <div className="px-3 py-2.5 border-b border-slate-700/50 flex items-center justify-between">
+        <h3 className="text-sm font-bold text-white truncate">{client.name}</h3>
+        <button onClick={onClose} className="text-slate-400 hover:text-white"><X className="w-4 h-4" /></button>
       </div>
 
       <div className="flex-1 overflow-y-auto p-3 space-y-3">
@@ -38,7 +38,7 @@ export default function ClientQuickView({ client, onClose, onClientUpdated }) {
 
         {/* 7-Day Performance */}
         <div>
-          <p className="text-[10px] font-semibold text-gray-500 uppercase mb-2">Last 7 Days</p>
+          <p className="text-[10px] font-semibold text-slate-400 uppercase mb-2">Last 7 Days</p>
           <div className="grid grid-cols-2 gap-1.5">
             <Stat label="Ad Spend" value={`$${client.spend7d.toLocaleString()}`} />
             <Stat label="Leads" value={client.leads7d} />
@@ -51,7 +51,7 @@ export default function ClientQuickView({ client, onClose, onClientUpdated }) {
 
         {/* 30-Day Performance */}
         <div>
-          <p className="text-[10px] font-semibold text-gray-500 uppercase mb-2">Last 30 Days</p>
+          <p className="text-[10px] font-semibold text-slate-400 uppercase mb-2">Last 30 Days</p>
           <div className="grid grid-cols-2 gap-1.5">
             <Stat label="Ad Spend" value={`$${client.spend30d.toLocaleString()}`} />
             <Stat label="Leads" value={client.leads30d} />
@@ -66,8 +66,8 @@ export default function ClientQuickView({ client, onClose, onClientUpdated }) {
         {/* Client Info */}
         {(client.service_radius || client.target_zip_codes) && (
           <div>
-            <p className="text-[10px] font-semibold text-gray-500 uppercase mb-2">Settings</p>
-            <div className="space-y-1.5 text-xs text-gray-600">
+            <p className="text-[10px] font-semibold text-slate-400 uppercase mb-2">Settings</p>
+            <div className="space-y-1.5 text-xs text-slate-300">
               {client.service_radius && (
                 <p className="flex items-center gap-1.5"><MapPin className="w-3 h-3 text-gray-400" /> Radius: {client.service_radius}</p>
               )}
@@ -79,10 +79,10 @@ export default function ClientQuickView({ client, onClose, onClientUpdated }) {
         )}
       </div>
 
-      <div className="p-2 border-t border-gray-100 space-y-1.5">
+      <div className="p-2 border-t border-slate-700/50 space-y-1.5">
         <Link
           to={createPageUrl('ClientView') + `?clientId=${client.id}`}
-          className="w-full px-3 py-2 text-xs font-medium bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors flex items-center justify-center gap-1.5"
+          className="w-full px-3 py-2 text-xs font-bold text-black rounded-md hover:opacity-90 transition-colors flex items-center justify-center gap-1.5" style={{backgroundColor:'#D6FF03'}}
         >
           <ExternalLink className="w-3 h-3" /> Full Client View
         </Link>
@@ -91,7 +91,7 @@ export default function ClientQuickView({ client, onClose, onClientUpdated }) {
             localStorage.setItem('admin_view_client_id', client.id);
             window.open(createPageUrl('ClientPortal'), '_blank');
           }}
-          className="w-full px-3 py-1.5 text-xs font-medium bg-gray-100 text-gray-600 rounded-md hover:bg-gray-200 transition-colors"
+          className="w-full px-3 py-1.5 text-xs font-medium bg-slate-700 text-slate-300 rounded-md hover:bg-slate-600 transition-colors"
         >
           View as Client
         </button>

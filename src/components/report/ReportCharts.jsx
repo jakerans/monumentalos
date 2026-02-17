@@ -78,17 +78,17 @@ export default function ReportCharts({ spendRecords, bookedLeads, appointmentLea
   return (
     <div className="space-y-4 sm:space-y-6">
       {/* Monthly overview bar chart */}
-      <div className="bg-white rounded-lg shadow border border-gray-200 p-3 sm:p-6">
-        <h3 className="text-sm sm:text-lg font-bold text-gray-900 mb-3 sm:mb-4">Monthly Overview</h3>
+      <div className="bg-slate-800/50 rounded-lg shadow border border-slate-700/50 p-3 sm:p-6">
+        <h3 className="text-sm sm:text-lg font-bold text-white mb-3 sm:mb-4">Monthly Overview</h3>
         {monthlyData.length === 0 ? (
-          <p className="text-gray-500 text-sm text-center py-8">No data available for the selected period</p>
+          <p className="text-slate-500 text-sm text-center py-8">No data available for the selected period</p>
         ) : (
           <ResponsiveContainer width="100%" height={240}>
             <BarChart data={monthlyData} margin={{ top: 5, right: 5, left: -15, bottom: 5 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-              <XAxis dataKey="month" tick={{ fontSize: 12 }} />
-              <YAxis tick={{ fontSize: 12 }} />
-              <Tooltip />
+              <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" />
+              <XAxis dataKey="month" tick={{ fontSize: 12, fill: '#94a3b8' }} />
+              <YAxis tick={{ fontSize: 12, fill: '#94a3b8' }} />
+              <Tooltip contentStyle={{ backgroundColor: '#1e293b', border: '1px solid #334155', borderRadius: '8px', color: '#fff' }} />
               <Bar dataKey="booked" name="Booked" fill="#3b82f6" radius={[4, 4, 0, 0]} />
               <Bar dataKey="showed" name="Showed" fill="#8b5cf6" radius={[4, 4, 0, 0]} />
               <Bar dataKey="sold" name="Sold" fill="#22c55e" radius={[4, 4, 0, 0]} />
@@ -98,17 +98,17 @@ export default function ReportCharts({ spendRecords, bookedLeads, appointmentLea
       </div>
 
       {/* Spend & Revenue chart */}
-      <div className="bg-white rounded-lg shadow border border-gray-200 p-3 sm:p-6">
-        <h3 className="text-sm sm:text-lg font-bold text-gray-900 mb-3 sm:mb-4">Spend vs Revenue</h3>
+      <div className="bg-slate-800/50 rounded-lg shadow border border-slate-700/50 p-3 sm:p-6">
+        <h3 className="text-sm sm:text-lg font-bold text-white mb-3 sm:mb-4">Spend vs Revenue</h3>
         {monthlyData.length === 0 ? (
-          <p className="text-gray-500 text-sm text-center py-8">No data available for the selected period</p>
+          <p className="text-slate-500 text-sm text-center py-8">No data available for the selected period</p>
         ) : (
           <ResponsiveContainer width="100%" height={220}>
             <BarChart data={monthlyData} margin={{ top: 5, right: 5, left: -15, bottom: 5 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-              <XAxis dataKey="month" tick={{ fontSize: 12 }} />
-              <YAxis tick={{ fontSize: 12 }} tickFormatter={(v) => `$${v.toLocaleString()}`} />
-              <Tooltip formatter={(value) => `$${value.toLocaleString()}`} />
+              <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" />
+              <XAxis dataKey="month" tick={{ fontSize: 12, fill: '#94a3b8' }} />
+              <YAxis tick={{ fontSize: 12, fill: '#94a3b8' }} tickFormatter={(v) => `$${v.toLocaleString()}`} />
+              <Tooltip contentStyle={{ backgroundColor: '#1e293b', border: '1px solid #334155', borderRadius: '8px', color: '#fff' }} formatter={(value) => `$${value.toLocaleString()}`} />
               <Bar dataKey="spend" name="Spend" fill="#ef4444" radius={[4, 4, 0, 0]} />
               <Bar dataKey="revenue" name="Revenue" fill="#22c55e" radius={[4, 4, 0, 0]} />
             </BarChart>
@@ -118,10 +118,10 @@ export default function ReportCharts({ spendRecords, bookedLeads, appointmentLea
 
       {/* Pie charts */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
-        <div className="bg-white rounded-lg shadow border border-gray-200 p-3 sm:p-6">
-          <h3 className="text-sm sm:text-lg font-bold text-gray-900 mb-3 sm:mb-4">Appointment Disposition</h3>
+        <div className="bg-slate-800/50 rounded-lg shadow border border-slate-700/50 p-3 sm:p-6">
+          <h3 className="text-sm sm:text-lg font-bold text-white mb-3 sm:mb-4">Appointment Disposition</h3>
           {dispositionData.length === 0 ? (
-            <p className="text-gray-500 text-sm text-center py-8">No data</p>
+            <p className="text-slate-500 text-sm text-center py-8">No data</p>
           ) : (
             <ResponsiveContainer width="100%" height={220}>
               <PieChart>
@@ -137,10 +137,10 @@ export default function ReportCharts({ spendRecords, bookedLeads, appointmentLea
           )}
         </div>
 
-        <div className="bg-white rounded-lg shadow border border-gray-200 p-3 sm:p-6">
-          <h3 className="text-sm sm:text-lg font-bold text-gray-900 mb-3 sm:mb-4">Outcome Breakdown</h3>
+        <div className="bg-slate-800/50 rounded-lg shadow border border-slate-700/50 p-3 sm:p-6">
+          <h3 className="text-sm sm:text-lg font-bold text-white mb-3 sm:mb-4">Outcome Breakdown</h3>
           {outcomeData.length === 0 ? (
-            <p className="text-gray-500 text-sm text-center py-8">No data</p>
+            <p className="text-slate-500 text-sm text-center py-8">No data</p>
           ) : (
             <ResponsiveContainer width="100%" height={220}>
               <PieChart>

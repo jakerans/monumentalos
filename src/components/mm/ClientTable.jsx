@@ -48,39 +48,39 @@ export default function ClientTable({ clientMetrics, onSelectClient }) {
   });
 
   return (
-    <div className="bg-white rounded-lg border border-gray-200 shadow-sm flex-1 flex flex-col min-h-0">
-      <div className="px-3 py-2.5 border-b border-gray-200 flex items-center gap-2">
+    <div className="bg-slate-800/50 rounded-lg border border-slate-700/50 shadow-sm flex-1 flex flex-col min-h-0">
+      <div className="px-3 py-2.5 border-b border-slate-700/50 flex items-center gap-2">
         <div className="relative flex-1 max-w-xs">
-          <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400" />
+          <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-500" />
           <input
             type="text"
             placeholder="Search clients..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-8 pr-3 py-1.5 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full pl-8 pr-3 py-1.5 text-sm border border-slate-700 rounded-md focus:outline-none focus:ring-2 focus:ring-[#D6FF03] bg-slate-900 text-white placeholder-slate-500"
           />
         </div>
         <button
           onClick={() => setFilterAlerts(!filterAlerts)}
           className={`flex items-center gap-1 px-2.5 py-1.5 text-xs font-medium rounded-md border transition-colors ${
-            filterAlerts ? 'bg-red-50 border-red-300 text-red-700' : 'border-gray-300 text-gray-600 hover:bg-gray-50'
+            filterAlerts ? 'bg-red-500/10 border-red-500/30 text-red-400' : 'border-slate-700 text-slate-400 hover:bg-slate-700'
           }`}
         >
           <Filter className="w-3 h-3" /> Alerts Only
         </button>
-        <span className="text-xs text-gray-400">{filtered.length} clients</span>
+        <span className="text-xs text-slate-500">{filtered.length} clients</span>
       </div>
       <div className="overflow-auto flex-1">
         <table className="w-full text-sm">
-          <thead className="bg-gray-50 sticky top-0 z-10">
+          <thead className="bg-slate-900/50 sticky top-0 z-10">
             <tr>
               {HEADERS.map((h) => (
                 <th
                   key={h.key}
                   onClick={() => handleSort(h.key)}
-                  className={`px-3 py-2 text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap ${
+                  className={`px-3 py-2 text-xs font-medium text-slate-400 uppercase tracking-wider whitespace-nowrap ${
                     h.align === 'right' ? 'text-right' : 'text-left'
-                  } ${h.key !== 'action' ? 'cursor-pointer hover:text-gray-700 select-none' : ''}`}
+                  } ${h.key !== 'action' ? 'cursor-pointer hover:text-white select-none' : ''}`}
                 >
                   <span className="inline-flex items-center gap-1">
                     {h.label}
@@ -92,7 +92,7 @@ export default function ClientTable({ clientMetrics, onSelectClient }) {
               ))}
             </tr>
           </thead>
-          <tbody className="divide-y divide-gray-100">
+          <tbody className="divide-y divide-slate-700/30">
             {filtered.map((client) => (
               <ClientRow
                 key={client.id}
@@ -102,7 +102,7 @@ export default function ClientTable({ clientMetrics, onSelectClient }) {
             ))}
             {filtered.length === 0 && (
               <tr>
-                <td colSpan={11} className="px-3 py-8 text-center text-sm text-gray-400">
+                <td colSpan={11} className="px-3 py-8 text-center text-sm text-slate-500">
                   {search ? 'No clients match your search' : 'No clients found'}
                 </td>
               </tr>

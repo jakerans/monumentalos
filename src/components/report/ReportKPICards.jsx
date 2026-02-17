@@ -3,11 +3,11 @@ import { DollarSign, CalendarCheck, Eye, Trophy, TrendingUp } from 'lucide-react
 
 export default function ReportKPICards({ totalSpend, appointmentsBooked, appointmentsShowed, jobsSold, totalRevenue }) {
   const cards = [
-    { label: 'Total Spend', value: `$${totalSpend.toLocaleString()}`, icon: DollarSign, color: 'text-red-600', bg: 'bg-red-50', border: 'border-red-200' },
-    { label: 'Appointments Booked', value: appointmentsBooked, icon: CalendarCheck, color: 'text-blue-600', bg: 'bg-blue-50', border: 'border-blue-200' },
-    { label: 'Appointments Showed', value: appointmentsShowed, icon: Eye, color: 'text-purple-600', bg: 'bg-purple-50', border: 'border-purple-200' },
-    { label: 'Jobs Sold', value: jobsSold, icon: Trophy, color: 'text-green-600', bg: 'bg-green-50', border: 'border-green-200' },
-    { label: 'Revenue', value: `$${totalRevenue.toLocaleString()}`, icon: TrendingUp, color: 'text-emerald-600', bg: 'bg-emerald-50', border: 'border-emerald-200' },
+    { label: 'Total Spend', value: `$${totalSpend.toLocaleString()}`, icon: DollarSign, color: 'text-red-400', bg: 'bg-red-500/10', border: 'border-red-500/20' },
+    { label: 'Appointments Booked', value: appointmentsBooked, icon: CalendarCheck, color: 'text-blue-400', bg: 'bg-blue-500/10', border: 'border-blue-500/20' },
+    { label: 'Appointments Showed', value: appointmentsShowed, icon: Eye, color: 'text-purple-400', bg: 'bg-purple-500/10', border: 'border-purple-500/20' },
+    { label: 'Jobs Sold', value: jobsSold, icon: Trophy, color: 'text-green-400', bg: 'bg-green-500/10', border: 'border-green-500/20' },
+    { label: 'Revenue', value: `$${totalRevenue.toLocaleString()}`, icon: TrendingUp, color: 'text-emerald-400', bg: 'bg-emerald-500/10', border: 'border-emerald-500/20' },
   ];
 
   return (
@@ -16,7 +16,7 @@ export default function ReportKPICards({ totalSpend, appointmentsBooked, appoint
         <div key={card.label} className={`${card.bg} rounded-lg p-3 sm:p-5 border ${card.border}`}>
           <div className="flex items-center gap-1.5 sm:gap-2 mb-1 sm:mb-2">
             <card.icon className={`w-4 h-4 sm:w-5 sm:h-5 ${card.color}`} />
-            <p className="text-[10px] sm:text-xs font-medium text-gray-600 leading-tight">{card.label}</p>
+            <p className="text-[10px] sm:text-xs font-medium text-slate-400 leading-tight">{card.label}</p>
           </div>
           <p className={`text-lg sm:text-2xl font-bold ${card.color}`}>{card.value}</p>
         </div>

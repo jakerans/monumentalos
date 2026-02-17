@@ -20,12 +20,12 @@ export default function ProjectCard({ project, tasks, mmUsers, onClick }) {
   return (
     <div
       onClick={onClick}
-      className="bg-white rounded-lg border border-gray-200 p-4 hover:border-indigo-300 hover:shadow-sm transition-all cursor-pointer"
+      className="bg-slate-800/60 rounded-lg border border-slate-700/50 p-4 hover:border-slate-600 hover:shadow-sm transition-all cursor-pointer"
     >
       <div className="flex items-start justify-between mb-2">
         <div>
-          <h3 className="text-sm font-semibold text-gray-900">{project.client_name}</h3>
-          <p className="text-xs text-gray-400">{project.template_name}</p>
+          <h3 className="text-sm font-semibold text-white">{project.client_name}</h3>
+          <p className="text-xs text-slate-500">{project.template_name}</p>
         </div>
         <span className={`inline-flex items-center gap-1 px-2 py-0.5 text-[10px] font-medium rounded-full ${config.bg} ${config.text}`}>
           <span className={`w-1.5 h-1.5 rounded-full ${config.dot}`} />
@@ -35,16 +35,16 @@ export default function ProjectCard({ project, tasks, mmUsers, onClick }) {
 
       {/* Progress bar */}
       <div className="mb-2">
-        <div className="flex items-center justify-between text-[10px] text-gray-500 mb-1">
+        <div className="flex items-center justify-between text-[10px] text-slate-400 mb-1">
           <span>{completedCount}/{totalCount} tasks</span>
           <span>{progress}%</span>
         </div>
-        <div className="w-full h-1.5 bg-gray-100 rounded-full overflow-hidden">
-          <div className="h-full bg-indigo-500 rounded-full transition-all" style={{ width: `${progress}%` }} />
+        <div className="w-full h-1.5 bg-slate-700 rounded-full overflow-hidden">
+          <div className="h-full rounded-full transition-all" style={{ width: `${progress}%`, backgroundColor:'#D6FF03' }} />
         </div>
       </div>
 
-      <div className="flex items-center justify-between text-[10px] text-gray-400">
+      <div className="flex items-center justify-between text-[10px] text-slate-500">
         <span>{mm ? `MM: ${mm.full_name}` : 'No MM assigned'}</span>
         <span>{daysElapsed}d elapsed</span>
       </div>

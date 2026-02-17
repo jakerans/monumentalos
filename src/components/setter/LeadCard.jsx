@@ -35,27 +35,27 @@ export default function LeadCard({ lead, clientName, onAction, onSelect, urgency
 
   return (
     <div
-      className={`bg-white rounded-lg border p-3 sm:p-4 hover:shadow-md transition-shadow cursor-pointer ${
-        lead.status === 'disqualified' ? 'border-red-200 bg-red-50/30' :
-        urgency === 'high' ? 'border-red-300 bg-red-50/30' :
-        urgency === 'medium' ? 'border-amber-300 bg-amber-50/30' :
-        'border-gray-200'
+      className={`bg-slate-800/60 rounded-lg border p-3 sm:p-4 hover:shadow-md transition-shadow cursor-pointer ${
+        lead.status === 'disqualified' ? 'border-red-500/30 bg-red-500/10' :
+        urgency === 'high' ? 'border-red-500/40 bg-red-500/10' :
+        urgency === 'medium' ? 'border-amber-500/40 bg-amber-500/10' :
+        'border-slate-700/50'
       }`}
       onClick={() => onSelect(lead)}
     >
       <div className="flex items-start justify-between mb-1.5">
         <div className="min-w-0 flex-1">
-          <h3 className="text-sm font-semibold text-gray-900 truncate">{lead.name}</h3>
+          <h3 className="text-sm font-semibold text-white truncate">{lead.name}</h3>
           <div className="flex items-center gap-1 mt-0.5">
-            <Building2 className="w-3 h-3 text-gray-400 flex-shrink-0" />
-            <span className="text-[11px] text-gray-500 truncate">{clientName}</span>
+            <Building2 className="w-3 h-3 text-slate-500 flex-shrink-0" />
+            <span className="text-[11px] text-slate-400 truncate">{clientName}</span>
           </div>
         </div>
         {speedLabel && lead.status !== 'disqualified' && (
           <span className={`text-[10px] font-medium px-1.5 py-0.5 rounded-full whitespace-nowrap ml-2 ${
-            urgency === 'high' ? 'bg-red-100 text-red-700' :
-            urgency === 'medium' ? 'bg-amber-100 text-amber-700' :
-            'bg-gray-100 text-gray-600'
+            urgency === 'high' ? 'bg-red-500/20 text-red-400' :
+            urgency === 'medium' ? 'bg-amber-500/20 text-amber-400' :
+            'bg-slate-700 text-slate-400'
           }`}>
             <Clock className="w-2.5 h-2.5 inline mr-0.5" />
             {speedLabel}
@@ -77,7 +77,7 @@ export default function LeadCard({ lead, clientName, onAction, onSelect, urgency
         )}
       </div>
 
-      <div className="flex items-center gap-3 text-[11px] text-gray-500 mb-2.5">
+      <div className="flex items-center gap-3 text-[11px] text-slate-400 mb-2.5">
         {lead.phone && (
           <span className="flex items-center gap-1">
             <Phone className="w-3 h-3" />{lead.phone}
@@ -91,7 +91,7 @@ export default function LeadCard({ lead, clientName, onAction, onSelect, urgency
       </div>
 
       {lead.notes && (
-        <p className="text-[11px] text-gray-400 truncate mb-2">{lead.notes}</p>
+        <p className="text-[11px] text-slate-500 truncate mb-2">{lead.notes}</p>
       )}
 
       <div className="flex gap-2" onClick={(e) => e.stopPropagation()}>
@@ -120,7 +120,7 @@ export default function LeadCard({ lead, clientName, onAction, onSelect, urgency
           </>
         )}
         {lead.status === 'appointment_booked' && lead.appointment_date && (
-          <span className="text-[11px] text-green-700 font-medium">
+          <span className="text-[11px] text-green-400 font-medium">
             📅 {new Date(lead.appointment_date).toLocaleDateString()} {new Date(lead.appointment_date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
           </span>
         )}
