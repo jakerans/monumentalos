@@ -7,8 +7,8 @@ import { ArrowLeft } from 'lucide-react';
 export default function ClientViewNav({ user, clientName }) {
   const navigate = useNavigate();
 
-  const backPage = user?.role === 'marketing_manager' ? 'MMDashboard' : 'AdminDashboard';
-  const backLabel = user?.role === 'marketing_manager' ? 'MM Dashboard' : 'Admin Dashboard';
+  const backPage = user?.app_role === 'marketing_manager' ? 'MMDashboard' : 'AdminDashboard';
+  const backLabel = user?.app_role === 'marketing_manager' ? 'MM Dashboard' : 'Admin Dashboard';
 
   return (
     <nav className="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-30">

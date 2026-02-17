@@ -6,7 +6,7 @@ export default function SetterPerformanceTable({ users, leads, clients, startDat
   const end = new Date(endDate + 'T23:59:59');
   const inRange = (d) => { if (!d) return false; const dt = new Date(d); return dt >= start && dt <= end; };
 
-  const setters = users.filter(u => u.role === 'setter');
+  const setters = users.filter(u => u.app_role === 'setter');
   const getClientName = (id) => clients.find(c => c.id === id)?.name || '—';
 
   const stats = setters.map(setter => {

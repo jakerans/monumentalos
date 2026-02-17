@@ -20,8 +20,8 @@ export default function AppointmentHistory() {
       try {
         const currentUser = await base44.auth.me();
         setUser(currentUser);
-        if (currentUser.role !== 'client' && currentUser.role !== 'admin') {
-          if (currentUser.role === 'setter') window.location.href = '/SetterDashboard';
+        if (currentUser.app_role !== 'client' && currentUser.app_role !== 'admin') {
+          if (currentUser.app_role === 'setter') window.location.href = '/SetterDashboard';
         }
       } catch (error) {
         base44.auth.redirectToLogin();
@@ -31,7 +31,7 @@ export default function AppointmentHistory() {
   }, []);
 
   const getClientId = () => {
-    if (user?.role === 'admin') {
+    if (user?.app_role === 'admin') {
       return localStorage.getItem('admin_view_client_id');
     }
     return user?.client_id;
@@ -80,7 +80,7 @@ export default function AppointmentHistory() {
             <div className="flex items-center justify-between h-14 sm:h-16">
               <h1 className="text-lg sm:text-xl font-bold text-gray-900">MonumentalOS</h1>
               <div className="flex items-center gap-2 sm:hidden">
-                {user.role === 'admin' && (
+                {user.app_role === 'admin' && (
                   <button
                     onClick={() => {
                       localStorage.removeItem('admin_view_client_id');
@@ -107,12 +107,12 @@ export default function AppointmentHistory() {
               <Link to={createPageUrl('ClientSettings')} className="px-2 sm:px-3 py-1.5 sm:py-2 rounded-md text-xs sm:text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-50 whitespace-nowrap">
                 Settings
               </Link>
-              {user.role === 'admin' && clientInfo && (
+              {user.app_role === 'admin' && clientInfo && (
                 <span className="text-xs text-gray-500 whitespace-nowrap ml-2">(Viewing: {clientInfo.name})</span>
               )}
             </div>
             <div className="hidden sm:flex items-center gap-4">
-              {user.role === 'admin' && (
+              {user.app_role === 'admin' && (
                 <button
                   onClick={() => {
                     localStorage.removeItem('admin_view_client_id');

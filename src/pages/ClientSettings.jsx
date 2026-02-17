@@ -24,8 +24,8 @@ export default function ClientSettings() {
       try {
         const currentUser = await base44.auth.me();
         setUser(currentUser);
-        if (currentUser.role !== 'client' && currentUser.role !== 'admin') {
-          if (currentUser.role === 'setter') window.location.href = '/SetterDashboard';
+        if (currentUser.app_role !== 'client' && currentUser.app_role !== 'admin') {
+          if (currentUser.app_role === 'setter') window.location.href = '/SetterDashboard';
         }
       } catch (error) {
         base44.auth.redirectToLogin();
@@ -35,7 +35,7 @@ export default function ClientSettings() {
   }, []);
 
   const getClientId = () => {
-    if (user?.role === 'admin') return localStorage.getItem('admin_view_client_id');
+    if (user?.app_role === 'admin') return localStorage.getItem('admin_view_client_id');
     return user?.client_id;
   };
 
@@ -82,7 +82,7 @@ export default function ClientSettings() {
             <div className="flex items-center justify-between h-14 sm:h-16">
               <h1 className="text-lg sm:text-xl font-bold text-gray-900">MonumentalOS</h1>
               <div className="flex items-center gap-2 sm:hidden">
-                {user.role === 'admin' && (
+                {user.app_role === 'admin' && (
                   <button
                     onClick={() => { localStorage.removeItem('admin_view_client_id'); navigate(createPageUrl('AdminDashboard')); }}
                     className="px-2 py-1 text-xs border border-gray-300 rounded-md hover:bg-gray-50"
@@ -96,12 +96,12 @@ export default function ClientSettings() {
               <Link to={createPageUrl('AppointmentHistory')} className="px-2 sm:px-3 py-1.5 sm:py-2 rounded-md text-xs sm:text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-50 whitespace-nowrap">History</Link>
               <Link to={createPageUrl('ClientReport')} className="px-2 sm:px-3 py-1.5 sm:py-2 rounded-md text-xs sm:text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-50 whitespace-nowrap">Report</Link>
               <Link to={createPageUrl('ClientSettings')} className="px-2 sm:px-3 py-1.5 sm:py-2 rounded-md text-xs sm:text-sm font-medium bg-blue-50 text-blue-700 whitespace-nowrap">Settings</Link>
-              {user.role === 'admin' && clientInfo && (
+              {user.app_role === 'admin' && clientInfo && (
                 <span className="text-xs text-gray-500 whitespace-nowrap ml-2">(Viewing: {clientInfo.name})</span>
               )}
             </div>
             <div className="hidden sm:flex items-center gap-4">
-              {user.role === 'admin' && (
+              {user.app_role === 'admin' && (
                 <button onClick={() => { localStorage.removeItem('admin_view_client_id'); navigate(createPageUrl('AdminDashboard')); }} className="px-3 py-1.5 text-sm border border-gray-300 rounded-md hover:bg-gray-50">Back to Admin</button>
               )}
               <span className="text-sm text-gray-600">{user.full_name}</span>
