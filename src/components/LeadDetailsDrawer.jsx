@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import { Mail, Phone, Calendar, DollarSign, Clock, Briefcase, Ruler, FileText, X } from 'lucide-react';
+import { Mail, Phone, Calendar, DollarSign, Clock, Briefcase, Ruler, FileText, X, Pencil, Save } from 'lucide-react';
 import toast from 'react-hot-toast';
 import confetti from 'canvas-confetti';
 import {
@@ -10,6 +10,16 @@ import {
   SheetHeader,
   SheetTitle,
 } from '@/components/ui/sheet';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 
 const DISPOSITION_OPTIONS = [
   { value: 'scheduled', label: 'Scheduled', bg: 'bg-blue-100 text-blue-800 border-blue-300', activeBg: 'bg-blue-600 text-white' },
@@ -24,14 +34,23 @@ const OUTCOME_OPTIONS = [
   { value: 'lost', label: 'Lost', bg: 'bg-red-100 text-red-800 border-red-300', activeBg: 'bg-red-600 text-white' },
 ];
 
-function InfoRow({ icon: Icon, label, value, iconColor = 'text-gray-400' }) {
-  if (!value) return null;
+function InfoRow({ icon: Icon, label, value, iconColor = 'text-gray-400', editing, editValue, onEditChange, type = 'text' }) {
+  if (!editing && !value) return null;
   return (
     <div className="flex items-start gap-3">
       <Icon className={`w-4 h-4 mt-0.5 ${iconColor}`} />
-      <div>
+      <div className="flex-1">
         <p className="text-xs text-gray-500">{label}</p>
-        <p className="text-sm font-medium text-gray-900">{value}</p>
+        {editing ? (
+          <input
+            type={type}
+            value={editValue || ''}
+            onChange={(e) => onEditChange(e.target.value)}
+            className="mt-0.5 w-full text-sm px-2 py-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+        ) : (
+          <p className="text-sm font-medium text-gray-900">{value}</p>
+        )}
       </div>
     </div>
   );
@@ -52,6 +71,51 @@ export default function LeadDetailsDrawer({ leadId, open, onOpenChange, onLeadUp
   const [showSaleForm, setShowSaleForm] = useState(false);
   const [saleAmount, setSaleAmount] = useState('');
   const [dateSold, setDateSold] = useState('');
+
+  const [editing, setEditing] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
+  const [editData, setEditData] = useState({});
+
+  useEffect(() => {
+    if (lead) {
+      setEditData({
+        name: lead.name || '',
+        email: lead.email || '',
+        phone: lead.phone || '',
+        appointment_date: lead.appointment_date ? lead.appointment_date.slice(0, 16) : '',
+        date_appointment_set: lead.date_appointment_set ? lead.date_appointment_set.slice(0, 16) : '',
+        lead_received_date: lead.lead_received_date ? lead.lead_received_date.slice(0, 16) : '',
+        project_type: lead.project_type || '',
+        project_size: lead.project_size || '',
+        budget_range: lead.budget_range || '',
+        timeline: lead.timeline || '',
+        sale_amount: lead.sale_amount || '',
+        date_sold: lead.date_sold || '',
+        notes: lead.notes || '',
+      });
+      setEditing(false);
+    }
+  }, [lead]);
+
+  const handleSaveEdits = async () => {
+    const updates = { ...editData };
+    if (updates.appointment_date) updates.appointment_date = new Date(updates.appointment_date).toISOString();
+    else delete updates.appointment_date;
+    if (updates.date_appointment_set) updates.date_appointment_set = new Date(updates.date_appointment_set).toISOString();
+    else delete updates.date_appointment_set;
+    if (updates.lead_received_date) updates.lead_received_date = new Date(updates.lead_received_date).toISOString();
+    else delete updates.lead_received_date;
+    if (updates.sale_amount) updates.sale_amount = parseFloat(updates.sale_amount);
+    else delete updates.sale_amount;
+    if (!updates.date_sold) delete updates.date_sold;
+
+    await base44.entities.Lead.update(lead.id, updates);
+    toast.success('Lead updated');
+    setEditing(false);
+    setShowConfirm(false);
+    queryClient.invalidateQueries({ queryKey: ['lead', leadId] });
+    if (onLeadUpdated) onLeadUpdated();
+  };
 
   const handleDispositionChange = async (newDisposition) => {
     if (!lead) return;
@@ -118,7 +182,23 @@ export default function LeadDetailsDrawer({ leadId, open, onOpenChange, onLeadUp
           <>
             {/* Header */}
             <SheetHeader className="p-6 pb-4 border-b border-gray-200 bg-gray-50">
-              <SheetTitle className="text-xl font-bold">{lead.name}</SheetTitle>
+              <div className="flex items-center justify-between">
+                <SheetTitle className="text-xl font-bold">{lead.name}</SheetTitle>
+                {!editing ? (
+                  <button onClick={() => setEditing(true)} className="p-1.5 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded-md transition-colors">
+                    <Pencil className="w-4 h-4" />
+                  </button>
+                ) : (
+                  <div className="flex gap-1.5">
+                    <button onClick={() => setShowConfirm(true)} className="px-3 py-1.5 text-xs font-medium bg-blue-600 text-white rounded-md hover:bg-blue-700 flex items-center gap-1">
+                      <Save className="w-3 h-3" /> Save
+                    </button>
+                    <button onClick={() => { setEditing(false); setEditData({ name: lead.name || '', email: lead.email || '', phone: lead.phone || '', appointment_date: lead.appointment_date ? lead.appointment_date.slice(0, 16) : '', date_appointment_set: lead.date_appointment_set ? lead.date_appointment_set.slice(0, 16) : '', lead_received_date: lead.lead_received_date ? lead.lead_received_date.slice(0, 16) : '', project_type: lead.project_type || '', project_size: lead.project_size || '', budget_range: lead.budget_range || '', timeline: lead.timeline || '', sale_amount: lead.sale_amount || '', date_sold: lead.date_sold || '', notes: lead.notes || '' }); }} className="px-3 py-1.5 text-xs font-medium bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300">
+                      Cancel
+                    </button>
+                  </div>
+                )}
+              </div>
               <div className="flex flex-wrap gap-2 mt-2">
                 <span className={`px-2 py-1 text-xs font-medium rounded-full ${
                   lead.disposition === 'showed' ? 'bg-green-100 text-green-800' :
@@ -221,66 +301,73 @@ export default function LeadDetailsDrawer({ leadId, open, onOpenChange, onLeadUp
               <div>
                 <h3 className="text-xs font-semibold text-gray-500 uppercase mb-3">Contact</h3>
                 <div className="space-y-3">
-                  <InfoRow icon={Mail} label="Email" value={lead.email} />
-                  <InfoRow icon={Phone} label="Phone" value={lead.phone} />
+                  <InfoRow icon={Mail} label="Email" value={lead.email} editing={editing} editValue={editData.email} onEditChange={(v) => setEditData(d => ({...d, email: v}))} type="email" />
+                  <InfoRow icon={Phone} label="Phone" value={lead.phone} editing={editing} editValue={editData.phone} onEditChange={(v) => setEditData(d => ({...d, phone: v}))} type="tel" />
                 </div>
               </div>
 
               {/* Appointment */}
-              {lead.appointment_date && (
+              {(lead.appointment_date || lead.date_appointment_set || editing) && (
                 <div>
                   <h3 className="text-xs font-semibold text-gray-500 uppercase mb-3">Appointment</h3>
                   <div className="space-y-3">
-                    <InfoRow icon={Calendar} label="Appointment Date" value={new Date(lead.appointment_date).toLocaleString()} />
-                    <InfoRow icon={Calendar} label="Date Booked" value={lead.date_appointment_set ? new Date(lead.date_appointment_set).toLocaleString() : null} />
+                    <InfoRow icon={Calendar} label="Appointment Date" value={lead.appointment_date ? new Date(lead.appointment_date).toLocaleString() : null} editing={editing} editValue={editData.appointment_date} onEditChange={(v) => setEditData(d => ({...d, appointment_date: v}))} type="datetime-local" />
+                    <InfoRow icon={Calendar} label="Date Appointment Set" value={lead.date_appointment_set ? new Date(lead.date_appointment_set).toLocaleString() : null} editing={editing} editValue={editData.date_appointment_set} onEditChange={(v) => setEditData(d => ({...d, date_appointment_set: v}))} type="datetime-local" />
                   </div>
                 </div>
               )}
 
               {/* Lead Timing */}
-              {(lead.lead_received_date || speedToLead) && (
+              {(lead.lead_received_date || speedToLead || editing) && (
                 <div>
                   <h3 className="text-xs font-semibold text-gray-500 uppercase mb-3">Lead Timing</h3>
                   <div className="space-y-3">
-                    <InfoRow icon={Calendar} label="Lead Received" value={lead.lead_received_date ? new Date(lead.lead_received_date).toLocaleString() : null} />
-                    <InfoRow icon={Clock} label="Speed to Lead" value={speedToLead} iconColor="text-orange-500" />
-                    <InfoRow icon={Clock} label="Days Since Received" value={daysSinceReceived != null ? `${daysSinceReceived} days` : null} />
-                    <InfoRow icon={Calendar} label="First Call Made" value={lead.first_call_made_date ? new Date(lead.first_call_made_date).toLocaleString() : null} />
+                    <InfoRow icon={Calendar} label="Lead Received" value={lead.lead_received_date ? new Date(lead.lead_received_date).toLocaleString() : null} editing={editing} editValue={editData.lead_received_date} onEditChange={(v) => setEditData(d => ({...d, lead_received_date: v}))} type="datetime-local" />
+                    {!editing && <InfoRow icon={Clock} label="Speed to Lead" value={speedToLead} iconColor="text-orange-500" />}
+                    {!editing && <InfoRow icon={Clock} label="Days Since Received" value={daysSinceReceived != null ? `${daysSinceReceived} days` : null} />}
                   </div>
                 </div>
               )}
 
               {/* Project Details */}
-              {(lead.project_type || lead.project_size || lead.budget_range || lead.timeline) && (
+              {(lead.project_type || lead.project_size || lead.budget_range || lead.timeline || editing) && (
                 <div>
                   <h3 className="text-xs font-semibold text-gray-500 uppercase mb-3">Project Details</h3>
                   <div className="space-y-3">
-                    <InfoRow icon={Briefcase} label="Project Type" value={lead.project_type} />
-                    <InfoRow icon={Ruler} label="Project Size" value={lead.project_size} />
-                    <InfoRow icon={DollarSign} label="Budget Range" value={lead.budget_range} iconColor="text-green-500" />
-                    <InfoRow icon={Clock} label="Timeline" value={lead.timeline} />
+                    <InfoRow icon={Briefcase} label="Project Type" value={lead.project_type} editing={editing} editValue={editData.project_type} onEditChange={(v) => setEditData(d => ({...d, project_type: v}))} />
+                    <InfoRow icon={Ruler} label="Project Size" value={lead.project_size} editing={editing} editValue={editData.project_size} onEditChange={(v) => setEditData(d => ({...d, project_size: v}))} />
+                    <InfoRow icon={DollarSign} label="Budget Range" value={lead.budget_range} iconColor="text-green-500" editing={editing} editValue={editData.budget_range} onEditChange={(v) => setEditData(d => ({...d, budget_range: v}))} />
+                    <InfoRow icon={Clock} label="Timeline" value={lead.timeline} editing={editing} editValue={editData.timeline} onEditChange={(v) => setEditData(d => ({...d, timeline: v}))} />
                   </div>
                 </div>
               )}
 
               {/* Sale Information */}
-              {(lead.sale_amount || lead.date_sold) && (
+              {(lead.sale_amount || lead.date_sold || editing) && (
                 <div>
                   <h3 className="text-xs font-semibold text-gray-500 uppercase mb-3">Sale Information</h3>
                   <div className="space-y-3">
-                    <InfoRow icon={DollarSign} label="Sale Amount" value={lead.sale_amount ? `$${lead.sale_amount.toLocaleString()}` : null} iconColor="text-green-600" />
-                    <InfoRow icon={Calendar} label="Date Sold" value={lead.date_sold ? new Date(lead.date_sold).toLocaleDateString() : null} />
+                    <InfoRow icon={DollarSign} label="Sale Amount" value={lead.sale_amount ? `$${lead.sale_amount.toLocaleString()}` : null} iconColor="text-green-600" editing={editing} editValue={editData.sale_amount} onEditChange={(v) => setEditData(d => ({...d, sale_amount: v}))} type="number" />
+                    <InfoRow icon={Calendar} label="Date Sold" value={lead.date_sold ? new Date(lead.date_sold).toLocaleDateString() : null} editing={editing} editValue={editData.date_sold} onEditChange={(v) => setEditData(d => ({...d, date_sold: v}))} type="date" />
                   </div>
                 </div>
               )}
 
               {/* Notes */}
-              {lead.notes && (
+              {(lead.notes || editing) && (
                 <div>
                   <h3 className="text-xs font-semibold text-gray-500 uppercase mb-3">Notes</h3>
-                  <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
-                    <p className="text-sm text-gray-700 whitespace-pre-wrap">{lead.notes}</p>
-                  </div>
+                  {editing ? (
+                    <textarea
+                      value={editData.notes}
+                      onChange={(e) => setEditData(d => ({...d, notes: e.target.value}))}
+                      className="w-full text-sm px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 h-24"
+                    />
+                  ) : (
+                    <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
+                      <p className="text-sm text-gray-700 whitespace-pre-wrap">{lead.notes}</p>
+                    </div>
+                  )}
                 </div>
               )}
 
@@ -295,6 +382,21 @@ export default function LeadDetailsDrawer({ leadId, open, onOpenChange, onLeadUp
           </>
         )}
       </SheetContent>
+
+      <AlertDialog open={showConfirm} onOpenChange={setShowConfirm}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Save Changes?</AlertDialogTitle>
+            <AlertDialogDescription>
+              You are about to update this lead's information. This action will overwrite the existing data. Are you sure you want to continue?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleSaveEdits}>Yes, Save Changes</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </Sheet>
   );
 }
