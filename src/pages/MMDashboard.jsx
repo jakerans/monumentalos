@@ -10,10 +10,17 @@ import ClientTable from '../components/mm/ClientTable';
 import AIRecapPanel from '../components/mm/AIRecapPanel';
 import ClientQuickView from '../components/mm/ClientQuickView';
 
+const PERIOD_OPTIONS = [
+  { label: '7 Days', days: 7 },
+  { label: '14 Days', days: 14 },
+  { label: '30 Days', days: 30 },
+];
+
 export default function MMDashboard() {
   const navigate = useNavigate();
   const [user, setUser] = useState(null);
   const [selectedClient, setSelectedClient] = useState(null);
+  const [periodDays, setPeriodDays] = useState(30);
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -70,65 +77,87 @@ export default function MMDashboard() {
 
   const clientMetrics = useMemo(() => {
     const now = new Date();
-    const d7 = new Date(now); d7.setDate(d7.getDate() - 7);
-    const d30 = new Date(now); d30.setDate(d30.getDate() - 30);
-    const d7Str = d7.toISOString();
-    const d30Str = d30.toISOString();
-    const d7Date = d7.toISOString().split('T')[0];
-    const d30Date = d30.toISOString().split('T')[0];
+    const periodStart = new Date(now); periodStart.setDate(periodStart.getDate() - periodDays);
+    const priorStart = new Date(periodStart); priorStart.setDate(priorStart.getDate() - periodDays);
+    const pStartStr = periodStart.toISOString();
+    const pStartDate = periodStart.toISOString().split('T')[0];
+    const priorStartStr = priorStart.toISOString();
+    const priorStartDate = priorStart.toISOString().split('T')[0];
 
     return clients.map(client => {
       const cLeads = allLeads.filter(l => l.client_id === client.id);
       const cSpend = allSpend.filter(s => s.client_id === client.id);
 
-      // 7-day
-      const leads7d = cLeads.filter(l => l.created_date >= d7Str).length;
-      const spend7d = cSpend.filter(s => s.date >= d7Date).reduce((s, r) => s + (r.amount || 0), 0);
-      const appts7d = cLeads.filter(l => l.date_appointment_set && l.date_appointment_set >= d7Str).length;
-      const cpa7d = appts7d > 0 ? spend7d / appts7d : Infinity;
+      // Current period
+      const leadsCur = cLeads.filter(l => l.created_date >= pStartStr).length;
+      const spendCur = cSpend.filter(s => s.date >= pStartDate).reduce((s, r) => s + (r.amount || 0), 0);
+      const apptsCur = cLeads.filter(l => l.date_appointment_set && l.date_appointment_set >= pStartStr).length;
+      const cpaCur = apptsCur > 0 ? spendCur / apptsCur : Infinity;
 
-      // 30-day
-      const leads30d = cLeads.filter(l => l.created_date >= d30Str).length;
-      const spend30d = cSpend.filter(s => s.date >= d30Date).reduce((s, r) => s + (r.amount || 0), 0);
-      const appts30d = cLeads.filter(l => l.date_appointment_set && l.date_appointment_set >= d30Str).length;
-      const cpa30d = appts30d > 0 ? spend30d / appts30d : Infinity;
+      // Prior period
+      const spendPrior = cSpend.filter(s => s.date >= priorStartDate && s.date < pStartDate).reduce((s, r) => s + (r.amount || 0), 0);
+      const apptsPrior = cLeads.filter(l => l.date_appointment_set && l.date_appointment_set >= priorStartStr && l.date_appointment_set < pStartStr).length;
+      const cpaPrior = apptsPrior > 0 ? spendPrior / apptsPrior : Infinity;
 
-      // Show rate (7d) — appointments in 7d window with showed disposition
-      const apptLeads7d = cLeads.filter(l => l.appointment_date && l.appointment_date >= d7Str);
-      const showed7d = apptLeads7d.filter(l => l.disposition === 'showed' || l.outcome === 'sold' || l.outcome === 'lost').length;
-      const showRate7d = apptLeads7d.length > 0 ? `${((showed7d / apptLeads7d.length) * 100).toFixed(0)}%` : '—';
+      // Show rate
+      const apptLeadsCur = cLeads.filter(l => l.appointment_date && l.appointment_date >= pStartStr);
+      const showedCur = apptLeadsCur.filter(l => l.disposition === 'showed' || l.outcome === 'sold' || l.outcome === 'lost').length;
+      const showRateCur = apptLeadsCur.length > 0 ? `${((showedCur / apptLeadsCur.length) * 100).toFixed(0)}%` : '—';
 
       // Avg STL
-      const stlLeads = cLeads.filter(l => l.speed_to_lead_minutes != null && l.created_date >= d7Str);
+      const stlLeads = cLeads.filter(l => l.speed_to_lead_minutes != null && l.created_date >= pStartStr);
       const stl = stlLeads.length > 0 ? stlLeads.reduce((s, l) => s + l.speed_to_lead_minutes, 0) / stlLeads.length : null;
 
-      // Alerts
+      // Alerts (still use current period)
       const alerts = [];
-      if (cpa7d > 300 && appts7d > 0) alerts.push(`High CPA: $${cpa7d.toFixed(0)} (7d)`);
-      if (spend7d > 0 && appts7d === 0) alerts.push('Spending but 0 appointments set in 7 days');
+      if (cpaCur > 300 && apptsCur > 0) alerts.push(`High CPA: $${cpaCur.toFixed(0)}`);
+      if (spendCur > 0 && apptsCur === 0) alerts.push(`Spending but 0 appts in ${periodDays}d`);
       if (stl !== null && stl > 15) alerts.push(`Slow STL: ${stl.toFixed(0)} min avg`);
-      const newUncontacted = cLeads.filter(l => l.status === 'new' && l.created_date >= d7Str).length;
+      const newUncontacted = cLeads.filter(l => l.status === 'new' && l.created_date >= pStartStr).length;
       if (newUncontacted >= 5) alerts.push(`${newUncontacted} new leads not yet contacted`);
+
+      // CPA % change
+      let cpaChange = null;
+      if (cpaCur !== Infinity && cpaPrior !== Infinity && cpaPrior > 0) {
+        cpaChange = ((cpaCur - cpaPrior) / cpaPrior) * 100;
+      }
 
       return {
         ...client,
-        leads7d, spend7d, appts7d, cpa7d,
-        leads30d, spend30d, appts30d, cpa30d,
-        showRate7d, stl, alerts,
+        leadsCur, spendCur, apptsCur, cpaCur, cpaPrior, cpaChange,
+        showRateCur, stl, alerts,
       };
     });
-  }, [clients, allLeads, allSpend]);
+  }, [clients, allLeads, allSpend, periodDays]);
 
   const topStats = useMemo(() => {
     const activeClients = clientMetrics.length;
-    const apptsSet7d = clientMetrics.reduce((s, c) => s + c.appts7d, 0);
-    const spend7d = clientMetrics.reduce((s, c) => s + c.spend7d, 0);
-    const avgCPA7d = apptsSet7d > 0 ? spend7d / apptsSet7d : 0;
+    const apptsSet = clientMetrics.reduce((s, c) => s + c.apptsCur, 0);
+    const spend = clientMetrics.reduce((s, c) => s + c.spendCur, 0);
+    const avgCPA = apptsSet > 0 ? spend / apptsSet : 0;
+
+    // Prior period totals for CPA change
+    const now = new Date();
+    const periodStart = new Date(now); periodStart.setDate(periodStart.getDate() - periodDays);
+    const priorStart = new Date(periodStart); priorStart.setDate(priorStart.getDate() - periodDays);
+    const pStartStr = periodStart.toISOString();
+    const priorStartStr = priorStart.toISOString();
+    const pStartDate = periodStart.toISOString().split('T')[0];
+    const priorStartDate = priorStart.toISOString().split('T')[0];
+
+    const priorSpend = allSpend.filter(s => s.date >= priorStartDate && s.date < pStartDate).reduce((s, r) => s + (r.amount || 0), 0);
+    const priorAppts = allLeads.filter(l => l.date_appointment_set && l.date_appointment_set >= priorStartStr && l.date_appointment_set < pStartStr).length;
+    const priorCPA = priorAppts > 0 ? priorSpend / priorAppts : 0;
+    let cpaChange = null;
+    if (avgCPA > 0 && priorCPA > 0) {
+      cpaChange = ((avgCPA - priorCPA) / priorCPA) * 100;
+    }
+
     const stlClients = clientMetrics.filter(c => c.stl !== null);
     const avgSTL = stlClients.length > 0 ? stlClients.reduce((s, c) => s + c.stl, 0) / stlClients.length : null;
     const alertCount = clientMetrics.filter(c => c.alerts.length > 0).length;
-    return { activeClients, apptsSet7d, spend7d, avgCPA7d, avgSTL, alertCount };
-  }, [clientMetrics]);
+    return { activeClients, apptsSet, spend, avgCPA, cpaChange, avgSTL, alertCount, periodDays };
+  }, [clientMetrics, periodDays, allLeads, allSpend]);
 
   if (!user) return null;
 
@@ -137,6 +166,24 @@ export default function MMDashboard() {
       <MMNav user={user} clients={clients} pendingOnboardCount={pendingOnboardCount} />
 
       <main className="flex-1 max-w-[1600px] w-full mx-auto px-3 sm:px-5 py-3 flex flex-col min-h-0">
+        {/* Period toggle */}
+        <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center gap-1 bg-gray-100 rounded-lg p-0.5">
+            {PERIOD_OPTIONS.map(opt => (
+              <button
+                key={opt.days}
+                onClick={() => setPeriodDays(opt.days)}
+                className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${
+                  periodDays === opt.days
+                    ? 'bg-white text-blue-700 shadow-sm'
+                    : 'text-gray-500 hover:text-gray-700'
+                }`}
+              >
+                {opt.label}
+              </button>
+            ))}
+          </div>
+        </div>
         <MMTopStats stats={topStats} />
 
         <div className="flex-1 flex gap-3 min-h-0" style={{ height: 'calc(100vh - 180px)' }}>
