@@ -12,6 +12,7 @@ import GoalManagementModal from '../components/admin/GoalManagementModal';
 import { Settings, Trophy } from 'lucide-react';
 import PageErrorBoundary from '../components/shared/PageErrorBoundary';
 import PageLoader from '../components/shared/PageLoader';
+import { motion } from 'framer-motion';
 
 export default function AdminDashboard() {
   const navigate = useNavigate();
@@ -106,17 +107,28 @@ export default function AdminDashboard() {
       <AdminNav user={user} currentPage="AdminDashboard" clients={clients} />
 
       <main className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-5">
-        <div className="flex items-center justify-between">
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, ease: [0.25, 0.46, 0.45, 0.94] }}
+          className="flex items-center justify-between"
+        >
           <div>
             <h1 className="text-2xl font-bold text-white">Company Dashboard</h1>
             <p className="text-sm text-slate-400">
               {now.toLocaleString('default', { month: 'long', year: 'numeric' })} overview
             </p>
           </div>
-          <button onClick={() => setGoalsOpen(true)} className="px-4 py-2 text-xs font-bold rounded-lg flex items-center gap-1.5 shadow-sm hover:opacity-90 transition-opacity text-black" style={{backgroundColor:'#D6FF03'}}>
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={() => setGoalsOpen(true)}
+            className="px-4 py-2 text-xs font-bold rounded-lg flex items-center gap-1.5 shadow-sm hover:opacity-90 transition-opacity text-black glow-pulse"
+            style={{backgroundColor:'#D6FF03'}}
+          >
             <Settings className="w-3.5 h-3.5" /> Manage Goals
-          </button>
-        </div>
+          </motion.button>
+        </motion.div>
 
         {/* Business Health KPIs */}
         <BusinessHealthKPIs
@@ -129,14 +141,24 @@ export default function AdminDashboard() {
         />
 
         {/* Charts row */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2, duration: 0.4 }}
+          className="grid grid-cols-1 lg:grid-cols-3 gap-4"
+        >
           <ClientGoalChart clients={clients} />
           <RevenueBreakdownChart clients={clients} leads={leads} spend={spend} />
           <MTDGoalProgress currentGoal={currentGoal} mtdData={mtd} />
-        </div>
+        </motion.div>
 
         {/* P&L + Setter Leaderboard */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.35, duration: 0.4 }}
+          className="grid grid-cols-1 lg:grid-cols-3 gap-4"
+        >
           {/* P&L Snapshot */}
           <div className="lg:col-span-2 bg-slate-800/50 rounded-lg border border-slate-700/50 p-4">
             <h3 className="text-sm font-bold text-white mb-3">P&L Snapshot (MTD)</h3>
@@ -188,7 +210,7 @@ export default function AdminDashboard() {
               ))}
             </div>
           </div>
-        </div>
+        </motion.div>
 
         {/* No goal prompt */}
         {!currentGoal && (

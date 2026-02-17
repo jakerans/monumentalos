@@ -16,6 +16,7 @@ import LeaderboardWidget from '../components/setter/LeaderboardWidget';
 import CelebrationOverlay from '../components/setter/CelebrationOverlay';
 import PageErrorBoundary from '../components/shared/PageErrorBoundary';
 import PageLoader from '../components/shared/PageLoader';
+import { motion } from 'framer-motion';
 
 export default function SetterDashboard() {
   const navigate = useNavigate();
@@ -303,7 +304,12 @@ export default function SetterDashboard() {
         </div>
 
         {/* Pipeline Columns */}
-        <div className={`grid grid-cols-1 gap-4 sm:gap-6 ${showDQ ? 'md:grid-cols-4' : 'md:grid-cols-3'}`}>
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.2, duration: 0.4 }}
+          className={`grid grid-cols-1 gap-4 sm:gap-6 ${showDQ ? 'md:grid-cols-4' : 'md:grid-cols-3'}`}
+        >
           <PipelineColumn
             title="New Leads"
             count={newLeads.length}
@@ -342,7 +348,7 @@ export default function SetterDashboard() {
               onSelect={handleSelectLead}
             />
           )}
-        </div>
+        </motion.div>
       </main>
 
       <LeadDetailPanel
