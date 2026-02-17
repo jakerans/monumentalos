@@ -30,6 +30,8 @@ export default function SetterDashboard() {
   const [dqLead, setDqLead] = useState(null);
   const [dqOpen, setDqOpen] = useState(false);
   const [showDQ, setShowDQ] = useState(false);
+  const [celebration, setCelebration] = useState(null); // { type: 'rank_up' | 'booking' }
+  const prevRankRef = useRef(null);
 
   useEffect(() => {
     const checkAuth = async () => {
