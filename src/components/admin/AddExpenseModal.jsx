@@ -4,6 +4,7 @@ import { base44 } from '@/api/base44Client';
 
 export default function AddExpenseModal({ open, onOpenChange, clients, onCreated }) {
   const [category, setCategory] = useState('ad_spend');
+  const [expenseType, setExpenseType] = useState('overhead');
   const [description, setDescription] = useState('');
   const [amount, setAmount] = useState('');
   const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
@@ -17,6 +18,7 @@ export default function AddExpenseModal({ open, onOpenChange, clients, onCreated
     setSaving(true);
     await base44.entities.Expense.create({
       category,
+      expense_type: expenseType,
       description: description || undefined,
       amount: Number(amount),
       date,
@@ -37,17 +39,26 @@ export default function AddExpenseModal({ open, onOpenChange, clients, onCreated
           <DialogTitle>Add Expense</DialogTitle>
         </DialogHeader>
         <div className="space-y-3 mt-2">
-          <div>
-            <label className="text-xs font-medium text-gray-700">Category *</label>
-            <select value={category} onChange={e => setCategory(e.target.value)} className="w-full mt-1 px-3 py-2 text-sm border border-gray-300 rounded-md">
-              <option value="ad_spend">Ad Spend</option>
-              <option value="payroll">Payroll</option>
-              <option value="software">Software</option>
-              <option value="office">Office</option>
-              <option value="contractor">Contractor</option>
-              <option value="travel">Travel</option>
-              <option value="other">Other</option>
-            </select>
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="text-xs font-medium text-gray-700">Category *</label>
+              <select value={category} onChange={e => setCategory(e.target.value)} className="w-full mt-1 px-3 py-2 text-sm border border-gray-300 rounded-md">
+                <option value="ad_spend">Ad Spend</option>
+                <option value="payroll">Payroll</option>
+                <option value="software">Software</option>
+                <option value="office">Office</option>
+                <option value="contractor">Contractor</option>
+                <option value="travel">Travel</option>
+                <option value="other">Other</option>
+              </select>
+            </div>
+            <div>
+              <label className="text-xs font-medium text-gray-700">Type *</label>
+              <select value={expenseType} onChange={e => setExpenseType(e.target.value)} className="w-full mt-1 px-3 py-2 text-sm border border-gray-300 rounded-md">
+                <option value="cogs">COGS (Cost of Goods Sold)</option>
+                <option value="overhead">Overhead</option>
+              </select>
+            </div>
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div>
