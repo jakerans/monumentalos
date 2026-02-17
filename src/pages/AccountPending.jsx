@@ -11,43 +11,34 @@ export default function AccountPending() {
 
   useEffect(() => {
     const checkAuth = async () => {
+      let currentUser;
       try {
-        const currentUser = await base44.auth.me();
-        setUser(currentUser);
-
-        // If user already has a real role, redirect them
-        if (currentUser.role && currentUser.role !== 'user') {
-          redirectByRole(currentUser.role);
-          return;
-        }
-
-        // Check for a pending invite and apply it
-        const pendingInvites = await base44.entities.PendingInvite.filter({
-          email: currentUser.email.toLowerCase(),
-          status: 'pending',
-        });
-
-        if (pendingInvites.length > 0) {
-          const invite = pendingInvites[0];
-          
-          // Update user with intended role and client_id
-          const updateData = { role: invite.intended_role };
-          if (invite.client_id) {
-            updateData.client_id = invite.client_id;
-          }
-          await base44.auth.updateMe(updateData);
-
-          // Mark invite as applied
-          await base44.entities.PendingInvite.update(invite.id, { status: 'applied' });
-
-          redirectByRole(invite.intended_role);
-          return;
-        }
-
-        setChecking(false);
+        currentUser = await base44.auth.me();
       } catch {
         base44.auth.redirectToLogin();
+        return;
       }
+
+      setUser(currentUser);
+
+      // If user already has a real role, redirect them
+      if (currentUser.role && currentUser.role !== 'user') {
+        redirectByRole(currentUser.role);
+        return;
+      }
+
+      // Use backend function to apply pending invite (service role can read PendingInvite)
+      try {
+        const res = await base44.functions.invoke('applyPendingRole');
+        if (res.data?.applied && res.data?.role) {
+          redirectByRole(res.data.role);
+          return;
+        }
+      } catch (e) {
+        console.log('applyPendingRole error:', e);
+      }
+
+      setChecking(false);
     };
     checkAuth();
   }, []);
