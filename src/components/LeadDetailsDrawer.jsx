@@ -35,7 +35,6 @@ const OUTCOME_OPTIONS = [
 ];
 
 function InfoRow({ icon: Icon, label, value, iconColor = 'text-gray-400', editing, editValue, onEditChange, type = 'text' }) {
-  if (!editing && !value) return null;
   return (
     <div className="flex items-start gap-3">
       <Icon className={`w-4 h-4 mt-0.5 ${iconColor}`} />
@@ -49,7 +48,7 @@ function InfoRow({ icon: Icon, label, value, iconColor = 'text-gray-400', editin
             className="mt-0.5 w-full text-sm px-2 py-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
         ) : (
-          <p className="text-sm font-medium text-gray-900">{value}</p>
+          <p className="text-sm font-medium text-gray-900">{value || <span className="text-gray-400 italic">—</span>}</p>
         )}
       </div>
     </div>
@@ -84,7 +83,6 @@ export default function LeadDetailsDrawer({ leadId, open, onOpenChange, onLeadUp
         phone: lead.phone || '',
         appointment_date: lead.appointment_date ? lead.appointment_date.slice(0, 16) : '',
         date_appointment_set: lead.date_appointment_set ? lead.date_appointment_set.slice(0, 16) : '',
-        lead_received_date: lead.lead_received_date ? lead.lead_received_date.slice(0, 16) : '',
         project_type: lead.project_type || '',
         project_size: lead.project_size || '',
         budget_range: lead.budget_range || '',
@@ -103,8 +101,6 @@ export default function LeadDetailsDrawer({ leadId, open, onOpenChange, onLeadUp
     else delete updates.appointment_date;
     if (updates.date_appointment_set) updates.date_appointment_set = new Date(updates.date_appointment_set).toISOString();
     else delete updates.date_appointment_set;
-    if (updates.lead_received_date) updates.lead_received_date = new Date(updates.lead_received_date).toISOString();
-    else delete updates.lead_received_date;
     if (updates.sale_amount) updates.sale_amount = parseFloat(updates.sale_amount);
     else delete updates.sale_amount;
     if (!updates.date_sold) delete updates.date_sold;
@@ -120,6 +116,7 @@ export default function LeadDetailsDrawer({ leadId, open, onOpenChange, onLeadUp
   const handleDispositionChange = async (newDisposition) => {
     if (!lead) return;
     await base44.entities.Lead.update(lead.id, { disposition: newDisposition });
+    toast.success(`Disposition updated to "${newDisposition}"`);
     queryClient.invalidateQueries({ queryKey: ['lead', leadId] });
     if (onLeadUpdated) onLeadUpdated();
   };
@@ -133,6 +130,7 @@ export default function LeadDetailsDrawer({ leadId, open, onOpenChange, onLeadUp
       return;
     }
     await base44.entities.Lead.update(lead.id, { outcome: newOutcome });
+    toast.success(`Outcome updated to "${newOutcome}"`);
     queryClient.invalidateQueries({ queryKey: ['lead', leadId] });
     if (onLeadUpdated) onLeadUpdated();
   };
@@ -162,16 +160,6 @@ export default function LeadDetailsDrawer({ leadId, open, onOpenChange, onLeadUp
 
   const currentDisposition = lead?.disposition || 'scheduled';
   const currentOutcome = lead?.outcome || 'pending';
-
-  // Speed to lead
-  const speedToLead = lead?.speed_to_lead_minutes != null
-    ? (lead.speed_to_lead_minutes < 60 ? `${lead.speed_to_lead_minutes} min` : `${(lead.speed_to_lead_minutes / 60).toFixed(1)} hrs`)
-    : null;
-
-  // Days since lead received
-  const daysSinceReceived = lead?.lead_received_date
-    ? Math.floor((new Date() - new Date(lead.lead_received_date)) / (1000 * 60 * 60 * 24))
-    : null;
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
@@ -299,18 +287,6 @@ export default function LeadDetailsDrawer({ leadId, open, onOpenChange, onLeadUp
                   </div>
                 </div>
 
-              {/* Lead Timing */}
-              {(lead.lead_received_date || speedToLead || editing) && (
-                <div>
-                  <h3 className="text-xs font-semibold text-gray-500 uppercase mb-3">Lead Timing</h3>
-                  <div className="space-y-3">
-                    <InfoRow icon={Calendar} label="Lead Received" value={lead.lead_received_date ? new Date(lead.lead_received_date).toLocaleString() : null} editing={editing} editValue={editData.lead_received_date} onEditChange={(v) => setEditData(d => ({...d, lead_received_date: v}))} type="datetime-local" />
-                    {!editing && <InfoRow icon={Clock} label="Speed to Lead" value={speedToLead} iconColor="text-orange-500" />}
-                    {!editing && <InfoRow icon={Clock} label="Days Since Received" value={daysSinceReceived != null ? `${daysSinceReceived} days` : null} />}
-                  </div>
-                </div>
-              )}
-
               {/* Project Details */}
               {(lead.project_type || lead.project_size || lead.budget_range || lead.timeline || editing) && (
                 <div>
@@ -364,7 +340,7 @@ export default function LeadDetailsDrawer({ leadId, open, onOpenChange, onLeadUp
                     <button onClick={() => setShowConfirm(true)} className="flex-1 px-4 py-2.5 text-sm font-medium bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center justify-center gap-2">
                       <Save className="w-4 h-4" /> Save Changes
                     </button>
-                    <button onClick={() => { setEditing(false); setEditData({ name: lead.name || '', email: lead.email || '', phone: lead.phone || '', appointment_date: lead.appointment_date ? lead.appointment_date.slice(0, 16) : '', date_appointment_set: lead.date_appointment_set ? lead.date_appointment_set.slice(0, 16) : '', lead_received_date: lead.lead_received_date ? lead.lead_received_date.slice(0, 16) : '', project_type: lead.project_type || '', project_size: lead.project_size || '', budget_range: lead.budget_range || '', timeline: lead.timeline || '', sale_amount: lead.sale_amount || '', date_sold: lead.date_sold || '', notes: lead.notes || '' }); }} className="flex-1 px-4 py-2.5 text-sm font-medium bg-gray-100 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-200">
+                    <button onClick={() => { setEditing(false); setEditData({ name: lead.name || '', email: lead.email || '', phone: lead.phone || '', appointment_date: lead.appointment_date ? lead.appointment_date.slice(0, 16) : '', date_appointment_set: lead.date_appointment_set ? lead.date_appointment_set.slice(0, 16) : '', project_type: lead.project_type || '', project_size: lead.project_size || '', budget_range: lead.budget_range || '', timeline: lead.timeline || '', sale_amount: lead.sale_amount || '', date_sold: lead.date_sold || '', notes: lead.notes || '' }); }} className="flex-1 px-4 py-2.5 text-sm font-medium bg-gray-100 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-200">
                       Cancel
                     </button>
                   </div>
