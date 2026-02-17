@@ -10,6 +10,7 @@ export default function LeaderboardWidget({ user, leaderboard, lastMonthBoard, s
   const lastRank = lastMyStats ? lastMonthBoard.findIndex(s => s.id === user.id) + 1 : null;
 
   const rankChange = lastRank ? lastRank - myRank : null;
+  const isFirst = myRank === 1;
 
   // Calculate spiff progress for current user
   const now = new Date();
