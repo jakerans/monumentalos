@@ -50,7 +50,7 @@ export default function SpiffTracker({ spiffs, leads, user }) {
     if (mySpiffs.length <= 1) return;
     const interval = setInterval(() => {
       setActiveIndex(prev => (prev + 1) % mySpiffs.length);
-    }, 4000);
+    }, 12000);
     return () => clearInterval(interval);
   }, [mySpiffs.length]);
 
