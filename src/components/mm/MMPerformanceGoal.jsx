@@ -210,7 +210,7 @@ function PlanCard({ plan, progressOverride }) {
                 <span className={`text-[9px] truncate max-w-full ${
                   reached ? 'text-purple-300 font-semibold' : isNext ? 'text-slate-400' : 'text-slate-600'
                 }`}>
-                  {tier.label}
+                  {tier.label} {tier.threshold >= 1000 ? `$${(tier.threshold / 1000).toFixed(0)}k` : `$${tier.threshold}`}
                 </span>
               </div>
             );
