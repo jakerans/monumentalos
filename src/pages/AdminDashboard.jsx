@@ -154,6 +154,9 @@ export default function AdminDashboard() {
           </div>
         </motion.div>
 
+        {/* Cash Health Panel — priority */}
+        <CashHealthPanel data={cashHealth} />
+
         {/* Business Health KPIs */}
         <BusinessHealthKPIs data={healthKPIs} />
 
