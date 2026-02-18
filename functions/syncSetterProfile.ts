@@ -39,13 +39,14 @@ Deno.serve(async (req) => {
 
     for (const setter of setterUsers) {
       const booked = mtdLeads.filter(l => l.booked_by_setter_id === setter.id).length;
-      const stlArr = mtdSTL.filter(l => l.setter_id === setter.id && l.speed_to_lead_minutes != null);
+      // STL: all leads where this setter has speed_to_lead_minutes, created this month — no status/dispo/outcome filter
+      const stlArr = allSTL.filter(l => l.setter_id === setter.id && new Date(l.created_date) >= mtdStart);
       const avgSTL = stlArr.length > 0
         ? Math.round(stlArr.reduce((s, l) => s + l.speed_to_lead_minutes, 0) / stlArr.length)
         : null;
 
       const lmBooked = lmLeads.filter(l => l.booked_by_setter_id === setter.id).length;
-      const lmSTLArr = lmSTL.filter(l => l.setter_id === setter.id && l.speed_to_lead_minutes != null);
+      const lmSTLArr = allSTL.filter(l => l.setter_id === setter.id && new Date(l.created_date) >= lmStart && new Date(l.created_date) <= lmEnd);
       const lmAvgSTL = lmSTLArr.length > 0
         ? Math.round(lmSTLArr.reduce((s, l) => s + l.speed_to_lead_minutes, 0) / lmSTLArr.length)
         : null;
