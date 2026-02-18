@@ -1,5 +1,5 @@
 import React from 'react';
-import { Eye, Trophy } from 'lucide-react';
+import { Eye } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 const REVENUE_PRESETS = [
@@ -12,14 +12,7 @@ const REVENUE_PRESETS = [
   { label: 'Reset', value: null },
 ];
 
-const RANK_PRESETS = [
-  { label: '#3', rank: 3, emoji: '🥉' },
-  { label: '#2', rank: 2, emoji: '🥈' },
-  { label: '#1', rank: 1, emoji: '🥇' },
-  { label: 'Reset', rank: null, emoji: null },
-];
-
-export default function PerfGoalTester({ onOverride, onRankOverride }) {
+export default function PerfGoalTester({ onOverride }) {
   return (
     <motion.div
       initial={{ opacity: 0, y: 8 }}
@@ -33,7 +26,7 @@ export default function PerfGoalTester({ onOverride, onRankOverride }) {
 
       {/* Revenue presets */}
       <p className="text-[9px] text-slate-500 uppercase tracking-wider mb-1">Revenue</p>
-      <div className="flex flex-wrap gap-1.5 mb-2.5">
+      <div className="flex flex-wrap gap-1.5">
         {REVENUE_PRESETS.map(p => (
           <button
             key={p.label}
@@ -48,32 +41,6 @@ export default function PerfGoalTester({ onOverride, onRankOverride }) {
           </button>
         ))}
       </div>
-
-      {/* Rank presets */}
-      {onRankOverride && (
-        <>
-          <p className="text-[9px] text-slate-500 uppercase tracking-wider mb-1 flex items-center gap-1">
-            <Trophy className="w-2.5 h-2.5" /> Leaderboard Rank
-          </p>
-          <div className="flex flex-wrap gap-1.5">
-            {RANK_PRESETS.map(p => (
-              <button
-                key={p.label}
-                onClick={() => onRankOverride(p.rank)}
-                className={`px-2.5 py-1 text-[10px] font-bold rounded-md transition-all ${
-                  p.rank === null
-                    ? 'bg-slate-700 text-slate-300 hover:bg-slate-600'
-                    : p.rank === 1
-                    ? 'bg-yellow-500/20 text-yellow-300 border border-yellow-500/40 hover:bg-yellow-500/30'
-                    : 'bg-purple-500/15 text-purple-300 border border-purple-500/30 hover:bg-purple-500/25'
-                }`}
-              >
-                {p.emoji && <span className="mr-0.5">{p.emoji}</span>}{p.label}
-              </button>
-            ))}
-          </div>
-        </>
-      )}
     </motion.div>
   );
 }

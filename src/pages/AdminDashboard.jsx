@@ -16,7 +16,7 @@ import { Settings, Trophy, Eye } from 'lucide-react';
 import PageErrorBoundary from '../components/shared/PageErrorBoundary';
 import PageLoader from '../components/shared/PageLoader';
 import MMPerformanceGoal from '../components/mm/MMPerformanceGoal';
-import LeaderboardRankPreview from '../components/mm/LeaderboardRankPreview';
+import RankPreviewTester from '../components/mm/RankPreviewTester';
 import SpiffPreviewTester from '../components/admin/SpiffPreviewTester';
 import { motion } from 'framer-motion';
 import { useAutoAnimate } from '@formkit/auto-animate/react';
@@ -26,7 +26,6 @@ export default function AdminDashboard() {
   const [user, setUser] = useState(null);
   const [goalsOpen, setGoalsOpen] = useState(false);
   const [showPerfTester, setShowPerfTester] = useState(false);
-  const [rankOverride, setRankOverride] = useState(null);
   const now = new Date();
 
   useEffect(() => {
@@ -245,10 +244,10 @@ export default function AdminDashboard() {
             exit={{ opacity: 0, height: 0 }}
             className="space-y-4"
           >
-            {/* Performance Goal Tester */}
+            {/* Performance Goal Tester + Rank Tester */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-              <MMPerformanceGoal plans={[]} showTester={true} onRankOverride={setRankOverride} />
-              <LeaderboardRankPreview rank={rankOverride} />
+              <MMPerformanceGoal plans={[]} showTester={true} />
+              <RankPreviewTester />
             </div>
 
             {/* Spiff Widget Tester */}

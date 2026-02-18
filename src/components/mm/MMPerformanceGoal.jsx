@@ -39,7 +39,7 @@ function calcTieredBonus(tiers, progress) {
   return bonus;
 }
 
-export default function MMPerformanceGoal({ plans, showTester = false, onRankOverride }) {
+export default function MMPerformanceGoal({ plans, showTester = false }) {
   const activePlans = (plans || []).filter(p => p.status === 'active');
   const [progressOverride, setProgressOverride] = useState(null);
   if (activePlans.length === 0 && !showTester) return null;
@@ -105,7 +105,7 @@ export default function MMPerformanceGoal({ plans, showTester = false, onRankOve
           </h3>
         </div>
         <div className="p-3 space-y-3 relative z-10">
-          {showTester && <PerfGoalTester onOverride={setProgressOverride} onRankOverride={onRankOverride} />}
+          {showTester && <PerfGoalTester onOverride={setProgressOverride} />}
           {displayPlans.map(plan => (
             <PlanCard key={plan.id} plan={plan} progressOverride={progressOverride} />
           ))}
