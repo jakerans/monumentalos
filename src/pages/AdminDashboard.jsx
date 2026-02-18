@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
@@ -11,7 +11,6 @@ import MTDGoalProgress from '../components/admin/MTDGoalProgress';
 import GoalManagementModal from '../components/admin/GoalManagementModal';
 import PLComparisonRow from '../components/admin/PLComparisonRow.jsx';
 import StatCompareCard from '../components/admin/StatCompareCard.jsx';
-import dayjs from 'dayjs';
 import { Settings, Trophy, Eye, RefreshCw } from 'lucide-react';
 import PageErrorBoundary from '../components/shared/PageErrorBoundary';
 import PageLoader from '../components/shared/PageLoader';
@@ -20,7 +19,7 @@ import MMPerformanceGoal from '../components/mm/MMPerformanceGoal';
 import RankPreviewTester from '../components/mm/RankPreviewTester';
 import SpiffPreviewTester from '../components/admin/SpiffPreviewTester';
 import STLPreviewTester from '../components/admin/STLPreviewTester';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { useAutoAnimate } from '@formkit/auto-animate/react';
 import { getEffectsEnabled } from '../components/shared/useEffectsToggle';
 
@@ -51,70 +50,29 @@ export default function AdminDashboard() {
   }, [navigate]);
 
   const retryConfig = { retry: 2, retryDelay: (attempt) => Math.min(1000 * 2 ** attempt, 10000) };
-  const { data: clients = [], isLoading: l1 } = useQuery({ queryKey: ['admin-clients'], queryFn: () => base44.entities.Client.list(), staleTime: 5 * 60 * 1000, ...retryConfig });
-  const { data: leads = [], isLoading: l2 } = useQuery({ queryKey: ['admin-leads'], queryFn: () => base44.entities.Lead.list('-created_date', 5000), staleTime: 2 * 60 * 1000, ...retryConfig });
-  const { data: spiffs = [] } = useQuery({ queryKey: ['admin-spiffs'], queryFn: () => base44.entities.Spiff.filter({ status: 'active' }), staleTime: 5 * 60 * 1000, ...retryConfig });
-  const { data: spend = [], isLoading: l3 } = useQuery({ queryKey: ['admin-spend'], queryFn: () => base44.entities.Spend.list('-date', 5000), staleTime: 2 * 60 * 1000, ...retryConfig });
-  const { data: payments = [], isLoading: l4 } = useQuery({ queryKey: ['admin-payments'], queryFn: () => base44.entities.Payment.list('-date', 5000), staleTime: 2 * 60 * 1000, ...retryConfig });
-  const { data: expenses = [], isLoading: l5 } = useQuery({ queryKey: ['admin-expenses'], queryFn: () => base44.entities.Expense.list('-date', 1000), staleTime: 2 * 60 * 1000, ...retryConfig });
-  const { data: goals = [], refetch: refetchGoals } = useQuery({ queryKey: ['admin-goals'], queryFn: () => base44.entities.CompanyGoal.list(), staleTime: 10 * 60 * 1000, ...retryConfig });
-  const { data: billingRecords = [] } = useQuery({ queryKey: ['admin-billing'], queryFn: () => base44.entities.MonthlyBilling.list('-billing_month', 100), staleTime: 5 * 60 * 1000, ...retryConfig });
-  const { data: users = [] } = useQuery({ queryKey: ['admin-users'], queryFn: () => base44.entities.User.list(), staleTime: 5 * 60 * 1000, ...retryConfig });
 
-  const isLoading = l1 || l2 || l3 || l4 || l5;
+  // Single backend call for all dashboard data
+  const { data: dashData, isLoading, refetch: refetchDash } = useQuery({
+    queryKey: ['admin-dashboard-data'],
+    queryFn: async () => {
+      const res = await base44.functions.invoke('getAdminDashboardData');
+      return res.data;
+    },
+    staleTime: 2 * 60 * 1000,
+    ...retryConfig,
+  });
 
-  const currentMonth = dayjs().format('YYYY-MM');
-  const lastMonth = dayjs().subtract(1, 'month').format('YYYY-MM');
-
-  const currentGoal = goals.find(g => g.month === currentMonth);
-  const lastMonthBilling = billingRecords.filter(b => b.billing_month === lastMonth);
-
-  const mtd = useMemo(() => {
-    const mtdStart = new Date(now.getFullYear(), now.getMonth(), 1);
-    const mtdEnd = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59);
-    const lmStart = new Date(now.getFullYear(), now.getMonth() - 1, 1);
-    const lmEnd = new Date(now.getFullYear(), now.getMonth(), 0, 23, 59, 59);
-    const inRange = (d) => { if (!d) return false; const dt = new Date(d); return dt >= mtdStart && dt <= mtdEnd; };
-    const inLM = (d) => { if (!d) return false; const dt = new Date(d); return dt >= lmStart && dt <= lmEnd; };
-
-    const calcPeriod = (rangeFn) => {
-      let grossRevenue = 0;
-      clients.filter(c => c.status === 'active').forEach(client => {
-        const bt = client.billing_type || 'pay_per_show';
-        const cLeads = leads.filter(l => l.client_id === client.id);
-        if (bt === 'pay_per_show') {
-          grossRevenue += cLeads.filter(l => l.disposition === 'showed' && rangeFn(l.appointment_date)).length * (client.price_per_shown_appointment || 0);
-        } else if (bt === 'pay_per_set') {
-          grossRevenue += cLeads.filter(l => l.date_appointment_set && rangeFn(l.date_appointment_set)).length * (client.price_per_set_appointment || 0);
-        } else if (bt === 'retainer') {
-          grossRevenue += (client.retainer_amount || 0);
-        }
-      });
-      const collected = payments.filter(p => rangeFn(p.date)).reduce((s, p) => s + (p.amount || 0), 0);
-      const rangeExpenses = expenses.filter(e => rangeFn(e.date));
-      const cogs = rangeExpenses.filter(e => e.expense_type === 'cogs').reduce((s, e) => s + (e.amount || 0), 0);
-      const overhead = rangeExpenses.filter(e => e.expense_type !== 'cogs').reduce((s, e) => s + (e.amount || 0), 0);
-      const grossProfit = grossRevenue - cogs;
-      const netProfit = collected - cogs - overhead;
-      const grossMargin = grossRevenue > 0 ? (grossProfit / grossRevenue) * 100 : 0;
-      const netMargin = collected > 0 ? (netProfit / collected) * 100 : 0;
-      return { grossRevenue, collected, cogs, overhead, grossProfit, netProfit, grossMargin, netMargin };
-    };
-
-    const current = calcPeriod(inRange);
-    const prior = calcPeriod(inLM);
-    return { ...current, prior };
-  }, [clients, leads, payments, expenses]);
-
-  // Setter leaderboard
-  const setters = users.filter(u => u.app_role === 'setter');
-  const mtdStart = new Date(now.getFullYear(), now.getMonth(), 1);
-  const setterStats = setters.map(setter => {
-    const booked = leads.filter(l => l.booked_by_setter_id === setter.id && l.date_appointment_set && new Date(l.date_appointment_set) >= mtdStart).length;
-    const stlLeads = leads.filter(l => l.setter_id === setter.id && l.speed_to_lead_minutes != null && new Date(l.created_date) >= mtdStart);
-    const avgSTL = stlLeads.length > 0 ? Math.round(stlLeads.reduce((s, l) => s + l.speed_to_lead_minutes, 0) / stlLeads.length) : null;
-    return { name: setter.full_name, booked, avgSTL };
-  }).sort((a, b) => b.booked - a.booked);
+  const healthKPIs = dashData?.healthKPIs || {};
+  const goalChartData = dashData?.goalChartData || { counts: {}, total: 0, healthyPct: 0 };
+  const revenueBreakdown = dashData?.revenueBreakdown || {};
+  const mtd = dashData?.mtdPL || { grossRevenue: 0, collected: 0, cogs: 0, overhead: 0, grossProfit: 0, netProfit: 0, grossMargin: 0, netMargin: 0 };
+  const priorPL = dashData?.priorPL || mtd;
+  const statCompare = dashData?.statCompare || {};
+  const setterStats = dashData?.setterStats || [];
+  const currentGoal = dashData?.currentGoal || null;
+  const goals = dashData?.goals || [];
+  const clients = dashData?.clients || [];
+  const spiffs = dashData?.spiffs || [];
 
   const [leaderboardRef] = useAutoAnimate({ duration: 300, easing: 'ease-out' });
 
