@@ -134,7 +134,7 @@ export default function SpiffManager({ leads, users }) {
   const [createOpen, setCreateOpen] = useState(false);
   const [form, setForm] = useState({
     title: '', description: '', scope: 'team_each', assigned_setter_id: '',
-    qualifier: 'appointments', goal_value: '', reward: '', due_date: '', status: 'active',
+    qualifier: 'appointments', goal_value: '', reward: '', due_date: '', is_daily: false, status: 'active',
   });
 
   const { data: spiffs = [], refetch } = useQuery({
@@ -176,14 +176,16 @@ export default function SpiffManager({ leads, users }) {
     setForm({
       title: '', description: '', scope: 'team_each', assigned_setter_id: '',
       qualifier: 'appointments', goal_value: '', reward: '',
-      due_date: endOfMonth.toISOString().split('T')[0], status: 'active',
+      due_date: endOfMonth.toISOString().split('T')[0], is_daily: false, status: 'active',
     });
   };
 
   const handleCreate = () => {
+    const finalDueDate = form.is_daily ? new Date().toISOString().split('T')[0] : form.due_date;
     const data = {
       ...form,
       goal_value: Number(form.goal_value),
+      due_date: finalDueDate,
       ...(form.scope !== 'individual' ? { assigned_setter_id: undefined } : {}),
     };
     createMutation.mutate(data);
@@ -234,7 +236,10 @@ export default function SpiffManager({ leads, users }) {
                   {sp.description && <p className="text-[10px] text-slate-500 mt-0.5">{sp.description}</p>}
                   <div className="flex items-center gap-3 mt-1 text-[10px] text-slate-500">
                     {sp.reward && <span className="text-purple-400 font-medium">{sp.reward}</span>}
-                    {sp.due_date && (
+                    {sp.is_daily && (
+                      <span className="text-orange-400 font-bold flex items-center gap-0.5">🔥 Daily</span>
+                    )}
+                    {sp.due_date && !sp.is_daily && (
                       <span className="flex items-center gap-0.5">
                         <Clock className="w-2.5 h-2.5" />
                         Due {new Date(sp.due_date + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
@@ -336,11 +341,28 @@ export default function SpiffManager({ leads, users }) {
                   placeholder="e.g. $200 bonus" />
               </div>
             </div>
-            <div>
-              <label className="text-[10px] text-slate-400 uppercase mb-1 block">Due Date</label>
-              <input type="date" value={form.due_date} onChange={e => setForm({ ...form, due_date: e.target.value })}
-                className="w-full px-3 py-2 text-sm bg-slate-900 border border-slate-700 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-[#D6FF03]" />
+            {/* Daily Spiff Toggle */}
+            <div className="flex items-center gap-3 py-1">
+              <button
+                type="button"
+                onClick={() => setForm({ ...form, is_daily: !form.is_daily })}
+                className={`relative w-10 h-5 rounded-full transition-colors ${form.is_daily ? 'bg-orange-500' : 'bg-slate-700'}`}
+              >
+                <div className={`absolute top-0.5 w-4 h-4 rounded-full bg-white shadow transition-transform ${form.is_daily ? 'translate-x-5' : 'translate-x-0.5'}`} />
+              </button>
+              <div>
+                <span className="text-xs text-white font-medium">Daily Spiff</span>
+                <p className="text-[10px] text-slate-500">Due by end of today — shows blazing banner on setter dashboard</p>
+              </div>
             </div>
+
+            {!form.is_daily && (
+              <div>
+                <label className="text-[10px] text-slate-400 uppercase mb-1 block">Due Date</label>
+                <input type="date" value={form.due_date} onChange={e => setForm({ ...form, due_date: e.target.value })}
+                  className="w-full px-3 py-2 text-sm bg-slate-900 border border-slate-700 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-[#D6FF03]" />
+              </div>
+            )}
             <button
               onClick={handleCreate}
               disabled={!form.title || !form.goal_value || (form.scope === 'individual' && !form.assigned_setter_id)}
