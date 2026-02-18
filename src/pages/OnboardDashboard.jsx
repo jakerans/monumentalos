@@ -29,6 +29,7 @@ export default function OnboardDashboard() {
   const [showCreateClient, setShowCreateClient] = useState(false);
   const [contactsClient, setContactsClient] = useState(null);
   const [inviteClient, setInviteClient] = useState(null);
+  const [syncing, setSyncing] = useState(false);
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -138,6 +139,23 @@ export default function OnboardDashboard() {
                 ))}
               </div>
               <div className="flex gap-2">
+                <button
+                  onClick={async () => {
+                    setSyncing(true);
+                    try {
+                      const res = await base44.functions.invoke('syncClientsSheet');
+                      const d = res.data;
+                      toast({ title: 'Sheet Synced', description: `Sheet: +${d.sheetCreated} new, ${d.sheetUpdated} updated · DB: +${d.dbCreated} new, ${d.dbUpdated} updated`, variant: 'success' });
+                    } catch (e) {
+                      toast({ title: 'Sync Failed', description: e.message, variant: 'destructive' });
+                    }
+                    setSyncing(false);
+                  }}
+                  disabled={syncing}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium border border-slate-600 text-slate-300 rounded-md hover:bg-slate-800 disabled:opacity-50"
+                >
+                  <RefreshCw className={`w-3.5 h-3.5 ${syncing ? 'animate-spin' : ''}`} /> {syncing ? 'Syncing...' : 'Sync Sheet'}
+                </button>
                 <button
                   onClick={() => setShowCreateClient(true)}
                   className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium border border-slate-600 text-slate-300 rounded-md hover:bg-slate-800"
