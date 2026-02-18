@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
+import AnimatedTable from '../shared/AnimatedTable';
 
 const BILLING_LABELS = {
   pay_per_show: 'Per Show',
@@ -9,9 +10,9 @@ const BILLING_LABELS = {
 };
 
 const BILLING_COLORS = {
-  pay_per_show: 'bg-blue-100 text-blue-700',
-  pay_per_set: 'bg-purple-100 text-purple-700',
-  retainer: 'bg-amber-100 text-amber-700',
+  pay_per_show: 'bg-blue-500/20 text-blue-400',
+  pay_per_set: 'bg-purple-500/20 text-purple-400',
+  retainer: 'bg-amber-500/20 text-amber-400',
 };
 
 function getBillingRate(client) {
@@ -25,82 +26,65 @@ export default function ClientOverviewTable({ clients, leads, spend, payments })
   const now = new Date();
   const thisMonthStart = new Date(now.getFullYear(), now.getMonth(), 1);
 
-  const rows = clients.filter(c => c.status === 'active').map(client => {
+  const rows = useMemo(() => clients.filter(c => c.status === 'active').map(client => {
     const cLeads = leads.filter(l => l.client_id === client.id);
-    const mtdLeads = cLeads.filter(l => new Date(l.created_date) >= thisMonthStart);
-    const mtdBooked = cLeads.filter(l => l.date_appointment_set && new Date(l.date_appointment_set) >= thisMonthStart);
-    const mtdShowed = cLeads.filter(l => l.disposition === 'showed' && l.appointment_date && new Date(l.appointment_date) >= thisMonthStart);
-
-    const mtdSpend = spend
-      .filter(s => s.client_id === client.id && new Date(s.date) >= thisMonthStart)
-      .reduce((s, r) => s + (r.amount || 0), 0);
+    const mtdLeads = cLeads.filter(l => new Date(l.created_date) >= thisMonthStart).length;
+    const mtdBooked = cLeads.filter(l => l.date_appointment_set && new Date(l.date_appointment_set) >= thisMonthStart).length;
+    const mtdShowed = cLeads.filter(l => l.disposition === 'showed' && l.appointment_date && new Date(l.appointment_date) >= thisMonthStart).length;
+    const mtdSpend = spend.filter(s => s.client_id === client.id && new Date(s.date) >= thisMonthStart).reduce((s, r) => s + (r.amount || 0), 0);
 
     const billingType = client.billing_type || 'pay_per_show';
     let mtdBilled = 0;
-    if (billingType === 'pay_per_show') mtdBilled = mtdShowed.length * (client.price_per_shown_appointment || 0);
-    else if (billingType === 'pay_per_set') mtdBilled = mtdBooked.length * (client.price_per_set_appointment || 0);
+    if (billingType === 'pay_per_show') mtdBilled = mtdShowed * (client.price_per_shown_appointment || 0);
+    else if (billingType === 'pay_per_set') mtdBilled = mtdBooked * (client.price_per_set_appointment || 0);
     else if (billingType === 'retainer') mtdBilled = client.retainer_amount || 0;
 
-    const mtdPaid = payments
-      .filter(p => p.client_id === client.id && new Date(p.date) >= thisMonthStart)
-      .reduce((s, p) => s + (p.amount || 0), 0);
+    const mtdPaid = payments.filter(p => p.client_id === client.id && new Date(p.date) >= thisMonthStart).reduce((s, p) => s + (p.amount || 0), 0);
 
-    return { ...client, mtdLeads: mtdLeads.length, mtdBooked: mtdBooked.length, mtdShowed: mtdShowed.length, mtdSpend, mtdBilled, mtdPaid, billingType };
-  });
+    return { ...client, mtdLeads, mtdBooked, mtdShowed, mtdSpend, mtdBilled, mtdPaid, billingType };
+  }), [clients, leads, spend, payments]);
+
+  const columns = [
+    {
+      key: 'name', label: 'Client', align: 'left', sortable: true,
+      render: (r) => (
+        <Link to={createPageUrl('ClientView') + `?clientId=${r.id}`} className="font-medium text-blue-400 hover:text-blue-300 transition-colors">
+          {r.name}
+        </Link>
+      ),
+    },
+    {
+      key: 'billingType', label: 'Billing', align: 'left', sortable: true,
+      render: (r) => (
+        <span className={`px-1.5 py-0.5 text-[10px] font-medium rounded ${BILLING_COLORS[r.billingType] || 'bg-slate-700 text-slate-300'}`}>
+          {BILLING_LABELS[r.billingType] || r.billingType}
+        </span>
+      ),
+    },
+    {
+      key: 'rate', label: 'Rate', align: 'right', sortable: false,
+      render: (r) => <span className="text-slate-300">{getBillingRate(r)}</span>,
+    },
+    { key: 'mtdLeads', label: 'Leads', align: 'right', sortable: true, render: (r) => <span className="text-slate-300">{r.mtdLeads}</span> },
+    { key: 'mtdBooked', label: 'Booked', align: 'right', sortable: true, render: (r) => <span className="text-slate-300">{r.mtdBooked}</span> },
+    { key: 'mtdShowed', label: 'Showed', align: 'right', sortable: true, render: (r) => <span className="text-slate-300">{r.mtdShowed}</span> },
+    { key: 'mtdSpend', label: 'Ad Spend', align: 'right', sortable: true, render: (r) => <span className="text-slate-300">${r.mtdSpend.toLocaleString()}</span> },
+    { key: 'mtdBilled', label: 'To Be Billed', align: 'right', sortable: true, render: (r) => <span className="font-medium text-green-400">${r.mtdBilled.toLocaleString()}</span> },
+    { key: 'mtdPaid', label: 'Collected', align: 'right', sortable: true, render: (r) => <span className="font-medium text-emerald-400">${r.mtdPaid.toLocaleString()}</span> },
+  ];
 
   return (
-    <div className="bg-slate-800/50 rounded-lg border border-slate-700/50 overflow-hidden">
-      <div className="px-4 py-3 border-b border-slate-700/50 flex items-center justify-between">
-        <h2 className="text-sm font-bold text-white">Client Overview (MTD)</h2>
-        <Link
-          to={createPageUrl('ClientManagement')}
-          className="px-3 py-1 text-xs font-medium bg-blue-600 text-white rounded hover:bg-blue-700"
-        >
+    <AnimatedTable
+      columns={columns}
+      data={rows}
+      title="Client Overview (MTD)"
+      titleRight={
+        <Link to={createPageUrl('ClientManagement')} className="px-3 py-1 text-xs font-medium bg-blue-600 text-white rounded hover:bg-blue-700">
           + Add Client
         </Link>
-      </div>
-      <div className="overflow-x-auto">
-        <table className="w-full text-sm">
-          <thead className="bg-slate-900/50 text-xs text-slate-400 uppercase">
-            <tr>
-              <th className="px-4 py-2 text-left">Client</th>
-              <th className="px-3 py-2 text-left">Billing</th>
-              <th className="px-3 py-2 text-right">Rate</th>
-              <th className="px-3 py-2 text-right">Leads</th>
-              <th className="px-3 py-2 text-right">Booked</th>
-              <th className="px-3 py-2 text-right">Showed</th>
-              <th className="px-3 py-2 text-right">Ad Spend</th>
-              <th className="px-3 py-2 text-right">To Be Billed</th>
-              <th className="px-3 py-2 text-right">Collected</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-slate-700/30">
-            {rows.length === 0 ? (
-              <tr><td colSpan={9} className="px-4 py-6 text-center text-slate-500">No active clients</td></tr>
-            ) : rows.map(r => (
-              <tr key={r.id} className="hover:bg-slate-700/20">
-                <td className="px-4 py-2.5">
-                  <Link to={createPageUrl('ClientView') + `?clientId=${r.id}`} className="font-medium text-blue-600 hover:text-blue-700">
-                    {r.name}
-                  </Link>
-                </td>
-                <td className="px-3 py-2.5">
-                  <span className={`px-1.5 py-0.5 text-[10px] font-medium rounded ${BILLING_COLORS[r.billingType] || 'bg-gray-100 text-gray-600'}`}>
-                    {BILLING_LABELS[r.billingType] || r.billingType}
-                  </span>
-                </td>
-                <td className="px-3 py-2.5 text-right text-slate-300">{getBillingRate(r)}</td>
-                <td className="px-3 py-2.5 text-right text-slate-300">{r.mtdLeads}</td>
-                <td className="px-3 py-2.5 text-right text-slate-300">{r.mtdBooked}</td>
-                <td className="px-3 py-2.5 text-right text-slate-300">{r.mtdShowed}</td>
-                <td className="px-3 py-2.5 text-right text-slate-300">${r.mtdSpend.toLocaleString()}</td>
-                <td className="px-3 py-2.5 text-right font-medium text-green-400">${r.mtdBilled.toLocaleString()}</td>
-                <td className="px-3 py-2.5 text-right font-medium text-emerald-400">${r.mtdPaid.toLocaleString()}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-    </div>
+      }
+      emptyMessage="No active clients"
+      initialSort={{ key: 'mtdBilled', direction: 'desc' }}
+    />
   );
 }
