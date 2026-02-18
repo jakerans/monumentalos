@@ -37,6 +37,7 @@ export default function SetterDashboard() {
   const [showDQ, setShowDQ] = useState(false);
   const [celebration, setCelebration] = useState(null); // { type: 'rank_up' | 'booking' }
   const prevRankRef = useRef(null);
+  const [animateRef] = useAutoAnimate({ duration: 350, easing: 'ease-out' });
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -318,7 +319,7 @@ export default function SetterDashboard() {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.2, duration: 0.4 }}
-          ref={useAutoAnimate({ duration: 350, easing: 'ease-out' })[0]}
+          ref={animateRef}
           className={`grid grid-cols-1 gap-4 sm:gap-6 ${showDQ ? 'md:grid-cols-4' : 'md:grid-cols-3'}`}
         >
           <PipelineColumn
