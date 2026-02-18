@@ -103,11 +103,7 @@ Keep it conversational, use 1-2 emojis max, and focus on what they can DO today.
               <p className="text-sm text-slate-200 leading-relaxed">{message}</p>
             )}
           </div>
-          {!loading && (
-            <button onClick={() => setDismissed(true)} className="flex-shrink-0 text-slate-500 hover:text-slate-300 transition-colors">
-              <X className="w-4 h-4" />
-            </button>
-          )}
+          {/* No dismiss button — always visible */}
         </div>
       </motion.div>
     </AnimatePresence>
