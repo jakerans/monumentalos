@@ -73,7 +73,7 @@ export default function LeadDetailPanel({ lead, clientName, setterName, bookedBy
           </div>
         </SheetHeader>
 
-        <div className="p-5 space-y-5">
+        <div className="p-5 space-y-5 overflow-y-auto" style={{ maxHeight: 'calc(100vh - 80px)' }}>
           {/* Quick Actions */}
           <div className="flex gap-2">
             {lead.status === 'new' && (
