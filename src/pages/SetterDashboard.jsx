@@ -249,12 +249,8 @@ export default function SetterDashboard() {
   if (!user) return null;
   if (l1 || l2) return <PageLoader message="Loading pipeline..." />;
 
-  // Build set of retainer client IDs to exclude from setter view
-  const retainerClientIds = new Set(clients.filter(c => c.billing_type === 'retainer').map(c => c.id));
-
-  // Filter leads — hide retainer leads, final outcomes (sold/lost), and completed status
+  // Filter leads — hide leads with a final outcome (sold/lost) or completed status
   const filtered = leads.filter(l => {
-    if (retainerClientIds.has(l.client_id)) return false;
     if (l.outcome === 'sold' || l.outcome === 'lost' || l.status === 'completed') return false;
     const matchSearch = !search || l.name?.toLowerCase().includes(search.toLowerCase()) || l.phone?.includes(search) || l.email?.toLowerCase().includes(search.toLowerCase());
     const matchClient = clientFilter === 'all' || l.client_id === clientFilter;
@@ -321,7 +317,7 @@ export default function SetterDashboard() {
             <SpiffTracker spiffs={spiffs} leads={leads} user={user} />
           </div>
         </div>
-        <SetterStats leads={leads.filter(l => !retainerClientIds.has(l.client_id))} user={user} />
+        <SetterStats leads={leads} user={user} />
 
         {/* Search & Filter Bar */}
         <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 mb-4 sm:mb-6">
@@ -343,7 +339,7 @@ export default function SetterDashboard() {
               className="px-3 py-2 text-sm border border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#D6FF03] bg-slate-800 text-white"
             >
               <option value="all">All Clients</option>
-              {clients.filter(c => c.billing_type !== 'retainer').map(c => (
+              {clients.map(c => (
                 <option key={c.id} value={c.id}>{c.name}</option>
               ))}
             </select>
