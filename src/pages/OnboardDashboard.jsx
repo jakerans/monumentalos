@@ -16,6 +16,7 @@ import ClientContactsPanel from '../components/onboard/ClientContactsPanel';
 import TemplateManager from '../components/onboard/TemplateManager';
 import ClientList from '../components/onboard/ClientList';
 import InviteClientUserModal from '../components/onboard/InviteClientUserModal';
+import EditClientModal from '../components/onboard/EditClientModal';
 import PageErrorBoundary from '../components/shared/PageErrorBoundary';
 import PageLoader from '../components/shared/PageLoader';
 
@@ -29,6 +30,7 @@ export default function OnboardDashboard() {
   const [showCreateClient, setShowCreateClient] = useState(false);
   const [contactsClient, setContactsClient] = useState(null);
   const [inviteClient, setInviteClient] = useState(null);
+  const [editClient, setEditClient] = useState(null);
   const [syncing, setSyncing] = useState(false);
 
   useEffect(() => {
@@ -234,11 +236,18 @@ export default function OnboardDashboard() {
             <ClientList
               clients={clients}
               onInviteUser={(client) => setInviteClient(client)}
+              onEditClient={(client) => setEditClient(client)}
             />
             <InviteClientUserModal
               open={!!inviteClient}
               onOpenChange={(v) => { if (!v) setInviteClient(null); }}
               client={inviteClient}
+            />
+            <EditClientModal
+              open={!!editClient}
+              onOpenChange={(v) => { if (!v) setEditClient(null); }}
+              client={editClient}
+              onSaved={refetchClients}
             />
           </>
         ) : (
