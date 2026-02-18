@@ -2,10 +2,12 @@ import React from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import { base44 } from '@/api/base44Client';
-import { LayoutDashboard, LogOut, ClipboardCheck } from 'lucide-react';
+import { LayoutDashboard, LogOut, ClipboardCheck, Zap, ZapOff } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { useEffectsToggle } from '../shared/useEffectsToggle';
 
 export default function MMNav({ user, clients, pendingOnboardCount = 0 }) {
+  const { effectsOn, toggle: toggleEffects } = useEffectsToggle();
   const navigate = useNavigate();
 
   return (

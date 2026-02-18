@@ -3,8 +3,11 @@ import { useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import { base44 } from '@/api/base44Client';
 import { motion } from 'framer-motion';
+import { Zap, ZapOff } from 'lucide-react';
+import { useEffectsToggle } from '../shared/useEffectsToggle';
 
 export default function SetterNav({ user }) {
+  const { effectsOn, toggle: toggleEffects } = useEffectsToggle();
   const navigate = useNavigate();
 
   return (
