@@ -25,11 +25,8 @@ Deno.serve(async (req) => {
       db.SetterProfile.list(),
     ]);
 
-    // Also need STL leads — fetch separately with speed_to_lead_minutes existing
-    const [mtdSTL, lmSTL] = await Promise.all([
-      db.Lead.filter({ speed_to_lead_minutes: { $exists: true }, created_date: { $gte: mtdStart.toISOString() } }, '-created_date', 2000),
-      db.Lead.filter({ speed_to_lead_minutes: { $exists: true }, created_date: { $gte: lmStart.toISOString(), $lte: lmEnd.toISOString() } }, '-created_date', 2000),
-    ]);
+    // STL leads — ALL leads with speed_to_lead_minutes, regardless of status/dispo/outcome
+    const allSTL = await db.Lead.filter({ speed_to_lead_minutes: { $exists: true } }, '-created_date', 5000);
 
     const setterUsers = allUsers.filter(u => u.app_role === 'setter');
 
