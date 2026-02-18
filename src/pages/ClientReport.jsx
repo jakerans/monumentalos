@@ -37,55 +37,27 @@ export default function ClientReport() {
 
   const clientId = getClientId();
 
-  const { data: clientInfo } = useQuery({
-    queryKey: ['client-info', clientId],
+  const { data: reportData } = useQuery({
+    queryKey: ['client-report-data', clientId, startDate, endDate],
     queryFn: async () => {
-      if (!clientId) return null;
-      const clients = await base44.entities.Client.filter({ id: clientId });
-      return clients[0] || null;
+      const res = await base44.functions.invoke('getClientReportData', {
+        client_id: clientId,
+        start_date: startDate,
+        end_date: endDate,
+      });
+      return res.data;
     },
     enabled: !!clientId,
+    staleTime: 2 * 60 * 1000,
+    retry: 2,
+    retryDelay: (attempt) => Math.min(1000 * 2 ** attempt, 10000),
   });
 
-  // Spend by date of spend
-  const { data: spendRecords = [] } = useQuery({
-    queryKey: ['report-spend', clientId, startDate, endDate],
-    queryFn: () => base44.entities.Spend.filter({
-      client_id: clientId,
-      date: { $gte: startDate, $lte: endDate }
-    }),
-    enabled: !!clientId,
-  });
-
-  // Appointments booked by date_appointment_set
-  const { data: bookedLeads = [] } = useQuery({
-    queryKey: ['report-booked', clientId, startDate, endDate],
-    queryFn: () => base44.entities.Lead.filter({
-      client_id: clientId,
-      date_appointment_set: { $gte: dayjs(startDate).toISOString(), $lte: dayjs(endDate).endOf('day').toISOString() }
-    }),
-    enabled: !!clientId,
-  });
-
-  // Appointments showed by appointment_date
-  const { data: appointmentLeads = [] } = useQuery({
-    queryKey: ['report-appointments', clientId, startDate, endDate],
-    queryFn: () => base44.entities.Lead.filter({
-      client_id: clientId,
-      appointment_date: { $gte: dayjs(startDate).toISOString(), $lte: dayjs(endDate).endOf('day').toISOString() }
-    }),
-    enabled: !!clientId,
-  });
-
-  // Sold by date_sold (win date)
-  const { data: soldLeads = [] } = useQuery({
-    queryKey: ['report-sold', clientId, startDate, endDate],
-    queryFn: () => base44.entities.Lead.filter({
-      client_id: clientId,
-      date_sold: { $gte: startDate, $lte: endDate }
-    }),
-    enabled: !!clientId,
-  });
+  const clientInfo = reportData?.clientInfo || null;
+  const spendRecords = reportData?.spendRecords || [];
+  const bookedLeads = reportData?.bookedLeads || [];
+  const appointmentLeads = reportData?.appointmentLeads || [];
+  const soldLeads = reportData?.soldLeads || [];
 
   if (!user) return null;
 

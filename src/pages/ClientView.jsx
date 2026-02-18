@@ -46,29 +46,23 @@ export default function ClientView() {
     checkAuth();
   }, [navigate]);
 
-  const { data: client } = useQuery({
-    queryKey: ['client', clientId],
+  const { data: viewData, refetch: refetchViewData, isLoading: viewLoading } = useQuery({
+    queryKey: ['client-view-data', clientId],
     queryFn: async () => {
-      const clients = await base44.entities.Client.filter({ id: clientId });
-      return clients[0];
+      const res = await base44.functions.invoke('getClientViewData', { client_id: clientId });
+      return res.data;
     },
     enabled: !!clientId,
-    staleTime: 5 * 60 * 1000,
+    staleTime: 2 * 60 * 1000,
+    retry: 2,
+    retryDelay: (attempt) => Math.min(1000 * 2 ** attempt, 10000),
   });
 
-  const { data: allLeads = [], refetch: refetchLeads, isLoading: l1 } = useQuery({
-    queryKey: ['client-all-leads', clientId],
-    queryFn: () => base44.entities.Lead.filter({ client_id: clientId }, '-created_date', 2000),
-    enabled: !!clientId,
-    staleTime: 2 * 60 * 1000,
-  });
-
-  const { data: allSpend = [], refetch: refetchSpend, isLoading: l2 } = useQuery({
-    queryKey: ['client-all-spend', clientId],
-    queryFn: () => base44.entities.Spend.filter({ client_id: clientId }, '-date', 2000),
-    enabled: !!clientId,
-    staleTime: 2 * 60 * 1000,
-  });
+  const client = viewData?.client || null;
+  const allLeads = viewData?.leads || [];
+  const allSpend = viewData?.spend || [];
+  const refetchLeads = refetchViewData;
+  const refetchSpend = refetchViewData;
 
   const startISO = dayjs(startDate).startOf('day').toISOString();
   const endISO = dayjs(endDate).endOf('day').toISOString();
@@ -153,7 +147,7 @@ export default function ClientView() {
   }, [leads, bookedLeads, apptLeads, spendInRange, soldLeads]);
 
   if (!user) return null;
-  if (l1 || l2) return <PageLoader message="Loading client data..." />;
+  if (viewLoading) return <PageLoader message="Loading client data..." />;
 
   return (
     <PageErrorBoundary>

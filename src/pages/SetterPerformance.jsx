@@ -31,23 +31,23 @@ export default function SetterPerformance() {
     checkAuth();
   }, [navigate]);
 
-  const { data: clients = [] } = useQuery({
-    queryKey: ['sp-clients'],
-    queryFn: () => base44.entities.Client.list(),
+  const { data: dashData, isLoading } = useQuery({
+    queryKey: ['setter-performance-data'],
+    queryFn: async () => {
+      const res = await base44.functions.invoke('getSetterPerformanceData');
+      return res.data;
+    },
+    staleTime: 2 * 60 * 1000,
+    retry: 2,
+    retryDelay: (attempt) => Math.min(1000 * 2 ** attempt, 10000),
   });
 
-  const { data: leads = [], isLoading: leadsLoading } = useQuery({
-    queryKey: ['sp-leads'],
-    queryFn: () => base44.entities.Lead.list('-created_date', 5000),
-  });
-
-  const { data: users = [] } = useQuery({
-    queryKey: ['sp-users'],
-    queryFn: () => base44.entities.User.list(),
-  });
+  const clients = dashData?.clients || [];
+  const leads = dashData?.leads || [];
+  const users = dashData?.users || [];
 
   if (!user) return null;
-  if (leadsLoading) return <PageLoader message="Loading setter performance..." />;
+  if (isLoading) return <PageLoader message="Loading setter performance..." />;
 
   return (
     <PageErrorBoundary>

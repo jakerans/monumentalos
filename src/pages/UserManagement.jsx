@@ -31,15 +31,20 @@ export default function UserManagement() {
     checkAuth();
   }, [navigate]);
 
-  const { data: users = [], refetch: refetchUsers, isLoading: usersLoading } = useQuery({
-    queryKey: ['manage-users'],
-    queryFn: () => base44.entities.User.list(),
+  const { data: mgmtData, refetch: refetchAll, isLoading: usersLoading } = useQuery({
+    queryKey: ['user-management-data'],
+    queryFn: async () => {
+      const res = await base44.functions.invoke('getUserManagementData');
+      return res.data;
+    },
+    staleTime: 2 * 60 * 1000,
+    retry: 2,
+    retryDelay: (attempt) => Math.min(1000 * 2 ** attempt, 10000),
   });
 
-  const { data: clients = [] } = useQuery({
-    queryKey: ['manage-clients'],
-    queryFn: () => base44.entities.Client.list(),
-  });
+  const users = mgmtData?.users || [];
+  const clients = mgmtData?.clients || [];
+  const refetchUsers = refetchAll;
 
   if (!user) return null;
   if (usersLoading) return <PageLoader message="Loading users..." />;

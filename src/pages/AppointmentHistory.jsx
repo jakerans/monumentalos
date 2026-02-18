@@ -39,37 +39,21 @@ export default function AppointmentHistory() {
 
   const clientId = getClientId();
 
-  const { data: leads = [] } = useQuery({
-    queryKey: ['history-leads', clientId, clientInfo?.billing_type],
-    queryFn: async () => {
-      if (!clientId) return [];
-      const allLeads = await base44.entities.Lead.filter({ client_id: clientId });
-      const isRetainerClient = clientInfo?.billing_type === 'retainer';
-      return allLeads.filter(lead => {
-        if (isRetainerClient) {
-          // Retainer clients see completed/sold/lost/disqualified in history
-          return lead.status === 'completed' || lead.status === 'disqualified' || lead.outcome === 'sold' || lead.outcome === 'lost';
-        }
-        // Pay per set/show clients only see booked+ leads
-        if (lead.status !== 'appointment_booked' && lead.status !== 'completed') return false;
-        return lead.appointment_date && 
-          (lead.disposition === 'cancelled' || 
-           lead.disposition === 'showed' ||
-           (lead.outcome && lead.outcome !== 'pending'));
-      });
-    },
-    enabled: !!clientId,
-  });
-
-  const { data: clientInfo } = useQuery({
-    queryKey: ['client-info', clientId],
+  const { data: historyData } = useQuery({
+    queryKey: ['appointment-history-data', clientId],
     queryFn: async () => {
       if (!clientId) return null;
-      const clients = await base44.entities.Client.filter({ id: clientId });
-      return clients[0] || null;
+      const res = await base44.functions.invoke('getAppointmentHistoryData', { client_id: clientId });
+      return res.data;
     },
     enabled: !!clientId,
+    staleTime: 2 * 60 * 1000,
+    retry: 2,
+    retryDelay: (attempt) => Math.min(1000 * 2 ** attempt, 10000),
   });
+
+  const leads = historyData?.leads || [];
+  const clientInfo = historyData?.clientInfo || null;
 
   if (!user) return null;
 

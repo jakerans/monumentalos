@@ -25,20 +25,21 @@ export default function MMOnboard() {
     checkAuth();
   }, [navigate]);
 
-  const { data: allProjects = [] } = useQuery({
-    queryKey: ['mm-onboard-projects'],
-    queryFn: () => base44.entities.OnboardProject.filter({ status: 'in_progress' }),
+  const { data: onboardData, refetch: refetchOnboard } = useQuery({
+    queryKey: ['mm-onboard-data'],
+    queryFn: async () => {
+      const res = await base44.functions.invoke('getMMOnboardData');
+      return res.data;
+    },
+    staleTime: 2 * 60 * 1000,
+    retry: 2,
+    retryDelay: (attempt) => Math.min(1000 * 2 ** attempt, 10000),
   });
 
-  const { data: allTasks = [], refetch: refetchTasks } = useQuery({
-    queryKey: ['mm-onboard-tasks'],
-    queryFn: () => base44.entities.OnboardTask.list('-created_date', 1000),
-  });
-
-  const { data: allProjectsFull = [] } = useQuery({
-    queryKey: ['mm-onboard-projects-all'],
-    queryFn: () => base44.entities.OnboardProject.list('-created_date', 200),
-  });
+  const allProjects = onboardData?.activeProjects || [];
+  const allTasks = onboardData?.allTasks || [];
+  const allProjectsFull = onboardData?.allProjectsFull || [];
+  const refetchTasks = refetchOnboard;
 
   if (!user) return null;
 
