@@ -1,5 +1,29 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
 
+async function fetchAll(entityRef, sort, pageSize = 5000) {
+  let all = [];
+  let skip = 0;
+  while (true) {
+    const page = await entityRef.list(sort, pageSize, skip);
+    all = all.concat(page);
+    if (page.length < pageSize) break;
+    skip += pageSize;
+  }
+  return all;
+}
+
+async function fetchAllFiltered(entityRef, filter, sort, pageSize = 5000) {
+  let all = [];
+  let skip = 0;
+  while (true) {
+    const page = await entityRef.filter(filter, sort, pageSize, skip);
+    all = all.concat(page);
+    if (page.length < pageSize) break;
+    skip += pageSize;
+  }
+  return all;
+}
+
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
@@ -11,14 +35,16 @@ Deno.serve(async (req) => {
     const body = await req.json().catch(() => ({}));
     const { dateStart, dateEnd } = body;
 
-    // Fetch all data in parallel using service role
+    const sr = base44.asServiceRole.entities;
+
+    // Fetch all data in parallel using service role with pagination safety
     const [clients, allLeads, allSpend, onboardTasks, onboardProjects, employees] = await Promise.all([
-      base44.asServiceRole.entities.Client.filter({ status: 'active' }),
-      base44.asServiceRole.entities.Lead.list('-created_date', 5000),
-      base44.asServiceRole.entities.Spend.list('-date', 5000),
-      base44.asServiceRole.entities.OnboardTask.filter({ assigned_to: 'marketing_manager' }),
-      base44.asServiceRole.entities.OnboardProject.filter({ status: 'in_progress' }),
-      base44.asServiceRole.entities.Employee.filter({ user_id: user.id, status: 'active' }),
+      fetchAllFiltered(sr.Client, { status: 'active' }, '-created_date'),
+      fetchAll(sr.Lead, '-created_date'),
+      fetchAll(sr.Spend, '-date'),
+      fetchAllFiltered(sr.OnboardTask, { assigned_to: 'marketing_manager' }, '-created_date'),
+      fetchAllFiltered(sr.OnboardProject, { status: 'in_progress' }, '-created_date'),
+      fetchAllFiltered(sr.Employee, { user_id: user.id, status: 'active' }, '-created_date'),
     ]);
 
     // Performance pay plans

@@ -1,5 +1,17 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
 
+async function fetchAllFiltered(entityRef, filter, sort, pageSize = 5000) {
+  let all = [];
+  let skip = 0;
+  while (true) {
+    const page = await entityRef.filter(filter, sort, pageSize, skip);
+    all = all.concat(page);
+    if (page.length < pageSize) break;
+    skip += pageSize;
+  }
+  return all;
+}
+
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
@@ -12,24 +24,13 @@ Deno.serve(async (req) => {
     }
 
     const { revFetchStart } = await req.json();
+    const sr = base44.asServiceRole.entities;
 
     const [clients, leads, payments, expenses] = await Promise.all([
-      base44.asServiceRole.entities.Client.list(),
-      base44.asServiceRole.entities.Lead.filter(
-        { created_date: { $gte: revFetchStart } },
-        '-created_date',
-        5000
-      ),
-      base44.asServiceRole.entities.Payment.filter(
-        { date: { $gte: revFetchStart } },
-        '-date',
-        5000
-      ),
-      base44.asServiceRole.entities.Expense.filter(
-        { date: { $gte: revFetchStart } },
-        '-date',
-        5000
-      ),
+      sr.Client.list(),
+      fetchAllFiltered(sr.Lead, { created_date: { $gte: revFetchStart } }, '-created_date'),
+      fetchAllFiltered(sr.Payment, { date: { $gte: revFetchStart } }, '-date'),
+      fetchAllFiltered(sr.Expense, { date: { $gte: revFetchStart } }, '-date'),
     ]);
 
     return Response.json({ clients, leads, payments, expenses });

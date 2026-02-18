@@ -1,5 +1,17 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
 
+async function fetchAll(entityRef, sort, pageSize = 5000) {
+  let all = [];
+  let skip = 0;
+  while (true) {
+    const page = await entityRef.list(sort, pageSize, skip);
+    all = all.concat(page);
+    if (page.length < pageSize) break;
+    skip += pageSize;
+  }
+  return all;
+}
+
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
@@ -11,10 +23,12 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Forbidden' }, { status: 403 });
     }
 
+    const sr = base44.asServiceRole.entities;
+
     const [clients, leads, users] = await Promise.all([
-      base44.asServiceRole.entities.Client.list(),
-      base44.asServiceRole.entities.Lead.list('-created_date', 5000),
-      base44.asServiceRole.entities.User.list(),
+      sr.Client.list(),
+      fetchAll(sr.Lead, '-created_date'),
+      sr.User.list(),
     ]);
 
     return Response.json({ clients, leads, users });

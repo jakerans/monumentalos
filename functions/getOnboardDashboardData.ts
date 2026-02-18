@@ -1,5 +1,29 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
 
+async function fetchAll(entityRef, sort, pageSize = 5000) {
+  let all = [];
+  let skip = 0;
+  while (true) {
+    const page = await entityRef.list(sort, pageSize, skip);
+    all = all.concat(page);
+    if (page.length < pageSize) break;
+    skip += pageSize;
+  }
+  return all;
+}
+
+async function fetchAllFiltered(entityRef, filter, sort, pageSize = 5000) {
+  let all = [];
+  let skip = 0;
+  while (true) {
+    const page = await entityRef.filter(filter, sort, pageSize, skip);
+    all = all.concat(page);
+    if (page.length < pageSize) break;
+    skip += pageSize;
+  }
+  return all;
+}
+
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
@@ -12,12 +36,14 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Forbidden' }, { status: 403 });
     }
 
-    // Core data in parallel
+    const sr = base44.asServiceRole.entities;
+
+    // Core data in parallel with pagination safety
     const [projects, tasks, templates, clients] = await Promise.all([
-      base44.asServiceRole.entities.OnboardProject.list('-created_date', 200),
-      base44.asServiceRole.entities.OnboardTask.list('-created_date', 1000),
-      base44.asServiceRole.entities.OnboardTemplate.filter({ status: 'active' }),
-      base44.asServiceRole.entities.Client.list(),
+      fetchAll(sr.OnboardProject, '-created_date'),
+      fetchAll(sr.OnboardTask, '-created_date'),
+      fetchAllFiltered(sr.OnboardTemplate, { status: 'active' }, '-created_date'),
+      sr.Client.list(),
     ]);
 
     // Users call wrapped in try/catch for resilience

@@ -1,5 +1,29 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
 
+async function fetchAll(entityRef, sort, pageSize = 5000) {
+  let all = [];
+  let skip = 0;
+  while (true) {
+    const page = await entityRef.list(sort, pageSize, skip);
+    all = all.concat(page);
+    if (page.length < pageSize) break;
+    skip += pageSize;
+  }
+  return all;
+}
+
+async function fetchAllFiltered(entityRef, filter, sort, pageSize = 5000) {
+  let all = [];
+  let skip = 0;
+  while (true) {
+    const page = await entityRef.filter(filter, sort, pageSize, skip);
+    all = all.concat(page);
+    if (page.length < pageSize) break;
+    skip += pageSize;
+  }
+  return all;
+}
+
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
@@ -20,12 +44,14 @@ Deno.serve(async (req) => {
     const show60dStart = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 60);
     const dayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
 
-    // Fetch all data in parallel using service role
+    const sr = base44.asServiceRole.entities;
+
+    // Fetch all data in parallel using service role with pagination safety
     const [allLeads, clients, spiffs, profiles] = await Promise.all([
-      base44.asServiceRole.entities.Lead.filter({}, '-created_date', 5000),
-      base44.asServiceRole.entities.Client.filter({}),
-      base44.asServiceRole.entities.Spiff.filter({ status: 'active' }),
-      base44.asServiceRole.entities.SetterProfile.filter({ status: 'active' }),
+      fetchAll(sr.Lead, '-created_date'),
+      sr.Client.list(),
+      fetchAllFiltered(sr.Spiff, { status: 'active' }, '-created_date'),
+      fetchAllFiltered(sr.SetterProfile, { status: 'active' }, '-created_date'),
     ]);
 
     // --- Helpers ---

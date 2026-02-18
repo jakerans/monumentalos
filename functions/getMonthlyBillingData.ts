@@ -1,5 +1,17 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
 
+async function fetchAllFiltered(entityRef, filter, sort, pageSize = 5000) {
+  let all = [];
+  let skip = 0;
+  while (true) {
+    const page = await entityRef.filter(filter, sort, pageSize, skip);
+    all = all.concat(page);
+    if (page.length < pageSize) break;
+    skip += pageSize;
+  }
+  return all;
+}
+
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
@@ -16,20 +28,18 @@ Deno.serve(async (req) => {
     const monthStart = new Date(selYear, selMonth - 1, 1).toISOString();
     const monthEnd = new Date(selYear, selMonth, 0, 23, 59, 59).toISOString();
 
+    const sr = base44.asServiceRole.entities;
+
     const [clients, billingRecords, leads] = await Promise.all([
-      base44.asServiceRole.entities.Client.list(),
-      base44.asServiceRole.entities.MonthlyBilling.filter({ billing_month: selectedMonth }),
+      sr.Client.list(),
+      fetchAllFiltered(sr.MonthlyBilling, { billing_month: selectedMonth }, '-billing_month'),
       // Only fetch leads relevant to this billing month (showed or booked within the month)
-      base44.asServiceRole.entities.Lead.filter(
-        {
-          $or: [
-            { appointment_date: { $gte: monthStart, $lte: monthEnd } },
-            { date_appointment_set: { $gte: monthStart, $lte: monthEnd } }
-          ]
-        },
-        '-created_date',
-        5000
-      ),
+      fetchAllFiltered(sr.Lead, {
+        $or: [
+          { appointment_date: { $gte: monthStart, $lte: monthEnd } },
+          { date_appointment_set: { $gte: monthStart, $lte: monthEnd } }
+        ]
+      }, '-created_date'),
     ]);
 
     return Response.json({ clients, billingRecords, leads });

@@ -1,5 +1,30 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
 
+// Paginated fetch: keeps pulling pages until fewer than PAGE_SIZE rows return
+async function fetchAll(entityRef, sort, pageSize = 5000) {
+  let all = [];
+  let skip = 0;
+  while (true) {
+    const page = await entityRef.list(sort, pageSize, skip);
+    all = all.concat(page);
+    if (page.length < pageSize) break;
+    skip += pageSize;
+  }
+  return all;
+}
+
+async function fetchAllFiltered(entityRef, filter, sort, pageSize = 5000) {
+  let all = [];
+  let skip = 0;
+  while (true) {
+    const page = await entityRef.filter(filter, sort, pageSize, skip);
+    all = all.concat(page);
+    if (page.length < pageSize) break;
+    skip += pageSize;
+  }
+  return all;
+}
+
 function pctChange(cur, prior) {
   if (prior === 0) return cur > 0 ? 100 : 0;
   return Math.round(((cur - prior) / prior) * 100);
@@ -40,17 +65,19 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Forbidden' }, { status: 403 });
     }
 
-    // Fetch all data in parallel
+    const sr = base44.asServiceRole.entities;
+
+    // Fetch all data in parallel with pagination safety
     const [clients, leads, spend, payments, expenses, goals, billingRecords, users, spiffs] = await Promise.all([
-      base44.asServiceRole.entities.Client.list(),
-      base44.asServiceRole.entities.Lead.list('-created_date', 5000),
-      base44.asServiceRole.entities.Spend.list('-date', 5000),
-      base44.asServiceRole.entities.Payment.list('-date', 5000),
-      base44.asServiceRole.entities.Expense.list('-date', 1000),
-      base44.asServiceRole.entities.CompanyGoal.list(),
-      base44.asServiceRole.entities.MonthlyBilling.list('-billing_month', 100),
-      base44.asServiceRole.entities.User.list(),
-      base44.asServiceRole.entities.Spiff.filter({ status: 'active' }),
+      sr.Client.list(),
+      fetchAll(sr.Lead, '-created_date'),
+      fetchAll(sr.Spend, '-date'),
+      fetchAll(sr.Payment, '-date'),
+      fetchAll(sr.Expense, '-date'),
+      sr.CompanyGoal.list(),
+      fetchAll(sr.MonthlyBilling, '-billing_month'),
+      sr.User.list(),
+      fetchAllFiltered(sr.Spiff, { status: 'active' }, '-created_date'),
     ]);
 
     const now = new Date();

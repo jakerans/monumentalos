@@ -1,5 +1,29 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
 
+async function fetchAll(entityRef, sort, pageSize = 5000) {
+  let all = [];
+  let skip = 0;
+  while (true) {
+    const page = await entityRef.list(sort, pageSize, skip);
+    all = all.concat(page);
+    if (page.length < pageSize) break;
+    skip += pageSize;
+  }
+  return all;
+}
+
+async function fetchAllFiltered(entityRef, filter, sort, pageSize = 5000) {
+  let all = [];
+  let skip = 0;
+  while (true) {
+    const page = await entityRef.filter(filter, sort, pageSize, skip);
+    all = all.concat(page);
+    if (page.length < pageSize) break;
+    skip += pageSize;
+  }
+  return all;
+}
+
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
@@ -8,10 +32,12 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
+    const sr = base44.asServiceRole.entities;
+
     const [activeProjects, allTasks, allProjectsFull] = await Promise.all([
-      base44.asServiceRole.entities.OnboardProject.filter({ status: 'in_progress' }),
-      base44.asServiceRole.entities.OnboardTask.list('-created_date', 1000),
-      base44.asServiceRole.entities.OnboardProject.list('-created_date', 200),
+      fetchAllFiltered(sr.OnboardProject, { status: 'in_progress' }, '-created_date'),
+      fetchAll(sr.OnboardTask, '-created_date'),
+      fetchAll(sr.OnboardProject, '-created_date'),
     ]);
 
     return Response.json({ activeProjects, allTasks, allProjectsFull });

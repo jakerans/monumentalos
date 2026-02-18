@@ -1,5 +1,17 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
 
+async function fetchAllFiltered(entityRef, filter, sort, pageSize = 5000) {
+  let all = [];
+  let skip = 0;
+  while (true) {
+    const page = await entityRef.filter(filter, sort, pageSize, skip);
+    all = all.concat(page);
+    if (page.length < pageSize) break;
+    skip += pageSize;
+  }
+  return all;
+}
+
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
@@ -13,9 +25,11 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'client_id is required' }, { status: 400 });
     }
 
+    const sr = base44.asServiceRole.entities;
+
     const [clients, allLeads] = await Promise.all([
-      base44.asServiceRole.entities.Client.filter({ id: client_id }),
-      base44.asServiceRole.entities.Lead.filter({ client_id }, '-created_date', 5000),
+      sr.Client.filter({ id: client_id }),
+      fetchAllFiltered(sr.Lead, { client_id }, '-created_date'),
     ]);
 
     const clientInfo = clients[0] || null;
