@@ -3,62 +3,63 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
-    const body = await req.json();
-    const { event, data, old_data } = body;
+    const user = await base44.auth.me();
 
-    // Only process User entity events
-    if (event?.entity_name !== 'User') {
-      return Response.json({ skipped: true });
+    if (!user || user.app_role !== 'admin') {
+      return Response.json({ error: 'Forbidden: Admin access required' }, { status: 403 });
     }
 
     const db = base44.asServiceRole.entities;
 
-    if (event.type === 'create' || event.type === 'update') {
-      const userData = data;
-      if (!userData) {
-        return Response.json({ skipped: true, reason: 'no data' });
-      }
+    // Get all users
+    const allUsers = await db.User.list();
+    const setterUsers = allUsers.filter(u => u.app_role === 'setter');
 
-      const isNowSetter = userData.app_role === 'setter';
-      const wasSetter = old_data?.app_role === 'setter';
+    // Get all existing setter profiles
+    const existingProfiles = await db.SetterProfile.list();
+    const profileByUserId = {};
+    existingProfiles.forEach(p => { profileByUserId[p.user_id] = p; });
 
-      if (isNowSetter) {
-        // Check if profile already exists
-        const existing = await db.SetterProfile.filter({ user_id: event.entity_id });
-        if (existing.length > 0) {
-          // Update existing profile
-          await db.SetterProfile.update(existing[0].id, {
-            full_name: userData.full_name || existing[0].full_name,
-            email: userData.email || existing[0].email,
+    let created = 0;
+    let updated = 0;
+    let deactivated = 0;
+
+    // Create or update profiles for current setters
+    for (const setter of setterUsers) {
+      const existing = profileByUserId[setter.id];
+      if (existing) {
+        // Update if name/email changed or was inactive
+        if (existing.full_name !== setter.full_name || existing.email !== setter.email || existing.status !== 'active') {
+          await db.SetterProfile.update(existing.id, {
+            full_name: setter.full_name,
+            email: setter.email,
             status: 'active',
           });
-        } else {
-          // Create new profile
-          await db.SetterProfile.create({
-            user_id: event.entity_id,
-            full_name: userData.full_name || 'Unknown Setter',
-            email: userData.email || '',
-            status: 'active',
-          });
+          updated++;
         }
-      } else if (wasSetter && !isNowSetter) {
-        // Role changed away from setter — deactivate profile
-        const existing = await db.SetterProfile.filter({ user_id: event.entity_id });
-        if (existing.length > 0) {
-          await db.SetterProfile.update(existing[0].id, { status: 'inactive' });
-        }
+        delete profileByUserId[setter.id];
+      } else {
+        // Create new profile
+        await db.SetterProfile.create({
+          user_id: setter.id,
+          full_name: setter.full_name || 'Unknown Setter',
+          email: setter.email || '',
+          status: 'active',
+        });
+        created++;
       }
     }
 
-    if (event.type === 'delete') {
-      // Delete setter profile when user is deleted
-      const existing = await db.SetterProfile.filter({ user_id: event.entity_id });
-      for (const profile of existing) {
-        await db.SetterProfile.delete(profile.id);
+    // Deactivate profiles for users who are no longer setters
+    for (const userId in profileByUserId) {
+      const profile = profileByUserId[userId];
+      if (profile.status === 'active') {
+        await db.SetterProfile.update(profile.id, { status: 'inactive' });
+        deactivated++;
       }
     }
 
-    return Response.json({ success: true });
+    return Response.json({ success: true, created, updated, deactivated });
   } catch (error) {
     return Response.json({ error: error.message }, { status: 500 });
   }
