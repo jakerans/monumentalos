@@ -150,7 +150,7 @@ function PlanCard({ plan, progressOverride }) {
       <div className="flex items-center gap-4">
         {/* Arcade Overheat Meter */}
         <div className="flex-shrink-0">
-          <ArcadeOverheatMeter fillPct={overallPct} topped={topped} tierIdx={currentIdx} />
+          <ArcadeOverheatMeter fillPct={overallPct} topped={topped} tierIdx={effectiveTierIdx} />
           <p className="text-center mt-1">
             <motion.span
               className="text-[11px] font-black"
