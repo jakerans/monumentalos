@@ -249,8 +249,12 @@ export default function SetterDashboard() {
   if (!user) return null;
   if (l1 || l2) return <PageLoader message="Loading pipeline..." />;
 
-  // Filter leads — hide leads with a final outcome (sold/lost) or completed status
+  // Build set of retainer client IDs to exclude from setter view
+  const retainerClientIds = new Set(clients.filter(c => c.billing_type === 'retainer').map(c => c.id));
+
+  // Filter leads — hide retainer leads, final outcomes (sold/lost), and completed status
   const filtered = leads.filter(l => {
+    if (retainerClientIds.has(l.client_id)) return false;
     if (l.outcome === 'sold' || l.outcome === 'lost' || l.status === 'completed') return false;
     const matchSearch = !search || l.name?.toLowerCase().includes(search.toLowerCase()) || l.phone?.includes(search) || l.email?.toLowerCase().includes(search.toLowerCase());
     const matchClient = clientFilter === 'all' || l.client_id === clientFilter;
