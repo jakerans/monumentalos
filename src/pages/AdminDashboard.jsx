@@ -251,9 +251,14 @@ export default function AdminDashboard() {
               <RankPreviewTester />
             </div>
 
-            {/* Spiff Widget Tester */}
-            <div className="bg-slate-800/50 rounded-lg border border-slate-700/50 p-4">
-              <SpiffPreviewTester />
+            {/* Spiff Widget Tester + STL Widget Tester */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+              <div className="bg-slate-800/50 rounded-lg border border-slate-700/50 p-4">
+                <SpiffPreviewTester />
+              </div>
+              <div className="bg-slate-800/50 rounded-lg border border-slate-700/50 p-4">
+                <STLPreviewTester />
+              </div>
             </div>
           </motion.div>
         )}
