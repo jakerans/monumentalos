@@ -1,7 +1,7 @@
 import React from 'react';
-import { Trophy, Flame, Target, ChevronRight, Zap } from 'lucide-react';
+import { Trophy, Flame, Target, Zap } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { PieChart, Pie, Cell, ResponsiveContainer } from 'recharts';
+import LiquidGauge from './LiquidGauge';
 
 function getCurrentTier(plan) {
   if (!plan.tiers || plan.tiers.length === 0) return null;
@@ -82,45 +82,28 @@ function PlanCard({ plan }) {
       </div>
 
       <div className="flex items-center gap-4">
-        {/* Ring */}
-        <div className="w-[72px] h-[72px] relative flex-shrink-0">
-          <motion.div
-            className="absolute inset-0 rounded-full"
-            style={{ boxShadow: `0 0 14px ${ringGlow}` }}
-            animate={{ opacity: [0.4, 0.7, 0.4] }}
-            transition={{ duration: 2.5, repeat: Infinity, ease: 'easeInOut' }}
+        {/* Liquid gauge */}
+        <div className="flex-shrink-0">
+          <LiquidGauge
+            fillPct={overallPct}
+            tierIdx={tierIdx}
+            topped={topped}
+            nextTierPct={nextTier && nextTier.threshold > 0
+              ? Math.max(0, Math.min(1, (progress - (currentTier?.threshold || 0)) / (nextTier.threshold - (currentTier?.threshold || 0))))
+              : 0
+            }
           />
-          <ResponsiveContainer width="100%" height="100%">
-            <PieChart>
-              <Pie
-                data={ringData}
-                innerRadius={24}
-                outerRadius={33}
-                startAngle={90}
-                endAngle={-270}
-                paddingAngle={0}
-                dataKey="value"
-                stroke="none"
-                cornerRadius={8}
-                isAnimationActive={true}
-                animationDuration={1000}
-              >
-                <Cell fill={ringColor} style={{ filter: `drop-shadow(0 0 4px ${ringGlow})` }} />
-                <Cell fill="#1e293b" />
-              </Pie>
-            </PieChart>
-          </ResponsiveContainer>
-          <div className="absolute inset-0 flex flex-col items-center justify-center">
+          <p className="text-center mt-1">
             <motion.span
-              className="text-xs font-black"
-              style={{ color: ringColor }}
+              className="text-[11px] font-black"
+              style={{ color: topped ? '#D6FF03' : currentTier ? '#8b5cf6' : '#475569' }}
               initial={{ scale: 0 }}
               animate={{ scale: 1 }}
               transition={{ delay: 0.3, type: 'spring', stiffness: 200, damping: 15 }}
             >
               {overallPct.toFixed(0)}%
             </motion.span>
-          </div>
+          </p>
         </div>
 
         {/* Stats */}
