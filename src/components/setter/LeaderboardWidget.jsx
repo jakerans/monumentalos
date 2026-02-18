@@ -233,61 +233,115 @@ export default function LeaderboardWidget({ user, leaderboard, lastMonthBoard, s
           {/* Podium at the top */}
           <PodiumDisplay leaderboard={leaderboard} myRank={myRank} />
 
-          {/* My position summary */}
+          {/* My position summary — large badge style */}
           {myStats && (
-            <div className="px-4 py-3 border-b border-slate-700/50 bg-slate-800/30">
-              <p className="text-[10px] text-slate-400 uppercase tracking-wider mb-1">Your Position</p>
-              <div className="flex items-center gap-3">
-                {/* Rank badge with icon */}
-                <div className="relative flex flex-col items-center">
-                  {isFirst && (
-                    <motion.div
-                      animate={{ y: [-1, 1, -1], rotate: [-3, 3, -3] }}
-                      transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
-                    >
-                      <Crown className="w-5 h-5 text-yellow-400 drop-shadow-[0_0_8px_rgba(255,215,0,0.6)] mb-0.5" />
-                    </motion.div>
-                  )}
-                  {isSecond && <Medal className="w-4 h-4 text-slate-300 drop-shadow-[0_0_4px_rgba(192,192,192,0.4)] mb-0.5" />}
-                  {isThird && <Medal className="w-4 h-4 text-orange-400 drop-shadow-[0_0_4px_rgba(205,127,50,0.4)] mb-0.5" />}
-                  <motion.span
-                    className="text-2xl font-black leading-none"
-                    style={{ color: rankConfig.text }}
-                    animate={isFirst ? { textShadow: ['0 0 8px rgba(255,215,0,0.3)', '0 0 16px rgba(255,215,0,0.6)', '0 0 8px rgba(255,215,0,0.3)'] } : {}}
-                    transition={isFirst ? { duration: 2, repeat: Infinity } : {}}
-                  >
-                    #{myRank}
-                  </motion.span>
-                </div>
+            <div className="px-4 py-5 border-b border-slate-700/50 relative overflow-hidden">
+              {/* Background gradient matching rank */}
+              <motion.div
+                className="absolute inset-0 pointer-events-none"
+                style={{
+                  background: isFirst
+                    ? 'linear-gradient(135deg, rgba(255,215,0,0.12) 0%, rgba(255,165,0,0.06) 50%, transparent 100%)'
+                    : isSecond
+                    ? 'linear-gradient(135deg, rgba(192,192,192,0.08) 0%, rgba(148,163,184,0.04) 50%, transparent 100%)'
+                    : isThird
+                    ? 'linear-gradient(135deg, rgba(205,127,50,0.08) 0%, rgba(249,115,22,0.04) 50%, transparent 100%)'
+                    : 'none',
+                }}
+                animate={isFirst ? { opacity: [0.5, 1, 0.5] } : {}}
+                transition={isFirst ? { duration: 2, repeat: Infinity } : {}}
+              />
 
-                {/* Stats column */}
-                <div className="flex-1 space-y-1">
-                  <p className="text-sm font-bold text-white">{myStats.booked} booked</p>
-                  <div className="flex items-center gap-3 text-[10px]">
+              <div className="relative z-10 flex items-center gap-5">
+                {/* Big rank badge */}
+                <motion.div
+                  className="flex-shrink-0 relative"
+                  animate={isFirst ? { scale: [1, 1.05, 1] } : {}}
+                  transition={isFirst ? { duration: 2, repeat: Infinity } : {}}
+                >
+                  <div
+                    className={`w-20 h-20 rounded-2xl flex flex-col items-center justify-center border-2 ${
+                      isFirst ? 'bg-yellow-500/20 text-yellow-400 border-yellow-500/40'
+                        : isSecond ? 'bg-slate-500/20 text-slate-300 border-slate-400/40'
+                        : isThird ? 'bg-orange-500/20 text-orange-400 border-orange-500/40'
+                        : 'bg-slate-700/40 text-slate-300 border-slate-600/40'
+                    }`}
+                    style={{ boxShadow: isTop3 ? `0 0 20px ${isFirst ? 'rgba(255,215,0,0.3)' : isSecond ? 'rgba(148,163,184,0.25)' : 'rgba(249,115,22,0.2)'}` : 'none' }}
+                  >
+                    <span className="text-2xl mb-0.5">{isFirst ? '👑' : isSecond ? '🥈' : isThird ? '🥉' : '🏆'}</span>
+                    <span className="text-xl font-black" style={{ color: rankConfig.text }}>#{myRank}</span>
+                  </div>
+
+                  {/* Gold glow for #1 */}
+                  {isFirst && (
+                    <>
+                      <motion.div
+                        className="absolute inset-0 rounded-2xl pointer-events-none overflow-hidden"
+                        style={{ background: 'linear-gradient(180deg, rgba(255,215,0,0.15) 0%, transparent 60%)' }}
+                        animate={{ opacity: [0.3, 0.7, 0.3] }}
+                        transition={{ duration: 1.5, repeat: Infinity }}
+                      />
+                      <motion.div
+                        className="absolute -inset-1 rounded-2xl pointer-events-none"
+                        animate={{ boxShadow: ['0 0 12px rgba(255,215,0,0.3)', '0 0 24px rgba(255,215,0,0.5)', '0 0 12px rgba(255,215,0,0.3)'] }}
+                        transition={{ duration: 1.5, repeat: Infinity }}
+                      />
+                    </>
+                  )}
+                </motion.div>
+
+                {/* Info */}
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 mb-1">
+                    {isFirst ? (
+                      <Crown className="w-4 h-4" style={{ color: '#FFD700' }} />
+                    ) : isTop3 ? (
+                      <Medal className="w-4 h-4" style={{ color: rankConfig.text }} />
+                    ) : (
+                      <Trophy className="w-4 h-4 text-amber-400" />
+                    )}
+                    <motion.span
+                      className="text-lg font-black text-white"
+                      animate={isFirst ? { color: ['#ffffff', '#FFD700', '#ffffff'] } : {}}
+                      transition={isFirst ? { duration: 2, repeat: Infinity } : {}}
+                    >
+                      {isFirst ? "You're the #1 Setter!" : isSecond ? "You're #2" : isThird ? "You're #3" : `You're #${myRank}`}
+                    </motion.span>
+                  </div>
+                  <p className="text-xs text-slate-400 mb-2">
+                    {isFirst ? 'Leading the pack this month' : isSecond ? 'Right behind the leader' : isThird ? 'On the podium — keep pushing' : myRank <= 5 ? 'Top 5 — climbing the ranks' : 'Keep grinding, you got this'}
+                  </p>
+
+                  {/* Stats row */}
+                  <div className="flex items-center gap-4">
+                    <div>
+                      <span className="text-lg font-bold" style={{ color: '#D6FF03' }}>{myStats.booked}</span>
+                      <span className="text-[10px] text-slate-500 ml-1">booked</span>
+                    </div>
                     {myStats.avgSTL != null && (
-                      <span className="flex items-center gap-0.5 text-slate-400">
-                        <Clock className="w-2.5 h-2.5" />{myStats.avgSTL}m avg STL
-                      </span>
+                      <div>
+                        <span className="text-sm font-medium text-slate-300">{myStats.avgSTL}m</span>
+                        <span className="text-[10px] text-slate-500 ml-1">avg STL</span>
+                      </div>
+                    )}
+                    {rankChange !== null && rankChange !== 0 && (
+                      <div className={`flex items-center gap-0.5 text-xs font-medium ${rankChange > 0 ? 'text-green-400' : 'text-red-400'}`}>
+                        {rankChange > 0 ? <TrendingUp className="w-3.5 h-3.5" /> : <TrendingDown className="w-3.5 h-3.5" />}
+                        {rankChange > 0 ? `+${rankChange}` : rankChange}
+                        <span className="text-[10px] text-slate-500 ml-0.5">vs last mo</span>
+                      </div>
                     )}
                     {leaderboard[0] && myRank > 1 && (
-                      <span className="text-slate-500">
-                        {leaderboard[0].booked - myStats.booked} behind #{1}
-                      </span>
+                      <div className="text-[10px] text-slate-500">
+                        {leaderboard[0].booked - myStats.booked} behind #1
+                      </div>
                     )}
                   </div>
                 </div>
-
-                {/* Rank change */}
-                {rankChange !== null && (
-                  <div className={`flex flex-col items-center gap-0.5 ${rankChange > 0 ? 'text-green-400' : rankChange < 0 ? 'text-red-400' : 'text-slate-400'}`}>
-                    {rankChange > 0 ? <TrendingUp className="w-4 h-4" /> : rankChange < 0 ? <TrendingDown className="w-4 h-4" /> : <Minus className="w-4 h-4" />}
-                    <span className="text-[10px] font-bold">{rankChange > 0 ? `+${rankChange}` : rankChange < 0 ? rankChange : '—'}</span>
-                    <span className="text-[8px] text-slate-500">vs last mo</span>
-                  </div>
-                )}
               </div>
+
               {lastMyStats && (
-                <div className="mt-1.5 text-[10px] text-slate-500">
+                <div className="mt-2 text-[10px] text-slate-500 relative z-10">
                   Last month: {lastMyStats.booked} booked{lastMyStats.avgSTL != null ? `, ${lastMyStats.avgSTL}m STL` : ''}
                 </div>
               )}
