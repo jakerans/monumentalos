@@ -1,7 +1,7 @@
 import React from 'react';
 import { Trophy, Flame, Target, Zap } from 'lucide-react';
 import { motion } from 'framer-motion';
-import LiquidGauge from './LiquidGauge';
+import ArcadeOverheatMeter from './ArcadeOverheatMeter';
 
 function getCurrentTier(plan) {
   if (!plan.tiers || plan.tiers.length === 0) return null;
@@ -81,24 +81,19 @@ function PlanCard({ plan }) {
       </div>
 
       <div className="flex items-center gap-4">
-        {/* Liquid gauge */}
+        {/* Arcade Overheat Meter */}
         <div className="flex-shrink-0">
-          <LiquidGauge
+          <ArcadeOverheatMeter
             fillPct={overallPct}
-            tierIdx={tierIdx}
             topped={topped}
-            nextTierPct={nextTier && nextTier.threshold > 0
-              ? Math.max(0, Math.min(1, (progress - (currentTier?.threshold || 0)) / (nextTier.threshold - (currentTier?.threshold || 0))))
-              : 0
-            }
           />
           <p className="text-center mt-1">
             <motion.span
               className="text-[11px] font-black"
-              style={{ color: tierColor }}
+              style={{ color: topped ? '#ff2d2d' : tierColor }}
               initial={{ scale: 0 }}
-              animate={{ scale: 1 }}
-              transition={{ delay: 0.3, type: 'spring', stiffness: 200, damping: 15 }}
+              animate={topped ? { scale: [1, 1.15, 1] } : { scale: 1 }}
+              transition={topped ? { duration: 0.5, repeat: Infinity } : { delay: 0.3, type: 'spring', stiffness: 200, damping: 15 }}
             >
               {overallPct.toFixed(0)}%
             </motion.span>
