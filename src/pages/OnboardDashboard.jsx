@@ -50,33 +50,28 @@ export default function OnboardDashboard() {
     checkAuth();
   }, [navigate]);
 
-  const { data: projects = [], refetch: refetchProjects, isLoading: l1 } = useQuery({
-    queryKey: ['onboard-projects'],
-    queryFn: () => base44.entities.OnboardProject.list('-created_date', 200),
-  });
-
-  const { data: tasks = [], refetch: refetchTasks, isLoading: l2 } = useQuery({
-    queryKey: ['onboard-tasks'],
-    queryFn: () => base44.entities.OnboardTask.list('-created_date', 1000),
-  });
-
-  const { data: templates = [], refetch: refetchTemplates } = useQuery({
-    queryKey: ['onboard-templates'],
-    queryFn: () => base44.entities.OnboardTemplate.filter({ status: 'active' }),
-  });
-
-  const { data: clients = [], refetch: refetchClients } = useQuery({
-    queryKey: ['all-clients'],
-    queryFn: () => base44.entities.Client.list(),
-  });
-
-  const { data: users = [] } = useQuery({
-    queryKey: ['all-users-onboard'],
+  // Single backend call for all dashboard data
+  const { data: dashData, isLoading: dashLoading, refetch: refetchDash } = useQuery({
+    queryKey: ['onboard-dashboard-data'],
     queryFn: async () => {
-      const res = await base44.functions.invoke('listTeamUsers');
-      return res.data?.users || [];
+      const res = await base44.functions.invoke('getOnboardDashboardData');
+      return res.data;
     },
+    staleTime: 2 * 60 * 1000,
+    retry: 2,
+    retryDelay: (attempt) => Math.min(1000 * 2 ** attempt, 10000),
   });
+
+  const projects = dashData?.projects || [];
+  const tasks = dashData?.tasks || [];
+  const templates = dashData?.templates || [];
+  const clients = dashData?.clients || [];
+  const users = dashData?.users || [];
+
+  const refetchProjects = refetchDash;
+  const refetchTasks = refetchDash;
+  const refetchTemplates = refetchDash;
+  const refetchClients = refetchDash;
 
   const mmUsers = users.filter(u => u.app_role === 'marketing_manager' || u.app_role === 'admin');
   const [projectGridRef] = useAutoAnimate({ duration: 300, easing: 'ease-out' });
