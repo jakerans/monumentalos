@@ -35,20 +35,21 @@ export default function MonthlyBilling() {
     checkAuth();
   }, [navigate]);
 
-  const { data: clients = [] } = useQuery({
-    queryKey: ['billing-clients'],
-    queryFn: () => base44.entities.Client.list(),
+  const { data: dashData, refetch: refetchAll, isLoading } = useQuery({
+    queryKey: ['monthly-billing-data', selectedMonth],
+    queryFn: async () => {
+      const res = await base44.functions.invoke('getMonthlyBillingData', { selectedMonth });
+      return res.data;
+    },
+    staleTime: 2 * 60 * 1000,
+    retry: 2,
+    retryDelay: (attempt) => Math.min(1000 * 2 ** attempt, 10000),
   });
 
-  const { data: billingRecords = [], refetch: refetchBilling, isLoading: l1 } = useQuery({
-    queryKey: ['billing-records', selectedMonth],
-    queryFn: () => base44.entities.MonthlyBilling.filter({ billing_month: selectedMonth }),
-  });
-
-  const { data: leads = [], isLoading: l2 } = useQuery({
-    queryKey: ['billing-leads'],
-    queryFn: () => base44.entities.Lead.list('-created_date', 5000),
-  });
+  const clients = dashData?.clients || [];
+  const billingRecords = dashData?.billingRecords || [];
+  const leads = dashData?.leads || [];
+  const refetchBilling = refetchAll;
 
   // Check if this month is past the 5th (for overdue logic)
   const now = new Date();
