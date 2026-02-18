@@ -2,6 +2,7 @@ import React from 'react';
 import { Trophy, Flame, Target, Zap } from 'lucide-react';
 import { motion } from 'framer-motion';
 import ArcadeOverheatMeter from './ArcadeOverheatMeter';
+import WidgetFireBorder from './WidgetFireBorder';
 
 function getCurrentTier(plan) {
   if (!plan.tiers || plan.tiers.length === 0) return null;
@@ -34,23 +35,57 @@ export default function MMPerformanceGoal({ plans }) {
   const activePlans = (plans || []).filter(p => p.status === 'active');
   if (activePlans.length === 0) return null;
 
+  // Check if ANY plan is maxed out (topped)
+  const anyTopped = activePlans.some(plan => {
+    const progress = plan.current_period_progress || 0;
+    const sortedTiers = [...(plan.tiers || [])].sort((a, b) => a.threshold - b.threshold);
+    const maxThreshold = sortedTiers.length > 0 ? Math.max(...sortedTiers.map(t => t.threshold)) : 100;
+    return maxThreshold > 0 && progress >= maxThreshold;
+  });
+
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 12 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.35, delay: 0.1 }}
-      className="bg-slate-800/50 rounded-lg border border-slate-700/50 overflow-hidden"
-    >
-      <div className="px-4 py-3 border-b border-slate-700/50 flex items-center gap-2">
-        <Trophy className="w-4 h-4 text-amber-400" />
-        <h3 className="text-sm font-bold text-white">My Performance Goals</h3>
-      </div>
-      <div className="p-3 space-y-3">
-        {activePlans.map(plan => (
-          <PlanCard key={plan.id} plan={plan} />
-        ))}
-      </div>
-    </motion.div>
+    <WidgetFireBorder active={anyTopped}>
+      <motion.div
+        initial={{ opacity: 0, y: 12 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.35, delay: 0.1 }}
+        className="bg-slate-800/50 rounded-lg border border-slate-700/50 overflow-hidden relative"
+      >
+        {/* Fire overlay tint when maxed */}
+        {anyTopped && (
+          <motion.div
+            className="absolute inset-0 pointer-events-none z-0 rounded-lg"
+            style={{ background: 'linear-gradient(180deg, rgba(255,69,0,0.06) 0%, rgba(255,170,0,0.03) 50%, transparent 100%)' }}
+            animate={{ opacity: [0.5, 1, 0.5] }}
+            transition={{ duration: 2, repeat: Infinity }}
+          />
+        )}
+        <div className="px-4 py-3 border-b border-slate-700/50 flex items-center gap-2 relative z-10">
+          {anyTopped ? (
+            <motion.div animate={{ scale: [1, 1.2, 1], rotate: [0, -5, 5, 0] }} transition={{ duration: 0.8, repeat: Infinity }}>
+              <Flame className="w-4 h-4 text-orange-400" />
+            </motion.div>
+          ) : (
+            <Trophy className="w-4 h-4 text-amber-400" />
+          )}
+          <h3 className="text-sm font-bold text-white">
+            {anyTopped ? (
+              <motion.span
+                animate={{ color: ['#ffffff', '#ff6b35', '#ffaa00', '#ffffff'] }}
+                transition={{ duration: 1.5, repeat: Infinity }}
+              >
+                🔥 PERFORMANCE ON FIRE 🔥
+              </motion.span>
+            ) : 'My Performance Goals'}
+          </h3>
+        </div>
+        <div className="p-3 space-y-3 relative z-10">
+          {activePlans.map(plan => (
+            <PlanCard key={plan.id} plan={plan} />
+          ))}
+        </div>
+      </motion.div>
+    </WidgetFireBorder>
   );
 }
 
