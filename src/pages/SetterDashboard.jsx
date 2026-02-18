@@ -266,12 +266,7 @@ export default function SetterDashboard() {
       <SetterNav user={user} />
 
       <main className="flex-1 max-w-7xl w-full mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-6">
-        <SetterStats
-          newCount={newLeads.length}
-          inProgressCount={inProgressLeads.length}
-          bookedCount={bookedLeads.length}
-          todayCount={todayAppts.length}
-        />
+        <SetterStats leads={leads} user={user} />
 
         {/* Search & Filter Bar */}
         <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 mb-4 sm:mb-6">
