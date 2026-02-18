@@ -5,26 +5,23 @@ import ArcadeOverheatMeter from './ArcadeOverheatMeter';
 import WidgetFireBorder from './WidgetFireBorder';
 import PerfGoalTester from './PerfGoalTester';
 
-function getCurrentTier(plan) {
-  if (!plan.tiers || plan.tiers.length === 0) return null;
-  const progress = plan.current_period_progress || 0;
+function getCurrentTier(tiers, progress) {
+  if (!tiers || tiers.length === 0) return null;
   let currentTier = null;
-  for (const tier of [...plan.tiers].sort((a, b) => a.threshold - b.threshold)) {
+  for (const tier of [...tiers].sort((a, b) => a.threshold - b.threshold)) {
     if (progress >= tier.threshold) currentTier = tier;
   }
   return currentTier;
 }
 
-function getNextTier(plan) {
-  const progress = plan.current_period_progress || 0;
-  const sorted = [...(plan.tiers || [])].sort((a, b) => a.threshold - b.threshold);
+function getNextTier(tiers, progress) {
+  const sorted = [...(tiers || [])].sort((a, b) => a.threshold - b.threshold);
   return sorted.find(t => t.threshold > progress) || null;
 }
 
-function getTierIndex(plan) {
-  if (!plan.tiers || plan.tiers.length === 0) return -1;
-  const progress = plan.current_period_progress || 0;
-  const sorted = [...plan.tiers].sort((a, b) => a.threshold - b.threshold);
+function getTierIndex(tiers, progress) {
+  if (!tiers || tiers.length === 0) return -1;
+  const sorted = [...tiers].sort((a, b) => a.threshold - b.threshold);
   let idx = -1;
   for (let i = 0; i < sorted.length; i++) {
     if (progress >= sorted[i].threshold) idx = i;
@@ -126,23 +123,15 @@ export default function MMPerformanceGoal({ plans, showTester = false }) {
 function PlanCard({ plan, progressOverride }) {
   const progress = progressOverride != null ? progressOverride : (plan.current_period_progress || 0);
   const payout = plan.current_period_payout || 0;
-  const currentTier = getCurrentTier(plan);
-  const nextTier = getNextTier(plan);
-  const tierIdx = getTierIndex(plan);
   const sortedTiers = [...(plan.tiers || [])].sort((a, b) => a.threshold - b.threshold);
+  const currentTier = getCurrentTier(sortedTiers, progress);
+  const nextTier = getNextTier(sortedTiers, progress);
+  const tierIdx = getTierIndex(sortedTiers, progress);
   const maxThreshold = sortedTiers.length > 0 ? Math.max(...sortedTiers.map(t => t.threshold)) : 100;
   const overallPct = maxThreshold > 0 ? Math.min((progress / maxThreshold) * 100, 100) : 0;
   const topped = overallPct >= 100;
 
-  const currentTierForColor = (() => {
-    const sorted = [...(plan.tiers || [])].sort((a, b) => a.threshold - b.threshold);
-    let ct = null;
-    for (const tier of sorted) {
-      if (progress >= tier.threshold) ct = tier;
-    }
-    return ct;
-  })();
-  const tierColor = topped ? '#D6FF03' : currentTierForColor ? '#8b5cf6' : '#475569';
+  const tierColor = topped ? '#D6FF03' : currentTier ? '#8b5cf6' : '#475569';
   const tierGlow = topped ? 'rgba(214,255,3,0.3)' : currentTier ? 'rgba(139,92,246,0.3)' : 'rgba(71,85,105,0.2)';
 
   const remaining = nextTier ? nextTier.threshold - progress : 0;
