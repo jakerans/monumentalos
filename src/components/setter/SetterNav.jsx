@@ -43,6 +43,15 @@ export default function SetterNav({ user }) {
                 <option value="client">Client</option>
               </select>
             )}
+            <button
+              onClick={toggleEffects}
+              title={effectsOn ? 'Disable animations' : 'Enable animations'}
+              className={`p-1.5 rounded-md transition-colors ${
+                effectsOn ? 'text-emerald-400 hover:bg-emerald-500/10' : 'text-slate-500 hover:bg-slate-700/50 hover:text-slate-300'
+              }`}
+            >
+              {effectsOn ? <Zap className="w-3.5 h-3.5" /> : <ZapOff className="w-3.5 h-3.5" />}
+            </button>
             <span className="text-xs sm:text-sm text-slate-400 hidden sm:inline">{user.full_name}</span>
             <motion.button
               whileHover={{ scale: 1.05 }}

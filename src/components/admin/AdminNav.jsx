@@ -85,6 +85,15 @@ export default function AdminNav({ user, currentPage, clients = [] }) {
                 </optgroup>
               )}
             </select>
+            <button
+              onClick={toggleEffects}
+              title={effectsOn ? 'Disable animations' : 'Enable animations'}
+              className={`p-1.5 rounded-md transition-colors ${
+                effectsOn ? 'text-emerald-400 hover:bg-emerald-500/10' : 'text-slate-500 hover:bg-slate-700/50 hover:text-slate-300'
+              }`}
+            >
+              {effectsOn ? <Zap className="w-3.5 h-3.5" /> : <ZapOff className="w-3.5 h-3.5" />}
+            </button>
             <span className="text-xs text-slate-400">{user?.full_name}</span>
             <motion.button
               whileHover={{ scale: 1.05 }}
