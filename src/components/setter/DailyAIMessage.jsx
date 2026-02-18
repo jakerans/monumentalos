@@ -38,7 +38,7 @@ export default function DailyAIMessage({ user, spiffSummaries, leaderboard, myRa
         : 'No active spiffs';
       const rankCtx = myRank ? `Currently ranked #${myRank} out of ${leaderboard.length} setters this month.` : '';
       const topSetter = leaderboard[0];
-      const teamCtx = topSetter ? `Team leader has ${topSetter.booked} bookings this month.` : '';
+      const teamCtx = topSetter ? `Team leader has ${topSetter.mtd_booked || topSetter.booked || 0} bookings this month.` : '';
 
       const prompt = `You are an energetic, motivational coach for a sales setter named ${firstName}. 
 Give them a brief, punchy morning message (2-3 sentences max). Include:
