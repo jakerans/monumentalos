@@ -451,8 +451,6 @@ export default function SetterDashboard() {
 
       <LeaderboardWidget
         user={user}
-        leaderboard={leaderboard}
-        lastMonthBoard={lastMonthBoard}
         spiffs={spiffs}
         leads={leads}
       />
