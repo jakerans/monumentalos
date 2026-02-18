@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Search, ArrowUpDown, Filter } from 'lucide-react';
-import { useAutoAnimate } from '@formkit/auto-animate/react';
+
 import ClientRow from './ClientRow';
 
 const HEADERS = [
@@ -93,7 +93,7 @@ export default function ClientTable({ clientMetrics, onSelectClient }) {
               ))}
             </tr>
           </thead>
-          <tbody ref={useAutoAnimate({ duration: 250, easing: 'ease-out' })[0]} className="divide-y divide-slate-700/30">
+          <tbody className="divide-y divide-slate-700/30">
             {filtered.map((client) => (
               <ClientRow
                 key={client.id}
