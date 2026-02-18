@@ -210,7 +210,7 @@ export default function MMDashboard() {
   }, [clientMetrics, periodRange, allLeads, allSpend]);
 
   if (!user) return null;
-  if (l1 || l2 || l3) return <PageLoader message="Loading dashboard..." />;
+  if (dashLoading) return <PageLoader message="Loading dashboard..." />;
 
   return (
     <PageErrorBoundary>
