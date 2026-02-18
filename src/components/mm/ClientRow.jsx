@@ -20,15 +20,18 @@ export default function ClientRow({ client, onClick }) {
   const goalStatus = client.effectiveGoalStatus;
   const statusCfg = goalStatus ? GOAL_STATUS_CONFIG[goalStatus] : null;
 
+  const isOverperforming = goalStatus === 'goal_met';
+
   return (
     <tr
       onClick={onClick}
-      className={`cursor-pointer transition-colors hover:bg-slate-700/20 ${hasAlert ? 'bg-red-500/5' : ''}`}
+      className={`cursor-pointer transition-colors hover:bg-slate-700/20 ${hasAlert ? 'bg-red-500/5' : ''} ${isOverperforming ? 'bg-yellow-500/[0.06]' : ''}`}
+      style={isOverperforming ? { boxShadow: 'inset 0 0 20px rgba(234, 179, 8, 0.08), 0 0 8px rgba(234, 179, 8, 0.1)' } : {}}
     >
       <td className="px-3 py-2.5 whitespace-nowrap">
         <div className="flex items-center gap-2">
           {hasAlert && <AlertTriangle className="w-3.5 h-3.5 text-red-500 flex-shrink-0" />}
-          <span className="text-sm font-medium text-slate-200 truncate max-w-[180px]">{name}</span>
+          <span className={`text-sm font-medium truncate max-w-[180px] ${isOverperforming ? 'text-yellow-300' : 'text-slate-200'}`}>{name}</span>
         </div>
       </td>
       {/* Goal progress */}
