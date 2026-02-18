@@ -1,5 +1,5 @@
 import React, { useState, forwardRef } from 'react';
-import { Trophy, ChevronLeft, ChevronRight, TrendingUp, TrendingDown, Minus, Clock, Calendar, Gift, Crown, Medal } from 'lucide-react';
+import { Trophy, ChevronLeft, TrendingUp, TrendingDown, Minus, Clock, Crown, Medal } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import FlipMove from 'react-flip-move';
 
@@ -80,7 +80,7 @@ function PodiumDisplay({ leaderboard, myRank }) {
   );
 }
 
-export default function LeaderboardWidget({ user, leaderboard, lastMonthBoard, spiffs, leads }) {
+export default function LeaderboardWidget({ user, leaderboard, lastMonthBoard }) {
   const [open, setOpen] = useState(false);
 
   const myIndex = leaderboard.findIndex(s => s.id === user.id);
@@ -106,36 +106,6 @@ export default function LeaderboardWidget({ user, leaderboard, lastMonthBoard, s
     : isThird
     ? { border: 'border-orange-500/40', text: '#CD7F32', sub: 'text-orange-300', trophy: 'text-orange-400 drop-shadow-[0_0_4px_rgba(205,127,50,0.4)]', tabShadow: '0 0 10px rgba(205,127,50,0.25), 0 0 20px rgba(205,127,50,0.1)', panelShadow: '0 0 18px rgba(205,127,50,0.08), 5px 0 15px rgba(205,127,50,0.05)', innerGlow: 'linear-gradient(180deg, rgba(205,127,50,0.04) 0%, rgba(180,100,30,0.02) 30%, transparent 60%)', innerGlowBottom: 'linear-gradient(0deg, rgba(205,127,50,0.03) 0%, transparent 40%)', pulseGlow: false }
     : { border: 'border-slate-600', text: '#D6FF03', sub: 'text-slate-400', trophy: 'text-amber-400', tabShadow: 'none', panelShadow: 'none', innerGlow: 'none', innerGlowBottom: 'none', pulseGlow: false };
-
-  // Calculate spiff progress for current user
-  const now = new Date();
-  const mtdStart = new Date(now.getFullYear(), now.getMonth(), 1);
-
-  const getSpiffProgress = (spiff) => {
-    if (spiff.qualifier === 'appointments') {
-      if (spiff.scope === 'team_company') {
-        return leads.filter(l => l.date_appointment_set && new Date(l.date_appointment_set) >= mtdStart).length;
-      }
-      const setterId = spiff.scope === 'individual' ? spiff.assigned_setter_id : user.id;
-      return leads.filter(l => l.booked_by_setter_id === setterId && l.date_appointment_set && new Date(l.date_appointment_set) >= mtdStart).length;
-    }
-    if (spiff.qualifier === 'stl') {
-      if (spiff.scope === 'team_company') {
-        const stlLeads = leads.filter(l => l.speed_to_lead_minutes != null && new Date(l.created_date) >= mtdStart);
-        return stlLeads.length > 0 ? Math.round(stlLeads.reduce((s, l) => s + l.speed_to_lead_minutes, 0) / stlLeads.length) : null;
-      }
-      const setterId = spiff.scope === 'individual' ? spiff.assigned_setter_id : user.id;
-      const stlLeads = leads.filter(l => l.setter_id === setterId && l.speed_to_lead_minutes != null && new Date(l.created_date) >= mtdStart);
-      return stlLeads.length > 0 ? Math.round(stlLeads.reduce((s, l) => s + l.speed_to_lead_minutes, 0) / stlLeads.length) : null;
-    }
-    return 0;
-  };
-
-  const mySpiffs = spiffs.filter(sp => {
-    if (sp.status !== 'active') return false;
-    if (sp.scope === 'individual') return sp.assigned_setter_id === user.id;
-    return true;
-  });
 
   return (
     <>
