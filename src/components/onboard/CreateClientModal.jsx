@@ -13,6 +13,7 @@ export default function CreateClientModal({ open, onOpenChange, onCreated }) {
   const [pricePerSet, setPricePerSet] = useState('');
   const [retainerAmount, setRetainerAmount] = useState('');
   const [retainerDueDay, setRetainerDueDay] = useState('1');
+  const [adAccountId, setAdAccountId] = useState('');
   const [bookingLink, setBookingLink] = useState('');
   const [serviceRadius, setServiceRadius] = useState('');
   const [startDate, setStartDate] = useState(new Date().toISOString().split('T')[0]);
@@ -38,6 +39,7 @@ export default function CreateClientModal({ open, onOpenChange, onCreated }) {
       name: name.trim(),
       industries: industries.length > 0 ? industries : undefined,
       billing_type: billingType,
+      ad_account_id: adAccountId.trim() || undefined,
       booking_link: bookingLink.trim() || undefined,
       service_radius: serviceRadius.trim() || undefined,
       status: 'active',
@@ -84,6 +86,7 @@ export default function CreateClientModal({ open, onOpenChange, onCreated }) {
     setPricePerSet('');
     setRetainerAmount('');
     setRetainerDueDay('1');
+    setAdAccountId('');
     setBookingLink('');
     setServiceRadius('');
     setStartDate(new Date().toISOString().split('T')[0]);
@@ -146,6 +149,10 @@ export default function CreateClientModal({ open, onOpenChange, onCreated }) {
           <div>
             <label className="text-xs font-medium text-gray-700">Start Date</label>
             <input type="date" value={startDate} onChange={e => setStartDate(e.target.value)} className="w-full mt-1 px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+          </div>
+          <div>
+            <label className="text-xs font-medium text-gray-700">Ad Account ID</label>
+            <input value={adAccountId} onChange={e => setAdAccountId(e.target.value)} className="w-full mt-1 px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="e.g. act_123456789" />
           </div>
           <div className="grid grid-cols-2 gap-2">
             <div>
