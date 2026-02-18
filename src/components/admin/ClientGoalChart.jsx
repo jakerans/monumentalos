@@ -45,14 +45,14 @@ export default function ClientGoalChart({ clients }) {
   const healthyColor = healthyPct >= 70 ? '#10b981' : healthyPct >= 40 ? '#f59e0b' : '#ef4444';
 
   return (
-    <div className="bg-slate-800/50 rounded-lg border border-slate-700/50 p-4">
-      <div className="flex items-center gap-2 mb-4">
+    <div className="bg-slate-800/50 rounded-lg border border-slate-700/50 p-4 flex flex-col h-full">
+      <div className="flex items-center gap-2 mb-3">
         <Target className="w-4 h-4" style={{color:'#D6FF03'}} />
         <h3 className="text-sm font-bold text-white">Client Goal Health</h3>
       </div>
 
-      <div className="flex items-center gap-5">
-        <div className="w-40 h-40 relative flex-shrink-0">
+      <div className="flex items-center gap-4 flex-1 min-h-0">
+        <div className="w-28 h-28 relative flex-shrink-0">
           {/* Outer glow ring */}
           <motion.div
             className="absolute inset-1 rounded-full"
@@ -71,8 +71,8 @@ export default function ClientGoalChart({ clients }) {
               </defs>
               <Pie
                 data={data}
-                innerRadius={44}
-                outerRadius={68}
+                innerRadius={32}
+                outerRadius={50}
                 paddingAngle={4}
                 dataKey="value"
                 stroke="none"
@@ -90,7 +90,7 @@ export default function ClientGoalChart({ clients }) {
           </ResponsiveContainer>
           <div className="absolute inset-0 flex flex-col items-center justify-center">
             <motion.span
-              className="text-2xl font-black"
+              className="text-lg font-black"
               style={{ color: healthyColor }}
               initial={{ scale: 0 }}
               animate={{ scale: 1 }}
@@ -98,7 +98,7 @@ export default function ClientGoalChart({ clients }) {
             >
               {healthyPct}%
             </motion.span>
-            <span className="text-[9px] text-slate-400 font-medium">healthy</span>
+            <span className="text-[8px] text-slate-400 font-medium">healthy</span>
           </div>
         </div>
 

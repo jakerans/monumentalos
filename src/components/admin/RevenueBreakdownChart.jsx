@@ -50,17 +50,17 @@ export default function RevenueBreakdownChart({ clients, leads, spend }) {
   const totalRevenue = breakdown.reduce((s, b) => s + b.value, 0);
 
   return (
-    <div className="bg-slate-800/50 rounded-lg border border-slate-700/50 p-4">
-      <div className="flex items-center gap-2 mb-4">
+    <div className="bg-slate-800/50 rounded-lg border border-slate-700/50 p-4 flex flex-col h-full">
+      <div className="flex items-center gap-2 mb-3">
         <DollarSign className="w-4 h-4 text-emerald-400" />
         <h3 className="text-sm font-bold text-white">Revenue by Billing Type (MTD)</h3>
       </div>
 
       {totalRevenue === 0 ? (
-        <p className="text-xs text-slate-500 text-center py-8">No revenue data yet this month</p>
+        <p className="text-xs text-slate-500 text-center py-8 flex-1 flex items-center justify-center">No revenue data yet this month</p>
       ) : (
-        <div className="flex items-center gap-5">
-          <div className="w-40 h-40 relative flex-shrink-0">
+        <div className="flex items-center gap-4 flex-1 min-h-0">
+          <div className="w-28 h-28 relative flex-shrink-0">
             {/* Animated glow ring */}
             <motion.div
               className="absolute inset-1 rounded-full"
@@ -72,8 +72,8 @@ export default function RevenueBreakdownChart({ clients, leads, spend }) {
               <PieChart>
                 <Pie
                   data={breakdown}
-                  innerRadius={44}
-                  outerRadius={68}
+                  innerRadius={32}
+                  outerRadius={50}
                   paddingAngle={4}
                   dataKey="value"
                   stroke="none"
@@ -91,14 +91,14 @@ export default function RevenueBreakdownChart({ clients, leads, spend }) {
             </ResponsiveContainer>
             <div className="absolute inset-0 flex flex-col items-center justify-center">
               <motion.span
-                className="text-lg font-black text-white"
+                className="text-sm font-black text-white"
                 initial={{ scale: 0 }}
                 animate={{ scale: 1 }}
                 transition={{ delay: 0.5, type: 'spring', stiffness: 200, damping: 15 }}
               >
-                ${totalRevenue.toLocaleString()}
+                ${totalRevenue >= 1000 ? `${(totalRevenue / 1000).toFixed(1)}k` : totalRevenue.toLocaleString()}
               </motion.span>
-              <span className="text-[9px] text-slate-400 font-medium">total MTD</span>
+              <span className="text-[8px] text-slate-400 font-medium">total MTD</span>
             </div>
           </div>
 
