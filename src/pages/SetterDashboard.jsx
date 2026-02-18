@@ -406,6 +406,7 @@ export default function SetterDashboard() {
         user={user}
         spiffs={spiffs}
         leads={allPipelineLeads}
+        leaderboardProfiles={leaderboardData.profiles}
       />
 
       {celebration && (
