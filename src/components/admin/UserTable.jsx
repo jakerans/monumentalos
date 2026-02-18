@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, forwardRef } from 'react';
 import { base44 } from '@/api/base44Client';
 import { toast } from '@/components/ui/use-toast';
 import { Pencil, Check, X, Trash2 } from 'lucide-react';
+import FlipMove from 'react-flip-move';
 
 const ROLE_LABELS = {
   admin: { label: 'Admin', bg: 'bg-purple-100 text-purple-700' },
@@ -85,69 +86,55 @@ export default function UserTable({ users, clients = [], onUpdated }) {
               <th className="text-right px-4 py-3 text-xs font-semibold text-slate-400">Actions</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-slate-700/30">
+          <FlipMove typeName="tbody" duration={350} easing="cubic-bezier(0.25, 0.46, 0.45, 0.94)" staggerDurationBy={15} enterAnimation="fade" leaveAnimation="fade" className="divide-y divide-slate-700/30">
             {users.length === 0 ? (
-              <tr>
+              <tr key="empty">
                 <td colSpan={6} className="px-4 py-8 text-center text-xs text-slate-500">No users found</td>
               </tr>
-            ) : users.map(user => (
-              <tr key={user.id} className="hover:bg-slate-700/20">
-                <td className="px-4 py-3 text-xs font-medium text-white">{user.full_name || '—'}</td>
-                <td className="px-4 py-3 text-xs text-slate-400">{user.email}</td>
-                <td className="px-4 py-3">
-                  {editingId === user.id ? (
-                    <div className="flex items-center gap-1">
-                      <select
-                        value={editRole}
-                        onChange={(e) => setEditRole(e.target.value)}
-                        className="px-2 py-1 text-xs border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      >
-                        {ROLE_OPTIONS.map(r => (
-                          <option key={r.value} value={r.value}>{r.label}</option>
-                        ))}
-                      </select>
-                      <button onClick={() => saveRole(user.id)} disabled={saving} className="p-1 text-green-600 hover:bg-green-50 rounded">
-                        <Check className="w-3.5 h-3.5" />
-                      </button>
-                      <button onClick={cancelEdit} className="p-1 text-gray-400 hover:bg-gray-100 rounded">
-                        <X className="w-3.5 h-3.5" />
-                      </button>
-                    </div>
-                  ) : (
-                    <div className="flex items-center gap-1.5">
-                      {getRoleBadge(user.app_role || 'user')}
-                      <button onClick={() => startEdit(user)} className="p-0.5 text-gray-400 hover:text-gray-600 rounded">
-                        <Pencil className="w-3 h-3" />
-                      </button>
-                    </div>
-                  )}
-                </td>
-                <td className="px-4 py-3 text-xs text-slate-400">{user.app_role === 'client' ? getClientName(user.client_id) : '—'}</td>
-                <td className="px-4 py-3 text-xs text-slate-500">
-                  {user.created_date ? new Date(user.created_date).toLocaleDateString() : '—'}
-                </td>
-                <td className="px-4 py-3 text-right">
-                  {deletingId === user.id ? (
-                    <div className="flex items-center justify-end gap-1">
-                      <span className="text-[10px] text-red-600 font-medium mr-1">Delete?</span>
-                      <button onClick={() => handleDelete(user.id)} disabled={saving} className="px-2 py-1 text-[10px] font-medium bg-red-600 text-white rounded hover:bg-red-700 disabled:opacity-50">
-                        Yes
-                      </button>
-                      <button onClick={() => setDeletingId(null)} className="px-2 py-1 text-[10px] font-medium bg-gray-100 text-gray-600 rounded hover:bg-gray-200">
-                        No
-                      </button>
-                    </div>
-                  ) : (
-                    <button onClick={() => setDeletingId(user.id)} className="p-1 text-gray-400 hover:text-red-600 rounded hover:bg-red-50 transition-colors">
-                      <Trash2 className="w-3.5 h-3.5" />
-                    </button>
-                  )}
-                </td>
-              </tr>
+            ) : users.map(u => (
+              <UserRow key={u.id} user={u} editingId={editingId} editRole={editRole} setEditRole={setEditRole} saving={saving} startEdit={startEdit} cancelEdit={cancelEdit} saveRole={saveRole} deletingId={deletingId} setDeletingId={setDeletingId} handleDelete={handleDelete} getRoleBadge={getRoleBadge} getClientName={getClientName} />
             ))}
-          </tbody>
+          </FlipMove>
         </table>
       </div>
     </div>
   );
 }
+
+const UserRow = forwardRef(({ user, editingId, editRole, setEditRole, saving, startEdit, cancelEdit, saveRole, deletingId, setDeletingId, handleDelete, getRoleBadge, getClientName }, ref) => (
+  <tr ref={ref} className="hover:bg-slate-700/20">
+    <td className="px-4 py-3 text-xs font-medium text-white">{user.full_name || '—'}</td>
+    <td className="px-4 py-3 text-xs text-slate-400">{user.email}</td>
+    <td className="px-4 py-3">
+      {editingId === user.id ? (
+        <div className="flex items-center gap-1">
+          <select value={editRole} onChange={(e) => setEditRole(e.target.value)} className="px-2 py-1 text-xs border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+            {[{ value: 'admin', label: 'Admin' }, { value: 'marketing_manager', label: 'Marketing Manager' }, { value: 'setter', label: 'Setter' }, { value: 'onboard_admin', label: 'Onboard Admin' }, { value: 'client', label: 'Client' }, { value: 'user', label: 'User' }].map(r => (
+              <option key={r.value} value={r.value}>{r.label}</option>
+            ))}
+          </select>
+          <button onClick={() => saveRole(user.id)} disabled={saving} className="p-1 text-green-600 hover:bg-green-50 rounded"><Check className="w-3.5 h-3.5" /></button>
+          <button onClick={cancelEdit} className="p-1 text-gray-400 hover:bg-gray-100 rounded"><X className="w-3.5 h-3.5" /></button>
+        </div>
+      ) : (
+        <div className="flex items-center gap-1.5">
+          {getRoleBadge(user.app_role || 'user')}
+          <button onClick={() => startEdit(user)} className="p-0.5 text-gray-400 hover:text-gray-600 rounded"><Pencil className="w-3 h-3" /></button>
+        </div>
+      )}
+    </td>
+    <td className="px-4 py-3 text-xs text-slate-400">{user.app_role === 'client' ? getClientName(user.client_id) : '—'}</td>
+    <td className="px-4 py-3 text-xs text-slate-500">{user.created_date ? new Date(user.created_date).toLocaleDateString() : '—'}</td>
+    <td className="px-4 py-3 text-right">
+      {deletingId === user.id ? (
+        <div className="flex items-center justify-end gap-1">
+          <span className="text-[10px] text-red-600 font-medium mr-1">Delete?</span>
+          <button onClick={() => handleDelete(user.id)} disabled={saving} className="px-2 py-1 text-[10px] font-medium bg-red-600 text-white rounded hover:bg-red-700 disabled:opacity-50">Yes</button>
+          <button onClick={() => setDeletingId(null)} className="px-2 py-1 text-[10px] font-medium bg-gray-100 text-gray-600 rounded hover:bg-gray-200">No</button>
+        </div>
+      ) : (
+        <button onClick={() => setDeletingId(user.id)} className="p-1 text-gray-400 hover:text-red-600 rounded hover:bg-red-50 transition-colors"><Trash2 className="w-3.5 h-3.5" /></button>
+      )}
+    </td>
+  </tr>
+));

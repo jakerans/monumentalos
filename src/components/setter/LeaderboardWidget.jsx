@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, forwardRef } from 'react';
 import { Trophy, ChevronLeft, ChevronRight, TrendingUp, TrendingDown, Minus, Clock, Calendar, Gift } from 'lucide-react';
 import { motion } from 'framer-motion';
+import FlipMove from 'react-flip-move';
 
 export default function LeaderboardWidget({ user, leaderboard, lastMonthBoard, spiffs, leads }) {
   const [open, setOpen] = useState(false);
@@ -49,7 +50,7 @@ export default function LeaderboardWidget({ user, leaderboard, lastMonthBoard, s
 
   return (
     <>
-      {/* No extra styles needed — animations handled by framer-motion */}
+      {/* Animations handled by framer-motion + FlipMove */}
 
       {/* Tab on the left edge */}
       <button
@@ -136,35 +137,11 @@ export default function LeaderboardWidget({ user, leaderboard, lastMonthBoard, s
           {/* Full leaderboard */}
           <div className="px-4 py-3">
             <p className="text-[10px] text-slate-400 uppercase tracking-wider mb-2">Rankings</p>
-            <div className="space-y-1">
-              {leaderboard.map((s, i) => {
-                const isMe = s.id === user.id;
-                const lastEntry = lastMonthBoard.find(ls => ls.id === s.id);
-                const lastPos = lastEntry ? lastMonthBoard.indexOf(lastEntry) + 1 : null;
-                const posChange = lastPos ? lastPos - (i + 1) : null;
-                return (
-                  <div key={s.id} className={`flex items-center justify-between py-2 px-2 rounded-md ${isMe ? 'bg-slate-800 border border-slate-700' : ''}`}>
-                    <div className="flex items-center gap-2">
-                      <span className={`w-6 h-6 flex items-center justify-center rounded-full text-[10px] font-bold ${
-                        i === 0 ? 'bg-yellow-500/20 text-yellow-400' : i === 1 ? 'bg-slate-600 text-slate-300' : i === 2 ? 'bg-orange-500/20 text-orange-400' : 'bg-slate-700 text-slate-400'
-                      }`}>{i + 1}</span>
-                      <div>
-                        <span className={`text-xs font-medium ${isMe ? 'text-white' : 'text-slate-300'}`}>{s.name}</span>
-                        {s.avgSTL != null && <p className="text-[9px] text-slate-500">{s.avgSTL}m STL</p>}
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <span className="text-xs font-bold" style={{ color: '#D6FF03' }}>{s.booked}</span>
-                      {posChange !== null && posChange !== 0 && (
-                        <span className={`text-[9px] ${posChange > 0 ? 'text-green-400' : 'text-red-400'}`}>
-                          {posChange > 0 ? `↑${posChange}` : `↓${Math.abs(posChange)}`}
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
+            <FlipMove duration={400} easing="cubic-bezier(0.25, 0.46, 0.45, 0.94)" staggerDurationBy={30} enterAnimation="fade" leaveAnimation="fade">
+              {leaderboard.map((s, i) => (
+                <LeaderboardRow key={s.id} s={s} i={i} userId={user.id} lastMonthBoard={lastMonthBoard} />
+              ))}
+            </FlipMove>
           </div>
 
           {/* Spiffs & Bonuses */}
@@ -218,3 +195,31 @@ export default function LeaderboardWidget({ user, leaderboard, lastMonthBoard, s
     </>
   );
 }
+
+const LeaderboardRow = forwardRef(({ s, i, userId, lastMonthBoard }, ref) => {
+  const isMe = s.id === userId;
+  const lastEntry = lastMonthBoard.find(ls => ls.id === s.id);
+  const lastPos = lastEntry ? lastMonthBoard.indexOf(lastEntry) + 1 : null;
+  const posChange = lastPos ? lastPos - (i + 1) : null;
+  return (
+    <div ref={ref} className={`flex items-center justify-between py-2 px-2 rounded-md ${isMe ? 'bg-slate-800 border border-slate-700' : ''}`}>
+      <div className="flex items-center gap-2">
+        <span className={`w-6 h-6 flex items-center justify-center rounded-full text-[10px] font-bold ${
+          i === 0 ? 'bg-yellow-500/20 text-yellow-400' : i === 1 ? 'bg-slate-600 text-slate-300' : i === 2 ? 'bg-orange-500/20 text-orange-400' : 'bg-slate-700 text-slate-400'
+        }`}>{i + 1}</span>
+        <div>
+          <span className={`text-xs font-medium ${isMe ? 'text-white' : 'text-slate-300'}`}>{s.name}</span>
+          {s.avgSTL != null && <p className="text-[9px] text-slate-500">{s.avgSTL}m STL</p>}
+        </div>
+      </div>
+      <div className="flex items-center gap-2">
+        <span className="text-xs font-bold" style={{ color: '#D6FF03' }}>{s.booked}</span>
+        {posChange !== null && posChange !== 0 && (
+          <span className={`text-[9px] ${posChange > 0 ? 'text-green-400' : 'text-red-400'}`}>
+            {posChange > 0 ? `↑${posChange}` : `↓${Math.abs(posChange)}`}
+          </span>
+        )}
+      </div>
+    </div>
+  );
+});
