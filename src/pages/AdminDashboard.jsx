@@ -178,8 +178,8 @@ export default function AdminDashboard() {
               <RefreshCw className={`w-3.5 h-3.5 ${syncing ? 'animate-spin' : ''}`} /> {syncing ? 'Syncing...' : 'Sync Sheet'}
             </motion.button>
             <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
+              whileHover={effectsOn ? { scale: 1.05 } : {}}
+              whileTap={effectsOn ? { scale: 0.95 } : {}}
               onClick={() => setShowPerfTester(!showPerfTester)}
               className={`px-3 py-2 text-xs font-bold rounded-lg flex items-center gap-1.5 transition-all border ${
                 showPerfTester
