@@ -12,7 +12,7 @@ import GoalManagementModal from '../components/admin/GoalManagementModal';
 import PLComparisonRow from '../components/admin/PLComparisonRow.jsx';
 import StatCompareCard from '../components/admin/StatCompareCard.jsx';
 import dayjs from 'dayjs';
-import { Settings, Trophy, Eye } from 'lucide-react';
+import { Settings, Trophy, Eye, RefreshCw } from 'lucide-react';
 import PageErrorBoundary from '../components/shared/PageErrorBoundary';
 import PageLoader from '../components/shared/PageLoader';
 import MMPerformanceGoal from '../components/mm/MMPerformanceGoal';
@@ -27,6 +27,7 @@ export default function AdminDashboard() {
   const [user, setUser] = useState(null);
   const [goalsOpen, setGoalsOpen] = useState(false);
   const [showPerfTester, setShowPerfTester] = useState(false);
+  const [syncing, setSyncing] = useState(false);
   const now = new Date();
 
   useEffect(() => {
@@ -136,6 +137,25 @@ export default function AdminDashboard() {
             </p>
           </div>
           <div className="flex items-center gap-2">
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={async () => {
+                setSyncing(true);
+                try {
+                  const res = await base44.functions.invoke('syncClientsSheet');
+                  const d = res.data;
+                  toast({ title: 'Sheet Synced', description: `Sheet: +${d.sheetCreated} new, ${d.sheetUpdated} updated · DB: +${d.dbCreated} new, ${d.dbUpdated} updated`, variant: 'success' });
+                } catch (e) {
+                  toast({ title: 'Sync Failed', description: e.message, variant: 'destructive' });
+                }
+                setSyncing(false);
+              }}
+              disabled={syncing}
+              className="px-3 py-2 text-xs font-bold rounded-lg flex items-center gap-1.5 transition-all border bg-slate-800 border-slate-700 text-slate-400 hover:text-white disabled:opacity-50"
+            >
+              <RefreshCw className={`w-3.5 h-3.5 ${syncing ? 'animate-spin' : ''}`} /> {syncing ? 'Syncing...' : 'Sync Sheet'}
+            </motion.button>
             <motion.button
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
