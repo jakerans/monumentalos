@@ -9,8 +9,9 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // Only admins and onboard_admins can list team users
-    if (user.app_role !== 'admin' && user.app_role !== 'onboard_admin') {
+    // Allow admins, onboard_admins, setters, and marketing_managers to list team users
+    const allowed = ['admin', 'onboard_admin', 'setter', 'marketing_manager'];
+    if (!allowed.includes(user.app_role)) {
       return Response.json({ error: 'Forbidden' }, { status: 403 });
     }
 
