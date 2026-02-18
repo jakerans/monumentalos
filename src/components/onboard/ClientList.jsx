@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Copy, Check, UserPlus, Search } from 'lucide-react';
+import { useAutoAnimate } from '@formkit/auto-animate/react';
 
 export default function ClientList({ clients, onInviteUser }) {
   const [search, setSearch] = useState('');
@@ -41,7 +42,7 @@ export default function ClientList({ clients, onInviteUser }) {
               <th className="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase">Actions</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-gray-100">
+          <tbody ref={useAutoAnimate({ duration: 250, easing: 'ease-out' })[0]} className="divide-y divide-gray-100">
             {filtered.map(client => (
               <tr key={client.id} className="hover:bg-gray-50">
                 <td className="px-4 py-3">

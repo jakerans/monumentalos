@@ -1,6 +1,7 @@
 import React from 'react';
 import LeadCard from './LeadCard';
 import { motion } from 'framer-motion';
+import { useAutoAnimate } from '@formkit/auto-animate/react';
 
 export default function PipelineColumn({ title, count, color, leads, clients, onAction, onSelect }) {
   const getClientName = (clientId) => {
@@ -35,7 +36,7 @@ export default function PipelineColumn({ title, count, color, leads, clients, on
         </div>
         <span className="text-xs font-medium text-slate-400 bg-slate-800 px-2 py-0.5 rounded-full">{count}</span>
       </div>
-      <div className="space-y-2 flex-1 overflow-y-auto max-h-[calc(100vh-280px)] pr-1">
+      <div ref={useAutoAnimate({ duration: 300, easing: 'ease-out' })[0]} className="space-y-2 flex-1 overflow-y-auto max-h-[calc(100vh-280px)] pr-1">
         {leads.length === 0 ? (
           <div className="text-center py-8 text-xs text-slate-500 bg-slate-800/30 rounded-lg border border-dashed border-slate-700">
             No leads

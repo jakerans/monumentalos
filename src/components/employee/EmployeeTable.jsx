@@ -1,5 +1,6 @@
 import React from 'react';
 import { CircleDot } from 'lucide-react';
+import { useAutoAnimate } from '@formkit/auto-animate/react';
 import { getPayDisplay } from './payUtils';
 
 const DISC_COLORS = {
@@ -31,7 +32,7 @@ export default function EmployeeTable({ employees, payrollSettings, onSelect }) 
               <th className="px-4 py-3 text-center text-[10px] font-medium text-slate-400 uppercase">Perf Pay</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-slate-700/30">
+          <tbody ref={useAutoAnimate({ duration: 250, easing: 'ease-out' })[0]} className="divide-y divide-slate-700/30">
             {employees.length === 0 ? (
               <tr><td colSpan="9" className="px-4 py-8 text-center text-sm text-slate-500">No employees found</td></tr>
             ) : employees.map(emp => {

@@ -4,6 +4,7 @@ import { useQuery } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import { Plus, Building2, UserPlus } from 'lucide-react';
+import { useAutoAnimate } from '@formkit/auto-animate/react';
 import OnboardNav from '../components/onboard/OnboardNav';
 import OnboardKPIs from '../components/onboard/OnboardKPIs';
 import ProjectCard from '../components/onboard/ProjectCard';
@@ -74,6 +75,7 @@ export default function OnboardDashboard() {
   });
 
   const mmUsers = users.filter(u => u.app_role === 'marketing_manager' || u.app_role === 'admin');
+  const [projectGridRef] = useAutoAnimate({ duration: 300, easing: 'ease-out' });
 
   const handleCreateProject = async (projectData, template) => {
     const project = await base44.entities.OnboardProject.create(projectData);
@@ -155,7 +157,7 @@ export default function OnboardDashboard() {
                 {statusFilter === 'in_progress' ? 'No active onboarding projects.' : 'No projects found.'}
               </div>
             ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+              <div ref={projectGridRef} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                 {filteredProjects.map(p => (
                   <ProjectCard
                     key={p.id}
