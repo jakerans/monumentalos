@@ -115,7 +115,7 @@ export default function DailySpiffBanner({ spiffs, leads, user }) {
         <motion.span
           className="text-2xl sm:text-3xl font-black uppercase tracking-wide"
           style={{
-            background: 'linear-gradient(135deg, #e0f7fa 0%, #67e8f9 25%, #ffffff 50%, #a5f3fc 75%, #22d3ee 100%)',
+            backgroundImage: 'linear-gradient(135deg, #e0f7fa 0%, #67e8f9 25%, #ffffff 50%, #a5f3fc 75%, #22d3ee 100%)',
             backgroundSize: '200% 200%',
             backgroundClip: 'text',
             WebkitBackgroundClip: 'text',
