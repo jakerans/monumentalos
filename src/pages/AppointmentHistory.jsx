@@ -40,7 +40,7 @@ export default function AppointmentHistory() {
   const clientId = getClientId();
 
   const { data: leads = [] } = useQuery({
-    queryKey: ['history-leads', clientId],
+    queryKey: ['history-leads', clientId, clientInfo?.billing_type],
     queryFn: async () => {
       if (!clientId) return [];
       const allLeads = await base44.entities.Lead.filter({ client_id: clientId });
