@@ -125,7 +125,7 @@ export default function MonthlyBilling() {
   };
 
   if (!user) return null;
-  if (l1 || l2) return <PageLoader message="Loading billing..." />;
+  if (isLoading) return <PageLoader message="Loading billing..." />;
 
   return (
     <PageErrorBoundary>
