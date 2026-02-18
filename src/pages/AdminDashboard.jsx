@@ -10,6 +10,7 @@ import RevenueBreakdownChart from '../components/admin/RevenueBreakdownChart';
 import MTDGoalProgress from '../components/admin/MTDGoalProgress';
 import GoalManagementModal from '../components/admin/GoalManagementModal';
 import PLComparisonRow from '../components/admin/PLComparisonRow.jsx';
+import StatCompareCard from '../components/admin/StatCompareCard.jsx';
 import dayjs from 'dayjs';
 import { Settings, Trophy } from 'lucide-react';
 import PageErrorBoundary from '../components/shared/PageErrorBoundary';
