@@ -67,6 +67,7 @@ export default function AdminDashboard() {
   });
 
   const healthKPIs = dashData?.healthKPIs || {};
+  const cashHealth = dashData?.cashHealth || null;
   const goalChartData = dashData?.goalChartData || { counts: {}, total: 0, healthyPct: 0 };
   const revenueBreakdown = dashData?.revenueBreakdown || {};
   const mtd = dashData?.mtdPL || { grossRevenue: 0, collected: 0, cogs: 0, overhead: 0, grossProfit: 0, netProfit: 0, grossMargin: 0, netMargin: 0 };
