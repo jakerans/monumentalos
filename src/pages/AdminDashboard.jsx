@@ -17,6 +17,7 @@ import PageErrorBoundary from '../components/shared/PageErrorBoundary';
 import PageLoader from '../components/shared/PageLoader';
 import MMPerformanceGoal from '../components/mm/MMPerformanceGoal';
 import LeaderboardRankPreview from '../components/mm/LeaderboardRankPreview';
+import SpiffTracker from '../components/setter/SpiffTracker';
 import { motion } from 'framer-motion';
 import { useAutoAnimate } from '@formkit/auto-animate/react';
 
@@ -48,6 +49,7 @@ export default function AdminDashboard() {
   const retryConfig = { retry: 2, retryDelay: (attempt) => Math.min(1000 * 2 ** attempt, 10000) };
   const { data: clients = [], isLoading: l1 } = useQuery({ queryKey: ['admin-clients'], queryFn: () => base44.entities.Client.list(), staleTime: 5 * 60 * 1000, ...retryConfig });
   const { data: leads = [], isLoading: l2 } = useQuery({ queryKey: ['admin-leads'], queryFn: () => base44.entities.Lead.list('-created_date', 5000), staleTime: 2 * 60 * 1000, ...retryConfig });
+  const { data: spiffs = [] } = useQuery({ queryKey: ['admin-spiffs'], queryFn: () => base44.entities.Spiff.filter({ status: 'active' }), staleTime: 5 * 60 * 1000, ...retryConfig });
   const { data: spend = [], isLoading: l3 } = useQuery({ queryKey: ['admin-spend'], queryFn: () => base44.entities.Spend.list('-date', 5000), staleTime: 2 * 60 * 1000, ...retryConfig });
   const { data: payments = [], isLoading: l4 } = useQuery({ queryKey: ['admin-payments'], queryFn: () => base44.entities.Payment.list('-date', 5000), staleTime: 2 * 60 * 1000, ...retryConfig });
   const { data: expenses = [], isLoading: l5 } = useQuery({ queryKey: ['admin-expenses'], queryFn: () => base44.entities.Expense.list('-date', 1000), staleTime: 2 * 60 * 1000, ...retryConfig });
@@ -235,16 +237,25 @@ export default function AdminDashboard() {
           </div>
         </motion.div>
 
-        {/* Performance Goal Preview */}
+        {/* Performance Goal & Spiff Preview */}
         {showPerfTester && (
           <motion.div
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
-            className="grid grid-cols-1 lg:grid-cols-2 gap-4"
+            className="space-y-4"
           >
-            <MMPerformanceGoal plans={[]} showTester={true} onRankOverride={setRankOverride} />
-            <LeaderboardRankPreview rank={rankOverride} />
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+              <MMPerformanceGoal plans={[]} showTester={true} onRankOverride={setRankOverride} />
+              <LeaderboardRankPreview rank={rankOverride} />
+            </div>
+            <div className="bg-slate-800/50 rounded-lg border border-slate-700/50 p-4">
+              <h3 className="text-sm font-bold text-white mb-3">Active Spiff Preview</h3>
+              <SpiffTracker spiffs={spiffs} leads={leads} user={user} />
+              {spiffs.filter(s => s.status === 'active').length === 0 && (
+                <p className="text-xs text-slate-500 text-center py-4">No active spiffs. Create one in the Spiff Manager.</p>
+              )}
+            </div>
           </motion.div>
         )}
 

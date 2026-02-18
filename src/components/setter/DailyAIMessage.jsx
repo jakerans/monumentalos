@@ -76,7 +76,7 @@ Keep it conversational, use 1-2 emojis max, and focus on what they can DO today.
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0, y: -12 }}
         transition={{ duration: 0.4 }}
-        className="relative bg-gradient-to-r from-slate-800/80 via-slate-800/60 to-slate-800/80 rounded-xl border border-slate-700/50 p-4 mb-4 overflow-hidden"
+        className="relative bg-gradient-to-r from-slate-800/80 via-slate-800/60 to-slate-800/80 rounded-xl border border-slate-700/50 p-4 overflow-hidden"
       >
         {/* Subtle animated gradient accent */}
         <motion.div

@@ -268,29 +268,48 @@ export default function SetterDashboard() {
       <SetterNav user={user} />
 
       <main className="flex-1 max-w-7xl w-full mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-6">
-        <DailyAIMessage
-          user={user}
-          spiffSummaries={spiffs.filter(sp => {
-            if (sp.status !== 'active') return false;
-            if (sp.scope === 'individual') return sp.assigned_setter_id === user?.id;
-            return true;
-          }).map(sp => {
-            const mtdS = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
-            let prog = 0;
-            if (sp.qualifier === 'appointments') {
-              const sid = sp.scope === 'individual' ? sp.assigned_setter_id : (sp.scope === 'team_company' ? null : user?.id);
-              prog = leads.filter(l => (sid ? l.booked_by_setter_id === sid : true) && l.date_appointment_set && new Date(l.date_appointment_set) >= mtdS).length;
-            } else if (sp.qualifier === 'stl') {
-              const sid = sp.scope === 'individual' ? sp.assigned_setter_id : (sp.scope === 'team_company' ? null : user?.id);
-              const sl = leads.filter(l => (sid ? l.setter_id === sid : true) && l.speed_to_lead_minutes != null && new Date(l.created_date) >= mtdS);
-              prog = sl.length > 0 ? Math.round(sl.reduce((s, l) => s + l.speed_to_lead_minutes, 0) / sl.length) : 0;
-            }
-            return { title: sp.title, progress: prog, goal: sp.goal_value, qualifier: sp.qualifier, met: sp.qualifier === 'stl' ? (prog > 0 && prog <= sp.goal_value) : (prog >= sp.goal_value) };
-          })}
-          leaderboard={leaderboard}
-          myRank={myCurrentRank}
-        />
-        <SpiffTracker spiffs={spiffs} leads={leads} user={user} />
+        {/* Hero row: Welcome + AI message on left, Spiff cards on right */}
+        <div className="grid grid-cols-1 lg:grid-cols-5 gap-4 mb-4">
+          <div className="lg:col-span-3 flex flex-col gap-3">
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.4 }}
+            >
+              <h1 className="text-2xl sm:text-3xl font-black text-white tracking-tight">
+                Welcome back, <span style={{ color: '#D6FF03' }}>{user?.full_name?.split(' ')[0] || 'Champ'}</span>
+              </h1>
+              <p className="text-sm text-slate-400 mt-0.5">
+                {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
+              </p>
+            </motion.div>
+            <DailyAIMessage
+              user={user}
+              spiffSummaries={spiffs.filter(sp => {
+                if (sp.status !== 'active') return false;
+                if (sp.scope === 'individual') return sp.assigned_setter_id === user?.id;
+                return true;
+              }).map(sp => {
+                const mtdS = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
+                let prog = 0;
+                if (sp.qualifier === 'appointments') {
+                  const sid = sp.scope === 'individual' ? sp.assigned_setter_id : (sp.scope === 'team_company' ? null : user?.id);
+                  prog = leads.filter(l => (sid ? l.booked_by_setter_id === sid : true) && l.date_appointment_set && new Date(l.date_appointment_set) >= mtdS).length;
+                } else if (sp.qualifier === 'stl') {
+                  const sid = sp.scope === 'individual' ? sp.assigned_setter_id : (sp.scope === 'team_company' ? null : user?.id);
+                  const sl = leads.filter(l => (sid ? l.setter_id === sid : true) && l.speed_to_lead_minutes != null && new Date(l.created_date) >= mtdS);
+                  prog = sl.length > 0 ? Math.round(sl.reduce((s, l) => s + l.speed_to_lead_minutes, 0) / sl.length) : 0;
+                }
+                return { title: sp.title, progress: prog, goal: sp.goal_value, qualifier: sp.qualifier, met: sp.qualifier === 'stl' ? (prog > 0 && prog <= sp.goal_value) : (prog >= sp.goal_value) };
+              })}
+              leaderboard={leaderboard}
+              myRank={myCurrentRank}
+            />
+          </div>
+          <div className="lg:col-span-2">
+            <SpiffTracker spiffs={spiffs} leads={leads} user={user} />
+          </div>
+        </div>
         <SetterStats leads={leads} user={user} />
 
         {/* Search & Filter Bar */}
