@@ -96,7 +96,7 @@ export default function LeaderboardWidget({ user, leaderboard, lastMonthBoard, s
       {open && <div className="fixed inset-0 bg-black/40 z-40" onClick={() => setOpen(false)} />}
 
       {/* Slide-out panel */}
-      <div className={`fixed left-0 top-0 h-full w-80 sm:w-96 bg-slate-900 border-r border-slate-700 z-50 transform transition-transform duration-300 ${open ? 'translate-x-0' : '-translate-x-full'} flex flex-col`}>
+      <div className={`fixed left-0 top-0 h-full w-96 sm:w-[28rem] bg-slate-900 border-r border-slate-700 z-50 transform transition-transform duration-300 ${open ? 'translate-x-0' : '-translate-x-full'} flex flex-col`}>
         <div className="flex items-center justify-between px-4 py-3 border-b border-slate-700">
           <div className="flex items-center gap-2">
             <Trophy className="w-5 h-5 text-amber-400" />
