@@ -118,6 +118,8 @@ export default function MMPerformanceGoal({ plans, showTester = false }) {
 function PlanCard({ plan, progressOverride }) {
   const progress = progressOverride != null ? progressOverride : (plan.current_period_progress || 0);
   const { currentTier, currentIdx, nextTier, sorted, maxThreshold } = getTierInfo(plan.tiers, progress);
+  // Show progress toward next tier (or max if all tiers reached)
+  const displayTarget = nextTier ? nextTier.threshold : maxThreshold;
   const overallPct = maxThreshold > 0 ? Math.min((progress / maxThreshold) * 100, 100) : 0;
   const topped = overallPct >= 100;
 
@@ -170,7 +172,7 @@ function PlanCard({ plan, progressOverride }) {
             >
               ${progress.toLocaleString()}
             </motion.span>
-            <span className="text-[10px] text-slate-500">/ ${maxThreshold.toLocaleString()}</span>
+            <span className="text-[10px] text-slate-500">/ ${displayTarget.toLocaleString()}</span>
           </div>
 
           {/* Bonus pay */}
