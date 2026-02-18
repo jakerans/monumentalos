@@ -48,6 +48,7 @@ export default function MMPerformanceGoal({ plans, showTester = false }) {
     id: 'demo', name: 'Revenue Commission', status: 'active', frequency: 'monthly',
     current_period_progress: 0, current_period_payout: 0,
     tiers: [
+      { threshold: 0, percentage: 0, label: 'Base' },
       { threshold: 50000, percentage: 5, label: 'Tier 1' },
       { threshold: 70000, percentage: 8, label: 'Tier 2' },
       { threshold: 100000, percentage: 10, label: 'Tier 3' },
