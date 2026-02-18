@@ -42,22 +42,40 @@ export default function MMPerformanceGoal({ plans, showTester = false }) {
     id: 'demo', name: 'Revenue Commission', status: 'active', frequency: 'monthly',
     current_period_progress: 0, current_period_payout: 0,
     tiers: [
-      { threshold: 25000, percentage: 3, label: 'Tier 1' },
-      { threshold: 60000, percentage: 5, label: 'Tier 2' },
+      { threshold: 50000, percentage: 3, label: 'Tier 1' },
+      { threshold: 70000, percentage: 5, label: 'Tier 2' },
       { threshold: 100000, percentage: 8, label: 'Max' },
     ]
   }] : []);
 
-  // Check if ANY plan is maxed out (topped)
-  const anyTopped = displayPlans.some(plan => {
-    const progress = progressOverride != null ? progressOverride : (plan.current_period_progress || 0);
-    const sortedTiers = [...(plan.tiers || [])].sort((a, b) => a.threshold - b.threshold);
-    const maxThreshold = sortedTiers.length > 0 ? Math.max(...sortedTiers.map(t => t.threshold)) : 100;
-    return maxThreshold > 0 && progress >= maxThreshold;
-  });
+  // Compute fire intensity: 0=none, 1=T1 (subtle white), 2=T2 (warning), 3=approaching max, 4=MAX (inferno)
+  const fireIntensity = (() => {
+    let maxIntensity = 0;
+    displayPlans.forEach(plan => {
+      const progress = progressOverride != null ? progressOverride : (plan.current_period_progress || 0);
+      const sortedTiers = [...(plan.tiers || [])].sort((a, b) => a.threshold - b.threshold);
+      const maxThreshold = sortedTiers.length > 0 ? Math.max(...sortedTiers.map(t => t.threshold)) : 100;
+      const pct = maxThreshold > 0 ? (progress / maxThreshold) * 100 : 0;
+      const tierIdx = (() => {
+        let idx = -1;
+        for (let i = 0; i < sortedTiers.length; i++) {
+          if (progress >= sortedTiers[i].threshold) idx = i;
+        }
+        return idx;
+      })();
+      let intensity = 0;
+      if (pct >= 100) intensity = 4;        // MAX — full inferno
+      else if (pct >= 80) intensity = 3;     // Approaching max — strong fire
+      else if (tierIdx >= 1) intensity = 2;  // T2 — warning flames
+      else if (tierIdx >= 0) intensity = 1;  // T1 — subtle white flames
+      if (intensity > maxIntensity) maxIntensity = intensity;
+    });
+    return maxIntensity;
+  })();
+  const anyTopped = fireIntensity >= 4;
 
   return (
-    <WidgetFireBorder active={anyTopped}>
+    <WidgetFireBorder active={fireIntensity >= 1} intensity={fireIntensity}>
       <motion.div
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
@@ -116,7 +134,15 @@ function PlanCard({ plan, progressOverride }) {
   const overallPct = maxThreshold > 0 ? Math.min((progress / maxThreshold) * 100, 100) : 0;
   const topped = overallPct >= 100;
 
-  const tierColor = topped ? '#D6FF03' : currentTier ? '#8b5cf6' : '#475569';
+  const currentTierForColor = (() => {
+    const sorted = [...(plan.tiers || [])].sort((a, b) => a.threshold - b.threshold);
+    let ct = null;
+    for (const tier of sorted) {
+      if (progress >= tier.threshold) ct = tier;
+    }
+    return ct;
+  })();
+  const tierColor = topped ? '#D6FF03' : currentTierForColor ? '#8b5cf6' : '#475569';
   const tierGlow = topped ? 'rgba(214,255,3,0.3)' : currentTier ? 'rgba(139,92,246,0.3)' : 'rgba(71,85,105,0.2)';
 
   const remaining = nextTier ? nextTier.threshold - progress : 0;

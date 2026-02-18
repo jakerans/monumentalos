@@ -3,9 +3,10 @@ import { Eye } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 const PRESETS = [
-  { label: 'Tier 1', value: 35000 },
-  { label: 'Tier 2', value: 70000 },
-  { label: 'MAX 🔥', value: 100000 },
+  { label: 'Tier 1 ($50k)', value: 50000 },
+  { label: 'Tier 2 ($70k)', value: 70000 },
+  { label: 'T2+ ($85k)', value: 85000 },
+  { label: 'MAX 🔥 ($100k)', value: 100000 },
   { label: 'Reset', value: null },
 ];
 
