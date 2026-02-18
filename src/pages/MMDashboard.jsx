@@ -102,6 +102,41 @@ export default function MMDashboard() {
     retryDelay: (attempt) => Math.min(1000 * 2 ** attempt, 10000),
   });
 
+  // Calculate real-time billable revenue MTD from lead activity (not invoiced)
+  const livePerfPlans = useMemo(() => {
+    if (myPerfPlans.length === 0) return [];
+    const now = new Date();
+    const mtdStart = new Date(now.getFullYear(), now.getMonth(), 1);
+    const mtdStr = mtdStart.toISOString();
+
+    // Calculate billable revenue across all active clients
+    let billableRevenue = 0;
+    clients.forEach(client => {
+      const bt = client.billing_type || 'pay_per_show';
+      const cLeads = allLeads.filter(l => l.client_id === client.id);
+      if (bt === 'pay_per_show') {
+        const showed = cLeads.filter(l =>
+          l.appointment_date && l.appointment_date >= mtdStr &&
+          (l.disposition === 'showed' || l.outcome === 'sold' || l.outcome === 'lost')
+        ).length;
+        billableRevenue += showed * (client.price_per_shown_appointment || 0);
+      } else if (bt === 'pay_per_set') {
+        const set = cLeads.filter(l => l.date_appointment_set && l.date_appointment_set >= mtdStr).length;
+        billableRevenue += set * (client.price_per_set_appointment || 0);
+      } else if (bt === 'retainer') {
+        billableRevenue += (client.retainer_amount || 0);
+      }
+    });
+
+    // Override current_period_progress on revenue-based plans with live billable number
+    return myPerfPlans.map(plan => {
+      if (plan.metric === 'revenue') {
+        return { ...plan, current_period_progress: billableRevenue };
+      }
+      return plan;
+    });
+  }, [myPerfPlans, clients, allLeads]);
+
   const pendingOnboardCount = useMemo(() => {
     if (!user) return 0;
     const myProjectIds = user.app_role === 'admin'
@@ -331,7 +366,7 @@ export default function MMDashboard() {
               />
             ) : (
               <>
-                <MMPerformanceGoal plans={myPerfPlans} />
+                <MMPerformanceGoal plans={livePerfPlans} />
                 <MMTaskBoard clients={clients} />
               </>
             )}
