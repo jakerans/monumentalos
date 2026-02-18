@@ -80,7 +80,10 @@ export default function SetterDashboard() {
 
   const { data: users = [] } = useQuery({
     queryKey: ['all-users'],
-    queryFn: () => base44.entities.User.list(),
+    queryFn: async () => {
+      const res = await base44.functions.invoke('listTeamUsers');
+      return res.data?.users || [];
+    },
     initialData: [],
     staleTime: 5 * 60 * 1000,
     retry: 2,
