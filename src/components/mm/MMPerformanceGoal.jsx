@@ -1,8 +1,9 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Trophy, Flame, Target, Zap } from 'lucide-react';
 import { motion } from 'framer-motion';
 import ArcadeOverheatMeter from './ArcadeOverheatMeter';
 import WidgetFireBorder from './WidgetFireBorder';
+import PerfGoalTester from './PerfGoalTester';
 
 function getCurrentTier(plan) {
   if (!plan.tiers || plan.tiers.length === 0) return null;
@@ -31,13 +32,25 @@ function getTierIndex(plan) {
   return idx;
 }
 
-export default function MMPerformanceGoal({ plans }) {
+export default function MMPerformanceGoal({ plans, showTester = false }) {
   const activePlans = (plans || []).filter(p => p.status === 'active');
-  if (activePlans.length === 0) return null;
+  const [progressOverride, setProgressOverride] = useState(null);
+  if (activePlans.length === 0 && !showTester) return null;
+
+  // Build display plans with optional override
+  const displayPlans = activePlans.length > 0 ? activePlans : (showTester ? [{
+    id: 'demo', name: 'Revenue Commission', status: 'active', frequency: 'monthly',
+    current_period_progress: 0, current_period_payout: 0,
+    tiers: [
+      { threshold: 25000, percentage: 3, label: 'Tier 1' },
+      { threshold: 60000, percentage: 5, label: 'Tier 2' },
+      { threshold: 100000, percentage: 8, label: 'Max' },
+    ]
+  }] : []);
 
   // Check if ANY plan is maxed out (topped)
-  const anyTopped = activePlans.some(plan => {
-    const progress = plan.current_period_progress || 0;
+  const anyTopped = displayPlans.some(plan => {
+    const progress = progressOverride != null ? progressOverride : (plan.current_period_progress || 0);
     const sortedTiers = [...(plan.tiers || [])].sort((a, b) => a.threshold - b.threshold);
     const maxThreshold = sortedTiers.length > 0 ? Math.max(...sortedTiers.map(t => t.threshold)) : 100;
     return maxThreshold > 0 && progress >= maxThreshold;
@@ -80,8 +93,11 @@ export default function MMPerformanceGoal({ plans }) {
           </h3>
         </div>
         <div className="p-3 space-y-3 relative z-10">
-          {activePlans.map(plan => (
-            <PlanCard key={plan.id} plan={plan} />
+          {showTester && (
+            <PerfGoalTester onOverride={setProgressOverride} />
+          )}
+          {displayPlans.map(plan => (
+            <PlanCard key={plan.id} plan={plan} progressOverride={progressOverride} />
           ))}
         </div>
       </motion.div>
@@ -89,8 +105,8 @@ export default function MMPerformanceGoal({ plans }) {
   );
 }
 
-function PlanCard({ plan }) {
-  const progress = plan.current_period_progress || 0;
+function PlanCard({ plan, progressOverride }) {
+  const progress = progressOverride != null ? progressOverride : (plan.current_period_progress || 0);
   const payout = plan.current_period_payout || 0;
   const currentTier = getCurrentTier(plan);
   const nextTier = getNextTier(plan);
