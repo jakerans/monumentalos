@@ -225,9 +225,9 @@ export default function AdminDashboard() {
 
         {/* P&L Snapshot — full width */}
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3, duration: 0.4 }}
+          initial={effectsOn ? { opacity: 0, y: 20 } : false}
+          animate={effectsOn ? { opacity: 1, y: 0 } : false}
+          transition={effectsOn ? { delay: 0.3, duration: 0.4 } : { duration: 0 }}
           className="bg-slate-800/50 rounded-lg border border-slate-700/50 p-4"
         >
           <h3 className="text-sm font-bold text-white mb-3">P&L Snapshot (MTD vs Last Month)</h3>
