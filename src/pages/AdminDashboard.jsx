@@ -18,6 +18,7 @@ import PageLoader from '../components/shared/PageLoader';
 import MMPerformanceGoal from '../components/mm/MMPerformanceGoal';
 import RankPreviewTester from '../components/mm/RankPreviewTester';
 import SpiffPreviewTester from '../components/admin/SpiffPreviewTester';
+import STLPreviewTester from '../components/admin/STLPreviewTester';
 import { motion } from 'framer-motion';
 import { useAutoAnimate } from '@formkit/auto-animate/react';
 
