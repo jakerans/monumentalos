@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
@@ -38,7 +38,7 @@ export default function SetterDashboard() {
   const [dqLead, setDqLead] = useState(null);
   const [dqOpen, setDqOpen] = useState(false);
   const [showDQ, setShowDQ] = useState(false);
-  const [celebration, setCelebration] = useState(null); // { type: 'rank_up' | 'booking' }
+  const [celebration, setCelebration] = useState(null);
   const prevRankRef = useRef(null);
   const [animateRef] = useAutoAnimate({ duration: 350, easing: 'ease-out' });
 
@@ -62,22 +62,19 @@ export default function SetterDashboard() {
     checkAuth();
   }, [navigate]);
 
-  const { data: leads = [], refetch, isLoading: l1 } = useQuery({
-    queryKey: ['setter-leads'],
-    queryFn: () => base44.entities.Lead.list('-created_date', 5000),
+  // Single backend call for all dashboard data
+  const { data: dashData, refetch, isLoading: dashLoading } = useQuery({
+    queryKey: ['setter-dashboard-data'],
+    queryFn: async () => {
+      const res = await base44.functions.invoke('getSetterDashboardData');
+      return res.data;
+    },
     staleTime: 60 * 1000,
     retry: 2,
     retryDelay: (attempt) => Math.min(1000 * 2 ** attempt, 10000),
   });
 
-  const { data: clients = [], isLoading: l2 } = useQuery({
-    queryKey: ['clients'],
-    queryFn: () => base44.entities.Client.list(),
-    staleTime: 5 * 60 * 1000,
-    retry: 2,
-    retryDelay: (attempt) => Math.min(1000 * 2 ** attempt, 10000),
-  });
-
+  // Users still fetched separately (for name lookups in detail panels)
   const { data: users = [] } = useQuery({
     queryKey: ['all-users'],
     queryFn: async () => {
@@ -90,13 +87,21 @@ export default function SetterDashboard() {
     retryDelay: (attempt) => Math.min(1000 * 2 ** attempt, 10000),
   });
 
-  const { data: spiffs = [] } = useQuery({
-    queryKey: ['setter-spiffs'],
-    queryFn: () => base44.entities.Spiff.filter({ status: 'active' }),
-    staleTime: 5 * 60 * 1000,
-    retry: 2,
-    retryDelay: (attempt) => Math.min(1000 * 2 ** attempt, 10000),
-  });
+  const pipelineData = dashData?.pipeline || { newLeads: [], inProgressLeads: [], bookedLeads: [], dqLeads: [] };
+  const preStats = dashData?.stats || {};
+  const spiffs = dashData?.spiffs || [];
+  const clients = dashData?.clients || [];
+  const clientMap = dashData?.clientMap || {};
+  const leaderboardData = dashData?.leaderboard || { profiles: [], myRank: null };
+  const aiContext = dashData?.aiContext || {};
+
+  // All pipeline leads combined (for mutation lookups)
+  const allPipelineLeads = useMemo(() => [
+    ...pipelineData.newLeads,
+    ...pipelineData.inProgressLeads,
+    ...pipelineData.bookedLeads,
+    ...pipelineData.dqLeads,
+  ], [pipelineData]);
 
   const getUserName = (userId) => {
     if (!userId) return null;
@@ -105,8 +110,7 @@ export default function SetterDashboard() {
   };
 
   const getClientName = (clientId) => {
-    const client = clients.find(c => c.id === clientId);
-    return client?.name || 'Unknown';
+    return clientMap[clientId] || 'Unknown';
   };
 
   const handleAction = (action, lead) => {
@@ -123,7 +127,7 @@ export default function SetterDashboard() {
   };
 
   const handleDisqualify = async (leadId, dqReason) => {
-    const lead = leads.find(l => l.id === leadId);
+    const lead = allPipelineLeads.find(l => l.id === leadId);
     await base44.entities.Lead.update(leadId, {
       status: 'disqualified',
       dq_reason: dqReason,
@@ -134,10 +138,9 @@ export default function SetterDashboard() {
 
   const handleFirstCallResult = async (leadId, result, dqReason) => {
     const speedMinutes = (() => {
-      const lead = leads.find(l => l.id === leadId);
+      const lead = allPipelineLeads.find(l => l.id === leadId);
       if (!lead) return null;
       const received = lead.lead_received_date || lead.created_date;
-      // Only calc STL if this is the very first call (no first_call_made_date yet)
       if (lead.first_call_made_date) return undefined;
       return Math.floor((new Date() - new Date(received)) / 60000);
     })();
@@ -148,7 +151,7 @@ export default function SetterDashboard() {
       ...(speedMinutes != null && speedMinutes !== undefined ? { speed_to_lead_minutes: speedMinutes } : {}),
     };
 
-    const leadName = leads.find(l => l.id === leadId)?.name || 'Lead';
+    const leadName = allPipelineLeads.find(l => l.id === leadId)?.name || 'Lead';
     if (result === 'scheduled') {
       await base44.entities.Lead.update(leadId, {
         ...baseUpdates,
@@ -156,7 +159,7 @@ export default function SetterDashboard() {
       });
       refetch();
       toast({ title: 'Call Logged', description: `${leadName} — ready to book.`, variant: 'success' });
-      const updatedLead = leads.find(l => l.id === leadId);
+      const updatedLead = allPipelineLeads.find(l => l.id === leadId);
       if (updatedLead) {
         setBookingLead({ ...updatedLead, status: 'first_call_made' });
         setBookingOpen(true);
@@ -180,7 +183,7 @@ export default function SetterDashboard() {
   };
 
   const handleBookAppointment = async (leadId, appointmentDate) => {
-    const lead = leads.find(l => l.id === leadId);
+    const lead = allPipelineLeads.find(l => l.id === leadId);
     await base44.entities.Lead.update(leadId, {
       status: 'appointment_booked',
       appointment_date: appointmentDate,
@@ -204,42 +207,13 @@ export default function SetterDashboard() {
     setDetailOpen(true);
   };
 
-  // Build leaderboard data
-  const now2 = new Date();
-  const mtdStart = new Date(now2.getFullYear(), now2.getMonth(), 1);
-  const lastMtdStart = new Date(now2.getFullYear(), now2.getMonth() - 1, 1);
-  const lastMtdEnd = new Date(now2.getFullYear(), now2.getMonth(), 0, 23, 59, 59);
-
-  const setters = users.filter(u => u.app_role === 'setter');
-
-  const buildBoard = (start, end) => {
-    return setters.map(s => {
-      const booked = leads.filter(l =>
-        l.booked_by_setter_id === s.id && l.date_appointment_set &&
-        new Date(l.date_appointment_set) >= start &&
-        (!end || new Date(l.date_appointment_set) <= end)
-      ).length;
-      const stlLeads = leads.filter(l =>
-        l.setter_id === s.id && l.speed_to_lead_minutes != null &&
-        new Date(l.created_date) >= start &&
-        (!end || new Date(l.created_date) <= end)
-      );
-      const avgSTL = stlLeads.length > 0 ? Math.round(stlLeads.reduce((sum, l) => sum + l.speed_to_lead_minutes, 0) / stlLeads.length) : null;
-      return { id: s.id, name: s.full_name, booked, avgSTL };
-    }).sort((a, b) => b.booked - a.booked);
-  };
-
-  const leaderboard = buildBoard(mtdStart, null);
-  const lastMonthBoard = buildBoard(lastMtdStart, lastMtdEnd);
-
   // Track rank changes for #1 celebration
-  const myCurrentRank = leaderboard.findIndex(s => s.id === user?.id) + 1 || null;
+  const myCurrentRank = leaderboardData.myRank;
   useEffect(() => {
     if (!myCurrentRank || !prevRankRef.current) {
       prevRankRef.current = myCurrentRank;
       return;
     }
-    // Went from 2nd/3rd (or lower) to 1st
     if (prevRankRef.current > 1 && myCurrentRank === 1) {
       setCelebration({ type: 'rank_up' });
     }
@@ -247,29 +221,19 @@ export default function SetterDashboard() {
   }, [myCurrentRank]);
 
   if (!user) return null;
-  if (l1 || l2) return <PageLoader message="Loading pipeline..." />;
+  if (dashLoading) return <PageLoader message="Loading pipeline..." />;
 
-  // Only show clients that are pay_per_set or pay_per_show (exclude retainer)
-  const settableClients = clients.filter(c => c.billing_type !== 'retainer');
-  const settableClientIds = new Set(settableClients.map(c => c.id));
-
-  // Filter leads — hide retainer client leads, final outcomes, and completed status
-  const filtered = leads.filter(l => {
-    if (!settableClientIds.has(l.client_id)) return false;
-    if (l.outcome === 'sold' || l.outcome === 'lost' || l.status === 'completed') return false;
+  // Apply local search/client filters on pre-filtered pipeline data
+  const applyLocalFilter = (leads) => leads.filter(l => {
     const matchSearch = !search || l.name?.toLowerCase().includes(search.toLowerCase()) || l.phone?.includes(search) || l.email?.toLowerCase().includes(search.toLowerCase());
     const matchClient = clientFilter === 'all' || l.client_id === clientFilter;
     return matchSearch && matchClient;
   });
 
-  const newLeads = filtered.filter(l => l.status === 'new');
-  const inProgressLeads = filtered.filter(l => l.status === 'first_call_made' || l.status === 'contacted');
-  const bookedLeads = filtered.filter(l => l.status === 'appointment_booked');
-  const dqLeads = filtered.filter(l => l.status === 'disqualified');
-
-  const today = new Date();
-  const todayStr = today.toISOString().split('T')[0];
-  const todayAppts = leads.filter(l => l.appointment_date && l.appointment_date.startsWith(todayStr));
+  const newLeads = applyLocalFilter(pipelineData.newLeads);
+  const inProgressLeads = applyLocalFilter(pipelineData.inProgressLeads);
+  const bookedLeads = applyLocalFilter(pipelineData.bookedLeads);
+  const dqLeads = applyLocalFilter(pipelineData.dqLeads);
 
   return (
     <PageErrorBoundary>
@@ -289,7 +253,7 @@ export default function SetterDashboard() {
                 <h1 className="text-2xl sm:text-3xl font-black text-white tracking-tight">
                   Welcome back, <span style={{ color: '#D6FF03' }}>{user?.full_name?.split(' ')[0] || 'Champ'}</span>
                 </h1>
-                <DailySpiffBanner spiffs={spiffs} leads={leads} user={user} />
+                <DailySpiffBanner spiffs={spiffs} leads={allPipelineLeads} user={user} />
               </div>
               <p className="text-sm text-slate-400 mt-0.5">
                 {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
@@ -297,32 +261,16 @@ export default function SetterDashboard() {
             </motion.div>
             <DailyAIMessage
               user={user}
-              spiffSummaries={spiffs.filter(sp => {
-                if (sp.status !== 'active') return false;
-                if (sp.scope === 'individual') return sp.assigned_setter_id === user?.id;
-                return true;
-              }).map(sp => {
-                const mtdS = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
-                let prog = 0;
-                if (sp.qualifier === 'appointments') {
-                  const sid = sp.scope === 'individual' ? sp.assigned_setter_id : (sp.scope === 'team_company' ? null : user?.id);
-                  prog = leads.filter(l => (sid ? l.booked_by_setter_id === sid : true) && l.date_appointment_set && new Date(l.date_appointment_set) >= mtdS).length;
-                } else if (sp.qualifier === 'stl') {
-                  const sid = sp.scope === 'individual' ? sp.assigned_setter_id : (sp.scope === 'team_company' ? null : user?.id);
-                  const sl = leads.filter(l => (sid ? l.setter_id === sid : true) && l.speed_to_lead_minutes != null && new Date(l.created_date) >= mtdS);
-                  prog = sl.length > 0 ? Math.round(sl.reduce((s, l) => s + l.speed_to_lead_minutes, 0) / sl.length) : 0;
-                }
-                return { title: sp.title, progress: prog, goal: sp.goal_value, qualifier: sp.qualifier, met: sp.qualifier === 'stl' ? (prog > 0 && prog <= sp.goal_value) : (prog >= sp.goal_value) };
-              })}
-              leaderboard={leaderboard}
+              spiffSummaries={aiContext.spiffSummaries || []}
+              leaderboard={leaderboardData.profiles}
               myRank={myCurrentRank}
             />
           </div>
           <div className="lg:col-span-2">
-            <SpiffTracker spiffs={spiffs} leads={leads} user={user} />
+            <SpiffTracker spiffs={spiffs} leads={allPipelineLeads} user={user} />
           </div>
         </div>
-        <SetterStats leads={leads} user={user} />
+        <SetterStats preStats={preStats} />
 
         {/* Search & Filter Bar */}
         <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 mb-4 sm:mb-6">
@@ -344,7 +292,7 @@ export default function SetterDashboard() {
               className="px-3 py-2 text-sm border border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#D6FF03] bg-slate-800 text-white"
             >
               <option value="all">All Clients</option>
-              {settableClients.map(c => (
+              {clients.map(c => (
                 <option key={c.id} value={c.id}>{c.name}</option>
               ))}
             </select>
@@ -449,7 +397,7 @@ export default function SetterDashboard() {
       <AddLeadModal
         open={addOpen}
         onOpenChange={setAddOpen}
-        clients={settableClients}
+        clients={clients}
         onAdd={handleAddLead}
         userId={user?.id}
       />
@@ -457,7 +405,7 @@ export default function SetterDashboard() {
       <LeaderboardWidget
         user={user}
         spiffs={spiffs}
-        leads={leads}
+        leads={allPipelineLeads}
       />
 
       {celebration && (
