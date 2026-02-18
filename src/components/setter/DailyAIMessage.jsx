@@ -40,29 +40,39 @@ export default function DailyAIMessage({ user, spiffSummaries, leaderboard, myRa
       const topSetter = leaderboard[0];
       const teamCtx = topSetter ? `Team leader has ${topSetter.mtd_booked || topSetter.booked || 0} bookings this month.` : '';
 
-      // Fetch custom admin instructions
-      let customInstructions = '';
+      // Fetch custom admin AI coach settings
+      let toneBlock = '';
+      let rulesBlock = '';
+      let contextBlock = '';
+      let sopUrls = [];
       try {
         const settings = await base44.entities.CompanySettings.filter({ key: 'ai_coach' });
-        if (settings.length > 0 && settings[0].ai_coach_instructions) {
-          customInstructions = `\n\nIMPORTANT COMPANY-SPECIFIC INSTRUCTIONS (follow these strictly):\n${settings[0].ai_coach_instructions}`;
+        if (settings.length > 0) {
+          const s = settings[0];
+          if (s.ai_coach_tone) toneBlock = `\n\nTONE (adopt this voice): ${s.ai_coach_tone}`;
+          if (s.ai_coach_rules) rulesBlock = `\n\nRULES (you MUST follow these):\n${s.ai_coach_rules}`;
+          if (s.ai_coach_context || s.ai_coach_instructions) contextBlock = `\n\nCOMPANY CONTEXT:\n${s.ai_coach_context || s.ai_coach_instructions}`;
+          if (s.ai_coach_sop_urls?.length) sopUrls = s.ai_coach_sop_urls;
         }
       } catch { /* ignore */ }
 
-      const prompt = `You are an energetic, motivational coach for a sales setter named ${firstName}. 
+      const prompt = `You are a coach for a sales setter named ${firstName}. 
 Give them a brief, punchy morning message (2-3 sentences max). Include:
 1. A personalized greeting
 2. One specific, actionable tip for today based on their data
 3. An encouraging push
 
-Context:
+Setter Data:
 - ${rankCtx}
 - ${teamCtx}
 - Active spiffs: ${spiffCtx}
 - Today is ${new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
-${customInstructions}
+${toneBlock}${rulesBlock}${contextBlock}
 
 Keep it conversational, use 1-2 emojis max, and focus on what they can DO today. No generic fluff.`;
+
+      // Build file_urls for SOP context
+      const fileUrls = sopUrls.length > 0 ? sopUrls : undefined;
 
       try {
         const res = await base44.integrations.Core.InvokeLLM({ prompt });
