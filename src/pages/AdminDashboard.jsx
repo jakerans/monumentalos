@@ -142,14 +142,7 @@ export default function AdminDashboard() {
         </motion.div>
 
         {/* Business Health KPIs */}
-        <BusinessHealthKPIs
-          clients={clients}
-          leads={leads}
-          spend={spend}
-          payments={payments}
-          billingRecords={billingRecords}
-          lastMonthBilling={lastMonthBilling}
-        />
+        <BusinessHealthKPIs data={healthKPIs} />
 
         {/* Charts row */}
         <motion.div
@@ -158,8 +151,8 @@ export default function AdminDashboard() {
           transition={effectsOn ? { delay: 0.2, duration: 0.4 } : { duration: 0 }}
           className="grid grid-cols-1 lg:grid-cols-3 gap-4 items-stretch"
         >
-          <ClientGoalChart clients={clients} />
-          <RevenueBreakdownChart clients={clients} leads={leads} spend={spend} />
+          <ClientGoalChart data={goalChartData} />
+          <RevenueBreakdownChart data={revenueBreakdown} />
           <MTDGoalProgress currentGoal={currentGoal} mtdData={mtd} />
         </motion.div>
 
@@ -171,7 +164,7 @@ export default function AdminDashboard() {
           className="bg-slate-800/50 rounded-lg border border-slate-700/50 p-4"
         >
           <h3 className="text-sm font-bold text-white mb-3">P&L Snapshot (MTD vs Last Month)</h3>
-          <PLComparisonRow current={mtd} prior={mtd.prior} />
+          <PLComparisonRow current={mtd} prior={priorPL} />
         </motion.div>
 
         {/* Stat Compare + Setter Leaderboard */}
@@ -182,7 +175,7 @@ export default function AdminDashboard() {
           className="grid grid-cols-1 lg:grid-cols-2 gap-4"
         >
           {/* Income vs Expenses */}
-          <StatCompareCard payments={payments} expenses={expenses} leads={leads} clients={clients} />
+          <StatCompareCard data={statCompare} />
 
           {/* Setter leaderboard */}
           <div className="bg-slate-800/50 rounded-lg border border-slate-700/50 overflow-hidden">
@@ -258,7 +251,7 @@ export default function AdminDashboard() {
         )}
       </main>
 
-      <GoalManagementModal open={goalsOpen} onOpenChange={setGoalsOpen} goals={goals} onSaved={refetchGoals} />
+      <GoalManagementModal open={goalsOpen} onOpenChange={setGoalsOpen} goals={goals} onSaved={refetchDash} />
     </div>
     </PageErrorBoundary>
   );
