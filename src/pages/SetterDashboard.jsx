@@ -7,6 +7,8 @@ import { Search, Filter, Plus, Ban } from 'lucide-react';
 import { toast } from '@/components/ui/use-toast';
 import SetterNav from '../components/setter/SetterNav';
 import SetterStats from '../components/setter/SetterStats';
+import DailyAIMessage from '../components/setter/DailyAIMessage';
+import SpiffTracker from '../components/setter/SpiffTracker';
 import PipelineColumn from '../components/setter/PipelineColumn';
 import LeadDetailPanel from '../components/setter/LeadDetailPanel';
 import BookAppointmentModal from '../components/setter/BookAppointmentModal';
@@ -266,6 +268,29 @@ export default function SetterDashboard() {
       <SetterNav user={user} />
 
       <main className="flex-1 max-w-7xl w-full mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-6">
+        <DailyAIMessage
+          user={user}
+          spiffSummaries={spiffs.filter(sp => {
+            if (sp.status !== 'active') return false;
+            if (sp.scope === 'individual') return sp.assigned_setter_id === user?.id;
+            return true;
+          }).map(sp => {
+            const mtdS = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
+            let prog = 0;
+            if (sp.qualifier === 'appointments') {
+              const sid = sp.scope === 'individual' ? sp.assigned_setter_id : (sp.scope === 'team_company' ? null : user?.id);
+              prog = leads.filter(l => (sid ? l.booked_by_setter_id === sid : true) && l.date_appointment_set && new Date(l.date_appointment_set) >= mtdS).length;
+            } else if (sp.qualifier === 'stl') {
+              const sid = sp.scope === 'individual' ? sp.assigned_setter_id : (sp.scope === 'team_company' ? null : user?.id);
+              const sl = leads.filter(l => (sid ? l.setter_id === sid : true) && l.speed_to_lead_minutes != null && new Date(l.created_date) >= mtdS);
+              prog = sl.length > 0 ? Math.round(sl.reduce((s, l) => s + l.speed_to_lead_minutes, 0) / sl.length) : 0;
+            }
+            return { title: sp.title, progress: prog, goal: sp.goal_value, qualifier: sp.qualifier, met: sp.qualifier === 'stl' ? (prog > 0 && prog <= sp.goal_value) : (prog >= sp.goal_value) };
+          })}
+          leaderboard={leaderboard}
+          myRank={myCurrentRank}
+        />
+        <SpiffTracker spiffs={spiffs} leads={leads} user={user} />
         <SetterStats leads={leads} user={user} />
 
         {/* Search & Filter Bar */}
