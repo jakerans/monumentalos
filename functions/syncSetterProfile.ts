@@ -25,8 +25,9 @@ Deno.serve(async (req) => {
       db.SetterProfile.list(),
     ]);
 
-    // STL leads — ALL leads with speed_to_lead_minutes, regardless of status/dispo/outcome
-    const allSTL = await db.Lead.filter({ speed_to_lead_minutes: { $exists: true } }, '-created_date', 5000);
+    // STL leads — last 7 days, regardless of status/dispo/outcome
+    const stl7dStart = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 7);
+    const allSTL = await db.Lead.filter({ speed_to_lead_minutes: { $exists: true }, created_date: { $gte: stl7dStart.toISOString() } }, '-created_date', 5000);
 
     const setterUsers = allUsers.filter(u => u.app_role === 'setter');
 
@@ -39,17 +40,15 @@ Deno.serve(async (req) => {
 
     for (const setter of setterUsers) {
       const booked = mtdLeads.filter(l => l.booked_by_setter_id === setter.id).length;
-      // STL: all leads where this setter has speed_to_lead_minutes, created this month — no status/dispo/outcome filter
-      const stlArr = allSTL.filter(l => l.setter_id === setter.id && new Date(l.created_date) >= mtdStart);
+      // STL: last 7 days, all leads where this setter has speed_to_lead_minutes — no status/dispo/outcome filter
+      const stlArr = allSTL.filter(l => l.setter_id === setter.id);
       const avgSTL = stlArr.length > 0
         ? Math.round(stlArr.reduce((s, l) => s + l.speed_to_lead_minutes, 0) / stlArr.length)
         : null;
 
       const lmBooked = lmLeads.filter(l => l.booked_by_setter_id === setter.id).length;
-      const lmSTLArr = allSTL.filter(l => l.setter_id === setter.id && new Date(l.created_date) >= lmStart && new Date(l.created_date) <= lmEnd);
-      const lmAvgSTL = lmSTLArr.length > 0
-        ? Math.round(lmSTLArr.reduce((s, l) => s + l.speed_to_lead_minutes, 0) / lmSTLArr.length)
-        : null;
+      // Last month STL not meaningful for 7-day window, keep as null
+      const lmAvgSTL = null;
 
       const existing = profileByUserId[setter.id];
 

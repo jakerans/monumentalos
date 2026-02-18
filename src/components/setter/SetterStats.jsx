@@ -47,19 +47,18 @@ export default function SetterStats({ leads = [], user }) {
       l.setter_id === userId && l.first_call_made_date && l.first_call_made_date.startsWith(dStr)
     );
 
-    // Avg STL this month (mine)
-    const mtdSTLLeads = leads.filter(l => l.setter_id === userId && l.speed_to_lead_minutes != null && inMTD(l.created_date));
-    const lmSTLLeads = leads.filter(l => l.setter_id === userId && l.speed_to_lead_minutes != null && inLM(l.created_date));
-    const avgSTL = mtdSTLLeads.length > 0 ? Math.round(mtdSTLLeads.reduce((s, l) => s + l.speed_to_lead_minutes, 0) / mtdSTLLeads.length * 10) / 10 : 0;
-    const lmAvgSTL = lmSTLLeads.length > 0 ? Math.round(lmSTLLeads.reduce((s, l) => s + l.speed_to_lead_minutes, 0) / lmSTLLeads.length) : 0;
+    // Avg STL last 7 days (mine) — all leads regardless of status/dispo/outcome
+    const stl7dStart = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 7);
+    const my7dSTL = leads.filter(l => l.setter_id === userId && l.speed_to_lead_minutes != null && l.created_date && new Date(l.created_date) >= stl7dStart);
+    const avgSTL = my7dSTL.length > 0 ? Math.round(my7dSTL.reduce((s, l) => s + l.speed_to_lead_minutes, 0) / my7dSTL.length * 10) / 10 : 0;
 
-    // Team avg STL this month (everyone)
-    const teamSTLLeads = leads.filter(l => l.speed_to_lead_minutes != null && inMTD(l.created_date));
-    const teamAvgSTL = teamSTLLeads.length > 0 ? Math.round(teamSTLLeads.reduce((s, l) => s + l.speed_to_lead_minutes, 0) / teamSTLLeads.length * 10) / 10 : 0;
+    // Team avg STL last 7 days (everyone)
+    const team7dSTL = leads.filter(l => l.speed_to_lead_minutes != null && l.created_date && new Date(l.created_date) >= stl7dStart);
+    const teamAvgSTL = team7dSTL.length > 0 ? Math.round(team7dSTL.reduce((s, l) => s + l.speed_to_lead_minutes, 0) / team7dSTL.length * 10) / 10 : 0;
     const stlSpark = buildDailySparkline(leads, (l, dStr) => {
       if (l.setter_id !== userId || l.speed_to_lead_minutes == null) return false;
       return l.created_date && l.created_date.startsWith(dStr);
-    });
+    }, 7);
 
     // Today's appointments (all)
     const todayAppts = leads.filter(l => l.appointment_date && l.appointment_date.startsWith(todayStr)).length;
@@ -69,13 +68,15 @@ export default function SetterStats({ leads = [], user }) {
       l.appointment_date && l.appointment_date.startsWith(dStr)
     );
 
-    // Show rate this month (booked by me that showed)
-    const mtdMyBooked = leads.filter(l => l.booked_by_setter_id === userId && inMTD(l.date_appointment_set));
-    const mtdShowed = mtdMyBooked.filter(l => l.disposition === 'showed').length;
-    const showRate = mtdMyBooked.length > 0 ? Math.round((mtdShowed / mtdMyBooked.length) * 100) : 0;
-    const lmMyBooked = leads.filter(l => l.booked_by_setter_id === userId && inLM(l.date_appointment_set));
-    const lmShowed = lmMyBooked.filter(l => l.disposition === 'showed').length;
-    const lmShowRate = lmMyBooked.length > 0 ? Math.round((lmShowed / lmMyBooked.length) * 100) : 0;
+    // Show rate last 30 days (booked by me that showed)
+    const show30dStart = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 30);
+    const show60dStart = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 60);
+    const my30dBooked = leads.filter(l => l.booked_by_setter_id === userId && l.date_appointment_set && new Date(l.date_appointment_set) >= show30dStart);
+    const my30dShowed = my30dBooked.filter(l => l.disposition === 'showed').length;
+    const showRate = my30dBooked.length > 0 ? Math.round((my30dShowed / my30dBooked.length) * 100) : 0;
+    const prev30dBooked = leads.filter(l => l.booked_by_setter_id === userId && l.date_appointment_set && new Date(l.date_appointment_set) >= show60dStart && new Date(l.date_appointment_set) < show30dStart);
+    const prev30dShowed = prev30dBooked.filter(l => l.disposition === 'showed').length;
+    const lmShowRate = prev30dBooked.length > 0 ? Math.round((prev30dShowed / prev30dBooked.length) * 100) : 0;
 
     return [
       {
