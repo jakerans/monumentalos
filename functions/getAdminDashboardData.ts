@@ -126,6 +126,120 @@ Deno.serve(async (req) => {
     const leadsSparkline = buildDailySparkline(leads, 'created_date');
     const bookedSparkline = buildDailySparkline(leads.filter(l => l.date_appointment_set), 'date_appointment_set');
 
+    // ========== Cash Health Metrics ==========
+    // Realized Revenue = cash actually collected MTD
+    const realizedRevenue = payments.filter(p => inMTD(p.date)).reduce((s, p) => s + (p.amount || 0), 0);
+
+    // Projected Revenue = performance fees earned MTD but not yet billed/collected
+    let projectedRevenue = 0;
+    activeClients.forEach(client => {
+      const bt = client.billing_type || 'pay_per_show';
+      const cLeads = leads.filter(l => l.client_id === client.id);
+      if (bt === 'pay_per_show') {
+        projectedRevenue += cLeads.filter(l => l.disposition === 'showed' && inMTD(l.appointment_date)).length * (client.price_per_shown_appointment || 0);
+      } else if (bt === 'pay_per_set') {
+        projectedRevenue += cLeads.filter(l => l.date_appointment_set && inMTD(l.date_appointment_set)).length * (client.price_per_set_appointment || 0);
+      } else if (bt === 'retainer') {
+        projectedRevenue += (client.retainer_amount || 0);
+      }
+    });
+    // Unbilled = projected minus what's already been collected
+    const unbilledRevenue = Math.max(0, projectedRevenue - realizedRevenue);
+
+    // ========== Accrued Expense & Real-Time Margin ==========
+    const employees = await fetchAll(sr.Employee, '-created_date');
+    const activeEmployees = employees.filter(e => e.status === 'active');
+
+    const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+    const dayOfMonth = now.getDate();
+    const proRataFraction = dayOfMonth / daysInMonth;
+
+    let accruedSalary = 0;
+    activeEmployees.forEach(emp => {
+      let monthlyCost = 0;
+      if (emp.classification === 'salary' && emp.pay_per_cycle) {
+        // Assume biweekly → ~2.167 cycles/month; approximate monthly = pay_per_cycle * 2.167
+        monthlyCost = emp.pay_per_cycle * 2.167;
+      } else if (emp.classification === 'hourly') {
+        monthlyCost = (emp.hourly_rate || 0) * (emp.standard_monthly_hours || 160);
+      } else if (emp.classification === 'contractor') {
+        if (emp.contractor_billing_type === 'monthly') monthlyCost = emp.contractor_rate || 0;
+        else if (emp.contractor_billing_type === 'hourly') monthlyCost = (emp.contractor_rate || 0) * 160;
+      }
+      accruedSalary += monthlyCost * proRataFraction;
+    });
+
+    // Recorded expenses MTD
+    const recordedExpensesMTD = expenses.filter(e => inMTD(e.date)).reduce((s, e) => s + (e.amount || 0), 0);
+    const recordedCogsMTD = expenses.filter(e => inMTD(e.date) && e.expense_type === 'cogs').reduce((s, e) => s + (e.amount || 0), 0);
+
+    // Total accrued = max of recorded or accrued payroll, plus other recorded
+    const totalAccruedExpenses = Math.max(accruedSalary, recordedExpensesMTD);
+    const accruedGrossProfit = projectedRevenue - Math.max(accruedSalary * 0.6, recordedCogsMTD); // rough COGS ~60% of salary accrual, or recorded
+    const accruedGrossMargin = projectedRevenue > 0 ? (accruedGrossProfit / projectedRevenue) * 100 : 0;
+
+    // Real-time margin using accrued expenses
+    const realtimeNetProfit = realizedRevenue - totalAccruedExpenses;
+    const realtimeNetMargin = realizedRevenue > 0 ? (realtimeNetProfit / realizedRevenue) * 100 : 0;
+
+    // ========== Retainer Coverage Ratio ==========
+    const monthlyRetainerRevenue = activeClients
+      .filter(c => (c.billing_type || 'pay_per_show') === 'retainer')
+      .reduce((s, c) => s + (c.retainer_amount || 0), 0);
+
+    // Fixed overhead = salary/hourly employees + software-category expenses (monthly avg)
+    const monthlyFixedOverhead = activeEmployees.reduce((s, emp) => {
+      let monthlyCost = 0;
+      if (emp.classification === 'salary' && emp.pay_per_cycle) monthlyCost = emp.pay_per_cycle * 2.167;
+      else if (emp.classification === 'hourly') monthlyCost = (emp.hourly_rate || 0) * (emp.standard_monthly_hours || 160);
+      else if (emp.classification === 'contractor' && emp.contractor_billing_type === 'monthly') monthlyCost = emp.contractor_rate || 0;
+      return s + monthlyCost;
+    }, 0);
+    // Add recurring software expenses (last 90 days / 3)
+    const softwareExpenses90d = expenses
+      .filter(e => e.category === 'software' && new Date(e.date) >= ninetyDaysAgo)
+      .reduce((s, e) => s + (e.amount || 0), 0);
+    const monthlySoftware = softwareExpenses90d / 3;
+    const totalFixedOverhead = monthlyFixedOverhead + monthlySoftware;
+    const retainerCoverageRatio = totalFixedOverhead > 0 ? Math.round((monthlyRetainerRevenue / totalFixedOverhead) * 100) : 0;
+
+    // ========== AR Health Light ==========
+    // Check billing records: pending/overdue invoices
+    const allBillingRecords = await fetchAll(sr.MonthlyBilling, '-billing_month');
+    let arHealth = 'green'; // default
+    const todayDate = now.toISOString().split('T')[0];
+
+    allBillingRecords.forEach(bill => {
+      if (bill.status === 'paid') return;
+      // Estimate invoice date as 1st of the month after billing_month
+      const [y, m] = (bill.billing_month || '').split('-').map(Number);
+      if (!y || !m) return;
+      const invoiceDate = new Date(y, m, 1); // 1st of next month
+      const daysPastDue = Math.floor((now - invoiceDate) / (1000 * 60 * 60 * 24));
+      const amount = bill.calculated_amount || bill.manual_amount || 0;
+
+      if (daysPastDue >= 15 && amount > 0) {
+        arHealth = 'red';
+      } else if (daysPastDue >= 7 && amount >= 1000 && arHealth !== 'red') {
+        arHealth = 'yellow';
+      }
+    });
+
+    const cashHealth = {
+      realizedRevenue,
+      projectedRevenue,
+      unbilledRevenue,
+      accruedExpenses: totalAccruedExpenses,
+      accruedGrossMargin,
+      realtimeNetProfit,
+      realtimeNetMargin,
+      retainerCoverageRatio,
+      monthlyRetainerRevenue,
+      totalFixedOverhead,
+      arHealth,
+      proRataFraction,
+    };
+
     const healthKPIs = {
       activeClients: activeClients.length,
       alertClients: alertClients.length,
