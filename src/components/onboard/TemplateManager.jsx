@@ -26,37 +26,37 @@ export default function TemplateManager({ templates, onRefresh }) {
   return (
     <div className="space-y-3">
       <div className="flex items-center justify-between">
-        <h2 className="text-sm font-semibold text-gray-900">Onboard Templates</h2>
-        <button onClick={openNew} className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-medium bg-indigo-600 text-white rounded-md hover:bg-indigo-700">
+        <h2 className="text-sm font-semibold text-white">Onboard Templates</h2>
+        <button onClick={openNew} className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-bold text-black rounded-md hover:opacity-90" style={{backgroundColor:'#D6FF03'}}>
           <Plus className="w-3.5 h-3.5" /> New Template
         </button>
       </div>
 
       {templates.length === 0 ? (
-        <div className="bg-white rounded-lg border border-gray-200 p-8 text-center text-xs text-gray-400">
+        <div className="bg-slate-800/50 rounded-lg border border-slate-700/50 p-8 text-center text-xs text-slate-500">
           No templates yet. Create your first onboarding template to get started.
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           {templates.map(t => (
-            <div key={t.id} className="bg-white rounded-lg border border-gray-200 p-4">
+            <div key={t.id} className="bg-slate-800/50 rounded-lg border border-slate-700/50 p-4">
               <div className="flex items-start justify-between mb-2">
                 <div>
-                  <h3 className="text-sm font-semibold text-gray-900">{t.name}</h3>
-                  {t.description && <p className="text-xs text-gray-400 mt-0.5">{t.description}</p>}
+                  <h3 className="text-sm font-semibold text-white">{t.name}</h3>
+                  {t.description && <p className="text-xs text-slate-400 mt-0.5">{t.description}</p>}
                 </div>
                 <div className="flex gap-1">
-                  <button onClick={() => openEdit(t)} className="p-1 text-gray-400 hover:text-indigo-600"><Pencil className="w-3.5 h-3.5" /></button>
-                  <button onClick={() => handleDelete(t.id)} className="p-1 text-gray-400 hover:text-red-600"><Trash2 className="w-3.5 h-3.5" /></button>
+                  <button onClick={() => openEdit(t)} className="p-1 text-slate-500 hover:text-[#D6FF03]"><Pencil className="w-3.5 h-3.5" /></button>
+                  <button onClick={() => handleDelete(t.id)} className="p-1 text-slate-500 hover:text-red-400"><Trash2 className="w-3.5 h-3.5" /></button>
                 </div>
               </div>
               <div className="space-y-1">
                 {(t.tasks || []).sort((a, b) => (a.order || 0) - (b.order || 0)).map((task, i) => (
-                  <div key={i} className="flex items-center gap-2 text-xs text-gray-600">
-                    <span className="text-gray-300 font-mono w-4">{i + 1}</span>
+                  <div key={i} className="flex items-center gap-2 text-xs text-slate-400">
+                    <span className="text-slate-600 font-mono w-4">{i + 1}</span>
                     <span className="flex-1 truncate">{task.title}</span>
                     <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-medium ${
-                      task.assigned_to === 'marketing_manager' ? 'bg-purple-100 text-purple-700' : 'bg-indigo-100 text-indigo-700'
+                      task.assigned_to === 'marketing_manager' ? 'bg-purple-500/15 text-purple-400' : 'bg-indigo-500/15 text-indigo-400'
                     }`}>
                       {task.assigned_to === 'marketing_manager' ? 'MM' : 'Onboard'}
                     </span>
