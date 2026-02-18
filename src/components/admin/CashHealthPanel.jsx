@@ -68,21 +68,21 @@ export default function CashHealthPanel({ data }) {
       <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-2">
         <Stat
           index={0}
-          label="Realized Revenue"
-          value={fmt(d.realizedRevenue)}
-          sub="Cash actually collected"
-          icon={DollarSign}
-          iconColor="text-emerald-400"
-          iconBg="bg-emerald-500/10"
-        />
-        <Stat
-          index={1}
           label="Projected Revenue"
           value={fmt(d.projectedRevenue)}
           sub={`AR: ${fmt(d.activeInvoices)} + Accruals: ${fmt(d.liveAccruals)}`}
           icon={TrendingUp}
           iconColor="text-blue-400"
           iconBg="bg-blue-500/10"
+        />
+        <Stat
+          index={1}
+          label="Realized Revenue"
+          value={fmt(d.realizedRevenue)}
+          sub="Cash actually collected"
+          icon={DollarSign}
+          iconColor="text-emerald-400"
+          iconBg="bg-emerald-500/10"
         />
         <Stat
           index={2}
