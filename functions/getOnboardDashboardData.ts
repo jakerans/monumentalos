@@ -9,15 +9,26 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Forbidden' }, { status: 403 });
     }
 
-    const [projects, tasks, templates, clients, usersRes] = await Promise.all([
+    const [projects, tasks, templates, clients, allUsers, setterProfiles] = await Promise.all([
       base44.asServiceRole.entities.OnboardProject.list('-created_date', 200),
       base44.asServiceRole.entities.OnboardTask.list('-created_date', 1000),
       base44.asServiceRole.entities.OnboardTemplate.filter({ status: 'active' }),
       base44.asServiceRole.entities.Client.list(),
-      base44.functions.invoke('listTeamUsers'),
+      base44.asServiceRole.entities.User.list(),
+      base44.asServiceRole.entities.SetterProfile.filter({ status: 'active' }),
     ]);
 
-    const users = usersRes?.users || [];
+    // Build safe user list matching listTeamUsers format
+    const profileMap = {};
+    setterProfiles.forEach(p => { profileMap[p.user_id] = p; });
+    const users = allUsers.map(u => ({
+      id: u.id,
+      full_name: u.full_name,
+      email: u.email,
+      role: u.role,
+      app_role: u.app_role,
+      setter_profile: profileMap[u.id] || null,
+    }));
 
     return Response.json({
       projects,
