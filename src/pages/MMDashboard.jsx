@@ -11,6 +11,7 @@ import ClientTable from '../components/mm/ClientTable';
 import MMTaskBoard from '../components/mm/MMTaskBoard';
 import ClientQuickView from '../components/mm/ClientQuickView';
 import ClientBreakdownChart from '../components/mm/ClientBreakdownChart';
+import MMPerformanceGoal from '../components/mm/MMPerformanceGoal';
 import DateRangePicker from '../components/admin/DateRangePicker';
 import PageErrorBoundary from '../components/shared/PageErrorBoundary';
 import PageLoader from '../components/shared/PageLoader';
@@ -79,6 +80,23 @@ export default function MMDashboard() {
   const { data: onboardProjects = [] } = useQuery({
     queryKey: ['mm-onboard-projects-nav'],
     queryFn: () => base44.entities.OnboardProject.filter({ status: 'in_progress' }),
+    staleTime: 5 * 60 * 1000,
+    retry: 2,
+    retryDelay: (attempt) => Math.min(1000 * 2 ** attempt, 10000),
+  });
+
+  // Fetch performance pay plans for this MM
+  const { data: myPerfPlans = [] } = useQuery({
+    queryKey: ['mm-perf-plans', user?.id],
+    queryFn: async () => {
+      if (!user) return [];
+      const employees = await base44.entities.Employee.filter({ user_id: user.id, status: 'active' });
+      if (employees.length === 0) return [];
+      const empId = employees[0].id;
+      const plans = await base44.entities.PerformancePay.filter({ employee_id: empId, status: 'active' });
+      return plans;
+    },
+    enabled: !!user,
     staleTime: 5 * 60 * 1000,
     retry: 2,
     retryDelay: (attempt) => Math.min(1000 * 2 ** attempt, 10000),
@@ -304,7 +322,7 @@ export default function MMDashboard() {
           </div>
 
           {/* Right panel — AI recap or Client quick view */}
-          <div className="hidden lg:block w-80 flex-shrink-0">
+          <div className="hidden lg:flex lg:flex-col w-80 flex-shrink-0 gap-3 overflow-y-auto">
             {selectedClient ? (
               <ClientQuickView
                 client={selectedClient}
@@ -312,7 +330,10 @@ export default function MMDashboard() {
                 onClientUpdated={refetchClients}
               />
             ) : (
-              <MMTaskBoard clients={clients} />
+              <>
+                <MMPerformanceGoal plans={myPerfPlans} />
+                <MMTaskBoard clients={clients} />
+              </>
             )}
           </div>
         </motion.div>
