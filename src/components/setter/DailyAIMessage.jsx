@@ -40,6 +40,15 @@ export default function DailyAIMessage({ user, spiffSummaries, leaderboard, myRa
       const topSetter = leaderboard[0];
       const teamCtx = topSetter ? `Team leader has ${topSetter.mtd_booked || topSetter.booked || 0} bookings this month.` : '';
 
+      // Fetch custom admin instructions
+      let customInstructions = '';
+      try {
+        const settings = await base44.entities.CompanySettings.filter({ key: 'ai_coach' });
+        if (settings.length > 0 && settings[0].ai_coach_instructions) {
+          customInstructions = `\n\nIMPORTANT COMPANY-SPECIFIC INSTRUCTIONS (follow these strictly):\n${settings[0].ai_coach_instructions}`;
+        }
+      } catch { /* ignore */ }
+
       const prompt = `You are an energetic, motivational coach for a sales setter named ${firstName}. 
 Give them a brief, punchy morning message (2-3 sentences max). Include:
 1. A personalized greeting
@@ -51,6 +60,7 @@ Context:
 - ${teamCtx}
 - Active spiffs: ${spiffCtx}
 - Today is ${new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
+${customInstructions}
 
 Keep it conversational, use 1-2 emojis max, and focus on what they can DO today. No generic fluff.`;
 
