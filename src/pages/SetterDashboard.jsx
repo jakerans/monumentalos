@@ -17,6 +17,7 @@ import FirstCallModal from '../components/setter/FirstCallModal';
 import DisqualifyModal from '../components/setter/DisqualifyModal';
 import LeaderboardWidget from '../components/setter/LeaderboardWidget';
 import CelebrationOverlay from '../components/setter/CelebrationOverlay';
+import DailySpiffBanner from '../components/setter/DailySpiffBanner';
 import PageErrorBoundary from '../components/shared/PageErrorBoundary';
 import PageLoader from '../components/shared/PageLoader';
 import { motion } from 'framer-motion';
@@ -282,6 +283,7 @@ export default function SetterDashboard() {
               <p className="text-sm text-slate-400 mt-0.5">
                 {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
               </p>
+              <DailySpiffBanner spiffs={spiffs} leads={leads} user={user} />
             </motion.div>
             <DailyAIMessage
               user={user}
