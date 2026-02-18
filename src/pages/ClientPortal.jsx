@@ -51,26 +51,6 @@ export default function ClientPortal() {
 
   const clientId = getClientId();
 
-  const { data: allClientLeads = [], refetch, isLoading: leadsLoading } = useQuery({
-    queryKey: ['client-leads', clientId],
-    queryFn: async () => {
-      if (!clientId) return [];
-      return await base44.entities.Lead.filter({ client_id: clientId }, '-created_date', 500);
-    },
-    enabled: !!clientId,
-    staleTime: 2 * 60 * 1000,
-  });
-
-  const isPayPerModel = clientInfo?.billing_type === 'pay_per_set' || clientInfo?.billing_type === 'pay_per_show';
-
-  const leads = allClientLeads.filter(lead => {
-    if (isPayPerModel) {
-      // Pay per set/show clients only see booked+ leads (not new, contacted, first_call_made, disqualified)
-      return lead.status === 'appointment_booked' || lead.status === 'completed';
-    }
-    return lead.appointment_date;
-  });
-
   const { data: clientInfo } = useQuery({
     queryKey: ['client-info', clientId],
     queryFn: async () => {
