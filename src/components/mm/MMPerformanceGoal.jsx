@@ -134,7 +134,7 @@ function PlanCard({ plan, progressOverride }) {
   const topped = overallPct >= 100;
 
   // Calculate bonus
-  const bonus = calcTieredBonus(plan.tiers, progress);
+  const bonus = calcTieredBonus(normalizedTiers, progress);
 
   const tierColor = topped ? '#D6FF03' : currentTier ? '#8b5cf6' : '#475569';
   const tierGlow = topped ? 'rgba(214,255,3,0.3)' : currentTier ? 'rgba(139,92,246,0.3)' : 'rgba(71,85,105,0.2)';
