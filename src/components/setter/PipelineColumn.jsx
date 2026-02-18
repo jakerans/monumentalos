@@ -4,10 +4,12 @@ import { motion } from 'framer-motion';
 import { useAutoAnimate } from '@formkit/auto-animate/react';
 
 export default function PipelineColumn({ title, count, color, leads, clients, onAction, onSelect }) {
-  const getClientName = (clientId) => {
-    const client = clients.find(c => c.id === clientId);
-    return client?.name || 'Unknown';
-  };
+  const clientMap = React.useMemo(() => {
+    const map = {};
+    (clients || []).forEach(c => { map[c.id] = c.name; });
+    return map;
+  }, [clients]);
+  const getClientName = (clientId) => clientMap[clientId] || 'Unknown';
 
   const getUrgency = (lead) => {
     if (lead.status !== 'new') return 'low';
