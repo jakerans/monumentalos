@@ -132,8 +132,10 @@ function PlanCard({ plan, progressOverride }) {
   const remaining = nextTier ? nextTier.threshold - progress : 0;
 
   // Scale text size per tier: no tier=base, T1=medium, T2=large, T3=xl
-  const revenueTextSize = topped ? 'text-2xl' : currentIdx >= 1 ? 'text-xl' : currentIdx >= 0 ? 'text-lg' : 'text-base';
-  const bonusTextSize = topped ? 'text-xl' : currentIdx >= 1 ? 'text-base' : currentIdx >= 0 ? 'text-sm' : 'text-xs';
+  // Text scaling based on how many tiers reached (excluding Base tier)
+  const effectiveTierIdx = currentTier && currentTier.percentage > 0 ? sorted.filter((t, i) => i <= currentIdx && t.percentage > 0).length - 1 : -1;
+  const revenueTextSize = topped ? 'text-2xl' : effectiveTierIdx >= 1 ? 'text-xl' : effectiveTierIdx >= 0 ? 'text-lg' : 'text-base';
+  const bonusTextSize = topped ? 'text-xl' : effectiveTierIdx >= 1 ? 'text-base' : effectiveTierIdx >= 0 ? 'text-sm' : 'text-xs';
 
   return (
     <div className="bg-slate-900/60 rounded-xl p-4 border border-slate-700/40">
