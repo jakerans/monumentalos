@@ -1,0 +1,235 @@
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
+
+function pctChange(cur, prior) {
+  if (prior === 0) return cur > 0 ? 100 : 0;
+  return Math.round(((cur - prior) / prior) * 100);
+}
+
+function buildDailySparkline(items, dateKey, days = 14) {
+  const now = new Date();
+  const data = [];
+  for (let i = days - 1; i >= 0; i--) {
+    const d = new Date(now);
+    d.setDate(d.getDate() - i);
+    const dayStr = d.toISOString().split('T')[0];
+    data.push({ v: items.filter(item => (item[dateKey] || '').startsWith(dayStr)).length });
+  }
+  return data;
+}
+
+function build14DayChart(payments, expenses) {
+  const now = new Date();
+  const data = [];
+  for (let i = 13; i >= 0; i--) {
+    const d = new Date(now);
+    d.setDate(d.getDate() - i);
+    const dayStr = d.toISOString().split('T')[0];
+    const dayLabel = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    const dayIncome = payments.filter(p => (p.date || '').startsWith(dayStr)).reduce((s, p) => s + (p.amount || 0), 0);
+    const dayExpense = expenses.filter(e => (e.date || '').startsWith(dayStr)).reduce((s, e) => s + (e.amount || 0), 0);
+    data.push({ label: dayLabel, income: dayIncome, expenses: dayExpense });
+  }
+  return data;
+}
+
+Deno.serve(async (req) => {
+  try {
+    const base44 = createClientFromRequest(req);
+    const user = await base44.auth.me();
+    if (!user || (user.role !== 'admin' && user.app_role !== 'admin')) {
+      return Response.json({ error: 'Forbidden' }, { status: 403 });
+    }
+
+    // Fetch all data in parallel
+    const [clients, leads, spend, payments, expenses, goals, billingRecords, users, spiffs] = await Promise.all([
+      base44.asServiceRole.entities.Client.list(),
+      base44.asServiceRole.entities.Lead.list('-created_date', 5000),
+      base44.asServiceRole.entities.Spend.list('-date', 5000),
+      base44.asServiceRole.entities.Payment.list('-date', 5000),
+      base44.asServiceRole.entities.Expense.list('-date', 1000),
+      base44.asServiceRole.entities.CompanyGoal.list(),
+      base44.asServiceRole.entities.MonthlyBilling.list('-billing_month', 100),
+      base44.asServiceRole.entities.User.list(),
+      base44.asServiceRole.entities.Spiff.filter({ status: 'active' }),
+    ]);
+
+    const now = new Date();
+    const thisMonthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+    const lastMonthStart = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+    const lastMonthEnd = new Date(now.getFullYear(), now.getMonth(), 0, 23, 59, 59);
+
+    const inMTD = (d) => d && new Date(d) >= thisMonthStart;
+    const inLM = (d) => { if (!d) return false; const dt = new Date(d); return dt >= lastMonthStart && dt <= lastMonthEnd; };
+
+    const currentMonthStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+    const lastMonthStr = `${lastMonthStart.getFullYear()}-${String(lastMonthStart.getMonth() + 1).padStart(2, '0')}`;
+
+    // ========== Business Health KPIs ==========
+    const activeClients = clients.filter(c => c.status === 'active');
+    const inactiveClients = clients.filter(c => c.status === 'inactive');
+    const newClientsThisMonth = clients.filter(c => inMTD(c.created_date)).length;
+    const newClientsLastMonth = clients.filter(c => inLM(c.created_date)).length;
+
+    const ninetyDaysAgo = new Date(now);
+    ninetyDaysAgo.setDate(ninetyDaysAgo.getDate() - 90);
+    const churnedCount = inactiveClients.filter(c => c.deactivated_date && new Date(c.deactivated_date) >= ninetyDaysAgo).length;
+    const baseCount = activeClients.length + churnedCount;
+    const churnRate = baseCount > 0 ? Math.round((churnedCount / baseCount) * 100) : 0;
+
+    const alertClients = activeClients.filter(c => {
+      if (c.goal_status === 'behind_wont_meet') return true;
+      const cLeads = leads.filter(l => l.client_id === c.id);
+      const mtdBooked = cLeads.filter(l => l.date_appointment_set && inMTD(l.date_appointment_set)).length;
+      const mtdSpend = spend.filter(s => s.client_id === c.id && inMTD(s.date)).reduce((s, r) => s + (r.amount || 0), 0);
+      if (mtdSpend > 500 && mtdBooked === 0) return true;
+      if (mtdBooked > 0 && (mtdSpend / mtdBooked) > 300) return true;
+      return false;
+    });
+
+    const lastMonthBilling = billingRecords.filter(b => b.billing_month === lastMonthStr);
+    const lastMonthBilledTotal = lastMonthBilling.reduce((s, b) => s + (b.billing_type === 'retainer' ? (b.manual_amount || b.calculated_amount || 0) : (b.calculated_amount || 0)), 0);
+    const lastMonthCollected = lastMonthBilling.filter(b => b.status === 'paid').reduce((s, b) => s + (b.paid_amount || b.calculated_amount || 0), 0);
+    const collectionRate = lastMonthBilledTotal > 0 ? Math.round((lastMonthCollected / lastMonthBilledTotal) * 100) : 0;
+
+    const mtdLeads = leads.filter(l => inMTD(l.created_date)).length;
+    const mtdBooked = leads.filter(l => l.date_appointment_set && inMTD(l.date_appointment_set)).length;
+    const lmLeads = leads.filter(l => inLM(l.created_date)).length;
+    const lmBooked = leads.filter(l => l.date_appointment_set && inLM(l.date_appointment_set)).length;
+
+    const leadsSparkline = buildDailySparkline(leads, 'created_date');
+    const bookedSparkline = buildDailySparkline(leads.filter(l => l.date_appointment_set), 'date_appointment_set');
+
+    const healthKPIs = {
+      activeClients: activeClients.length,
+      alertClients: alertClients.length,
+      churnRate,
+      churnedCount,
+      newClientsThisMonth,
+      newClientsLastMonth,
+      lastMonthBilledTotal,
+      lastMonthCollected,
+      collectionRate,
+      mtdLeads,
+      mtdBooked,
+      lmLeads,
+      lmBooked,
+      leadsSparkline,
+      bookedSparkline,
+    };
+
+    // ========== Client Goal Chart ==========
+    const goalChartData = (() => {
+      const statuses = ['goal_met', 'on_track', 'behind_confident', 'behind_wont_meet', 'no_goal'];
+      const counts = {};
+      statuses.forEach(s => {
+        counts[s] = s === 'no_goal'
+          ? activeClients.filter(c => !c.goal_status).length
+          : activeClients.filter(c => c.goal_status === s).length;
+      });
+      const total = activeClients.length;
+      const goalMet = counts['goal_met'];
+      const onTrack = counts['on_track'];
+      const healthyPct = total > 0 ? Math.round(((goalMet + onTrack) / total) * 100) : 0;
+      return { counts, total, healthyPct };
+    })();
+
+    // ========== Revenue Breakdown Chart ==========
+    const revenueBreakdown = (() => {
+      const types = ['pay_per_show', 'pay_per_set', 'retainer'];
+      const result = {};
+      types.forEach(bt => {
+        let revenue = 0;
+        const btClients = clients.filter(c => c.status === 'active' && (c.billing_type || 'pay_per_show') === bt);
+        btClients.forEach(client => {
+          const cLeads = leads.filter(l => l.client_id === client.id);
+          if (bt === 'pay_per_show') {
+            revenue += cLeads.filter(l => l.disposition === 'showed' && inMTD(l.appointment_date)).length * (client.price_per_shown_appointment || 0);
+          } else if (bt === 'pay_per_set') {
+            revenue += cLeads.filter(l => l.date_appointment_set && inMTD(l.date_appointment_set)).length * (client.price_per_set_appointment || 0);
+          } else if (bt === 'retainer') {
+            revenue += (client.retainer_amount || 0);
+          }
+        });
+        result[bt] = { revenue, count: btClients.length };
+      });
+      return result;
+    })();
+
+    // ========== P&L / MTD Data ==========
+    const calcPeriod = (rangeFn) => {
+      let grossRevenue = 0;
+      activeClients.forEach(client => {
+        const bt = client.billing_type || 'pay_per_show';
+        const cLeads = leads.filter(l => l.client_id === client.id);
+        if (bt === 'pay_per_show') {
+          grossRevenue += cLeads.filter(l => l.disposition === 'showed' && rangeFn(l.appointment_date)).length * (client.price_per_shown_appointment || 0);
+        } else if (bt === 'pay_per_set') {
+          grossRevenue += cLeads.filter(l => l.date_appointment_set && rangeFn(l.date_appointment_set)).length * (client.price_per_set_appointment || 0);
+        } else if (bt === 'retainer') {
+          grossRevenue += (client.retainer_amount || 0);
+        }
+      });
+      const collected = payments.filter(p => rangeFn(p.date)).reduce((s, p) => s + (p.amount || 0), 0);
+      const rangeExpenses = expenses.filter(e => rangeFn(e.date));
+      const cogs = rangeExpenses.filter(e => e.expense_type === 'cogs').reduce((s, e) => s + (e.amount || 0), 0);
+      const overhead = rangeExpenses.filter(e => e.expense_type !== 'cogs').reduce((s, e) => s + (e.amount || 0), 0);
+      const grossProfit = grossRevenue - cogs;
+      const netProfit = collected - cogs - overhead;
+      const grossMargin = grossRevenue > 0 ? (grossProfit / grossRevenue) * 100 : 0;
+      const netMargin = collected > 0 ? (netProfit / collected) * 100 : 0;
+      return { grossRevenue, collected, cogs, overhead, grossProfit, netProfit, grossMargin, netMargin };
+    };
+
+    const mtdPL = calcPeriod(inMTD);
+    const priorPL = calcPeriod(inLM);
+
+    // ========== Stat Compare (Income vs Expenses) ==========
+    const mtdIncome = payments.filter(p => inMTD(p.date)).reduce((s, p) => s + (p.amount || 0), 0);
+    const mtdExpenses = expenses.filter(e => inMTD(e.date)).reduce((s, e) => s + (e.amount || 0), 0);
+    const lmIncome = payments.filter(p => inLM(p.date)).reduce((s, p) => s + (p.amount || 0), 0);
+    const lmExpenses = expenses.filter(e => inLM(e.date)).reduce((s, e) => s + (e.amount || 0), 0);
+    const cogsTotal = expenses.filter(e => inMTD(e.date) && e.expense_type === 'cogs').reduce((s, e) => s + (e.amount || 0), 0);
+    const overheadTotal = mtdExpenses - cogsTotal;
+    const chartData14 = build14DayChart(payments, expenses);
+
+    const statCompare = {
+      mtdIncome,
+      mtdExpenses,
+      lmIncome,
+      lmExpenses,
+      cogsTotal,
+      overheadTotal,
+      chartData14,
+    };
+
+    // ========== Setter Leaderboard ==========
+    const setters = users.filter(u => u.app_role === 'setter');
+    const setterStats = setters.map(setter => {
+      const booked = leads.filter(l => l.booked_by_setter_id === setter.id && l.date_appointment_set && new Date(l.date_appointment_set) >= thisMonthStart).length;
+      const stlLeads = leads.filter(l => l.setter_id === setter.id && l.speed_to_lead_minutes != null && new Date(l.created_date) >= thisMonthStart);
+      const avgSTL = stlLeads.length > 0 ? Math.round(stlLeads.reduce((s, l) => s + l.speed_to_lead_minutes, 0) / stlLeads.length) : null;
+      return { name: setter.full_name, booked, avgSTL };
+    }).sort((a, b) => b.booked - a.booked);
+
+    // ========== Goals ==========
+    const currentGoal = goals.find(g => g.month === currentMonthStr) || null;
+
+    return Response.json({
+      healthKPIs,
+      goalChartData,
+      revenueBreakdown,
+      mtdPL,
+      priorPL,
+      statCompare,
+      setterStats,
+      currentGoal,
+      goals,
+      billingRecords: lastMonthBilling,
+      clients,
+      spiffs,
+    });
+  } catch (error) {
+    console.error('getAdminDashboardData error:', error);
+    return Response.json({ error: error.message }, { status: 500 });
+  }
+});
