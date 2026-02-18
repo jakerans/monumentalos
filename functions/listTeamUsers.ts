@@ -15,6 +15,10 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Forbidden' }, { status: 403 });
     }
 
+    // Fetch setter profiles (public, no permission issues)
+    const setterProfiles = await base44.asServiceRole.entities.SetterProfile.filter({ status: 'active' });
+
+    // Also get full user list via service role for admin/MM needs
     const allUsers = await base44.asServiceRole.entities.User.list();
 
     // Return only safe fields
@@ -26,7 +30,16 @@ Deno.serve(async (req) => {
       app_role: u.app_role,
     }));
 
-    return Response.json({ users: safeUsers });
+    // Merge setter profiles into user data
+    const profileMap = {};
+    setterProfiles.forEach(p => { profileMap[p.user_id] = p; });
+
+    const enrichedUsers = safeUsers.map(u => ({
+      ...u,
+      setter_profile: profileMap[u.id] || null,
+    }));
+
+    return Response.json({ users: enrichedUsers });
   } catch (error) {
     return Response.json({ error: error.message }, { status: 500 });
   }
