@@ -29,6 +29,10 @@ export default function AdminDashboard() {
   const [goalsOpen, setGoalsOpen] = useState(false);
   const [showPerfTester, setShowPerfTester] = useState(false);
   const [syncing, setSyncing] = useState(false);
+  const [effectsOn, setEffectsOn] = useState(() => {
+    const saved = localStorage.getItem('admin_effects');
+    return saved === null ? true : saved === 'true';
+  });
   const now = new Date();
 
   useEffect(() => {
