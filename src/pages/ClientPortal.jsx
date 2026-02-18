@@ -260,7 +260,7 @@ export default function ClientPortal() {
 
         {/* Mobile card view */}
         <div className="md:hidden space-y-3">
-          <h2 className="text-xl font-bold text-white">My Appointments</h2>
+          <h2 className="text-xl font-bold text-white">{isRetainer ? 'All Leads' : 'My Appointments'}</h2>
           {activeLeads.length === 0 ? (
             <div className="bg-slate-800/50 rounded-lg shadow border border-slate-700/50 p-6 text-center text-slate-500">No active appointments</div>
           ) : (
@@ -279,7 +279,7 @@ export default function ClientPortal() {
         {/* Desktop table view */}
         <div className="hidden md:block bg-slate-800/50 rounded-lg shadow border border-slate-700/50">
           <div className="px-6 py-4 border-b border-slate-700/50">
-            <h2 className="text-xl font-bold text-white">My Appointments</h2>
+            <h2 className="text-xl font-bold text-white">{isRetainer ? 'All Leads' : 'My Appointments'}</h2>
           </div>
           <div className="overflow-x-auto">
             <table className="w-full">
@@ -287,16 +287,18 @@ export default function ClientPortal() {
                 <tr>
                   <th className="px-6 py-3 text-left text-xs font-medium text-slate-400 uppercase">Lead Name</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-slate-400 uppercase">Contact</th>
+                  {isRetainer && <th className="px-6 py-3 text-left text-xs font-medium text-slate-400 uppercase">Status</th>}
                   <th className="px-6 py-3 text-left text-xs font-medium text-slate-400 uppercase">Appointment Date</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-slate-400 uppercase">Disposition</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-slate-400 uppercase">Outcome</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-slate-400 uppercase">Revenue</th>
+                  {isRetainer && <th className="px-6 py-3 text-right text-xs font-medium text-slate-400 uppercase">Actions</th>}
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-700/30">
                 {activeLeads.length === 0 ? (
                   <tr>
-                    <td colSpan="6" className="px-6 py-8 text-center text-slate-500">No active appointments</td>
+                    <td colSpan={isRetainer ? 8 : 6} className="px-6 py-8 text-center text-slate-500">No active leads</td>
                   </tr>
                 ) : (
                   activeLeads.map((lead) => {
@@ -316,27 +318,44 @@ export default function ClientPortal() {
                         <div>{lead.email}</div>
                         <div>{lead.phone}</div>
                       </td>
+                      {isRetainer && (
+                        <td className="px-6 py-4">
+                          <span className={`px-2 py-1 text-xs font-medium rounded-full ${
+                            lead.status === 'new' ? 'bg-blue-500/15 text-blue-400' :
+                            lead.status === 'first_call_made' ? 'bg-amber-500/15 text-amber-400' :
+                            lead.status === 'contacted' ? 'bg-cyan-500/15 text-cyan-400' :
+                            lead.status === 'appointment_booked' ? 'bg-green-500/15 text-green-400' :
+                            'bg-slate-700 text-slate-400'
+                          }`}>
+                            {lead.status === 'first_call_made' ? 'First Call' : (lead.status || 'new').replace(/_/g, ' ')}
+                          </span>
+                        </td>
+                      )}
                       <td className="px-6 py-4 text-sm text-slate-400">
-                        {new Date(lead.appointment_date).toLocaleString()}
+                        {lead.appointment_date ? new Date(lead.appointment_date).toLocaleString() : '—'}
                       </td>
                       <td className="px-6 py-4">
-                        <span className={`px-2 py-1 text-xs font-medium rounded-full ${
-                          lead.disposition === 'showed' ? 'bg-green-100 text-green-800' :
-                          lead.disposition === 'cancelled' ? 'bg-red-100 text-red-800' :
-                          lead.disposition === 'rescheduled' ? 'bg-purple-100 text-purple-800' :
-                          'bg-blue-100 text-blue-800'
-                        }`}>
-                          {lead.disposition || 'scheduled'}
-                        </span>
+                        {lead.disposition ? (
+                          <span className={`px-2 py-1 text-xs font-medium rounded-full ${
+                            lead.disposition === 'showed' ? 'bg-green-100 text-green-800' :
+                            lead.disposition === 'cancelled' ? 'bg-red-100 text-red-800' :
+                            lead.disposition === 'rescheduled' ? 'bg-purple-100 text-purple-800' :
+                            'bg-blue-100 text-blue-800'
+                          }`}>
+                            {lead.disposition}
+                          </span>
+                        ) : <span className="text-slate-600">—</span>}
                       </td>
                       <td className="px-6 py-4">
-                        <span className={`px-2 py-1 text-xs font-medium rounded-full ${
-                          lead.outcome === 'sold' ? 'bg-green-100 text-green-800' :
-                          lead.outcome === 'lost' ? 'bg-red-100 text-red-800' :
-                          'bg-yellow-100 text-yellow-800'
-                        }`}>
-                          {lead.outcome || 'pending'}
-                        </span>
+                        {lead.outcome ? (
+                          <span className={`px-2 py-1 text-xs font-medium rounded-full ${
+                            lead.outcome === 'sold' ? 'bg-green-100 text-green-800' :
+                            lead.outcome === 'lost' ? 'bg-red-100 text-red-800' :
+                            'bg-yellow-100 text-yellow-800'
+                          }`}>
+                            {lead.outcome}
+                          </span>
+                        ) : <span className="text-slate-600">—</span>}
                       </td>
                       <td className="px-6 py-4">
                         {lead.sale_amount > 0 ? (
@@ -345,6 +364,16 @@ export default function ClientPortal() {
                           <span className="text-sm text-gray-400">—</span>
                         )}
                       </td>
+                      {isRetainer && (
+                        <td className="px-6 py-4 text-right">
+                          <button
+                            onClick={(e) => { e.stopPropagation(); handleDisqualify(lead.id); }}
+                            className="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium text-red-400 border border-red-500/30 rounded-md hover:bg-red-500/10 transition-colors"
+                          >
+                            <Ban className="w-3 h-3" /> DQ
+                          </button>
+                        </td>
+                      )}
                     </tr>
                     );
                   })
