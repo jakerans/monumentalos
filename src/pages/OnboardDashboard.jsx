@@ -18,7 +18,7 @@ import ClientList from '../components/onboard/ClientList';
 import InviteClientUserModal from '../components/onboard/InviteClientUserModal';
 import EditClientModal from '../components/onboard/EditClientModal';
 import PageErrorBoundary from '../components/shared/PageErrorBoundary';
-import PageLoader from '../components/shared/PageLoader';
+import OnboardDashboardSkeleton from '../components/onboard/OnboardDashboardSkeleton';
 
 export default function OnboardDashboard() {
   const navigate = useNavigate();
