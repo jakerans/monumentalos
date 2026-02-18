@@ -271,6 +271,14 @@ export default function ClientPortal() {
                   onSelect={(id) => { setSelectedLeadId(id); setDrawerOpen(true); }}
                   needsOutcome={needsOutcomeIds.has(lead.id)}
                 />
+                {isRetainer && (
+                  <button
+                    onClick={() => handleDisqualify(lead.id)}
+                    className="mt-1 w-full flex items-center justify-center gap-1 px-2 py-1.5 text-xs font-medium text-red-400 border border-red-500/30 rounded-md hover:bg-red-500/10"
+                  >
+                    <Ban className="w-3 h-3" /> Disqualify
+                  </button>
+                )}
               </div>
             ))
           )}

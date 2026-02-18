@@ -44,10 +44,14 @@ export default function AppointmentHistory() {
     queryFn: async () => {
       if (!clientId) return [];
       const allLeads = await base44.entities.Lead.filter({ client_id: clientId });
+      const isRetainerClient = clientInfo?.billing_type === 'retainer';
       return allLeads.filter(lead => {
-        // For pay per set/show clients, only show booked+ leads
-        const isPayPer = clientInfo?.billing_type === 'pay_per_set' || clientInfo?.billing_type === 'pay_per_show';
-        if (isPayPer && lead.status !== 'appointment_booked' && lead.status !== 'completed') return false;
+        if (isRetainerClient) {
+          // Retainer clients see completed/sold/lost/disqualified in history
+          return lead.status === 'completed' || lead.status === 'disqualified' || lead.outcome === 'sold' || lead.outcome === 'lost';
+        }
+        // Pay per set/show clients only see booked+ leads
+        if (lead.status !== 'appointment_booked' && lead.status !== 'completed') return false;
         return lead.appointment_date && 
           (lead.disposition === 'cancelled' || 
            lead.disposition === 'showed' ||
