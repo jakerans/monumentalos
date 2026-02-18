@@ -118,7 +118,16 @@ export default function MMPerformanceGoal({ plans, showTester = false }) {
 
 function PlanCard({ plan, progressOverride }) {
   const progress = progressOverride != null ? progressOverride : (plan.current_period_progress || 0);
-  const { currentTier, currentIdx, nextTier, sorted, maxThreshold } = getTierInfo(plan.tiers, progress);
+
+  // Ensure a Base tier at threshold 0 exists so the bar always starts with a visual base
+  const normalizedTiers = (() => {
+    const raw = plan.tiers || [];
+    const hasBase = raw.some(t => t.threshold === 0);
+    if (hasBase || raw.length === 0) return raw;
+    return [{ threshold: 0, percentage: 0, label: 'Base' }, ...raw];
+  })();
+
+  const { currentTier, currentIdx, nextTier, sorted, maxThreshold } = getTierInfo(normalizedTiers, progress);
   // Show progress toward next tier (or max if all tiers reached)
   const displayTarget = nextTier ? nextTier.threshold : maxThreshold;
   const overallPct = maxThreshold > 0 ? Math.min((progress / maxThreshold) * 100, 100) : 0;
