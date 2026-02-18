@@ -88,7 +88,7 @@ export default function MTDGoalProgress({ currentGoal, mtdData }) {
       </div>
 
       <div className="flex items-center gap-4 mb-3">
-        <div className="w-16 h-16 relative flex-shrink-0">
+        <div className="w-[72px] h-[72px] relative flex-shrink-0">
           <motion.div
             className="absolute inset-0 rounded-full"
             style={{ boxShadow: `0 0 16px ${ringColor.glow}` }}
@@ -99,8 +99,8 @@ export default function MTDGoalProgress({ currentGoal, mtdData }) {
             <PieChart>
               <Pie
                 data={ringData}
-                innerRadius={26}
-                outerRadius={36}
+                innerRadius={22}
+                outerRadius={32}
                 startAngle={90}
                 endAngle={-270}
                 paddingAngle={0}
