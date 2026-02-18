@@ -61,7 +61,7 @@ export default function DailySpiffBanner({ spiffs, leads, user }) {
           <Snowflake className="w-5 h-5 text-cyan-300 drop-shadow-[0_0_8px_rgba(103,232,249,0.7)]" />
         </motion.div>
         <motion.span
-          className="text-lg sm:text-xl font-black uppercase tracking-wide"
+          className="text-2xl sm:text-3xl font-black uppercase tracking-wide"
           style={{
             background: 'linear-gradient(135deg, #e0f7fa 0%, #67e8f9 25%, #ffffff 50%, #a5f3fc 75%, #22d3ee 100%)',
             backgroundSize: '200% 200%',
@@ -100,7 +100,7 @@ export default function DailySpiffBanner({ spiffs, leads, user }) {
         <Flame className="w-5 h-5 text-orange-400 drop-shadow-[0_0_8px_rgba(255,100,0,0.7)]" />
       </motion.div>
       <motion.span
-        className="text-lg sm:text-xl font-black uppercase tracking-wide"
+        className="text-2xl sm:text-3xl font-black uppercase tracking-wide"
         style={{
           background: 'linear-gradient(135deg, #ff6b35 0%, #ffaa00 25%, #fff176 50%, #ffaa00 75%, #ff6b35 100%)',
           backgroundSize: '200% 200%',
