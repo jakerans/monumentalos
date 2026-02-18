@@ -22,7 +22,7 @@ import SpiffPreviewTester from '../components/admin/SpiffPreviewTester';
 import STLPreviewTester from '../components/admin/STLPreviewTester';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAutoAnimate } from '@formkit/auto-animate/react';
-import { Zap, ZapOff } from 'lucide-react';
+import { getEffectsEnabled } from '../components/shared/useEffectsToggle';
 
 export default function AdminDashboard() {
   const navigate = useNavigate();
@@ -30,10 +30,7 @@ export default function AdminDashboard() {
   const [goalsOpen, setGoalsOpen] = useState(false);
   const [showPerfTester, setShowPerfTester] = useState(false);
   const [syncing, setSyncing] = useState(false);
-  const [effectsOn, setEffectsOn] = useState(() => {
-    const saved = localStorage.getItem('admin_effects');
-    return saved === null ? true : saved === 'true';
-  });
+  const effectsOn = getEffectsEnabled();
   const now = new Date();
 
   useEffect(() => {
@@ -143,21 +140,6 @@ export default function AdminDashboard() {
             </p>
           </div>
           <div className="flex items-center gap-2">
-            <button
-              onClick={() => {
-                const next = !effectsOn;
-                setEffectsOn(next);
-                localStorage.setItem('admin_effects', String(next));
-              }}
-              className={`px-3 py-2 text-xs font-bold rounded-lg flex items-center gap-1.5 transition-all border ${
-                effectsOn
-                  ? 'bg-emerald-500/15 border-emerald-500/40 text-emerald-300'
-                  : 'bg-slate-800 border-slate-700 text-slate-400 hover:text-white'
-              }`}
-            >
-              {effectsOn ? <Zap className="w-3.5 h-3.5" /> : <ZapOff className="w-3.5 h-3.5" />}
-              {effectsOn ? 'Effects On' : 'Effects Off'}
-            </button>
             <motion.button
               whileHover={effectsOn ? { scale: 1.05 } : {}}
               whileTap={effectsOn ? { scale: 0.95 } : {}}
