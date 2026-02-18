@@ -75,7 +75,7 @@ Keep it conversational, use 1-2 emojis max, and focus on what they can DO today.
       const fileUrls = sopUrls.length > 0 ? sopUrls : undefined;
 
       try {
-        const res = await base44.integrations.Core.InvokeLLM({ prompt });
+        const res = await base44.integrations.Core.InvokeLLM({ prompt, ...(fileUrls ? { file_urls: fileUrls } : {}) });
         const text = typeof res === 'string' ? res : res?.toString() || '';
         setMessage(text);
         setCache(text);
