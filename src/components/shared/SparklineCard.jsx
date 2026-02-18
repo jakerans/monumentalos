@@ -110,23 +110,25 @@ export default function SparklineCard({
             className="flex items-center gap-1.5 mt-1 min-h-[16px]"
           >
             <span className="text-[10px] text-slate-500">
-              Prior: <span className="font-medium text-slate-400">{comparison.prior}</span>
+              {comparison.label || 'Prior'}: <span className="font-medium text-slate-400">{comparison.prior}</span>
             </span>
-            <motion.span
-              initial={{ scale: 0, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              transition={{ delay: 0.04 * index + 0.4, type: 'spring', stiffness: 300, damping: 20 }}
-              className={`inline-flex items-center gap-0.5 text-[10px] font-bold px-1.5 py-0.5 rounded-full ${getChangeBg()} ${getChangeColor()}`}
-            >
-              {comparison.change > 0 ? (
-                <TrendingUp className="w-2.5 h-2.5" />
-              ) : comparison.change < 0 ? (
-                <TrendingDown className="w-2.5 h-2.5" />
-              ) : (
-                <Minus className="w-2.5 h-2.5" />
-              )}
-              {comparison.change > 0 ? '+' : ''}{Math.round(animatedChange)}%
-            </motion.span>
+            {comparison.change != null && (
+              <motion.span
+                initial={{ scale: 0, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                transition={{ delay: 0.04 * index + 0.4, type: 'spring', stiffness: 300, damping: 20 }}
+                className={`inline-flex items-center gap-0.5 text-[10px] font-bold px-1.5 py-0.5 rounded-full ${getChangeBg()} ${getChangeColor()}`}
+              >
+                {comparison.change > 0 ? (
+                  <TrendingUp className="w-2.5 h-2.5" />
+                ) : comparison.change < 0 ? (
+                  <TrendingDown className="w-2.5 h-2.5" />
+                ) : (
+                  <Minus className="w-2.5 h-2.5" />
+                )}
+                {comparison.change > 0 ? '+' : ''}{Math.round(animatedChange)}%
+              </motion.span>
+            )}
           </motion.div>
         )}
 
