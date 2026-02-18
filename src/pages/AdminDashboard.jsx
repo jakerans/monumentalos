@@ -190,10 +190,10 @@ export default function AdminDashboard() {
               <Eye className="w-3.5 h-3.5" /> Preview Effects
             </motion.button>
             <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
+              whileHover={effectsOn ? { scale: 1.05 } : {}}
+              whileTap={effectsOn ? { scale: 0.95 } : {}}
               onClick={() => setGoalsOpen(true)}
-              className="px-4 py-2 text-xs font-bold rounded-lg flex items-center gap-1.5 shadow-sm hover:opacity-90 transition-opacity text-black glow-pulse"
+              className={`px-4 py-2 text-xs font-bold rounded-lg flex items-center gap-1.5 shadow-sm hover:opacity-90 transition-opacity text-black ${effectsOn ? 'glow-pulse' : ''}`}
               style={{backgroundColor:'#D6FF03'}}
             >
               <Settings className="w-3.5 h-3.5" /> Manage Goals
