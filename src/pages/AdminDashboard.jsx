@@ -236,9 +236,9 @@ export default function AdminDashboard() {
 
         {/* Stat Compare + Setter Leaderboard */}
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.35, duration: 0.4 }}
+          initial={effectsOn ? { opacity: 0, y: 20 } : false}
+          animate={effectsOn ? { opacity: 1, y: 0 } : false}
+          transition={effectsOn ? { delay: 0.35, duration: 0.4 } : { duration: 0 }}
           className="grid grid-cols-1 lg:grid-cols-2 gap-4"
         >
           {/* Income vs Expenses */}
