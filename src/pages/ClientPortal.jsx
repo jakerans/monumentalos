@@ -91,6 +91,8 @@ export default function ClientPortal() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
+  if (!portalData && portalLoading) return <PageLoader message="Loading appointments..." />;
+
   return (
     <PageErrorBoundary>
     <div className="min-h-screen bg-[#0B0F1A]">
