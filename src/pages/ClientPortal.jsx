@@ -62,6 +62,27 @@ export default function ClientPortal() {
     staleTime: 5 * 60 * 1000,
   });
 
+  const { data: allClientLeads = [], refetch, isLoading: leadsLoading } = useQuery({
+    queryKey: ['client-leads', clientId],
+    queryFn: async () => {
+      if (!clientId) return [];
+      return await base44.entities.Lead.filter({ client_id: clientId }, '-created_date', 500);
+    },
+    enabled: !!clientId,
+    staleTime: 2 * 60 * 1000,
+  });
+
+  const isRetainer = clientInfo?.billing_type === 'retainer';
+
+  const leads = allClientLeads.filter(lead => {
+    if (isRetainer) {
+      // Retainer clients see ALL leads
+      return true;
+    }
+    // Pay per set/show clients only see booked+ leads
+    return lead.status === 'appointment_booked' || lead.status === 'completed';
+  });
+
   if (!user) return null;
   if (leadsLoading) return <PageLoader message="Loading appointments..." />;
 
