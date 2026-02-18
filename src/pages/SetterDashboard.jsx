@@ -277,13 +277,15 @@ export default function SetterDashboard() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.4 }}
             >
-              <h1 className="text-2xl sm:text-3xl font-black text-white tracking-tight">
-                Welcome back, <span style={{ color: '#D6FF03' }}>{user?.full_name?.split(' ')[0] || 'Champ'}</span>
-              </h1>
+              <div className="flex items-center gap-4 flex-wrap">
+                <DailySpiffBanner spiffs={spiffs} leads={leads} user={user} />
+                <h1 className="text-2xl sm:text-3xl font-black text-white tracking-tight">
+                  Welcome back, <span style={{ color: '#D6FF03' }}>{user?.full_name?.split(' ')[0] || 'Champ'}</span>
+                </h1>
+              </div>
               <p className="text-sm text-slate-400 mt-0.5">
                 {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
               </p>
-              <DailySpiffBanner spiffs={spiffs} leads={leads} user={user} />
             </motion.div>
             <DailyAIMessage
               user={user}
