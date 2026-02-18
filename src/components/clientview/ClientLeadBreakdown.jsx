@@ -1,4 +1,15 @@
 import React from 'react';
+import { motion } from 'framer-motion';
+
+const BAR_PALETTES = [
+  { bar: '#D6FF03', glow: 'rgba(214,255,3,0.35)', bg: 'rgba(214,255,3,0.08)' },
+  { bar: '#8b5cf6', glow: 'rgba(139,92,246,0.35)', bg: 'rgba(139,92,246,0.08)' },
+  { bar: '#3b82f6', glow: 'rgba(59,130,246,0.35)', bg: 'rgba(59,130,246,0.08)' },
+  { bar: '#10b981', glow: 'rgba(16,185,129,0.35)', bg: 'rgba(16,185,129,0.08)' },
+  { bar: '#f59e0b', glow: 'rgba(245,158,11,0.35)', bg: 'rgba(245,158,11,0.08)' },
+  { bar: '#ec4899', glow: 'rgba(236,72,153,0.35)', bg: 'rgba(236,72,153,0.08)' },
+  { bar: '#06b6d4', glow: 'rgba(6,182,212,0.35)', bg: 'rgba(6,182,212,0.08)' },
+];
 
 export default function ClientLeadBreakdown({ leads }) {
   // Status breakdown
@@ -56,17 +67,30 @@ function BreakdownCard({ title, data, labels, total, emptyMsg }) {
       {entries.length === 0 ? (
         <p className="text-xs text-slate-500">{emptyMsg || 'No data'}</p>
       ) : (
-        <div className="space-y-2">
-          {entries.map(([key, count]) => {
+        <div className="space-y-2.5">
+          {entries.map(([key, count], i) => {
             const pct = total > 0 ? ((count / total) * 100).toFixed(0) : 0;
+            const palette = BAR_PALETTES[i % BAR_PALETTES.length];
             return (
               <div key={key}>
-                <div className="flex items-center justify-between text-xs mb-0.5">
+                <div className="flex items-center justify-between text-xs mb-1">
                   <span className="text-slate-300">{labels[key] || key}</span>
-                  <span className="font-medium text-white">{count} <span className="text-slate-500">({pct}%)</span></span>
+                  <div className="flex items-center gap-1.5">
+                    <span className="font-bold" style={{ color: palette.bar }}>{count}</span>
+                    <span className="text-[10px] text-slate-500">({pct}%)</span>
+                  </div>
                 </div>
-                <div className="w-full bg-slate-700 rounded-full h-1.5">
-                  <div className="bg-blue-500 h-1.5 rounded-full" style={{ width: `${pct}%` }} />
+                <div className="w-full h-2 rounded-full overflow-hidden" style={{ backgroundColor: 'rgba(30,41,59,0.7)' }}>
+                  <motion.div
+                    className="h-full rounded-full"
+                    style={{
+                      background: `linear-gradient(90deg, ${palette.bar}cc, ${palette.bar})`,
+                      boxShadow: `0 0 8px ${palette.glow}, inset 0 1px 0 rgba(255,255,255,0.15)`,
+                    }}
+                    initial={{ width: 0 }}
+                    animate={{ width: `${Math.max(Number(pct), 2)}%` }}
+                    transition={{ delay: 0.1 + i * 0.06, duration: 0.6, ease: 'easeOut' }}
+                  />
                 </div>
               </div>
             );
