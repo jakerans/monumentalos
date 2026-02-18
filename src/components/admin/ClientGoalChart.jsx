@@ -25,23 +25,18 @@ const CustomTooltip = ({ active, payload }) => {
   );
 };
 
-export default function ClientGoalChart({ clients }) {
-  const active = clients.filter(c => c.status === 'active');
+export default function ClientGoalChart({ data }) {
+  if (!data) return null;
+  const { counts, total, healthyPct } = data;
 
-  const data = GOAL_STATUSES.map(s => ({
+  const chartData = GOAL_STATUSES.map(s => ({
     name: s.label,
-    value: s.key === 'no_goal'
-      ? active.filter(c => !c.goal_status).length
-      : active.filter(c => c.goal_status === s.key).length,
+    value: counts[s.key] || 0,
     color: s.color,
     glow: s.glow,
     bg: s.bg,
   })).filter(d => d.value > 0);
 
-  const total = active.length;
-  const goalMet = active.filter(c => c.goal_status === 'goal_met').length;
-  const onTrack = active.filter(c => c.goal_status === 'on_track').length;
-  const healthyPct = total > 0 ? Math.round(((goalMet + onTrack) / total) * 100) : 0;
   const healthyColor = healthyPct >= 70 ? '#10b981' : healthyPct >= 40 ? '#f59e0b' : '#ef4444';
 
   return (
@@ -53,7 +48,6 @@ export default function ClientGoalChart({ clients }) {
 
       <div className="flex items-center gap-4 flex-1 min-h-0">
         <div className="w-28 h-28 relative flex-shrink-0">
-          {/* Outer glow ring */}
           <motion.div
             className="absolute inset-1 rounded-full"
             style={{ boxShadow: `0 0 20px ${healthyColor}22, inset 0 0 20px ${healthyColor}11` }}
@@ -63,25 +57,14 @@ export default function ClientGoalChart({ clients }) {
           <ResponsiveContainer width="100%" height="100%">
             <PieChart>
               <defs>
-                {data.map((entry, i) => (
+                {chartData.map((entry, i) => (
                   <filter key={`glow-${i}`} id={`goal-glow-${i}`}>
                     <feDropShadow dx="0" dy="0" stdDeviation="2" floodColor={entry.color} floodOpacity="0.5" />
                   </filter>
                 ))}
               </defs>
-              <Pie
-                data={data}
-                innerRadius={32}
-                outerRadius={50}
-                paddingAngle={4}
-                dataKey="value"
-                stroke="none"
-                cornerRadius={4}
-                isAnimationActive={true}
-                animationDuration={1000}
-                animationEasing="ease-out"
-              >
-                {data.map((entry, i) => (
+              <Pie data={chartData} innerRadius={32} outerRadius={50} paddingAngle={4} dataKey="value" stroke="none" cornerRadius={4} isAnimationActive={true} animationDuration={1000} animationEasing="ease-out">
+                {chartData.map((entry, i) => (
                   <Cell key={i} fill={entry.color} style={{ filter: `drop-shadow(0 0 4px ${entry.glow})` }} />
                 ))}
               </Pie>
@@ -89,13 +72,7 @@ export default function ClientGoalChart({ clients }) {
             </PieChart>
           </ResponsiveContainer>
           <div className="absolute inset-0 flex flex-col items-center justify-center">
-            <motion.span
-              className="text-lg font-black"
-              style={{ color: healthyColor }}
-              initial={{ scale: 0 }}
-              animate={{ scale: 1 }}
-              transition={{ delay: 0.5, type: 'spring', stiffness: 200, damping: 15 }}
-            >
+            <motion.span className="text-lg font-black" style={{ color: healthyColor }} initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ delay: 0.5, type: 'spring', stiffness: 200, damping: 15 }}>
               {healthyPct}%
             </motion.span>
             <span className="text-[8px] text-slate-400 font-medium">healthy</span>
@@ -103,15 +80,10 @@ export default function ClientGoalChart({ clients }) {
         </div>
 
         <div className="flex-1 space-y-2">
-          {data.map((d, i) => {
+          {chartData.map((d, i) => {
             const pct = total > 0 ? (d.value / total) * 100 : 0;
             return (
-              <motion.div
-                key={d.name}
-                initial={{ opacity: 0, x: 10 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.3 + i * 0.08, duration: 0.3 }}
-              >
+              <motion.div key={d.name} initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.3 + i * 0.08, duration: 0.3 }}>
                 <div className="flex items-center justify-between mb-0.5">
                   <div className="flex items-center gap-2">
                     <div className="w-2 h-2 rounded-full" style={{ backgroundColor: d.color, boxShadow: `0 0 6px ${d.glow}` }} />
@@ -120,13 +92,7 @@ export default function ClientGoalChart({ clients }) {
                   <span className="text-[11px] font-bold text-white">{d.value}</span>
                 </div>
                 <div className="w-full h-1 bg-slate-700/50 rounded-full overflow-hidden">
-                  <motion.div
-                    className="h-full rounded-full"
-                    style={{ backgroundColor: d.color, boxShadow: `0 0 8px ${d.glow}` }}
-                    initial={{ width: 0 }}
-                    animate={{ width: `${pct}%` }}
-                    transition={{ delay: 0.5 + i * 0.1, duration: 0.6, ease: 'easeOut' }}
-                  />
+                  <motion.div className="h-full rounded-full" style={{ backgroundColor: d.color, boxShadow: `0 0 8px ${d.glow}` }} initial={{ width: 0 }} animate={{ width: `${pct}%` }} transition={{ delay: 0.5 + i * 0.1, duration: 0.6, ease: 'easeOut' }} />
                 </div>
               </motion.div>
             );

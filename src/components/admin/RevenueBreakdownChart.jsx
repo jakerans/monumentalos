@@ -24,27 +24,12 @@ const CustomTooltip = ({ active, payload }) => {
   );
 };
 
-export default function RevenueBreakdownChart({ clients, leads, spend }) {
-  const now = new Date();
-  const mtdStart = new Date(now.getFullYear(), now.getMonth(), 1);
-  const inMTD = (d) => d && new Date(d) >= mtdStart;
+export default function RevenueBreakdownChart({ data }) {
+  if (!data) return null;
 
   const breakdown = BILLING_CONFIG.map(bt => {
-    let revenue = 0;
-    const btClients = clients.filter(c => c.status === 'active' && (c.billing_type || 'pay_per_show') === bt.key);
-
-    btClients.forEach(client => {
-      const cLeads = leads.filter(l => l.client_id === client.id);
-      if (bt.key === 'pay_per_show') {
-        revenue += cLeads.filter(l => l.disposition === 'showed' && inMTD(l.appointment_date)).length * (client.price_per_shown_appointment || 0);
-      } else if (bt.key === 'pay_per_set') {
-        revenue += cLeads.filter(l => l.date_appointment_set && inMTD(l.date_appointment_set)).length * (client.price_per_set_appointment || 0);
-      } else if (bt.key === 'retainer') {
-        revenue += (client.retainer_amount || 0);
-      }
-    });
-
-    return { name: bt.label, value: revenue, color: bt.color, glow: bt.glow, count: btClients.length };
+    const entry = data[bt.key] || { revenue: 0, count: 0 };
+    return { name: bt.label, value: entry.revenue, color: bt.color, glow: bt.glow, count: entry.count };
   }).filter(d => d.value > 0 || d.count > 0);
 
   const totalRevenue = breakdown.reduce((s, b) => s + b.value, 0);
@@ -61,27 +46,10 @@ export default function RevenueBreakdownChart({ clients, leads, spend }) {
       ) : (
         <div className="flex items-center gap-4 flex-1 min-h-0">
           <div className="w-28 h-28 relative flex-shrink-0">
-            {/* Animated glow ring */}
-            <motion.div
-              className="absolute inset-1 rounded-full"
-              style={{ boxShadow: '0 0 20px rgba(16,185,129,0.15), inset 0 0 20px rgba(16,185,129,0.08)' }}
-              animate={{ opacity: [0.4, 0.7, 0.4] }}
-              transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
-            />
+            <motion.div className="absolute inset-1 rounded-full" style={{ boxShadow: '0 0 20px rgba(16,185,129,0.15), inset 0 0 20px rgba(16,185,129,0.08)' }} animate={{ opacity: [0.4, 0.7, 0.4] }} transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }} />
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
-                <Pie
-                  data={breakdown}
-                  innerRadius={32}
-                  outerRadius={50}
-                  paddingAngle={4}
-                  dataKey="value"
-                  stroke="none"
-                  cornerRadius={4}
-                  isAnimationActive={true}
-                  animationDuration={1000}
-                  animationEasing="ease-out"
-                >
+                <Pie data={breakdown} innerRadius={32} outerRadius={50} paddingAngle={4} dataKey="value" stroke="none" cornerRadius={4} isAnimationActive={true} animationDuration={1000} animationEasing="ease-out">
                   {breakdown.map((entry, i) => (
                     <Cell key={i} fill={entry.color} style={{ filter: `drop-shadow(0 0 4px ${entry.glow})` }} />
                   ))}
@@ -90,12 +58,7 @@ export default function RevenueBreakdownChart({ clients, leads, spend }) {
               </PieChart>
             </ResponsiveContainer>
             <div className="absolute inset-0 flex flex-col items-center justify-center">
-              <motion.span
-                className="text-sm font-black text-white"
-                initial={{ scale: 0 }}
-                animate={{ scale: 1 }}
-                transition={{ delay: 0.5, type: 'spring', stiffness: 200, damping: 15 }}
-              >
+              <motion.span className="text-sm font-black text-white" initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ delay: 0.5, type: 'spring', stiffness: 200, damping: 15 }}>
                 ${totalRevenue >= 1000 ? `${(totalRevenue / 1000).toFixed(1)}k` : totalRevenue.toLocaleString()}
               </motion.span>
               <span className="text-[8px] text-slate-400 font-medium">total MTD</span>
@@ -106,12 +69,7 @@ export default function RevenueBreakdownChart({ clients, leads, spend }) {
             {breakdown.map((d, i) => {
               const pct = totalRevenue > 0 ? (d.value / totalRevenue) * 100 : 0;
               return (
-                <motion.div
-                  key={d.name}
-                  initial={{ opacity: 0, x: 10 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 0.3 + i * 0.1, duration: 0.3 }}
-                >
+                <motion.div key={d.name} initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.3 + i * 0.1, duration: 0.3 }}>
                   <div className="flex items-center justify-between mb-1">
                     <div className="flex items-center gap-2">
                       <div className="w-2 h-2 rounded-full" style={{ backgroundColor: d.color, boxShadow: `0 0 6px ${d.glow}` }} />
@@ -124,13 +82,7 @@ export default function RevenueBreakdownChart({ clients, leads, spend }) {
                     </div>
                   </div>
                   <div className="w-full h-1.5 bg-slate-700/50 rounded-full overflow-hidden">
-                    <motion.div
-                      className="h-full rounded-full"
-                      style={{ backgroundColor: d.color, boxShadow: `0 0 8px ${d.glow}` }}
-                      initial={{ width: 0 }}
-                      animate={{ width: `${pct}%` }}
-                      transition={{ delay: 0.5 + i * 0.12, duration: 0.7, ease: 'easeOut' }}
-                    />
+                    <motion.div className="h-full rounded-full" style={{ backgroundColor: d.color, boxShadow: `0 0 8px ${d.glow}` }} initial={{ width: 0 }} animate={{ width: `${pct}%` }} transition={{ delay: 0.5 + i * 0.12, duration: 0.7, ease: 'easeOut' }} />
                   </div>
                 </motion.div>
               );
