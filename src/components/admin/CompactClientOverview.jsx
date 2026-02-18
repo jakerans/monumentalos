@@ -2,6 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import { AlertTriangle } from 'lucide-react';
+import { useAutoAnimate } from '@formkit/auto-animate/react';
 
 export default function CompactClientOverview({ clients, leads, spend }) {
   const now = new Date();
@@ -35,7 +36,7 @@ export default function CompactClientOverview({ clients, leads, spend }) {
               <th className="px-3 py-2 text-right">CPA</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-slate-700/30">
+          <tbody ref={useAutoAnimate({ duration: 250, easing: 'ease-out' })[0]} className="divide-y divide-slate-700/30">
             {rows.slice(0, 8).map(r => (
               <tr key={r.id} className={`hover:bg-slate-700/20 ${r.alert ? 'bg-red-500/5' : ''}`}>
                 <td className="px-4 py-2 whitespace-nowrap">

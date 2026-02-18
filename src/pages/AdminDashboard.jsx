@@ -16,6 +16,7 @@ import { Settings, Trophy } from 'lucide-react';
 import PageErrorBoundary from '../components/shared/PageErrorBoundary';
 import PageLoader from '../components/shared/PageLoader';
 import { motion } from 'framer-motion';
+import { useAutoAnimate } from '@formkit/auto-animate/react';
 
 export default function AdminDashboard() {
   const navigate = useNavigate();
@@ -105,6 +106,8 @@ export default function AdminDashboard() {
     return { name: setter.full_name, booked, avgSTL };
   }).sort((a, b) => b.booked - a.booked);
 
+  const [leaderboardRef] = useAutoAnimate({ duration: 300, easing: 'ease-out' });
+
   if (!user) return null;
   if (isLoading) return <PageLoader message="Loading dashboard..." />;
 
@@ -181,7 +184,7 @@ export default function AdminDashboard() {
               <Trophy className="w-4 h-4 text-amber-400" />
               <h3 className="text-sm font-bold text-white">Setter Leaderboard (MTD)</h3>
             </div>
-            <div className="divide-y divide-slate-700/30">
+            <div ref={leaderboardRef} className="divide-y divide-slate-700/30">
               {setterStats.length === 0 ? (
                 <div className="px-4 py-6 text-xs text-slate-500 text-center">No setters found</div>
               ) : setterStats.slice(0, 8).map((s, i) => (
