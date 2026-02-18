@@ -11,42 +11,27 @@ Deno.serve(async (req) => {
 
     const db = base44.asServiceRole.entities;
 
-    // Get all users and leads
-    const [allUsers, allLeads, existingProfiles] = await Promise.all([
-      db.User.list(),
-      db.Lead.list('-created_date', 5000),
-      db.SetterProfile.list(),
-    ]);
-
-    const setterUsers = allUsers.filter(u => u.app_role === 'setter');
-
-    // Calculate date ranges
+    // Date ranges
     const now = new Date();
     const mtdStart = new Date(now.getFullYear(), now.getMonth(), 1);
     const lmStart = new Date(now.getFullYear(), now.getMonth() - 1, 1);
     const lmEnd = new Date(now.getFullYear(), now.getMonth(), 0, 23, 59, 59);
 
-    // Build stats per setter
-    const calcStats = (setterId, start, end) => {
-      const booked = allLeads.filter(l =>
-        l.booked_by_setter_id === setterId &&
-        l.date_appointment_set &&
-        new Date(l.date_appointment_set) >= start &&
-        (!end || new Date(l.date_appointment_set) <= end)
-      ).length;
+    // Fetch data in parallel — only leads from this month and last month
+    const [allUsers, mtdLeads, lmLeads, existingProfiles] = await Promise.all([
+      db.User.list(),
+      db.Lead.filter({ date_appointment_set: { $gte: mtdStart.toISOString() } }, '-created_date', 2000),
+      db.Lead.filter({ date_appointment_set: { $gte: lmStart.toISOString(), $lte: lmEnd.toISOString() } }, '-created_date', 2000),
+      db.SetterProfile.list(),
+    ]);
 
-      const stlLeads = allLeads.filter(l =>
-        l.setter_id === setterId &&
-        l.speed_to_lead_minutes != null &&
-        new Date(l.created_date) >= start &&
-        (!end || new Date(l.created_date) <= end)
-      );
-      const avgSTL = stlLeads.length > 0
-        ? Math.round(stlLeads.reduce((s, l) => s + l.speed_to_lead_minutes, 0) / stlLeads.length)
-        : null;
+    // Also need STL leads — fetch separately with speed_to_lead_minutes existing
+    const [mtdSTL, lmSTL] = await Promise.all([
+      db.Lead.filter({ speed_to_lead_minutes: { $exists: true }, created_date: { $gte: mtdStart.toISOString() } }, '-created_date', 2000),
+      db.Lead.filter({ speed_to_lead_minutes: { $exists: true }, created_date: { $gte: lmStart.toISOString(), $lte: lmEnd.toISOString() } }, '-created_date', 2000),
+    ]);
 
-      return { booked, avgSTL };
-    };
+    const setterUsers = allUsers.filter(u => u.app_role === 'setter');
 
     const profileByUserId = {};
     existingProfiles.forEach(p => { profileByUserId[p.user_id] = p; });
@@ -56,18 +41,28 @@ Deno.serve(async (req) => {
     let deactivated = 0;
 
     for (const setter of setterUsers) {
-      const mtdStats = calcStats(setter.id, mtdStart, null);
-      const lmStats = calcStats(setter.id, lmStart, lmEnd);
+      const booked = mtdLeads.filter(l => l.booked_by_setter_id === setter.id).length;
+      const stlArr = mtdSTL.filter(l => l.setter_id === setter.id && l.speed_to_lead_minutes != null);
+      const avgSTL = stlArr.length > 0
+        ? Math.round(stlArr.reduce((s, l) => s + l.speed_to_lead_minutes, 0) / stlArr.length)
+        : null;
+
+      const lmBooked = lmLeads.filter(l => l.booked_by_setter_id === setter.id).length;
+      const lmSTLArr = lmSTL.filter(l => l.setter_id === setter.id && l.speed_to_lead_minutes != null);
+      const lmAvgSTL = lmSTLArr.length > 0
+        ? Math.round(lmSTLArr.reduce((s, l) => s + l.speed_to_lead_minutes, 0) / lmSTLArr.length)
+        : null;
+
       const existing = profileByUserId[setter.id];
 
       const profileData = {
         full_name: setter.full_name,
         email: setter.email,
         status: 'active',
-        mtd_booked: mtdStats.booked,
-        mtd_avg_stl: mtdStats.avgSTL,
-        last_month_booked: lmStats.booked,
-        last_month_avg_stl: lmStats.avgSTL,
+        mtd_booked: booked,
+        mtd_avg_stl: avgSTL,
+        last_month_booked: lmBooked,
+        last_month_avg_stl: lmAvgSTL,
         stats_updated_at: now.toISOString(),
       };
 
@@ -76,10 +71,7 @@ Deno.serve(async (req) => {
         updated++;
         delete profileByUserId[setter.id];
       } else {
-        await db.SetterProfile.create({
-          user_id: setter.id,
-          ...profileData,
-        });
+        await db.SetterProfile.create({ user_id: setter.id, ...profileData });
         created++;
       }
     }
