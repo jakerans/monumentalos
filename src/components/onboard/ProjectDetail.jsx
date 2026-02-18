@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Check, Circle, Play, ArrowLeft, User, Calendar, UserPlus } from 'lucide-react';
+import { Check, Circle, Play, ArrowLeft, User, Calendar, UserPlus, Trash2 } from 'lucide-react';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 
 const taskStatusConfig = {
   pending: { label: 'Pending', icon: Circle, bg: 'bg-gray-50', text: 'text-gray-600', dot: 'bg-gray-300' },
@@ -11,6 +12,7 @@ const taskStatusConfig = {
 
 export default function ProjectDetail({ project, tasks, mmUsers, clients, onClose, onRefresh, onManageContacts }) {
   const [updatingId, setUpdatingId] = useState(null);
+  const [deleting, setDeleting] = useState(false);
 
   const projectTasks = tasks
     .filter(t => t.project_id === project.id)
@@ -83,6 +85,39 @@ export default function ProjectDetail({ project, tasks, mmUsers, clients, onClos
                 <UserPlus className="w-3 h-3" /> Manage Contacts
               </button>
             )}
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <button className="inline-flex items-center gap-1 text-xs font-medium text-red-500 hover:text-red-600">
+                  <Trash2 className="w-3 h-3" /> Delete Project
+                </button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Delete onboard project?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    This will permanently delete the project for <strong>{project.client_name}</strong> and all {projectTasks.length} attached task{projectTasks.length !== 1 ? 's' : ''}. This cannot be undone.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction
+                    disabled={deleting}
+                    className="bg-red-600 hover:bg-red-700"
+                    onClick={async () => {
+                      setDeleting(true);
+                      for (const t of projectTasks) {
+                        await base44.entities.OnboardTask.delete(t.id);
+                      }
+                      await base44.entities.OnboardProject.delete(project.id);
+                      onRefresh();
+                      onClose();
+                    }}
+                  >
+                    {deleting ? 'Deleting...' : 'Delete'}
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
           </div>
 
           {/* Tasks */}
