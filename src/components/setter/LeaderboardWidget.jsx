@@ -1,5 +1,7 @@
 import React, { useState, forwardRef } from 'react';
-import { Trophy, ChevronLeft, TrendingUp, TrendingDown, Minus, Clock, Crown, Medal, Gift, Flame, CheckCircle2, XCircle } from 'lucide-react';
+import { base44 } from '@/api/base44Client';
+import { useQuery } from '@tanstack/react-query';
+import { Trophy, ChevronLeft, TrendingUp, TrendingDown, Clock, Crown, Medal, Gift, Flame, CheckCircle2, XCircle } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import FlipMove from 'react-flip-move';
 
@@ -13,7 +15,6 @@ function PodiumDisplay({ leaderboard, myRank }) {
   const top3 = leaderboard.slice(0, 3);
   if (top3.length === 0) return null;
 
-  // Order: 2nd, 1st, 3rd for podium layout
   const podiumOrder = [1, 0, 2].filter(i => i < top3.length);
   const heights = { 0: 80, 1: 60, 2: 48 };
   const nameHeights = { 0: 'pt-2', 1: 'pt-1.5', 2: 'pt-1' };
@@ -29,24 +30,22 @@ function PodiumDisplay({ leaderboard, myRank }) {
 
           return (
             <motion.div
-              key={s.id}
+              key={s.user_id}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: idx === 0 ? 0.1 : idx === 1 ? 0 : 0.2, duration: 0.4 }}
               className="flex flex-col items-center"
               style={{ width: pos === 1 ? 110 : 90 }}
             >
-              {/* Name + stats above podium */}
               <div className="text-center mb-1.5">
                 <span className="text-[10px]">{c.emoji}</span>
                 <p className={`text-xs font-bold truncate max-w-[90px] ${isMe ? 'text-white' : 'text-slate-300'}`}>
-                  {s.name?.split(' ')[0]}
+                  {s.full_name?.split(' ')[0]}
                 </p>
-                <p className="text-[10px] font-bold" style={{ color: '#D6FF03' }}>{s.booked} booked</p>
-                {s.avgSTL != null && <p className="text-[8px] text-slate-500">{s.avgSTL}m STL</p>}
+                <p className="text-[10px] font-bold" style={{ color: '#D6FF03' }}>{s.mtd_booked} booked</p>
+                {s.mtd_avg_stl != null && <p className="text-[8px] text-slate-500">{s.mtd_avg_stl}m STL</p>}
               </div>
 
-              {/* Podium block */}
               <motion.div
                 className={`w-full rounded-t-lg flex flex-col items-center ${nameHeights[idx]}`}
                 style={{
@@ -80,25 +79,35 @@ function PodiumDisplay({ leaderboard, myRank }) {
   );
 }
 
-export default function LeaderboardWidget({ user, leaderboard, lastMonthBoard, spiffs, leads }) {
+export default function LeaderboardWidget({ user, spiffs, leads }) {
   const [open, setOpen] = useState(false);
 
-  const myIndex = leaderboard.findIndex(s => s.id === user.id);
+  // Fetch leaderboard from SetterProfile — accessible to all roles
+  const { data: profiles = [] } = useQuery({
+    queryKey: ['setter-profiles-leaderboard'],
+    queryFn: () => base44.entities.SetterProfile.filter({ status: 'active' }),
+    staleTime: 2 * 60 * 1000,
+    retry: 2,
+  });
+
+  // Sort by mtd_booked descending
+  const leaderboard = [...profiles].sort((a, b) => (b.mtd_booked || 0) - (a.mtd_booked || 0));
+  const lastMonthBoard = [...profiles].sort((a, b) => (b.last_month_booked || 0) - (a.last_month_booked || 0));
+
+  const myIndex = leaderboard.findIndex(s => s.user_id === user.id);
   const isOnBoard = myIndex !== -1;
   const myRank = isOnBoard ? myIndex + 1 : null;
   const myStats = isOnBoard ? leaderboard[myIndex] : null;
-  const lastMyStats = lastMonthBoard.find(s => s.id === user.id);
-  const lastRank = lastMyStats ? lastMonthBoard.findIndex(s => s.id === user.id) + 1 : null;
+  const lastMyIndex = lastMonthBoard.findIndex(s => s.user_id === user.id);
+  const lastRank = lastMyIndex !== -1 ? lastMyIndex + 1 : null;
 
   const rankChange = (lastRank && myRank) ? lastRank - myRank : null;
-  // For admins viewing setter dashboard, show the #1 setter's rank context
   const displayRank = myRank || (leaderboard.length > 0 ? 1 : null);
   const isFirst = displayRank === 1;
   const isSecond = displayRank === 2;
   const isThird = displayRank === 3;
   const isTop3 = isFirst || isSecond || isThird;
 
-  // Rank-based color configs
   const rankConfig = isFirst
     ? { border: 'border-amber-500/70', text: '#FFD700', sub: 'text-amber-300', trophy: 'text-yellow-300 drop-shadow-[0_0_10px_rgba(255,215,0,0.8)]', tabShadow: '0 0 25px rgba(255,215,0,0.5), 0 0 50px rgba(255,165,0,0.25)', panelShadow: '0 0 40px rgba(255,215,0,0.2), 5px 0 30px rgba(255,165,0,0.12)', innerGlow: 'linear-gradient(180deg, rgba(255,215,0,0.08) 0%, rgba(255,165,0,0.03) 30%, transparent 60%)', innerGlowBottom: 'linear-gradient(0deg, rgba(255,215,0,0.06) 0%, transparent 40%)', pulseGlow: true }
     : isSecond
@@ -138,8 +147,6 @@ export default function LeaderboardWidget({ user, leaderboard, lastMonthBoard, s
 
   return (
     <>
-      {/* Animations handled by framer-motion + FlipMove */}
-
       {/* Tab on the left edge */}
       <motion.button
         onClick={() => setOpen(true)}
@@ -148,7 +155,6 @@ export default function LeaderboardWidget({ user, leaderboard, lastMonthBoard, s
         animate={isFirst ? { boxShadow: ['0 0 25px rgba(255,215,0,0.4), 0 0 50px rgba(255,165,0,0.2)', '0 0 35px rgba(255,215,0,0.6), 0 0 60px rgba(255,165,0,0.3)', '0 0 25px rgba(255,215,0,0.4), 0 0 50px rgba(255,165,0,0.2)'] } : {}}
         transition={isFirst ? { duration: 2, repeat: Infinity, ease: 'easeInOut' } : {}}
       >
-        {/* Animated liquid background for top 3 */}
         {isTop3 && (
           <div className="absolute inset-0 pointer-events-none overflow-hidden rounded-r-2xl">
             <motion.div
@@ -201,7 +207,6 @@ export default function LeaderboardWidget({ user, leaderboard, lastMonthBoard, s
         className={`fixed left-0 top-0 h-full w-96 sm:w-[28rem] bg-slate-900 border-r z-50 transform transition-all duration-300 ${open ? 'translate-x-0' : '-translate-x-full'} flex flex-col ${rankConfig.border} overflow-hidden`}
         style={{ boxShadow: open ? rankConfig.panelShadow : 'none' }}
       >
-        {/* Inner ambient glow layers */}
         {isTop3 && (
           <>
             <motion.div
@@ -230,13 +235,11 @@ export default function LeaderboardWidget({ user, leaderboard, lastMonthBoard, s
         </div>
 
         <div className="flex-1 overflow-y-auto relative z-10">
-          {/* Podium at the top */}
           <PodiumDisplay leaderboard={leaderboard} myRank={myRank} />
 
-          {/* My position summary — large badge style */}
+          {/* My position summary */}
           {myStats && (
             <div className="px-4 py-5 border-b border-slate-700/50 relative overflow-hidden">
-              {/* Background gradient matching rank */}
               <motion.div
                 className="absolute inset-0 pointer-events-none"
                 style={{
@@ -253,7 +256,6 @@ export default function LeaderboardWidget({ user, leaderboard, lastMonthBoard, s
               />
 
               <div className="relative z-10 flex items-center gap-5">
-                {/* Big rank badge */}
                 <motion.div
                   className="flex-shrink-0 relative"
                   animate={isFirst ? { scale: [1, 1.05, 1] } : {}}
@@ -272,7 +274,6 @@ export default function LeaderboardWidget({ user, leaderboard, lastMonthBoard, s
                     <span className="text-xl font-black" style={{ color: rankConfig.text }}>#{myRank}</span>
                   </div>
 
-                  {/* Gold glow for #1 */}
                   {isFirst && (
                     <>
                       <motion.div
@@ -290,7 +291,6 @@ export default function LeaderboardWidget({ user, leaderboard, lastMonthBoard, s
                   )}
                 </motion.div>
 
-                {/* Info */}
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-1">
                     {isFirst ? (
@@ -312,15 +312,14 @@ export default function LeaderboardWidget({ user, leaderboard, lastMonthBoard, s
                     {isFirst ? 'Leading the pack this month' : isSecond ? 'Right behind the leader' : isThird ? 'On the podium — keep pushing' : myRank <= 5 ? 'Top 5 — climbing the ranks' : 'Keep grinding, you got this'}
                   </p>
 
-                  {/* Stats row */}
                   <div className="flex items-center gap-4">
                     <div>
-                      <span className="text-lg font-bold" style={{ color: '#D6FF03' }}>{myStats.booked}</span>
+                      <span className="text-lg font-bold" style={{ color: '#D6FF03' }}>{myStats.mtd_booked || 0}</span>
                       <span className="text-[10px] text-slate-500 ml-1">booked</span>
                     </div>
-                    {myStats.avgSTL != null && (
+                    {myStats.mtd_avg_stl != null && (
                       <div>
-                        <span className="text-sm font-medium text-slate-300">{myStats.avgSTL}m</span>
+                        <span className="text-sm font-medium text-slate-300">{myStats.mtd_avg_stl}m</span>
                         <span className="text-[10px] text-slate-500 ml-1">avg STL</span>
                       </div>
                     )}
@@ -333,16 +332,16 @@ export default function LeaderboardWidget({ user, leaderboard, lastMonthBoard, s
                     )}
                     {leaderboard[0] && myRank > 1 && (
                       <div className="text-[10px] text-slate-500">
-                        {leaderboard[0].booked - myStats.booked} behind #1
+                        {(leaderboard[0].mtd_booked || 0) - (myStats.mtd_booked || 0)} behind #1
                       </div>
                     )}
                   </div>
                 </div>
               </div>
 
-              {lastMyStats && (
+              {myStats.last_month_booked > 0 && (
                 <div className="mt-2 text-[10px] text-slate-500 relative z-10">
-                  Last month: {lastMyStats.booked} booked{lastMyStats.avgSTL != null ? `, ${lastMyStats.avgSTL}m STL` : ''}
+                  Last month: {myStats.last_month_booked} booked{myStats.last_month_avg_stl != null ? `, ${myStats.last_month_avg_stl}m STL` : ''}
                 </div>
               )}
             </div>
@@ -353,7 +352,7 @@ export default function LeaderboardWidget({ user, leaderboard, lastMonthBoard, s
             <p className="text-[10px] text-slate-400 uppercase tracking-wider mb-2">Rankings</p>
             <FlipMove duration={400} easing="cubic-bezier(0.25, 0.46, 0.45, 0.94)" staggerDurationBy={30} enterAnimation="fade" leaveAnimation="fade">
               {leaderboard.map((s, i) => (
-                <LeaderboardRow key={s.id} s={s} i={i} userId={user.id} lastMonthBoard={lastMonthBoard} />
+                <LeaderboardRow key={s.user_id} s={s} i={i} userId={user.id} lastMonthBoard={lastMonthBoard} />
               ))}
             </FlipMove>
           </div>
@@ -377,7 +376,6 @@ export default function LeaderboardWidget({ user, leaderboard, lastMonthBoard, s
                   const isCompleted = sp.status === 'completed';
                   const isDone = isExpired || isCompleted;
 
-                  // Color configs per state
                   const barColor = met ? '#ff6b35' : pct >= 75 ? '#D6FF03' : pct >= 50 ? '#8b5cf6' : '#475569';
                   const barGlow = met ? 'rgba(255,107,53,0.5)' : pct >= 75 ? 'rgba(214,255,3,0.3)' : 'rgba(139,92,246,0.2)';
 
@@ -392,42 +390,19 @@ export default function LeaderboardWidget({ user, leaderboard, lastMonthBoard, s
                         borderColor: met ? 'rgba(255,107,53,0.4)' : isExpired ? 'rgba(239,68,68,0.2)' : 'rgba(51,65,85,0.5)',
                       }}
                     >
-                      {/* Inner glow for met spiffs */}
                       {met && (
                         <>
-                          <motion.div
-                            className="absolute inset-0 pointer-events-none"
-                            style={{ background: 'linear-gradient(180deg, rgba(255,69,0,0.12) 0%, rgba(255,170,0,0.06) 50%, transparent 100%)' }}
-                            animate={{ opacity: [0.5, 1, 0.5] }}
-                            transition={{ duration: 1.5, repeat: Infinity }}
-                          />
-                          <motion.div
-                            className="absolute bottom-0 left-0 right-0 h-[50%] pointer-events-none"
-                            style={{ background: 'linear-gradient(0deg, rgba(255,100,0,0.2) 0%, transparent 100%)' }}
-                            animate={{ y: [0, -2, 1, -1, 0] }}
-                            transition={{ duration: 2, repeat: Infinity }}
-                          />
-                          <motion.div
-                            className="absolute inset-0 pointer-events-none rounded-lg"
-                            style={{ boxShadow: 'inset 0 0 15px rgba(255,100,0,0.2)' }}
-                            animate={{ opacity: [0.5, 1, 0.5] }}
-                            transition={{ duration: 1, repeat: Infinity }}
-                          />
+                          <motion.div className="absolute inset-0 pointer-events-none" style={{ background: 'linear-gradient(180deg, rgba(255,69,0,0.12) 0%, rgba(255,170,0,0.06) 50%, transparent 100%)' }} animate={{ opacity: [0.5, 1, 0.5] }} transition={{ duration: 1.5, repeat: Infinity }} />
+                          <motion.div className="absolute bottom-0 left-0 right-0 h-[50%] pointer-events-none" style={{ background: 'linear-gradient(0deg, rgba(255,100,0,0.2) 0%, transparent 100%)' }} animate={{ y: [0, -2, 1, -1, 0] }} transition={{ duration: 2, repeat: Infinity }} />
+                          <motion.div className="absolute inset-0 pointer-events-none rounded-lg" style={{ boxShadow: 'inset 0 0 15px rgba(255,100,0,0.2)' }} animate={{ opacity: [0.5, 1, 0.5] }} transition={{ duration: 1, repeat: Infinity }} />
                         </>
                       )}
 
-                      {/* Inner glow for active high-progress spiffs */}
                       {!met && !isDone && pct >= 75 && (
-                        <motion.div
-                          className="absolute inset-0 pointer-events-none rounded-lg"
-                          style={{ background: 'linear-gradient(180deg, rgba(214,255,3,0.06) 0%, transparent 50%)', boxShadow: 'inset 0 0 10px rgba(214,255,3,0.08)' }}
-                          animate={{ opacity: [0.4, 0.8, 0.4] }}
-                          transition={{ duration: 2, repeat: Infinity }}
-                        />
+                        <motion.div className="absolute inset-0 pointer-events-none rounded-lg" style={{ background: 'linear-gradient(180deg, rgba(214,255,3,0.06) 0%, transparent 50%)', boxShadow: 'inset 0 0 10px rgba(214,255,3,0.08)' }} animate={{ opacity: [0.4, 0.8, 0.4] }} transition={{ duration: 2, repeat: Infinity }} />
                       )}
 
                       <div className="relative z-10 p-3">
-                        {/* Header */}
                         <div className="flex items-center justify-between mb-1.5">
                           <div className="flex items-center gap-1.5">
                             {met ? (
@@ -465,7 +440,6 @@ export default function LeaderboardWidget({ user, leaderboard, lastMonthBoard, s
                           )}
                         </div>
 
-                        {/* Progress text */}
                         <div className="flex items-center justify-between text-[10px] mb-1">
                           <span className={met ? 'text-orange-300 font-medium' : 'text-slate-400'}>
                             {isSTL ? `${progress ?? '—'}m avg` : `${progress} / ${sp.goal_value}`}
@@ -482,7 +456,6 @@ export default function LeaderboardWidget({ user, leaderboard, lastMonthBoard, s
                           </div>
                         </div>
 
-                        {/* Progress bar */}
                         <div className="relative w-full h-1.5 bg-slate-700/60 rounded-full overflow-hidden">
                           <motion.div
                             className="h-full rounded-full"
@@ -497,11 +470,7 @@ export default function LeaderboardWidget({ user, leaderboard, lastMonthBoard, s
                         </div>
 
                         {met && (
-                          <motion.p
-                            className="text-[10px] font-bold text-orange-400 mt-1"
-                            animate={{ scale: [1, 1.02, 1] }}
-                            transition={{ duration: 1.5, repeat: Infinity }}
-                          >
+                          <motion.p className="text-[10px] font-bold text-orange-400 mt-1" animate={{ scale: [1, 1.02, 1] }} transition={{ duration: 1.5, repeat: Infinity }}>
                             🔥 Goal Crushed!
                           </motion.p>
                         )}
@@ -512,7 +481,6 @@ export default function LeaderboardWidget({ user, leaderboard, lastMonthBoard, s
               </div>
             </div>
           )}
-
         </div>
       </div>
     </>
@@ -520,8 +488,8 @@ export default function LeaderboardWidget({ user, leaderboard, lastMonthBoard, s
 }
 
 const LeaderboardRow = forwardRef(({ s, i, userId, lastMonthBoard }, ref) => {
-  const isMe = s.id === userId;
-  const lastEntry = lastMonthBoard.find(ls => ls.id === s.id);
+  const isMe = s.user_id === userId;
+  const lastEntry = lastMonthBoard.find(ls => ls.user_id === s.user_id);
   const lastPos = lastEntry ? lastMonthBoard.indexOf(lastEntry) + 1 : null;
   const posChange = lastPos ? lastPos - (i + 1) : null;
   return (
@@ -531,12 +499,12 @@ const LeaderboardRow = forwardRef(({ s, i, userId, lastMonthBoard }, ref) => {
           i === 0 ? 'bg-yellow-500/20 text-yellow-400' : i === 1 ? 'bg-slate-600 text-slate-300' : i === 2 ? 'bg-orange-500/20 text-orange-400' : 'bg-slate-700 text-slate-400'
         }`}>{i + 1}</span>
         <div>
-          <span className={`text-xs font-medium ${isMe ? 'text-white' : 'text-slate-300'}`}>{s.name}</span>
-          {s.avgSTL != null && <p className="text-[9px] text-slate-500">{s.avgSTL}m STL</p>}
+          <span className={`text-xs font-medium ${isMe ? 'text-white' : 'text-slate-300'}`}>{s.full_name}</span>
+          {s.mtd_avg_stl != null && <p className="text-[9px] text-slate-500">{s.mtd_avg_stl}m STL</p>}
         </div>
       </div>
       <div className="flex items-center gap-2">
-        <span className="text-xs font-bold" style={{ color: '#D6FF03' }}>{s.booked}</span>
+        <span className="text-xs font-bold" style={{ color: '#D6FF03' }}>{s.mtd_booked || 0}</span>
         {posChange !== null && posChange !== 0 && (
           <span className={`text-[9px] ${posChange > 0 ? 'text-green-400' : 'text-red-400'}`}>
             {posChange > 0 ? `↑${posChange}` : `↓${Math.abs(posChange)}`}
