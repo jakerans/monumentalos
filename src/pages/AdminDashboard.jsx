@@ -143,9 +143,24 @@ export default function AdminDashboard() {
             </p>
           </div>
           <div className="flex items-center gap-2">
+            <button
+              onClick={() => {
+                const next = !effectsOn;
+                setEffectsOn(next);
+                localStorage.setItem('admin_effects', String(next));
+              }}
+              className={`px-3 py-2 text-xs font-bold rounded-lg flex items-center gap-1.5 transition-all border ${
+                effectsOn
+                  ? 'bg-emerald-500/15 border-emerald-500/40 text-emerald-300'
+                  : 'bg-slate-800 border-slate-700 text-slate-400 hover:text-white'
+              }`}
+            >
+              {effectsOn ? <Zap className="w-3.5 h-3.5" /> : <ZapOff className="w-3.5 h-3.5" />}
+              {effectsOn ? 'Effects On' : 'Effects Off'}
+            </button>
             <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
+              whileHover={effectsOn ? { scale: 1.05 } : {}}
+              whileTap={effectsOn ? { scale: 0.95 } : {}}
               onClick={async () => {
                 setSyncing(true);
                 try {
