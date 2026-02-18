@@ -357,6 +357,7 @@ Deno.serve(async (req) => {
 
     return Response.json({
       healthKPIs,
+      cashHealth,
       goalChartData,
       revenueBreakdown,
       mtdPL,
