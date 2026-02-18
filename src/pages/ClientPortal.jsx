@@ -169,28 +169,28 @@ export default function ClientPortal() {
               <Calendar className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-blue-400" />
               <p className="text-[10px] sm:text-sm font-medium text-slate-400">Scheduled MTD</p>
             </div>
-            <p className="text-lg sm:text-3xl font-bold text-white">{scheduledMTD}</p>
+            <p className="text-lg sm:text-3xl font-bold text-white">{kpis.scheduledMTD}</p>
           </div>
           <div className="bg-slate-800/50 rounded-lg shadow p-3 sm:p-5 border border-slate-700/50">
             <div className="flex items-center gap-1.5 sm:gap-2 mb-1">
               <Clock className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-amber-400" />
               <p className="text-[10px] sm:text-sm font-medium text-slate-400">Upcoming</p>
             </div>
-            <p className="text-lg sm:text-3xl font-bold text-white">{upcomingCount}</p>
+            <p className="text-lg sm:text-3xl font-bold text-white">{kpis.upcomingCount}</p>
           </div>
           <div className="bg-slate-800/50 rounded-lg shadow p-3 sm:p-5 border border-slate-700/50">
             <div className="flex items-center gap-1.5 sm:gap-2 mb-1">
               <CheckCircle className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-green-400" />
               <p className="text-[10px] sm:text-sm font-medium text-slate-400">Showed</p>
             </div>
-            <p className="text-lg sm:text-3xl font-bold text-white">{showedMTD}</p>
+            <p className="text-lg sm:text-3xl font-bold text-white">{kpis.showedMTD}</p>
           </div>
-          <div className="bg-slate-800/50 rounded-lg shadow p-3 sm:p-5 border border-red-500/30" style={{ backgroundColor: needsOutcomeCount > 0 ? 'rgba(239,68,68,0.08)' : undefined }}>
+          <div className="bg-slate-800/50 rounded-lg shadow p-3 sm:p-5 border border-red-500/30" style={{ backgroundColor: kpis.needsOutcomeCount > 0 ? 'rgba(239,68,68,0.08)' : undefined }}>
             <div className="flex items-center gap-1.5 sm:gap-2 mb-1">
               <AlertTriangle className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-red-400" />
               <p className="text-[10px] sm:text-sm font-medium text-red-400">Needs Outcome</p>
             </div>
-            <p className="text-lg sm:text-3xl font-bold text-red-400">{needsOutcomeCount}</p>
+            <p className="text-lg sm:text-3xl font-bold text-red-400">{kpis.needsOutcomeCount}</p>
           </div>
           {isRetainer && (
             <div className="bg-slate-800/50 rounded-lg shadow p-3 sm:p-5 border border-slate-700/50">
@@ -198,7 +198,7 @@ export default function ClientPortal() {
                 <Ban className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-slate-400" />
                 <p className="text-[10px] sm:text-sm font-medium text-slate-400">Disqualified</p>
               </div>
-              <p className="text-lg sm:text-3xl font-bold text-white">{dqLeads.length}</p>
+              <p className="text-lg sm:text-3xl font-bold text-white">{kpis.disqualifiedCount}</p>
             </div>
           )}
         </div>
