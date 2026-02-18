@@ -11,7 +11,15 @@ const GOAL_STATUS_CONFIG = {
 const GOAL_TYPE_LABELS = { leads: 'Leads', sets: 'Sets', shows: 'Shows' };
 
 export default function ClientRow({ client, onClick }) {
+  const [copied, setCopied] = useState(false);
   const { name, spendCur, leadsCur, apptsCur, cpaCur, cpaChange, stl, showRateCur, alerts } = client;
+
+  const handleCopyId = (e) => {
+    e.stopPropagation();
+    navigator.clipboard.writeText(client.id);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 1500);
+  };
   const hasAlert = alerts.length > 0;
 
   const goalType = client.goal_type;
