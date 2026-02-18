@@ -1,5 +1,5 @@
-import React from 'react';
-import { AlertTriangle, ChevronRight } from 'lucide-react';
+import React, { useState } from 'react';
+import { AlertTriangle, ChevronRight, Copy, Check } from 'lucide-react';
 
 const GOAL_STATUS_CONFIG = {
   behind_wont_meet: { label: "Won't Meet", bg: 'bg-red-100 text-red-700' },
