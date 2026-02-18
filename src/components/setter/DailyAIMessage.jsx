@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Sparkles, X, Loader2 } from 'lucide-react';
+import { Sparkles, Loader2 } from 'lucide-react';
 
 const STORAGE_KEY = 'setter_daily_ai_msg';
 
@@ -26,7 +26,7 @@ function setCache(message) {
 export default function DailyAIMessage({ user, spiffSummaries, leaderboard, myRank }) {
   const [message, setMessage] = useState(() => getCached());
   const [loading, setLoading] = useState(false);
-  const [dismissed, setDismissed] = useState(false);
+
 
   useEffect(() => {
     if (message || loading || !user) return;
@@ -67,7 +67,7 @@ Keep it conversational, use 1-2 emojis max, and focus on what they can DO today.
     generate();
   }, [user, spiffSummaries, leaderboard, myRank, message, loading]);
 
-  if (dismissed || (!message && !loading)) return null;
+  if (!message && !loading) return null;
 
   return (
     <AnimatePresence>
