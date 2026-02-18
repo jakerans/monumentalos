@@ -122,8 +122,12 @@ export default function PerformancePayDetailPanel({ plan, employees, open, onOpe
                       <span className="text-xs text-slate-500">→</span>
                       <input type="number" className={inputCls + ' !w-14'} value={t.percentage} onChange={e => updateTier(i, 'percentage', e.target.value)} />
                       <span className="text-xs text-slate-500">%</span>
+                      {form.tiers.length > 1 && (
+                        <button type="button" onClick={() => setForm({ ...form, tiers: form.tiers.filter((_, idx) => idx !== i) })} className="text-xs text-red-400 hover:text-red-300">×</button>
+                      )}
                     </div>
                   ))}
+                  <button type="button" onClick={() => setForm({ ...form, tiers: [...form.tiers, { label: `Tier ${form.tiers.length + 1}`, threshold: 0, percentage: 0 }] })} className="text-xs text-[#D6FF03] hover:underline mt-1">+ Add Tier</button>
                 </div>
               )}
               <div><label className={labelCls}>Notes</label><textarea className={inputCls + ' h-16'} value={form.notes || ''} onChange={e => setForm({ ...form, notes: e.target.value })} /></div>
