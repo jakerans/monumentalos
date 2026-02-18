@@ -32,7 +32,15 @@ export default function CreateClientModal({ open, onOpenChange, onCreated }) {
   const removeContact = (idx) => setContacts(contacts.filter((_, i) => i !== idx));
 
   const handleCreate = async () => {
-    if (!name.trim() || !price) return;
+    if (!name.trim()) return;
+    const hasPricing = 
+      (billingType === 'pay_per_show' && price) ||
+      (billingType === 'pay_per_set' && pricePerSet) ||
+      (billingType === 'retainer' && retainerAmount);
+    if (!hasPricing) {
+      toast({ title: 'Missing Price', description: 'Please enter the billing amount.', variant: 'destructive' });
+      return;
+    }
     setSaving(true);
     const validContacts = contacts.filter(c => c.email.trim()).map(c => ({ ...c, invited: false }));
     const data = {
