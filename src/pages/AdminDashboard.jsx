@@ -14,6 +14,7 @@ import StatCompareCard from '../components/admin/StatCompareCard.jsx';
 import { Settings, Trophy, Eye, RefreshCw } from 'lucide-react';
 import PageErrorBoundary from '../components/shared/PageErrorBoundary';
 import PageLoader from '../components/shared/PageLoader';
+import AdminDashboardSkeleton from '../components/admin/AdminDashboardSkeleton';
 import { toast } from '@/components/ui/use-toast';
 import MMPerformanceGoal from '../components/mm/MMPerformanceGoal';
 import RankPreviewTester from '../components/mm/RankPreviewTester';
@@ -77,7 +78,7 @@ export default function AdminDashboard() {
   const [leaderboardRef] = useAutoAnimate({ duration: 300, easing: 'ease-out' });
 
   if (!user) return null;
-  if (isLoading) return <PageLoader message="Loading dashboard..." />;
+  if (isLoading) return <AdminDashboardSkeleton />;
 
   return (
     <PageErrorBoundary>
