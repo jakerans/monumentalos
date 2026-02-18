@@ -159,16 +159,19 @@ export default function AdminDashboard() {
           <MTDGoalProgress currentGoal={currentGoal} mtdData={mtd} />
         </motion.div>
 
-        {/* P&L + Setter Leaderboard */}
+        {/* Stat Compare + P&L + Setter Leaderboard */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.35, duration: 0.4 }}
           className="grid grid-cols-1 lg:grid-cols-3 gap-4"
         >
+          {/* Income vs Expenses */}
+          <StatCompareCard payments={payments} expenses={expenses} leads={leads} clients={clients} />
+
           {/* P&L Snapshot with period comparison */}
-          <div className="lg:col-span-2 bg-slate-800/50 rounded-lg border border-slate-700/50 p-4">
-            <h3 className="text-sm font-bold text-white mb-3">P&L Snapshot (MTD vs Last Month)</h3>
+          <div className="bg-slate-800/50 rounded-lg border border-slate-700/50 p-4">
+            <h3 className="text-sm font-bold text-white mb-3">P&L Snapshot (MTD vs LM)</h3>
             <PLComparisonRow current={mtd} prior={mtd.prior} />
           </div>
 
