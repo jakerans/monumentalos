@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Sliders } from 'lucide-react';
 import SpiffCard from '../setter/SpiffCard';
+import DailySpiffBanner from '../setter/DailySpiffBanner';
 
 const DEMO_SPIFF = {
   id: 'demo',
@@ -23,6 +24,7 @@ const PRESETS = [
 
 export default function SpiffPreviewTester() {
   const [pctOverride, setPctOverride] = useState(50);
+  const [dailyMet, setDailyMet] = useState(false);
 
   const progress = Math.round((pctOverride / 100) * DEMO_SPIFF.goal_value);
   const pct = Math.min(pctOverride, 100);
@@ -74,6 +76,39 @@ export default function SpiffPreviewTester() {
           met={met}
           isSTL={false}
         />
+      </div>
+
+      {/* Daily Spiff Banner Preview */}
+      <div className="mt-4 pt-4 border-t border-slate-700/50">
+        <div className="flex items-center gap-2 mb-2">
+          <Sliders className="w-3.5 h-3.5 text-orange-400" />
+          <p className="text-[10px] text-slate-400 uppercase tracking-wider">Daily Spiff Banner Preview</p>
+        </div>
+        <div className="flex items-center gap-3 mb-3">
+          <button
+            onClick={() => setDailyMet(false)}
+            className={`px-3 py-1.5 text-xs font-bold rounded-lg border transition-all ${
+              !dailyMet ? 'bg-orange-500/20 border-orange-500/50 text-orange-300' : 'bg-slate-800 border-slate-700 text-slate-400 hover:text-white'
+            }`}
+          >
+            🔥 Active
+          </button>
+          <button
+            onClick={() => setDailyMet(true)}
+            className={`px-3 py-1.5 text-xs font-bold rounded-lg border transition-all ${
+              dailyMet ? 'bg-cyan-500/20 border-cyan-500/50 text-cyan-300' : 'bg-slate-800 border-slate-700 text-slate-400 hover:text-white'
+            }`}
+          >
+            ❄️ Met
+          </button>
+        </div>
+        <div className="bg-slate-900/60 rounded-lg p-4 border border-slate-700/40">
+          <DailySpiffBanner
+            spiffs={[{ id: 'demo-daily', title: 'Daily Demo', is_daily: true, status: 'active', qualifier: 'appointments', goal_value: dailyMet ? 0 : 999, scope: 'team_each', due_date: new Date().toISOString().split('T')[0] }]}
+            leads={[]}
+            user={{ id: 'preview' }}
+          />
+        </div>
       </div>
     </div>
   );
