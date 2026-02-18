@@ -127,23 +127,32 @@ Deno.serve(async (req) => {
     const bookedSparkline = buildDailySparkline(leads.filter(l => l.date_appointment_set), 'date_appointment_set');
 
     // ========== Cash Health Metrics ==========
-    // Realized Revenue = cash actually collected MTD
+    // Realized Revenue = cash actually collected MTD (Payment entity only — cash basis)
     const realizedRevenue = payments.filter(p => inMTD(p.date)).reduce((s, p) => s + (p.amount || 0), 0);
 
-    // Projected Revenue = performance fees earned MTD but not yet billed/collected
-    let projectedRevenue = 0;
+    // --- Active Invoices (AR): last month's billing records that are NOT yet paid ---
+    const lastMonthUnpaid = billingRecords
+      .filter(b => b.billing_month === lastMonthStr && b.status !== 'paid')
+      .reduce((s, b) => s + (b.paid_amount || b.calculated_amount || b.manual_amount || 0), 0);
+
+    // --- Live Accruals: this month's activity that will be billed next month ---
+    let liveAccruals = 0;
     activeClients.forEach(client => {
       const bt = client.billing_type || 'pay_per_show';
       const cLeads = leads.filter(l => l.client_id === client.id);
       if (bt === 'pay_per_show') {
-        projectedRevenue += cLeads.filter(l => l.disposition === 'showed' && inMTD(l.appointment_date)).length * (client.price_per_shown_appointment || 0);
+        liveAccruals += cLeads.filter(l => l.disposition === 'showed' && inMTD(l.appointment_date)).length * (client.price_per_shown_appointment || 0);
       } else if (bt === 'pay_per_set') {
-        projectedRevenue += cLeads.filter(l => l.date_appointment_set && inMTD(l.date_appointment_set)).length * (client.price_per_set_appointment || 0);
+        liveAccruals += cLeads.filter(l => l.date_appointment_set && inMTD(l.date_appointment_set)).length * (client.price_per_set_appointment || 0);
       } else if (bt === 'retainer') {
-        projectedRevenue += (client.retainer_amount || 0);
+        // Retainer for this month accrues as owed next billing cycle
+        liveAccruals += (client.retainer_amount || 0);
       }
     });
-    // Unbilled = projected minus what's already been collected
+
+    // Projected Revenue = Total Outstanding Value (AR + Live Accruals)
+    const projectedRevenue = lastMonthUnpaid + liveAccruals;
+    // Unbilled = total outstanding minus cash collected this month
     const unbilledRevenue = Math.max(0, projectedRevenue - realizedRevenue);
 
     // ========== Accrued Expense & Real-Time Margin ==========
