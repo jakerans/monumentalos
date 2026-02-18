@@ -16,7 +16,7 @@ import CashFlowAnalysis from '../components/admin/CashFlowAnalysis';
 import AddPaymentModal from '../components/admin/AddPaymentModal';
 import AddExpenseModal from '../components/admin/AddExpenseModal';
 import PageErrorBoundary from '../components/shared/PageErrorBoundary';
-import PageLoader from '../components/shared/PageLoader';
+import RevenueDashboardSkeleton from '../components/admin/RevenueDashboardSkeleton';
 
 export default function RevenueDashboard() {
   const navigate = useNavigate();
@@ -41,18 +41,29 @@ export default function RevenueDashboard() {
     checkAuth();
   }, [navigate]);
 
-  // Scope fetches to selected date range (with buffer for prior period comparisons)
   const revFetchStart = dayjs(startDate).subtract(6, 'month').format('YYYY-MM-DD');
 
-  const { data: clients = [], isLoading: l1 } = useQuery({ queryKey: ['rev-clients'], queryFn: () => base44.entities.Client.list(), staleTime: 5 * 60 * 1000 });
-  const { data: leads = [], isLoading: l2 } = useQuery({ queryKey: ['rev-leads', revFetchStart], queryFn: () => base44.entities.Lead.filter({ created_date: { $gte: revFetchStart } }, '-created_date', 5000), staleTime: 2 * 60 * 1000 });
-  const { data: payments = [], refetch: refetchPayments, isLoading: l3 } = useQuery({ queryKey: ['rev-payments', revFetchStart], queryFn: () => base44.entities.Payment.filter({ date: { $gte: revFetchStart } }, '-date', 5000), staleTime: 2 * 60 * 1000 });
-  const { data: expenses = [], refetch: refetchExpenses, isLoading: l4 } = useQuery({ queryKey: ['rev-expenses', revFetchStart], queryFn: () => base44.entities.Expense.filter({ date: { $gte: revFetchStart } }, '-date', 5000), staleTime: 2 * 60 * 1000 });
+  const { data: dashData, isLoading, refetch: refetchDash } = useQuery({
+    queryKey: ['revenue-dashboard-data', revFetchStart],
+    queryFn: async () => {
+      const res = await base44.functions.invoke('getRevenueDashboardData', { revFetchStart });
+      return res.data;
+    },
+    staleTime: 2 * 60 * 1000,
+    retry: 2,
+    retryDelay: (attempt) => Math.min(1000 * 2 ** attempt, 10000),
+  });
 
-  const isLoading = l1 || l2 || l3 || l4;
+  const clients = dashData?.clients || [];
+  const leads = dashData?.leads || [];
+  const payments = dashData?.payments || [];
+  const expenses = dashData?.expenses || [];
+
+  const refetchPayments = refetchDash;
+  const refetchExpenses = refetchDash;
 
   if (!user) return null;
-  if (isLoading) return <PageLoader message="Loading accounting..." />;
+  if (isLoading) return <RevenueDashboardSkeleton />;
 
   return (
     <PageErrorBoundary>
