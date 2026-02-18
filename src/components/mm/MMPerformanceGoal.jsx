@@ -18,22 +18,23 @@ function getTierInfo(tiers, progress) {
   return { currentTier, currentIdx, nextTier, sorted, maxThreshold };
 }
 
-// Calculate total bonus earned based on tiered percentages
+// Calculate total bonus earned — tax-bracket style
+// Under T1 threshold = $0 (base salary zone)
+// T1→T2 range = T1 percentage
+// T2→T3 range = T2 percentage  
+// Above T3 = T3 percentage
 function calcTieredBonus(tiers, progress) {
   const sorted = [...(tiers || [])].sort((a, b) => a.threshold - b.threshold);
+  if (sorted.length === 0) return 0;
   let bonus = 0;
+  // Below first tier threshold = $0 bonus (base salary)
   for (let i = 0; i < sorted.length; i++) {
-    const floor = i === 0 ? 0 : sorted[i - 1].threshold;
-    const ceiling = sorted[i].threshold;
+    const floor = sorted[i].threshold;
+    const ceiling = i < sorted.length - 1 ? sorted[i + 1].threshold : Infinity;
     const pct = (sorted[i].percentage || 0) / 100;
     if (progress <= floor) break;
     const billable = Math.min(progress, ceiling) - floor;
     if (billable > 0) bonus += billable * pct;
-  }
-  // If past top tier, the top tier % applies to everything above
-  if (sorted.length > 0 && progress > sorted[sorted.length - 1].threshold) {
-    const topPct = (sorted[sorted.length - 1].percentage || 0) / 100;
-    bonus += (progress - sorted[sorted.length - 1].threshold) * topPct;
   }
   return bonus;
 }
@@ -47,9 +48,9 @@ export default function MMPerformanceGoal({ plans, showTester = false }) {
     id: 'demo', name: 'Revenue Commission', status: 'active', frequency: 'monthly',
     current_period_progress: 0, current_period_payout: 0,
     tiers: [
-      { threshold: 50000, percentage: 3, label: 'Tier 1' },
-      { threshold: 70000, percentage: 5, label: 'Tier 2' },
-      { threshold: 100000, percentage: 8, label: 'Tier 3' },
+      { threshold: 50000, percentage: 5, label: 'Tier 1' },
+      { threshold: 70000, percentage: 8, label: 'Tier 2' },
+      { threshold: 100000, percentage: 10, label: 'Tier 3' },
     ]
   }] : []);
 
