@@ -305,52 +305,7 @@ export default function LeaderboardWidget({ user, leaderboard, lastMonthBoard, s
             </FlipMove>
           </div>
 
-          {/* Spiffs & Bonuses */}
-          {mySpiffs.length > 0 && (
-            <div className="px-4 py-3 border-t border-slate-700/50">
-              <div className="flex items-center gap-1.5 mb-2">
-                <Gift className="w-3.5 h-3.5 text-purple-400" />
-                <p className="text-[10px] text-slate-400 uppercase tracking-wider">Active Spiffs & Bonuses</p>
-              </div>
-              <div className="space-y-2">
-                {mySpiffs.map(sp => {
-                  const progress = getSpiffProgress(sp);
-                  const isSTL = sp.qualifier === 'stl';
-                  // For STL, goal is met when avg STL <= goal_value (lower is better)
-                  const pct = isSTL
-                    ? (progress != null && sp.goal_value > 0 ? Math.min((sp.goal_value / Math.max(progress, 1)) * 100, 100) : 0)
-                    : (sp.goal_value > 0 ? Math.min((progress / sp.goal_value) * 100, 100) : 0);
-                  const met = isSTL ? (progress != null && progress <= sp.goal_value) : (progress >= sp.goal_value);
 
-                  return (
-                    <div key={sp.id} className="bg-slate-800 rounded-lg border border-slate-700/50 p-3">
-                      <div className="flex items-center justify-between mb-1">
-                        <p className="text-xs font-medium text-white">{sp.title}</p>
-                        {sp.reward && <span className="text-[10px] font-bold text-purple-400">{sp.reward}</span>}
-                      </div>
-                      {sp.description && <p className="text-[10px] text-slate-500 mb-1.5">{sp.description}</p>}
-                      <div className="flex items-center justify-between text-[10px] mb-1">
-                        <span className="text-slate-400">
-                          {isSTL ? `${progress ?? '—'}m avg` : `${progress} / ${sp.goal_value}`}
-                          {isSTL ? ` (goal: ≤${sp.goal_value}m)` : ` ${sp.qualifier}`}
-                        </span>
-                        {sp.due_date && (
-                          <span className="text-slate-500 flex items-center gap-0.5">
-                            <Clock className="w-2.5 h-2.5" />
-                            {new Date(sp.due_date + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
-                          </span>
-                        )}
-                      </div>
-                      <div className="w-full h-1.5 bg-slate-700 rounded-full">
-                        <div className={`h-1.5 rounded-full transition-all ${met ? 'bg-green-500' : 'bg-purple-500'}`} style={{ width: `${pct}%` }} />
-                      </div>
-                      {met && <p className="text-[10px] text-green-400 font-medium mt-1">Goal met!</p>}
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          )}
         </div>
       </div>
     </>
