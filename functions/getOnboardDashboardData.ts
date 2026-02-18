@@ -76,8 +76,6 @@ Deno.serve(async (req) => {
 
     const pendingTaskCount = tasks.filter(t => t.status === 'pending' || t.status === 'in_progress').length;
 
-    console.log(`[PAGINATION TEST] Total tasks fetched: ${tasks.length}, Total projects: ${projects.length}`);
-
     return Response.json({
       projects,
       tasks,
