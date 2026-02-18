@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
-import { Copy, Check, UserPlus, Search } from 'lucide-react';
+import { Copy, Check, UserPlus, Search, Pencil } from 'lucide-react';
 import { useAutoAnimate } from '@formkit/auto-animate/react';
 
-export default function ClientList({ clients, onInviteUser }) {
+export default function ClientList({ clients, onInviteUser, onEditClient }) {
   const [search, setSearch] = useState('');
   const [copiedId, setCopiedId] = useState(null);
 
@@ -79,12 +79,20 @@ export default function ClientList({ clients, onInviteUser }) {
                    client.billing_type === 'retainer' ? 'Retainer' : '—'}
                 </td>
                 <td className="px-4 py-3 text-right">
-                  <button
-                    onClick={() => onInviteUser(client)}
-                    className="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium border rounded-md transition-colors text-[#D6FF03] border-[#D6FF03]/30 hover:bg-[#D6FF03]/10"
-                  >
-                    <UserPlus className="w-3 h-3" /> Invite User
-                  </button>
+                  <div className="flex items-center justify-end gap-1.5">
+                    <button
+                      onClick={() => onEditClient(client)}
+                      className="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium border rounded-md transition-colors text-slate-300 border-slate-600 hover:bg-slate-700"
+                    >
+                      <Pencil className="w-3 h-3" /> Edit
+                    </button>
+                    <button
+                      onClick={() => onInviteUser(client)}
+                      className="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium border rounded-md transition-colors text-[#D6FF03] border-[#D6FF03]/30 hover:bg-[#D6FF03]/10"
+                    >
+                      <UserPlus className="w-3 h-3" /> Invite User
+                    </button>
+                  </div>
                 </td>
               </tr>
             ))}
