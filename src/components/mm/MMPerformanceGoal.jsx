@@ -1,32 +1,41 @@
 import React, { useState } from 'react';
-import { Trophy, Flame, Target, Zap } from 'lucide-react';
+import { Trophy, Flame, Target, Zap, DollarSign } from 'lucide-react';
 import { motion } from 'framer-motion';
 import ArcadeOverheatMeter from './ArcadeOverheatMeter';
 import WidgetFireBorder from './WidgetFireBorder';
 import PerfGoalTester from './PerfGoalTester';
 
-function getCurrentTier(tiers, progress) {
-  if (!tiers || tiers.length === 0) return null;
-  let currentTier = null;
-  for (const tier of [...tiers].sort((a, b) => a.threshold - b.threshold)) {
-    if (progress >= tier.threshold) currentTier = tier;
-  }
-  return currentTier;
-}
-
-function getNextTier(tiers, progress) {
+function getTierInfo(tiers, progress) {
   const sorted = [...(tiers || [])].sort((a, b) => a.threshold - b.threshold);
-  return sorted.find(t => t.threshold > progress) || null;
+  let currentTier = null;
+  let currentIdx = -1;
+  let nextTier = null;
+  for (let i = 0; i < sorted.length; i++) {
+    if (progress >= sorted[i].threshold) { currentTier = sorted[i]; currentIdx = i; }
+  }
+  nextTier = sorted.find(t => t.threshold > progress) || null;
+  const maxThreshold = sorted.length > 0 ? Math.max(...sorted.map(t => t.threshold)) : 100;
+  return { currentTier, currentIdx, nextTier, sorted, maxThreshold };
 }
 
-function getTierIndex(tiers, progress) {
-  if (!tiers || tiers.length === 0) return -1;
-  const sorted = [...tiers].sort((a, b) => a.threshold - b.threshold);
-  let idx = -1;
+// Calculate total bonus earned based on tiered percentages
+function calcTieredBonus(tiers, progress) {
+  const sorted = [...(tiers || [])].sort((a, b) => a.threshold - b.threshold);
+  let bonus = 0;
   for (let i = 0; i < sorted.length; i++) {
-    if (progress >= sorted[i].threshold) idx = i;
+    const floor = i === 0 ? 0 : sorted[i - 1].threshold;
+    const ceiling = sorted[i].threshold;
+    const pct = (sorted[i].percentage || 0) / 100;
+    if (progress <= floor) break;
+    const billable = Math.min(progress, ceiling) - floor;
+    if (billable > 0) bonus += billable * pct;
   }
-  return idx;
+  // If past top tier, the top tier % applies to everything above
+  if (sorted.length > 0 && progress > sorted[sorted.length - 1].threshold) {
+    const topPct = (sorted[sorted.length - 1].percentage || 0) / 100;
+    bonus += (progress - sorted[sorted.length - 1].threshold) * topPct;
+  }
+  return bonus;
 }
 
 export default function MMPerformanceGoal({ plans, showTester = false }) {
@@ -34,53 +43,40 @@ export default function MMPerformanceGoal({ plans, showTester = false }) {
   const [progressOverride, setProgressOverride] = useState(null);
   if (activePlans.length === 0 && !showTester) return null;
 
-  // Build display plans with optional override
   const displayPlans = activePlans.length > 0 ? activePlans : (showTester ? [{
     id: 'demo', name: 'Revenue Commission', status: 'active', frequency: 'monthly',
     current_period_progress: 0, current_period_payout: 0,
     tiers: [
       { threshold: 50000, percentage: 3, label: 'Tier 1' },
       { threshold: 70000, percentage: 5, label: 'Tier 2' },
-      { threshold: 100000, percentage: 8, label: 'Max' },
+      { threshold: 100000, percentage: 8, label: 'Tier 3' },
     ]
   }] : []);
 
-  // Compute fire intensity: 0=none, 1=T1 (subtle white), 2=T2 (warning), 3=approaching max, 4=MAX (inferno)
+  // Fire intensity: only the widget border blazes at T3 (tierIdx === 2 means all 3 reached)
   const fireIntensity = (() => {
-    let maxIntensity = 0;
+    let max = 0;
     displayPlans.forEach(plan => {
       const progress = progressOverride != null ? progressOverride : (plan.current_period_progress || 0);
-      const sortedTiers = [...(plan.tiers || [])].sort((a, b) => a.threshold - b.threshold);
-      const maxThreshold = sortedTiers.length > 0 ? Math.max(...sortedTiers.map(t => t.threshold)) : 100;
+      const { currentIdx, maxThreshold } = getTierInfo(plan.tiers, progress);
       const pct = maxThreshold > 0 ? (progress / maxThreshold) * 100 : 0;
-      const tierIdx = (() => {
-        let idx = -1;
-        for (let i = 0; i < sortedTiers.length; i++) {
-          if (progress >= sortedTiers[i].threshold) idx = i;
-        }
-        return idx;
-      })();
-      let intensity = 0;
-      if (pct >= 100) intensity = 4;        // MAX — full inferno
-      else if (pct >= 80) intensity = 3;     // Approaching max — strong fire
-      else if (tierIdx >= 1) intensity = 2;  // T2 — warning flames
-      else if (tierIdx >= 0) intensity = 1;  // T1 — subtle white flames
-      if (intensity > maxIntensity) maxIntensity = intensity;
+      // Only blaze widget fire at T3 (pct >= 100 or tierIdx >= 2)
+      if (pct >= 100 || currentIdx >= 2) { max = 4; }
     });
-    return maxIntensity;
+    return max;
   })();
-  const anyTopped = fireIntensity >= 4;
+
+  const isT3 = fireIntensity >= 4;
 
   return (
-    <WidgetFireBorder active={fireIntensity >= 1} intensity={fireIntensity}>
+    <WidgetFireBorder active={isT3} intensity={4}>
       <motion.div
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.35, delay: 0.1 }}
         className="bg-slate-800/50 rounded-lg border border-slate-700/50 overflow-hidden relative"
       >
-        {/* Fire overlay tint when maxed */}
-        {anyTopped && (
+        {isT3 && (
           <motion.div
             className="absolute inset-0 pointer-events-none z-0 rounded-lg"
             style={{ background: 'linear-gradient(180deg, rgba(255,69,0,0.06) 0%, rgba(255,170,0,0.03) 50%, transparent 100%)' }}
@@ -89,7 +85,7 @@ export default function MMPerformanceGoal({ plans, showTester = false }) {
           />
         )}
         <div className="px-4 py-3 border-b border-slate-700/50 flex items-center gap-2 relative z-10">
-          {anyTopped ? (
+          {isT3 ? (
             <motion.div animate={{ scale: [1, 1.2, 1], rotate: [0, -5, 5, 0] }} transition={{ duration: 0.8, repeat: Infinity }}>
               <Flame className="w-4 h-4 text-orange-400" />
             </motion.div>
@@ -97,7 +93,7 @@ export default function MMPerformanceGoal({ plans, showTester = false }) {
             <Trophy className="w-4 h-4 text-amber-400" />
           )}
           <h3 className="text-sm font-bold text-white">
-            {anyTopped ? (
+            {isT3 ? (
               <motion.span
                 animate={{ color: ['#ffffff', '#ff6b35', '#ffaa00', '#ffffff'] }}
                 transition={{ duration: 1.5, repeat: Infinity }}
@@ -108,9 +104,7 @@ export default function MMPerformanceGoal({ plans, showTester = false }) {
           </h3>
         </div>
         <div className="p-3 space-y-3 relative z-10">
-          {showTester && (
-            <PerfGoalTester onOverride={setProgressOverride} />
-          )}
+          {showTester && <PerfGoalTester onOverride={setProgressOverride} />}
           {displayPlans.map(plan => (
             <PlanCard key={plan.id} plan={plan} progressOverride={progressOverride} />
           ))}
@@ -122,19 +116,20 @@ export default function MMPerformanceGoal({ plans, showTester = false }) {
 
 function PlanCard({ plan, progressOverride }) {
   const progress = progressOverride != null ? progressOverride : (plan.current_period_progress || 0);
-  const payout = plan.current_period_payout || 0;
-  const sortedTiers = [...(plan.tiers || [])].sort((a, b) => a.threshold - b.threshold);
-  const currentTier = getCurrentTier(sortedTiers, progress);
-  const nextTier = getNextTier(sortedTiers, progress);
-  const tierIdx = getTierIndex(sortedTiers, progress);
-  const maxThreshold = sortedTiers.length > 0 ? Math.max(...sortedTiers.map(t => t.threshold)) : 100;
+  const { currentTier, currentIdx, nextTier, sorted, maxThreshold } = getTierInfo(plan.tiers, progress);
   const overallPct = maxThreshold > 0 ? Math.min((progress / maxThreshold) * 100, 100) : 0;
   const topped = overallPct >= 100;
 
+  // Calculate bonus
+  const bonus = calcTieredBonus(plan.tiers, progress);
+
   const tierColor = topped ? '#D6FF03' : currentTier ? '#8b5cf6' : '#475569';
   const tierGlow = topped ? 'rgba(214,255,3,0.3)' : currentTier ? 'rgba(139,92,246,0.3)' : 'rgba(71,85,105,0.2)';
-
   const remaining = nextTier ? nextTier.threshold - progress : 0;
+
+  // Scale text size per tier: no tier=base, T1=medium, T2=large, T3=xl
+  const revenueTextSize = topped ? 'text-2xl' : currentIdx >= 1 ? 'text-xl' : currentIdx >= 0 ? 'text-lg' : 'text-base';
+  const bonusTextSize = topped ? 'text-xl' : currentIdx >= 1 ? 'text-base' : currentIdx >= 0 ? 'text-sm' : 'text-xs';
 
   return (
     <div className="bg-slate-900/60 rounded-xl p-4 border border-slate-700/40">
@@ -149,10 +144,7 @@ function PlanCard({ plan, progressOverride }) {
       <div className="flex items-center gap-4">
         {/* Arcade Overheat Meter */}
         <div className="flex-shrink-0">
-          <ArcadeOverheatMeter
-            fillPct={overallPct}
-            topped={topped}
-          />
+          <ArcadeOverheatMeter fillPct={overallPct} topped={topped} tierIdx={currentIdx} />
           <p className="text-center mt-1">
             <motion.span
               className="text-[11px] font-black"
@@ -168,16 +160,54 @@ function PlanCard({ plan, progressOverride }) {
 
         {/* Stats */}
         <div className="flex-1 min-w-0">
+          {/* Revenue */}
           <div className="flex items-baseline gap-1.5 mb-1">
-            <span className="text-lg font-black text-white">${progress.toLocaleString()}</span>
+            <motion.span
+              className={`${revenueTextSize} font-black text-white`}
+              animate={topped ? { scale: [1, 1.03, 1] } : {}}
+              transition={topped ? { duration: 1, repeat: Infinity } : {}}
+            >
+              ${progress.toLocaleString()}
+            </motion.span>
             <span className="text-[10px] text-slate-500">/ ${maxThreshold.toLocaleString()}</span>
           </div>
-          {payout > 0 && (
-            <div className="flex items-center gap-1 mb-1.5">
-              <Zap className="w-3 h-3 text-emerald-400" />
-              <span className="text-xs font-bold text-emerald-400">${payout.toLocaleString()} earned</span>
+
+          {/* Bonus pay */}
+          {bonus > 0 && (
+            <div className="flex items-center gap-1.5 mb-1.5 relative">
+              {topped ? (
+                <motion.div
+                  className="flex items-center gap-1.5"
+                  animate={{ scale: [1, 1.05, 1] }}
+                  transition={{ duration: 0.8, repeat: Infinity }}
+                >
+                  <motion.div
+                    animate={{ rotate: [0, -8, 8, 0] }}
+                    transition={{ duration: 0.6, repeat: Infinity }}
+                  >
+                    <DollarSign className="w-4 h-4" style={{ color: '#FFD700' }} />
+                  </motion.div>
+                  <motion.span
+                    className={`${bonusTextSize} font-black`}
+                    animate={{ color: ['#FFD700', '#FFA500', '#FF6B35', '#FFD700'] }}
+                    transition={{ duration: 1.2, repeat: Infinity }}
+                    style={{ textShadow: '0 0 8px rgba(255,165,0,0.6), 0 0 16px rgba(255,107,53,0.4)' }}
+                  >
+                    ${bonus.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })} bonus
+                  </motion.span>
+                </motion.div>
+              ) : (
+                <>
+                  <Zap className="w-3 h-3 text-emerald-400" />
+                  <span className={`${bonusTextSize} font-bold text-emerald-400`}>
+                    ${bonus.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })} bonus
+                  </span>
+                </>
+              )}
             </div>
           )}
+
+          {/* Next tier info */}
           {nextTier && (
             <div className="flex items-center gap-1 text-[10px] text-slate-400">
               <Target className="w-3 h-3" />
@@ -193,11 +223,11 @@ function PlanCard({ plan, progressOverride }) {
       </div>
 
       {/* Tier progress steps */}
-      {sortedTiers.length > 0 && (
+      {sorted.length > 0 && (
         <div className="mt-3 flex items-center gap-1">
-          {sortedTiers.map((tier, i) => {
-            const reached = i <= tierIdx;
-            const isNext = i === tierIdx + 1;
+          {sorted.map((tier, i) => {
+            const reached = i <= currentIdx;
+            const isNext = i === currentIdx + 1;
             return (
               <div key={i} className="flex-1 flex flex-col items-center gap-1">
                 <motion.div
@@ -210,7 +240,7 @@ function PlanCard({ plan, progressOverride }) {
                 <span className={`text-[9px] truncate max-w-full ${
                   reached ? 'text-purple-300 font-semibold' : isNext ? 'text-slate-400' : 'text-slate-600'
                 }`}>
-                  {tier.label} {tier.threshold >= 1000 ? `$${(tier.threshold / 1000).toFixed(0)}k` : `$${tier.threshold}`}
+                  {tier.label} ${(tier.threshold / 1000).toFixed(0)}k
                 </span>
               </div>
             );
