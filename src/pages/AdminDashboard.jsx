@@ -184,6 +184,13 @@ export default function AdminDashboard() {
               <Trophy className="w-4 h-4 text-amber-400" />
               <h3 className="text-sm font-bold text-white">Setter Leaderboard (MTD)</h3>
             </div>
+            <div className="px-4 py-1.5 flex items-center justify-between border-b border-slate-700/30">
+              <span className="text-[10px] text-slate-500 uppercase tracking-wider">Setter</span>
+              <div className="flex items-center gap-3">
+                <span className="text-[10px] text-slate-500 uppercase tracking-wider min-w-[40px] text-right">STL</span>
+                <span className="text-[10px] text-slate-500 uppercase tracking-wider min-w-[55px] text-right">Booked</span>
+              </div>
+            </div>
             <div ref={leaderboardRef} className="divide-y divide-slate-700/30">
               {setterStats.length === 0 ? (
                 <div className="px-4 py-6 text-xs text-slate-500 text-center">No setters found</div>
@@ -196,10 +203,8 @@ export default function AdminDashboard() {
                     <span className="text-xs font-medium text-slate-200">{s.name}</span>
                   </div>
                   <div className="flex items-center gap-3">
-                    {s.avgSTL != null && (
-                      <span className="text-[10px] text-slate-400">{s.avgSTL}m STL</span>
-                    )}
-                    <span className="text-xs font-bold" style={{color:'#D6FF03'}}>{s.booked} booked</span>
+                    <span className="text-[10px] text-slate-400 min-w-[40px] text-right">{s.avgSTL != null ? `${s.avgSTL}m` : '—'}</span>
+                    <span className="text-xs font-bold min-w-[55px] text-right" style={{color:'#D6FF03'}}>{s.booked} booked</span>
                   </div>
                 </div>
               ))}
