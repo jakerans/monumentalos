@@ -40,6 +40,13 @@ export default function ClientRow({ client, onClick }) {
         <div className="flex items-center gap-2">
           {hasAlert && <AlertTriangle className="w-3.5 h-3.5 text-red-500 flex-shrink-0" />}
           <span className={`text-sm font-medium truncate max-w-[180px] ${isOverperforming ? 'text-yellow-300' : 'text-slate-200'}`}>{name}</span>
+          <button
+            onClick={handleCopyId}
+            title="Copy Client ID"
+            className="opacity-0 group-hover:opacity-100 p-0.5 rounded text-slate-500 hover:text-[#D6FF03] transition-all"
+          >
+            {copied ? <Check className="w-3 h-3 text-green-400" /> : <Copy className="w-3 h-3" />}
+          </button>
         </div>
       </td>
       {/* Goal progress */}
