@@ -1,6 +1,7 @@
 import React, { useMemo } from 'react';
 import { Phone, Clock, Calendar, CheckCircle, Zap, Target } from 'lucide-react';
 import SparklineCard from '../shared/SparklineCard';
+import STLStatusWidget from './STLStatusWidget';
 
 function buildDailySparkline(leads, filterFn, days = 14) {
   const now = new Date();
