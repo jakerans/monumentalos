@@ -99,14 +99,10 @@ export default function SetterStats({ leads = [], user }) {
         comparison: { prior: lmCalls, change: pctChange(mtdCalls, lmCalls) },
       },
       {
-        label: 'Avg STL',
-        value: avgSTL > 0 ? `${avgSTL}m` : '—',
-        icon: Zap,
-        iconColor: 'text-amber-400',
-        iconBg: 'bg-amber-500/10',
-        sparkColor: '#fbbf24',
-        sparkData: stlSpark,
-        comparison: teamAvgSTL > 0 ? { prior: `Team ${teamAvgSTL}m`, change: null, invertColor: true } : null,
+        label: '_stl_widget_',
+        avgSTL,
+        teamAvgSTL,
+        stlSpark,
       },
       {
         label: 'Show Rate',
