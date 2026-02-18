@@ -102,7 +102,7 @@ export default function OnboardDashboard() {
   };
 
   if (!user) return null;
-  if (l1 || l2) return <PageLoader message="Loading onboarding..." />;
+  if (dashLoading) return <OnboardDashboardSkeleton />;
 
   const filteredProjects = statusFilter === 'all'
     ? projects
