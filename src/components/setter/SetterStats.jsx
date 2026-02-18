@@ -46,11 +46,15 @@ export default function SetterStats({ leads = [], user }) {
       l.setter_id === userId && l.first_call_made_date && l.first_call_made_date.startsWith(dStr)
     );
 
-    // Avg STL this month
+    // Avg STL this month (mine)
     const mtdSTLLeads = leads.filter(l => l.setter_id === userId && l.speed_to_lead_minutes != null && inMTD(l.created_date));
     const lmSTLLeads = leads.filter(l => l.setter_id === userId && l.speed_to_lead_minutes != null && inLM(l.created_date));
-    const avgSTL = mtdSTLLeads.length > 0 ? Math.round(mtdSTLLeads.reduce((s, l) => s + l.speed_to_lead_minutes, 0) / mtdSTLLeads.length) : 0;
+    const avgSTL = mtdSTLLeads.length > 0 ? Math.round(mtdSTLLeads.reduce((s, l) => s + l.speed_to_lead_minutes, 0) / mtdSTLLeads.length * 10) / 10 : 0;
     const lmAvgSTL = lmSTLLeads.length > 0 ? Math.round(lmSTLLeads.reduce((s, l) => s + l.speed_to_lead_minutes, 0) / lmSTLLeads.length) : 0;
+
+    // Team avg STL this month (everyone)
+    const teamSTLLeads = leads.filter(l => l.speed_to_lead_minutes != null && inMTD(l.created_date));
+    const teamAvgSTL = teamSTLLeads.length > 0 ? Math.round(teamSTLLeads.reduce((s, l) => s + l.speed_to_lead_minutes, 0) / teamSTLLeads.length * 10) / 10 : 0;
     const stlSpark = buildDailySparkline(leads, (l, dStr) => {
       if (l.setter_id !== userId || l.speed_to_lead_minutes == null) return false;
       return l.created_date && l.created_date.startsWith(dStr);
