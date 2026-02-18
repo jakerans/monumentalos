@@ -131,9 +131,9 @@ export default function AdminDashboard() {
 
       <main className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-5">
         <motion.div
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4, ease: [0.25, 0.46, 0.45, 0.94] }}
+          initial={effectsOn ? { opacity: 0, y: 16 } : false}
+          animate={effectsOn ? { opacity: 1, y: 0 } : false}
+          transition={effectsOn ? { duration: 0.4, ease: [0.25, 0.46, 0.45, 0.94] } : { duration: 0 }}
           className="flex items-center justify-between"
         >
           <div>
