@@ -41,32 +41,26 @@ export default function EmployeeManagement() {
     checkAuth();
   }, [navigate]);
 
-  const { data: employees = [], refetch, isLoading: empLoading } = useQuery({
-    queryKey: ['employees'],
-    queryFn: () => base44.entities.Employee.list(),
+  const { data: dashData, refetch: refetchAll, isLoading: empLoading } = useQuery({
+    queryKey: ['employee-management-data'],
+    queryFn: async () => {
+      const res = await base44.functions.invoke('getEmployeeManagementData');
+      return res.data;
+    },
+    staleTime: 2 * 60 * 1000,
+    retry: 2,
+    retryDelay: (attempt) => Math.min(1000 * 2 ** attempt, 10000),
   });
 
-  const { data: perfPlans = [], refetch: refetchPlans } = useQuery({
-    queryKey: ['perf-plans'],
-    queryFn: () => base44.entities.PerformancePay.list(),
-  });
+  const employees = dashData?.employees || [];
+  const perfPlans = dashData?.perfPlans || [];
+  const clients = dashData?.clients || [];
+  const payrollSettings = dashData?.payrollSettings || null;
+  const users = dashData?.users || [];
 
-  const { data: clients = [] } = useQuery({
-    queryKey: ['emp-clients'],
-    queryFn: () => base44.entities.Client.list(),
-  });
-
-  const { data: companySettings = [], refetch: refetchSettings } = useQuery({
-    queryKey: ['company-settings'],
-    queryFn: () => base44.entities.CompanySettings.filter({ key: 'payroll' }),
-  });
-
-  const payrollSettings = companySettings[0] || null;
-
-  const { data: users = [] } = useQuery({
-    queryKey: ['emp-users'],
-    queryFn: () => base44.entities.User.list(),
-  });
+  const refetch = refetchAll;
+  const refetchPlans = refetchAll;
+  const refetchSettings = refetchAll;
 
   const [syncing, setSyncing] = useState(false);
 

@@ -27,28 +27,24 @@ export default function ClientPerformance() {
     checkAuth();
   }, [navigate]);
 
-  const { data: clients = [], isLoading: l1 } = useQuery({
-    queryKey: ['perf-clients'],
-    queryFn: () => base44.entities.Client.list(),
+  const { data: dashData, isLoading } = useQuery({
+    queryKey: ['client-performance-data'],
+    queryFn: async () => {
+      const res = await base44.functions.invoke('getClientPerformanceData');
+      return res.data;
+    },
+    staleTime: 2 * 60 * 1000,
+    retry: 2,
+    retryDelay: (attempt) => Math.min(1000 * 2 ** attempt, 10000),
   });
 
-  const { data: leads = [], isLoading: l2 } = useQuery({
-    queryKey: ['perf-leads'],
-    queryFn: () => base44.entities.Lead.list('-created_date', 5000),
-  });
-
-  const { data: spend = [] } = useQuery({
-    queryKey: ['perf-spend'],
-    queryFn: () => base44.entities.Spend.list('-date', 5000),
-  });
-
-  const { data: payments = [] } = useQuery({
-    queryKey: ['perf-payments'],
-    queryFn: () => base44.entities.Payment.list('-date', 5000),
-  });
+  const clients = dashData?.clients || [];
+  const leads = dashData?.leads || [];
+  const spend = dashData?.spend || [];
+  const payments = dashData?.payments || [];
 
   if (!user) return null;
-  if (l1 || l2) return <PageLoader message="Loading client performance..." />;
+  if (isLoading) return <PageLoader message="Loading client performance..." />;
 
   return (
     <PageErrorBoundary>
