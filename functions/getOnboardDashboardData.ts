@@ -9,14 +9,21 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Forbidden' }, { status: 403 });
     }
 
-    const [projects, tasks, templates, clients, allUsers, setterProfiles] = await Promise.all([
+    // Fetch data in parallel — split User.list into its own try/catch
+    const [projects, tasks, templates, clients, setterProfiles] = await Promise.all([
       base44.asServiceRole.entities.OnboardProject.list('-created_date', 200),
       base44.asServiceRole.entities.OnboardTask.list('-created_date', 1000),
       base44.asServiceRole.entities.OnboardTemplate.filter({ status: 'active' }),
       base44.asServiceRole.entities.Client.list(),
-      base44.asServiceRole.entities.User.list(),
       base44.asServiceRole.entities.SetterProfile.filter({ status: 'active' }),
     ]);
+
+    let allUsers = [];
+    try {
+      allUsers = await base44.asServiceRole.entities.User.list();
+    } catch (e) {
+      console.warn('User.list failed, falling back to empty:', e.message);
+    }
 
     // Build safe user list matching listTeamUsers format
     const profileMap = {};
