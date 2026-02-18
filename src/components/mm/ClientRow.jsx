@@ -33,7 +33,7 @@ export default function ClientRow({ client, onClick }) {
   return (
     <tr
       onClick={onClick}
-      className={`cursor-pointer transition-colors hover:bg-slate-700/20 ${hasAlert ? 'bg-red-500/5' : ''} ${isOverperforming ? 'bg-yellow-500/[0.06]' : ''}`}
+      className={`group cursor-pointer transition-colors hover:bg-slate-700/20 ${hasAlert ? 'bg-red-500/5' : ''} ${isOverperforming ? 'bg-yellow-500/[0.06]' : ''}`}
       style={isOverperforming ? { boxShadow: 'inset 0 0 20px rgba(234, 179, 8, 0.08), 0 0 8px rgba(234, 179, 8, 0.1)' } : {}}
     >
       <td className="px-3 py-2.5 whitespace-nowrap">
