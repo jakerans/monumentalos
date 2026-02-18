@@ -321,7 +321,7 @@ export default function SetterDashboard() {
             <SpiffTracker spiffs={spiffs} leads={leads} user={user} />
           </div>
         </div>
-        <SetterStats leads={leads} user={user} />
+        <SetterStats leads={leads.filter(l => !retainerClientIds.has(l.client_id))} user={user} />
 
         {/* Search & Filter Bar */}
         <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 mb-4 sm:mb-6">
