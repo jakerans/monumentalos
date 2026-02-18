@@ -155,7 +155,7 @@ export default function AdminDashboard() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2, duration: 0.4 }}
-          className="grid grid-cols-1 lg:grid-cols-3 gap-4"
+          className="grid grid-cols-1 lg:grid-cols-3 gap-4 items-stretch"
         >
           <ClientGoalChart clients={clients} />
           <RevenueBreakdownChart clients={clients} leads={leads} spend={spend} />

@@ -81,14 +81,14 @@ export default function MTDGoalProgress({ currentGoal, mtdData }) {
   const ringData = [{ value: overallPct }, { value: Math.max(0, 100 - overallPct) }];
 
   return (
-    <div className="bg-slate-800/50 rounded-lg border border-slate-700/50 p-4">
+    <div className="bg-slate-800/50 rounded-lg border border-slate-700/50 p-4 flex flex-col h-full">
       <div className="flex items-center gap-2 mb-3">
         <Target className="w-4 h-4" style={{color:'#D6FF03'}} />
         <h3 className="text-sm font-bold text-white">Monthly Goal Progress</h3>
       </div>
 
-      <div className="flex items-center gap-4 mb-4">
-        <div className="w-20 h-20 relative flex-shrink-0">
+      <div className="flex items-center gap-4 mb-3">
+        <div className="w-16 h-16 relative flex-shrink-0">
           <motion.div
             className="absolute inset-0 rounded-full"
             style={{ boxShadow: `0 0 16px ${ringColor.glow}` }}
@@ -133,7 +133,7 @@ export default function MTDGoalProgress({ currentGoal, mtdData }) {
         </div>
       </div>
 
-      <div className="space-y-3">
+      <div className="space-y-2.5 flex-1">
         {goals.map((g, i) => (
           <ProgressRow key={g.label} label={g.label} current={g.current} goal={g.goal} format={g.format} index={i} />
         ))}
