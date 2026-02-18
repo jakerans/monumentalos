@@ -159,7 +159,9 @@ export default function DailySpiffBanner({ spiffs, leads, user }) {
         style={{
           background: 'linear-gradient(135deg, #ff6b35 0%, #ffaa00 25%, #fff176 50%, #ffaa00 75%, #ff6b35 100%)',
           backgroundSize: '200% 200%',
+          backgroundClip: 'text',
           WebkitBackgroundClip: 'text',
+          color: 'transparent',
           WebkitTextFillColor: 'transparent',
           filter: 'drop-shadow(0 0 6px rgba(255,107,53,0.5)) drop-shadow(0 0 12px rgba(255,170,0,0.3))',
         }}
