@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import AdminNav from '../components/admin/AdminNav';
 import BusinessHealthKPIs from '../components/admin/BusinessHealthKPIs';
+import CashHealthPanel from '../components/admin/CashHealthPanel';
 import ClientGoalChart from '../components/admin/ClientGoalChart';
 import RevenueBreakdownChart from '../components/admin/RevenueBreakdownChart';
 import MTDGoalProgress from '../components/admin/MTDGoalProgress';
