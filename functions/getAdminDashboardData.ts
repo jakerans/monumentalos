@@ -237,6 +237,8 @@ Deno.serve(async (req) => {
     const cashHealth = {
       realizedRevenue,
       projectedRevenue,
+      activeInvoices: lastMonthUnpaid,
+      liveAccruals,
       unbilledRevenue,
       accruedExpenses: totalAccruedExpenses,
       accruedGrossMargin,
