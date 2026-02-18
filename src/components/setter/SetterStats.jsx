@@ -129,20 +129,32 @@ export default function SetterStats({ leads = [], user }) {
 
   return (
     <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2 sm:gap-3 mb-4 sm:mb-6">
-      {stats.map((s, i) => (
-        <SparklineCard
-          key={s.label}
-          index={i}
-          label={s.label}
-          value={s.value}
-          icon={s.icon}
-          iconBg={s.iconBg}
-          iconColor={s.iconColor}
-          sparkColor={s.sparkColor}
-          sparkData={s.sparkData}
-          comparison={s.comparison}
-        />
-      ))}
+      {stats.map((s, i) => {
+        if (s.label === '_stl_widget_') {
+          return (
+            <STLStatusWidget
+              key="stl"
+              avgSTL={s.avgSTL}
+              teamAvgSTL={s.teamAvgSTL}
+              sparkData={s.stlSpark}
+            />
+          );
+        }
+        return (
+          <SparklineCard
+            key={s.label}
+            index={i}
+            label={s.label}
+            value={s.value}
+            icon={s.icon}
+            iconBg={s.iconBg}
+            iconColor={s.iconColor}
+            sparkColor={s.sparkColor}
+            sparkData={s.sparkData}
+            comparison={s.comparison}
+          />
+        );
+      })}
     </div>
   );
 }
