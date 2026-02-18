@@ -3,9 +3,8 @@ import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
-import { Plus, Building2, UserPlus, RefreshCw } from 'lucide-react';
+import { Plus, Building2, RefreshCw } from 'lucide-react';
 import { toast } from '@/components/ui/use-toast';
-import { useAutoAnimate } from '@formkit/auto-animate/react';
 import OnboardNav from '../components/onboard/OnboardNav';
 import OnboardKPIs from '../components/onboard/OnboardKPIs';
 import ProjectCard from '../components/onboard/ProjectCard';
@@ -18,7 +17,7 @@ import ClientList from '../components/onboard/ClientList';
 import InviteClientUserModal from '../components/onboard/InviteClientUserModal';
 import EditClientModal from '../components/onboard/EditClientModal';
 import PageErrorBoundary from '../components/shared/PageErrorBoundary';
-import PageLoader from '../components/shared/PageLoader';
+import OnboardDashboardSkeleton from '../components/onboard/OnboardDashboardSkeleton';
 
 export default function OnboardDashboard() {
   const navigate = useNavigate();
@@ -50,40 +49,29 @@ export default function OnboardDashboard() {
     checkAuth();
   }, [navigate]);
 
-  const { data: projects = [], refetch: refetchProjects, isLoading: l1 } = useQuery({
-    queryKey: ['onboard-projects'],
-    queryFn: () => base44.entities.OnboardProject.list('-created_date', 200),
-  });
-
-  const { data: tasks = [], refetch: refetchTasks, isLoading: l2 } = useQuery({
-    queryKey: ['onboard-tasks'],
-    queryFn: () => base44.entities.OnboardTask.list('-created_date', 1000),
-  });
-
-  const { data: templates = [], refetch: refetchTemplates } = useQuery({
-    queryKey: ['onboard-templates'],
-    queryFn: () => base44.entities.OnboardTemplate.filter({ status: 'active' }),
-  });
-
-  const { data: clients = [], refetch: refetchClients } = useQuery({
-    queryKey: ['all-clients'],
-    queryFn: () => base44.entities.Client.list(),
-  });
-
-  const { data: users = [] } = useQuery({
-    queryKey: ['all-users-onboard'],
+  // Single backend call for all dashboard data
+  const { data: dashData, isLoading: dashLoading, refetch: refetchDash } = useQuery({
+    queryKey: ['onboard-dashboard-data'],
     queryFn: async () => {
-      const res = await base44.functions.invoke('listTeamUsers');
-      return res.data?.users || [];
+      const res = await base44.functions.invoke('getOnboardDashboardData');
+      return res.data;
     },
+    staleTime: 2 * 60 * 1000,
+    retry: 2,
+    retryDelay: (attempt) => Math.min(1000 * 2 ** attempt, 10000),
   });
 
-  const mmUsers = users.filter(u => u.app_role === 'marketing_manager' || u.app_role === 'admin');
-  const [projectGridRef] = useAutoAnimate({ duration: 300, easing: 'ease-out' });
+  const projects = dashData?.projects || [];
+  const tasks = dashData?.tasks || [];
+  const templates = dashData?.templates || [];
+  const clients = dashData?.clients || [];
+  const mmUsers = dashData?.mmUsers || [];
+  const kpis = dashData?.kpis || null;
+
+  const refetchAll = refetchDash;
 
   const handleCreateProject = async (projectData, template) => {
     const project = await base44.entities.OnboardProject.create(projectData);
-    // Generate tasks from template
     if (template?.tasks?.length > 0) {
       const taskRecords = template.tasks
         .sort((a, b) => (a.order || 0) - (b.order || 0))
@@ -97,23 +85,20 @@ export default function OnboardDashboard() {
         }));
       await base44.entities.OnboardTask.bulkCreate(taskRecords);
     }
-    refetchProjects();
-    refetchTasks();
+    refetchAll();
   };
 
   const handleRefresh = () => {
-    refetchProjects();
-    refetchTasks();
+    refetchAll();
   };
 
   if (!user) return null;
-  if (l1 || l2) return <PageLoader message="Loading onboarding..." />;
+  if (dashLoading) return <OnboardDashboardSkeleton />;
 
   const filteredProjects = statusFilter === 'all'
     ? projects
     : projects.filter(p => p.status === statusFilter);
 
-  // Update selectedProject from fresh data
   const freshSelectedProject = selectedProject ? projects.find(p => p.id === selectedProject.id) : null;
 
   return (
@@ -124,7 +109,7 @@ export default function OnboardDashboard() {
       <main className="flex-1 max-w-[1400px] w-full mx-auto px-3 sm:px-5 py-4 space-y-4">
         {tab === 'projects' ? (
           <>
-            <OnboardKPIs projects={projects} tasks={tasks} />
+            <OnboardKPIs projects={projects} tasks={tasks} precomputed={kpis} />
 
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
               <div className="flex gap-1.5">
@@ -148,6 +133,7 @@ export default function OnboardDashboard() {
                       const res = await base44.functions.invoke('syncClientsSheet');
                       const d = res.data;
                       toast({ title: 'Sheet Synced', description: `Sheet: +${d.sheetCreated} new, ${d.sheetUpdated} updated · DB: +${d.dbCreated} new, ${d.dbUpdated} updated`, variant: 'success' });
+                      refetchAll();
                     } catch (e) {
                       toast({ title: 'Sync Failed', description: e.message, variant: 'destructive' });
                     }
@@ -178,7 +164,7 @@ export default function OnboardDashboard() {
                 {statusFilter === 'in_progress' ? 'No active onboarding projects.' : 'No projects found.'}
               </div>
             ) : (
-              <div ref={projectGridRef} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                 {filteredProjects.map(p => (
                   <ProjectCard
                     key={p.id}
@@ -204,8 +190,7 @@ export default function OnboardDashboard() {
               open={showCreateClient}
               onOpenChange={setShowCreateClient}
               onCreated={(newClient) => {
-                refetchClients();
-                // Auto-open contacts panel for the new client
+                refetchAll();
                 setContactsClient(newClient);
               }}
             />
@@ -215,7 +200,7 @@ export default function OnboardDashboard() {
                 open={true}
                 onOpenChange={(v) => { if (!v) setContactsClient(null); }}
                 client={contactsClient}
-                onUpdated={refetchClients}
+                onUpdated={refetchAll}
               />
             )}
 
@@ -247,11 +232,11 @@ export default function OnboardDashboard() {
               open={!!editClient}
               onOpenChange={(v) => { if (!v) setEditClient(null); }}
               client={editClient}
-              onSaved={refetchClients}
+              onSaved={refetchAll}
             />
           </>
         ) : (
-          <TemplateManager templates={templates} onRefresh={refetchTemplates} />
+          <TemplateManager templates={templates} onRefresh={refetchAll} />
         )}
       </main>
     </div>
