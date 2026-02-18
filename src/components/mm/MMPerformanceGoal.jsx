@@ -65,9 +65,8 @@ function PlanCard({ plan }) {
   const overallPct = maxThreshold > 0 ? Math.min((progress / maxThreshold) * 100, 100) : 0;
   const topped = overallPct >= 100;
 
-  const ringColor = topped ? '#D6FF03' : currentTier ? '#8b5cf6' : '#475569';
-  const ringGlow = topped ? 'rgba(214,255,3,0.3)' : currentTier ? 'rgba(139,92,246,0.3)' : 'rgba(71,85,105,0.2)';
-  const ringData = [{ value: overallPct }, { value: Math.max(0, 100 - overallPct) }];
+  const tierColor = topped ? '#D6FF03' : currentTier ? '#8b5cf6' : '#475569';
+  const tierGlow = topped ? 'rgba(214,255,3,0.3)' : currentTier ? 'rgba(139,92,246,0.3)' : 'rgba(71,85,105,0.2)';
 
   const remaining = nextTier ? nextTier.threshold - progress : 0;
 
@@ -96,7 +95,7 @@ function PlanCard({ plan }) {
           <p className="text-center mt-1">
             <motion.span
               className="text-[11px] font-black"
-              style={{ color: topped ? '#D6FF03' : currentTier ? '#8b5cf6' : '#475569' }}
+              style={{ color: tierColor }}
               initial={{ scale: 0 }}
               animate={{ scale: 1 }}
               transition={{ delay: 0.3, type: 'spring', stiffness: 200, damping: 15 }}
@@ -142,7 +141,7 @@ function PlanCard({ plan }) {
               <div key={i} className="flex-1 flex flex-col items-center gap-1">
                 <motion.div
                   className={`w-full h-1.5 rounded-full ${reached ? '' : 'bg-slate-700/50'}`}
-                  style={reached ? { backgroundColor: ringColor, boxShadow: `0 0 6px ${ringGlow}` } : {}}
+                  style={reached ? { backgroundColor: tierColor, boxShadow: `0 0 6px ${tierGlow}` } : {}}
                   initial={{ scaleX: 0 }}
                   animate={{ scaleX: 1 }}
                   transition={{ delay: 0.3 + i * 0.1, duration: 0.4 }}
