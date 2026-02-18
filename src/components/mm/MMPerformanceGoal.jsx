@@ -62,8 +62,8 @@ export default function MMPerformanceGoal({ plans, showTester = false }) {
       const progress = progressOverride != null ? progressOverride : (plan.current_period_progress || 0);
       const { currentIdx, maxThreshold } = getTierInfo(plan.tiers, progress);
       const pct = maxThreshold > 0 ? (progress / maxThreshold) * 100 : 0;
-      // Only blaze widget fire at T3 (pct >= 100 or tierIdx >= 2)
-      if (pct >= 100 || currentIdx >= 2) { max = 4; }
+      // Only blaze widget fire at T3 (last tier reached)
+      if (pct >= 100 || currentIdx >= sorted.length - 1) { max = 4; }
     });
     return max;
   })();
