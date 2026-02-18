@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Link, useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
-import { Calendar, CheckCircle, Clock, AlertTriangle, Ban } from 'lucide-react';
+import { Calendar, CheckCircle, Clock, AlertTriangle, Ban, ChevronLeft, ChevronRight } from 'lucide-react';
 import { toast } from '@/components/ui/use-toast';
 import LeadDetailsDrawer from '../components/LeadDetailsDrawer';
 import AppointmentCard from '../components/client/AppointmentCard';
@@ -11,9 +11,13 @@ import OutstandingInvoiceAlert from '../components/client/OutstandingInvoiceAler
 import PageErrorBoundary from '../components/shared/PageErrorBoundary';
 import PageLoader from '../components/shared/PageLoader';
 
+const PAGE_SIZE = 20;
+
 export default function ClientPortal() {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const [user, setUser] = useState(null);
+  const [page, setPage] = useState(0);
 
   const [selectedLeadId, setSelectedLeadId] = useState(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
@@ -52,100 +56,39 @@ export default function ClientPortal() {
 
   const clientId = getClientId();
 
-  const { data: clientInfo } = useQuery({
-    queryKey: ['client-info', clientId],
+  // Single backend call for KPIs + paginated leads
+  const { data: portalData, isLoading: portalLoading, refetch } = useQuery({
+    queryKey: ['client-portal-data', clientId, page],
     queryFn: async () => {
       if (!clientId) return null;
-      const clients = await base44.entities.Client.filter({ id: clientId });
-      return clients[0] || null;
-    },
-    enabled: !!clientId,
-    staleTime: 5 * 60 * 1000,
-  });
-
-  const { data: allClientLeads = [], refetch, isLoading: leadsLoading } = useQuery({
-    queryKey: ['client-leads', clientId],
-    queryFn: async () => {
-      if (!clientId) return [];
-      return await base44.entities.Lead.filter({ client_id: clientId }, '-created_date', 500);
+      const res = await base44.functions.invoke('getClientPortalData', {
+        client_id: clientId,
+        page,
+        page_size: PAGE_SIZE,
+        section: 'active',
+      });
+      return res.data;
     },
     enabled: !!clientId,
     staleTime: 2 * 60 * 1000,
+    keepPreviousData: true,
   });
 
-  const isRetainer = clientInfo?.billing_type === 'retainer';
-
-  const leads = allClientLeads.filter(lead => {
-    if (isRetainer) {
-      // Retainer clients see ALL leads
-      return true;
-    }
-    // Pay per set/show clients only see booked+ leads
-    return lead.status === 'appointment_booked' || lead.status === 'completed';
-  });
-
-  if (!user) return null;
-  if (leadsLoading) return <PageLoader message="Loading appointments..." />;
-
-  const now = new Date();
-  const thisMonthStart = new Date(now.getFullYear(), now.getMonth(), 1);
-
-  const inRange = (dateStr, start, end) => {
-    if (!dateStr) return false;
-    const d = new Date(dateStr);
-    return d >= start && d <= end;
-  };
-
-  // Scheduled MTD: appointments booked (date_appointment_set) this month
-  const scheduledMTD = leads.filter(l => inRange(l.date_appointment_set, thisMonthStart, now)).length;
-
-  // Upcoming: appointment date is in the future, still scheduled/rescheduled, no final outcome
-  const upcomingLeads = leads.filter(l =>
-    l.appointment_date && new Date(l.appointment_date) > now &&
-    (!l.disposition || l.disposition === 'scheduled' || l.disposition === 'rescheduled')
-  );
-  const upcomingCount = upcomingLeads.length;
-
-  // Showed MTD: showed or sold/lost this month
-  const showedMTD = leads.filter(l =>
-    inRange(l.appointment_date, thisMonthStart, now) &&
-    (l.disposition === 'showed' || l.outcome === 'sold' || l.outcome === 'lost')
-  ).length;
-
-  // Needs Outcome: appointment date has passed but no outcome assigned (or pending)
-  const needsOutcomeLeads = leads.filter(l =>
-    l.appointment_date && new Date(l.appointment_date) <= now &&
-    (!l.outcome || l.outcome === 'pending') &&
-    l.disposition !== 'cancelled'
-  );
-  const needsOutcomeCount = needsOutcomeLeads.length;
-  const needsOutcomeIds = new Set(needsOutcomeLeads.map(l => l.id));
-
-  // Active leads = upcoming + needs outcome, sorted so needs outcome is first
-  const activeLeads = leads.filter(lead => {
-    if (isRetainer) {
-      // For retainer clients, active = not disqualified and not completed/sold/lost
-      return lead.status !== 'disqualified' && lead.status !== 'completed' && lead.outcome !== 'sold' && lead.outcome !== 'lost';
-    }
-    const isUpcoming = lead.appointment_date && new Date(lead.appointment_date) > now &&
-      (!lead.disposition || lead.disposition === 'scheduled' || lead.disposition === 'rescheduled');
-    const isNeedsOutcome = needsOutcomeIds.has(lead.id);
-    return isUpcoming || isNeedsOutcome;
-  }).sort((a, b) => {
-    const aNO = needsOutcomeIds.has(a.id) ? 0 : 1;
-    const bNO = needsOutcomeIds.has(b.id) ? 0 : 1;
-    if (aNO !== bNO) return aNO - bNO;
-    if (a.appointment_date && b.appointment_date) return new Date(a.appointment_date) - new Date(b.appointment_date);
-    return new Date(b.created_date) - new Date(a.created_date);
-  });
-
-  // Retainer: disqualified leads for separate section
-  const dqLeads = isRetainer ? leads.filter(l => l.status === 'disqualified') : [];
+  const clientInfo = portalData?.clientInfo || null;
+  const isRetainer = portalData?.isRetainer || false;
+  const kpis = portalData?.kpis || { scheduledMTD: 0, upcomingCount: 0, showedMTD: 0, needsOutcomeCount: 0, disqualifiedCount: 0 };
+  const activeLeads = portalData?.leads || [];
+  const pagination = portalData?.pagination || { page: 0, total_pages: 0, total_count: 0, has_more: false };
 
   const handleDisqualify = async (leadId) => {
     await base44.entities.Lead.update(leadId, { status: 'disqualified' });
     refetch();
     toast({ title: 'Lead Disqualified', variant: 'default' });
+  };
+
+  const handlePageChange = (newPage) => {
+    setPage(newPage);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   return (
