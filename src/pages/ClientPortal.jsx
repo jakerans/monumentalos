@@ -61,7 +61,15 @@ export default function ClientPortal() {
     staleTime: 2 * 60 * 1000,
   });
 
-  const leads = allClientLeads.filter(lead => lead.appointment_date);
+  const isPayPerModel = clientInfo?.billing_type === 'pay_per_set' || clientInfo?.billing_type === 'pay_per_show';
+
+  const leads = allClientLeads.filter(lead => {
+    if (isPayPerModel) {
+      // Pay per set/show clients only see booked+ leads (not new, contacted, first_call_made, disqualified)
+      return lead.status === 'appointment_booked' || lead.status === 'completed';
+    }
+    return lead.appointment_date;
+  });
 
   const { data: clientInfo } = useQuery({
     queryKey: ['client-info', clientId],

@@ -44,12 +44,15 @@ export default function AppointmentHistory() {
     queryFn: async () => {
       if (!clientId) return [];
       const allLeads = await base44.entities.Lead.filter({ client_id: clientId });
-      return allLeads.filter(lead => 
-        lead.appointment_date && 
-        (lead.disposition === 'cancelled' || 
-         lead.disposition === 'showed' ||
-         (lead.outcome && lead.outcome !== 'pending'))
-      );
+      return allLeads.filter(lead => {
+        // For pay per set/show clients, only show booked+ leads
+        const isPayPer = clientInfo?.billing_type === 'pay_per_set' || clientInfo?.billing_type === 'pay_per_show';
+        if (isPayPer && lead.status !== 'appointment_booked' && lead.status !== 'completed') return false;
+        return lead.appointment_date && 
+          (lead.disposition === 'cancelled' || 
+           lead.disposition === 'showed' ||
+           (lead.outcome && lead.outcome !== 'pending'));
+      });
     },
     enabled: !!clientId,
   });
