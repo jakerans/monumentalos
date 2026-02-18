@@ -17,7 +17,6 @@ import PageErrorBoundary from '../components/shared/PageErrorBoundary';
 import PageLoader from '../components/shared/PageLoader';
 import MMPerformanceGoal from '../components/mm/MMPerformanceGoal';
 import LeaderboardRankPreview from '../components/mm/LeaderboardRankPreview';
-import SpiffTracker from '../components/setter/SpiffTracker';
 import SpiffPreviewTester from '../components/admin/SpiffPreviewTester';
 import { motion } from 'framer-motion';
 import { useAutoAnimate } from '@formkit/auto-animate/react';
@@ -238,7 +237,7 @@ export default function AdminDashboard() {
           </div>
         </motion.div>
 
-        {/* Performance Goal & Spiff Preview */}
+        {/* Preview Effects */}
         {showPerfTester && (
           <motion.div
             initial={{ opacity: 0, height: 0 }}
@@ -246,21 +245,15 @@ export default function AdminDashboard() {
             exit={{ opacity: 0, height: 0 }}
             className="space-y-4"
           >
+            {/* Performance Goal Tester */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
               <MMPerformanceGoal plans={[]} showTester={true} onRankOverride={setRankOverride} />
               <LeaderboardRankPreview rank={rankOverride} />
             </div>
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-              <div className="bg-slate-800/50 rounded-lg border border-slate-700/50 p-4">
-                <h3 className="text-sm font-bold text-white mb-3">Active Spiffs</h3>
-                <SpiffTracker spiffs={spiffs} leads={leads} user={user} />
-                {spiffs.filter(s => s.status === 'active').length === 0 && (
-                  <p className="text-xs text-slate-500 text-center py-4">No active spiffs. Create one in the Spiff Manager.</p>
-                )}
-              </div>
-              <div className="bg-slate-800/50 rounded-lg border border-slate-700/50 p-4">
-                <SpiffPreviewTester />
-              </div>
+
+            {/* Spiff Widget Tester */}
+            <div className="bg-slate-800/50 rounded-lg border border-slate-700/50 p-4">
+              <SpiffPreviewTester />
             </div>
           </motion.div>
         )}
