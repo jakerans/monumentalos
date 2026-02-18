@@ -8,35 +8,38 @@ function Particles({ type = 'fire', count = 8 }) {
     x: Math.random() * 100,
     delay: Math.random() * 2,
     duration: 1.5 + Math.random() * 1.5,
-    size: 2 + Math.random() * 3,
-  })), [count]);
+    size: 1.5 + Math.random() * 2,
+    color: type === 'fire'
+      ? `hsl(${20 + Math.random() * 25}, 100%, ${55 + Math.random() * 20}%)`
+      : `hsl(${185 + Math.random() * 10}, ${80 + Math.random() * 20}%, ${75 + Math.random() * 15}%)`,
+    yTravel: type === 'fire' ? -(25 + Math.random() * 20) : (15 + Math.random() * 12),
+    xDrift: (Math.random() - 0.5) * 14,
+  })), [count, type]);
 
   const isFire = type === 'fire';
 
   return (
-    <div className="absolute inset-0 pointer-events-none overflow-hidden">
+    <>
       {particles.map(p => (
         <motion.div
           key={p.id}
-          className="absolute rounded-full"
+          className="absolute rounded-full pointer-events-none"
           style={{
             left: `${p.x}%`,
-            bottom: isFire ? '0%' : undefined,
-            top: isFire ? undefined : '0%',
+            bottom: isFire ? '-2px' : undefined,
+            top: isFire ? undefined : '-2px',
             width: p.size,
             height: p.size,
-            backgroundColor: isFire
-              ? `hsl(${20 + Math.random() * 25}, 100%, ${55 + Math.random() * 20}%)`
-              : `hsl(${185 + Math.random() * 10}, ${80 + Math.random() * 20}%, ${75 + Math.random() * 15}%)`,
+            backgroundColor: p.color,
             boxShadow: isFire
-              ? `0 0 ${p.size + 2}px rgba(255,150,0,0.6)`
-              : `0 0 ${p.size + 2}px rgba(103,232,249,0.5)`,
+              ? `0 0 ${p.size + 1}px rgba(255,150,0,0.5)`
+              : `0 0 ${p.size + 1}px rgba(103,232,249,0.4)`,
           }}
           animate={{
-            y: isFire ? [0, -30 - Math.random() * 20] : [0, 20 + Math.random() * 15],
-            x: [0, (Math.random() - 0.5) * 16],
-            opacity: [0, 0.9, 0],
-            scale: [0.5, 1, 0.3],
+            y: [0, p.yTravel],
+            x: [0, p.xDrift],
+            opacity: [0, 0.7, 0],
+            scale: [0.4, 1, 0.2],
           }}
           transition={{
             duration: p.duration,
@@ -46,7 +49,7 @@ function Particles({ type = 'fire', count = 8 }) {
           }}
         />
       ))}
-    </div>
+    </>
   );
 }
 
@@ -100,9 +103,9 @@ export default function DailySpiffBanner({ spiffs, leads, user }) {
       <motion.div
         initial={{ opacity: 0, scale: 0.8 }}
         animate={{ opacity: 1, scale: 1 }}
-        className="relative flex items-center gap-2"
+        className="relative flex items-center gap-2 overflow-visible"
       >
-        <Particles type="ice" count={10} />
+        <Particles type="ice" count={8} />
         <motion.div
           animate={{ rotate: [0, 10, -10, 0] }}
           transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
@@ -140,9 +143,9 @@ export default function DailySpiffBanner({ spiffs, leads, user }) {
     <motion.div
       initial={{ opacity: 0, x: -10 }}
       animate={{ opacity: 1, x: 0 }}
-      className="relative flex items-center gap-2"
+      className="relative flex items-center gap-2 overflow-visible"
     >
-      <Particles type="fire" count={10} />
+      <Particles type="fire" count={8} />
       <motion.div
         animate={{ scale: [1, 1.2, 1], rotate: [0, -5, 5, 0] }}
         transition={{ duration: 0.8, repeat: Infinity }}
