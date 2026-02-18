@@ -210,11 +210,11 @@ export default function ClientPortal() {
             <div className="bg-slate-800/50 rounded-lg shadow border border-slate-700/50 p-6 text-center text-slate-500">No active appointments</div>
           ) : (
             activeLeads.map((lead) => (
-              <div key={lead.id} className={needsOutcomeIds.has(lead.id) ? 'ring-1 ring-red-500/50 rounded-lg' : ''}>
+              <div key={lead.id} className={lead._needsOutcome ? 'ring-1 ring-red-500/50 rounded-lg' : ''}>
                 <AppointmentCard
                   lead={lead}
                   onSelect={(id) => { setSelectedLeadId(id); setDrawerOpen(true); }}
-                  needsOutcome={needsOutcomeIds.has(lead.id)}
+                  needsOutcome={lead._needsOutcome}
                 />
                 {isRetainer && (
                   <button
@@ -255,7 +255,7 @@ export default function ClientPortal() {
                   </tr>
                 ) : (
                   activeLeads.map((lead) => {
-                    const isNeedsOutcome = needsOutcomeIds.has(lead.id);
+                    const isNeedsOutcome = lead._needsOutcome;
                     return (
                     <tr key={lead.id} className={`${isNeedsOutcome ? 'bg-red-500/10 hover:bg-red-500/15' : 'hover:bg-slate-700/20'}`}>
                       <td className="px-6 py-4">
@@ -335,6 +335,44 @@ export default function ClientPortal() {
             </table>
           </div>
         </div>
+
+        {/* Pagination */}
+        {pagination.total_pages > 1 && (
+          <div className="flex items-center justify-between mt-4 px-1">
+            <p className="text-xs text-slate-500">
+              Showing {page * PAGE_SIZE + 1}–{Math.min((page + 1) * PAGE_SIZE, pagination.total_count)} of {pagination.total_count}
+            </p>
+            <div className="flex items-center gap-1">
+              <button
+                onClick={() => handlePageChange(page - 1)}
+                disabled={page === 0}
+                className="p-1.5 rounded-md text-slate-400 hover:text-white hover:bg-slate-700 disabled:opacity-30 disabled:cursor-not-allowed"
+              >
+                <ChevronLeft className="w-4 h-4" />
+              </button>
+              {Array.from({ length: pagination.total_pages }, (_, i) => (
+                <button
+                  key={i}
+                  onClick={() => handlePageChange(i)}
+                  className={`w-7 h-7 text-xs font-medium rounded-md ${
+                    i === page
+                      ? 'bg-[#D6FF03] text-black'
+                      : 'text-slate-400 hover:text-white hover:bg-slate-700'
+                  }`}
+                >
+                  {i + 1}
+                </button>
+              )).slice(Math.max(0, page - 2), Math.min(pagination.total_pages, page + 3))}
+              <button
+                onClick={() => handlePageChange(page + 1)}
+                disabled={!pagination.has_more}
+                className="p-1.5 rounded-md text-slate-400 hover:text-white hover:bg-slate-700 disabled:opacity-30 disabled:cursor-not-allowed"
+              >
+                <ChevronRight className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+        )}
 
         <LeadDetailsDrawer
           leadId={selectedLeadId}
