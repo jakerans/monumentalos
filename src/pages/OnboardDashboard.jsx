@@ -18,7 +18,7 @@ import ClientList from '../components/onboard/ClientList';
 import InviteClientUserModal from '../components/onboard/InviteClientUserModal';
 import EditClientModal from '../components/onboard/EditClientModal';
 import PageErrorBoundary from '../components/shared/PageErrorBoundary';
-import OnboardDashboardSkeleton from '../components/onboard/OnboardDashboardSkeleton';
+import PageLoader from '../components/shared/PageLoader';
 
 export default function OnboardDashboard() {
   const navigate = useNavigate();
@@ -50,28 +50,33 @@ export default function OnboardDashboard() {
     checkAuth();
   }, [navigate]);
 
-  // Single backend call for all dashboard data
-  const { data: dashData, isLoading: dashLoading, refetch: refetchDash } = useQuery({
-    queryKey: ['onboard-dashboard-data'],
-    queryFn: async () => {
-      const res = await base44.functions.invoke('getOnboardDashboardData');
-      return res.data;
-    },
-    staleTime: 2 * 60 * 1000,
-    retry: 2,
-    retryDelay: (attempt) => Math.min(1000 * 2 ** attempt, 10000),
+  const { data: projects = [], refetch: refetchProjects, isLoading: l1 } = useQuery({
+    queryKey: ['onboard-projects'],
+    queryFn: () => base44.entities.OnboardProject.list('-created_date', 200),
   });
 
-  const projects = dashData?.projects || [];
-  const tasks = dashData?.tasks || [];
-  const templates = dashData?.templates || [];
-  const clients = dashData?.clients || [];
-  const users = dashData?.users || [];
+  const { data: tasks = [], refetch: refetchTasks, isLoading: l2 } = useQuery({
+    queryKey: ['onboard-tasks'],
+    queryFn: () => base44.entities.OnboardTask.list('-created_date', 1000),
+  });
 
-  const refetchProjects = refetchDash;
-  const refetchTasks = refetchDash;
-  const refetchTemplates = refetchDash;
-  const refetchClients = refetchDash;
+  const { data: templates = [], refetch: refetchTemplates } = useQuery({
+    queryKey: ['onboard-templates'],
+    queryFn: () => base44.entities.OnboardTemplate.filter({ status: 'active' }),
+  });
+
+  const { data: clients = [], refetch: refetchClients } = useQuery({
+    queryKey: ['all-clients'],
+    queryFn: () => base44.entities.Client.list(),
+  });
+
+  const { data: users = [] } = useQuery({
+    queryKey: ['all-users-onboard'],
+    queryFn: async () => {
+      const res = await base44.functions.invoke('listTeamUsers');
+      return res.data?.users || [];
+    },
+  });
 
   const mmUsers = users.filter(u => u.app_role === 'marketing_manager' || u.app_role === 'admin');
   const [projectGridRef] = useAutoAnimate({ duration: 300, easing: 'ease-out' });
@@ -102,7 +107,7 @@ export default function OnboardDashboard() {
   };
 
   if (!user) return null;
-  if (dashLoading) return <OnboardDashboardSkeleton />;
+  if (l1 || l2) return <PageLoader message="Loading onboarding..." />;
 
   const filteredProjects = statusFilter === 'all'
     ? projects
