@@ -9,6 +9,7 @@ import ClientGoalChart from '../components/admin/ClientGoalChart';
 import RevenueBreakdownChart from '../components/admin/RevenueBreakdownChart';
 import MTDGoalProgress from '../components/admin/MTDGoalProgress';
 import GoalManagementModal from '../components/admin/GoalManagementModal';
+import PLComparisonRow from '../components/admin/PLComparisonRow';
 import dayjs from 'dayjs';
 import { Settings, Trophy } from 'lucide-react';
 import PageErrorBoundary from '../components/shared/PageErrorBoundary';
@@ -59,31 +60,38 @@ export default function AdminDashboard() {
   const mtd = useMemo(() => {
     const mtdStart = new Date(now.getFullYear(), now.getMonth(), 1);
     const mtdEnd = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59);
+    const lmStart = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+    const lmEnd = new Date(now.getFullYear(), now.getMonth(), 0, 23, 59, 59);
     const inRange = (d) => { if (!d) return false; const dt = new Date(d); return dt >= mtdStart && dt <= mtdEnd; };
+    const inLM = (d) => { if (!d) return false; const dt = new Date(d); return dt >= lmStart && dt <= lmEnd; };
 
-    let grossRevenue = 0;
-    clients.filter(c => c.status === 'active').forEach(client => {
-      const bt = client.billing_type || 'pay_per_show';
-      const cLeads = leads.filter(l => l.client_id === client.id);
-      if (bt === 'pay_per_show') {
-        grossRevenue += cLeads.filter(l => l.disposition === 'showed' && inRange(l.appointment_date)).length * (client.price_per_shown_appointment || 0);
-      } else if (bt === 'pay_per_set') {
-        grossRevenue += cLeads.filter(l => l.date_appointment_set && inRange(l.date_appointment_set)).length * (client.price_per_set_appointment || 0);
-      } else if (bt === 'retainer') {
-        grossRevenue += (client.retainer_amount || 0);
-      }
-    });
+    const calcPeriod = (rangeFn) => {
+      let grossRevenue = 0;
+      clients.filter(c => c.status === 'active').forEach(client => {
+        const bt = client.billing_type || 'pay_per_show';
+        const cLeads = leads.filter(l => l.client_id === client.id);
+        if (bt === 'pay_per_show') {
+          grossRevenue += cLeads.filter(l => l.disposition === 'showed' && rangeFn(l.appointment_date)).length * (client.price_per_shown_appointment || 0);
+        } else if (bt === 'pay_per_set') {
+          grossRevenue += cLeads.filter(l => l.date_appointment_set && rangeFn(l.date_appointment_set)).length * (client.price_per_set_appointment || 0);
+        } else if (bt === 'retainer') {
+          grossRevenue += (client.retainer_amount || 0);
+        }
+      });
+      const collected = payments.filter(p => rangeFn(p.date)).reduce((s, p) => s + (p.amount || 0), 0);
+      const rangeExpenses = expenses.filter(e => rangeFn(e.date));
+      const cogs = rangeExpenses.filter(e => e.expense_type === 'cogs').reduce((s, e) => s + (e.amount || 0), 0);
+      const overhead = rangeExpenses.filter(e => e.expense_type !== 'cogs').reduce((s, e) => s + (e.amount || 0), 0);
+      const grossProfit = grossRevenue - cogs;
+      const netProfit = collected - cogs - overhead;
+      const grossMargin = grossRevenue > 0 ? (grossProfit / grossRevenue) * 100 : 0;
+      const netMargin = collected > 0 ? (netProfit / collected) * 100 : 0;
+      return { grossRevenue, collected, cogs, overhead, grossProfit, netProfit, grossMargin, netMargin };
+    };
 
-    const collected = payments.filter(p => inRange(p.date)).reduce((s, p) => s + (p.amount || 0), 0);
-    const rangeExpenses = expenses.filter(e => inRange(e.date));
-    const cogs = rangeExpenses.filter(e => e.expense_type === 'cogs').reduce((s, e) => s + (e.amount || 0), 0);
-    const overhead = rangeExpenses.filter(e => e.expense_type !== 'cogs').reduce((s, e) => s + (e.amount || 0), 0);
-    const grossProfit = grossRevenue - cogs;
-    const netProfit = collected - cogs - overhead;
-    const grossMargin = grossRevenue > 0 ? (grossProfit / grossRevenue) * 100 : 0;
-    const netMargin = collected > 0 ? (netProfit / collected) * 100 : 0;
-
-    return { grossRevenue, collected, cogs, overhead, grossProfit, netProfit, grossMargin, netMargin };
+    const current = calcPeriod(inRange);
+    const prior = calcPeriod(inLM);
+    return { ...current, prior };
   }, [clients, leads, payments, expenses]);
 
   // Setter leaderboard
@@ -157,28 +165,10 @@ export default function AdminDashboard() {
           transition={{ delay: 0.35, duration: 0.4 }}
           className="grid grid-cols-1 lg:grid-cols-3 gap-4"
         >
-          {/* P&L Snapshot */}
+          {/* P&L Snapshot with period comparison */}
           <div className="lg:col-span-2 bg-slate-800/50 rounded-lg border border-slate-700/50 p-4">
-            <h3 className="text-sm font-bold text-white mb-3">P&L Snapshot (MTD)</h3>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-              {[
-                { label: 'Gross Revenue', value: mtd.grossRevenue, color: 'text-blue-400' },
-                { label: 'Cash Collected', value: mtd.collected, color: 'text-emerald-400' },
-                { label: 'COGS', value: mtd.cogs, color: 'text-orange-400', negative: true },
-                { label: 'Overhead', value: mtd.overhead, color: 'text-red-400', negative: true },
-                { label: 'Gross Profit', value: mtd.grossProfit, color: 'text-purple-400' },
-                { label: 'Net Profit', value: mtd.netProfit, color: mtd.netProfit >= 0 ? 'text-green-400' : 'text-red-400' },
-                { label: 'Gross Margin', value: null, display: `${mtd.grossMargin.toFixed(1)}%`, color: 'text-indigo-400' },
-                { label: 'Net Margin', value: null, display: `${mtd.netMargin.toFixed(1)}%`, color: 'text-purple-400' },
-              ].map(item => (
-                <div key={item.label} className="bg-slate-900/50 rounded-lg p-3">
-                  <p className="text-[10px] font-medium text-slate-400 uppercase">{item.label}</p>
-                  <p className={`text-lg font-bold ${item.color}`}>
-                    {item.display || `${item.negative ? '-' : ''}$${Math.abs(item.value).toLocaleString()}`}
-                  </p>
-                </div>
-              ))}
-            </div>
+            <h3 className="text-sm font-bold text-white mb-3">P&L Snapshot (MTD vs Last Month)</h3>
+            <PLComparisonRow current={mtd} prior={mtd.prior} />
           </div>
 
           {/* Setter leaderboard */}

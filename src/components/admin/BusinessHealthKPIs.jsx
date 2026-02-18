@@ -9,26 +9,14 @@ function buildDailySparkline(items, dateKey, days = 14) {
     const d = new Date(now);
     d.setDate(d.getDate() - i);
     const dayStr = d.toISOString().split('T')[0];
-    const count = items.filter(item => {
-      const val = item[dateKey];
-      return val && val.startsWith(dayStr);
-    }).length;
-    data.push({ v: count });
+    data.push({ v: items.filter(item => item[dateKey]?.startsWith(dayStr)).length });
   }
   return data;
 }
 
-function buildDailyAmountSparkline(items, dateKey, amountKey = 'amount', days = 14) {
-  const now = new Date();
-  const data = [];
-  for (let i = days - 1; i >= 0; i--) {
-    const d = new Date(now);
-    d.setDate(d.getDate() - i);
-    const dayStr = d.toISOString().split('T')[0];
-    const total = items.filter(item => item[dateKey]?.startsWith(dayStr)).reduce((s, item) => s + (item[amountKey] || 0), 0);
-    data.push({ v: total });
-  }
-  return data;
+function pctChange(cur, prior) {
+  if (prior === 0) return cur > 0 ? 100 : 0;
+  return Math.round(((cur - prior) / prior) * 100);
 }
 
 export default function BusinessHealthKPIs({ clients, leads, spend, payments, billingRecords, lastMonthBilling }) {
@@ -38,10 +26,12 @@ export default function BusinessHealthKPIs({ clients, leads, spend, payments, bi
   const lastMonthEnd = new Date(now.getFullYear(), now.getMonth(), 0, 23, 59, 59);
 
   const inMTD = (d) => d && new Date(d) >= thisMonthStart;
+  const inLastMonth = (d) => { if (!d) return false; const dt = new Date(d); return dt >= lastMonthStart && dt <= lastMonthEnd; };
 
   const activeClients = clients.filter(c => c.status === 'active');
   const inactiveClients = clients.filter(c => c.status === 'inactive');
   const newClientsThisMonth = clients.filter(c => inMTD(c.created_date)).length;
+  const newClientsLastMonth = clients.filter(c => inLastMonth(c.created_date)).length;
 
   const ninetyDaysAgo = new Date(now);
   ninetyDaysAgo.setDate(ninetyDaysAgo.getDate() - 90);
@@ -66,6 +56,8 @@ export default function BusinessHealthKPIs({ clients, leads, spend, payments, bi
 
   const mtdLeads = leads.filter(l => inMTD(l.created_date)).length;
   const mtdBooked = leads.filter(l => l.date_appointment_set && inMTD(l.date_appointment_set)).length;
+  const lmLeads = leads.filter(l => inLastMonth(l.created_date)).length;
+  const lmBooked = leads.filter(l => l.date_appointment_set && inLastMonth(l.date_appointment_set)).length;
 
   const leadsSparkline = useMemo(() => buildDailySparkline(leads, 'created_date'), [leads]);
   const bookedSparkline = useMemo(() => buildDailySparkline(leads.filter(l => l.date_appointment_set), 'date_appointment_set'), [leads]);
@@ -75,11 +67,11 @@ export default function BusinessHealthKPIs({ clients, leads, spend, payments, bi
       <SparklineCard index={0} label="Active Clients" value={activeClients.length} subtitle={`${newClientsThisMonth} new this month`} icon={Users} iconBg="bg-blue-500/10" iconColor="text-blue-400" sparkColor="#60a5fa" />
       <SparklineCard index={1} label="Alerts" value={alertClients.length} subtitle="Clients needing attention" icon={AlertTriangle} iconBg="bg-red-500/10" iconColor="text-red-400" sparkColor="#f87171" />
       <SparklineCard index={2} label="Churn Rate (90d)" value={`${churnRate}%`} subtitle={`${churnedCount} churned`} icon={UserMinus} iconBg="bg-orange-500/10" iconColor="text-orange-400" sparkColor="#fb923c" />
-      <SparklineCard index={3} label="New This Month" value={newClientsThisMonth} icon={UserPlus} iconBg="bg-green-500/10" iconColor="text-green-400" sparkColor="#34d399" />
+      <SparklineCard index={3} label="New This Month" value={newClientsThisMonth} icon={UserPlus} iconBg="bg-green-500/10" iconColor="text-green-400" sparkColor="#34d399" comparison={{ prior: newClientsLastMonth, change: pctChange(newClientsThisMonth, newClientsLastMonth) }} />
       <SparklineCard index={4} label="Last Mo. Billed" value={`$${lastMonthTotal.toLocaleString()}`} subtitle="Performance billing" icon={DollarSign} iconBg="bg-indigo-500/10" iconColor="text-indigo-400" sparkColor="#818cf8" />
       <SparklineCard index={5} label="Collection Rate" value={`${collectionRate}%`} subtitle={`$${lastMonthCollected.toLocaleString()} collected`} icon={Percent} iconBg="bg-emerald-500/10" iconColor="text-emerald-400" sparkColor="#34d399" />
-      <SparklineCard index={6} label="MTD Leads" value={mtdLeads} icon={TrendingUp} iconBg="bg-purple-500/10" iconColor="text-purple-400" sparkData={leadsSparkline} sparkColor="#c084fc" />
-      <SparklineCard index={7} label="MTD Booked" value={mtdBooked} icon={Target} iconBg="bg-cyan-500/10" iconColor="text-cyan-400" sparkData={bookedSparkline} sparkColor="#22d3ee" />
+      <SparklineCard index={6} label="MTD Leads" value={mtdLeads} icon={TrendingUp} iconBg="bg-purple-500/10" iconColor="text-purple-400" sparkData={leadsSparkline} sparkColor="#c084fc" comparison={{ prior: lmLeads, change: pctChange(mtdLeads, lmLeads) }} />
+      <SparklineCard index={7} label="MTD Booked" value={mtdBooked} icon={Target} iconBg="bg-cyan-500/10" iconColor="text-cyan-400" sparkData={bookedSparkline} sparkColor="#22d3ee" comparison={{ prior: lmBooked, change: pctChange(mtdBooked, lmBooked) }} />
     </div>
   );
 }
