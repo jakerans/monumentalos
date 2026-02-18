@@ -446,8 +446,6 @@ export default function SetterDashboard() {
         user={user}
         leaderboard={leaderboard}
         lastMonthBoard={lastMonthBoard}
-        spiffs={spiffs}
-        leads={leads}
       />
 
       {celebration && (
