@@ -20,8 +20,9 @@ import MMPerformanceGoal from '../components/mm/MMPerformanceGoal';
 import RankPreviewTester from '../components/mm/RankPreviewTester';
 import SpiffPreviewTester from '../components/admin/SpiffPreviewTester';
 import STLPreviewTester from '../components/admin/STLPreviewTester';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useAutoAnimate } from '@formkit/auto-animate/react';
+import { Zap, ZapOff } from 'lucide-react';
 
 export default function AdminDashboard() {
   const navigate = useNavigate();
