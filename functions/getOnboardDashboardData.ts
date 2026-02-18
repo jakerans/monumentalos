@@ -39,20 +39,16 @@ Deno.serve(async (req) => {
     const sr = base44.asServiceRole.entities;
 
     // Core data in parallel with pagination safety
-    const [projects, tasks, templates, clients] = await Promise.all([
+    const [projects, tasks, templates, clients, users] = await Promise.all([
       fetchAll(sr.OnboardProject, '-created_date'),
       fetchAll(sr.OnboardTask, '-created_date'),
       fetchAllFiltered(sr.OnboardTemplate, { status: 'active' }, '-created_date'),
-      sr.Client.list(),
+      fetchAll(sr.Client, '-created_date'),
+      base44.asServiceRole.entities.User.list().catch(e => {
+        console.warn('Failed to fetch users:', e.message);
+        return [];
+      }),
     ]);
-
-    // Users call wrapped in try/catch for resilience
-    let users = [];
-    try {
-      users = await base44.asServiceRole.entities.User.list();
-    } catch (e) {
-      console.warn('Failed to fetch users:', e.message);
-    }
 
     const mmUsers = users.filter(u => u.app_role === 'marketing_manager' || u.app_role === 'admin');
 
