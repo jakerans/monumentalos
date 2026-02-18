@@ -343,7 +343,7 @@ export default function SetterDashboard() {
               className="px-3 py-2 text-sm border border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#D6FF03] bg-slate-800 text-white"
             >
               <option value="all">All Clients</option>
-              {clients.map(c => (
+              {clients.filter(c => c.billing_type !== 'retainer').map(c => (
                 <option key={c.id} value={c.id}>{c.name}</option>
               ))}
             </select>
