@@ -3,7 +3,8 @@ import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import { Link, useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
-import { Calendar, CheckCircle, Clock, AlertTriangle } from 'lucide-react';
+import { Calendar, CheckCircle, Clock, AlertTriangle, Ban } from 'lucide-react';
+import { toast } from '@/components/ui/use-toast';
 import LeadDetailsDrawer from '../components/LeadDetailsDrawer';
 import AppointmentCard from '../components/client/AppointmentCard';
 import OutstandingInvoiceAlert from '../components/client/OutstandingInvoiceAlert';
@@ -122,6 +123,10 @@ export default function ClientPortal() {
 
   // Active leads = upcoming + needs outcome, sorted so needs outcome is first
   const activeLeads = leads.filter(lead => {
+    if (isRetainer) {
+      // For retainer clients, active = not disqualified and not completed/sold/lost
+      return lead.status !== 'disqualified' && lead.status !== 'completed' && lead.outcome !== 'sold' && lead.outcome !== 'lost';
+    }
     const isUpcoming = lead.appointment_date && new Date(lead.appointment_date) > now &&
       (!lead.disposition || lead.disposition === 'scheduled' || lead.disposition === 'rescheduled');
     const isNeedsOutcome = needsOutcomeIds.has(lead.id);
@@ -130,8 +135,18 @@ export default function ClientPortal() {
     const aNO = needsOutcomeIds.has(a.id) ? 0 : 1;
     const bNO = needsOutcomeIds.has(b.id) ? 0 : 1;
     if (aNO !== bNO) return aNO - bNO;
-    return new Date(a.appointment_date) - new Date(b.appointment_date);
+    if (a.appointment_date && b.appointment_date) return new Date(a.appointment_date) - new Date(b.appointment_date);
+    return new Date(b.created_date) - new Date(a.created_date);
   });
+
+  // Retainer: disqualified leads for separate section
+  const dqLeads = isRetainer ? leads.filter(l => l.status === 'disqualified') : [];
+
+  const handleDisqualify = async (leadId) => {
+    await base44.entities.Lead.update(leadId, { status: 'disqualified' });
+    refetch();
+    toast({ title: 'Lead Disqualified', variant: 'default' });
+  };
 
   return (
     <PageErrorBoundary>
@@ -203,7 +218,7 @@ export default function ClientPortal() {
         </div>
         {clientId && <OutstandingInvoiceAlert clientId={clientId} />}
 
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-2 sm:gap-4 mb-6 sm:mb-8">
+        <div className={`grid ${isRetainer ? 'grid-cols-2 md:grid-cols-5' : 'grid-cols-2 md:grid-cols-4'} gap-2 sm:gap-4 mb-6 sm:mb-8`}>
           <div className="bg-slate-800/50 rounded-lg shadow p-3 sm:p-5 border border-slate-700/50">
             <div className="flex items-center gap-1.5 sm:gap-2 mb-1">
               <Calendar className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-blue-400" />
@@ -232,6 +247,15 @@ export default function ClientPortal() {
             </div>
             <p className="text-lg sm:text-3xl font-bold text-red-400">{needsOutcomeCount}</p>
           </div>
+          {isRetainer && (
+            <div className="bg-slate-800/50 rounded-lg shadow p-3 sm:p-5 border border-slate-700/50">
+              <div className="flex items-center gap-1.5 sm:gap-2 mb-1">
+                <Ban className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-slate-400" />
+                <p className="text-[10px] sm:text-sm font-medium text-slate-400">Disqualified</p>
+              </div>
+              <p className="text-lg sm:text-3xl font-bold text-white">{dqLeads.length}</p>
+            </div>
+          )}
         </div>
 
         {/* Mobile card view */}
