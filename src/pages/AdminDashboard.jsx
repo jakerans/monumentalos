@@ -12,9 +12,10 @@ import GoalManagementModal from '../components/admin/GoalManagementModal';
 import PLComparisonRow from '../components/admin/PLComparisonRow.jsx';
 import StatCompareCard from '../components/admin/StatCompareCard.jsx';
 import dayjs from 'dayjs';
-import { Settings, Trophy } from 'lucide-react';
+import { Settings, Trophy, Eye } from 'lucide-react';
 import PageErrorBoundary from '../components/shared/PageErrorBoundary';
 import PageLoader from '../components/shared/PageLoader';
+import MMPerformanceGoal from '../components/mm/MMPerformanceGoal';
 import { motion } from 'framer-motion';
 import { useAutoAnimate } from '@formkit/auto-animate/react';
 
@@ -22,6 +23,7 @@ export default function AdminDashboard() {
   const navigate = useNavigate();
   const [user, setUser] = useState(null);
   const [goalsOpen, setGoalsOpen] = useState(false);
+  const [showPerfTester, setShowPerfTester] = useState(false);
   const now = new Date();
 
   useEffect(() => {
@@ -129,15 +131,29 @@ export default function AdminDashboard() {
               {now.toLocaleString('default', { month: 'long', year: 'numeric' })} overview
             </p>
           </div>
-          <motion.button
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            onClick={() => setGoalsOpen(true)}
-            className="px-4 py-2 text-xs font-bold rounded-lg flex items-center gap-1.5 shadow-sm hover:opacity-90 transition-opacity text-black glow-pulse"
-            style={{backgroundColor:'#D6FF03'}}
-          >
-            <Settings className="w-3.5 h-3.5" /> Manage Goals
-          </motion.button>
+          <div className="flex items-center gap-2">
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={() => setShowPerfTester(!showPerfTester)}
+              className={`px-3 py-2 text-xs font-bold rounded-lg flex items-center gap-1.5 transition-all border ${
+                showPerfTester
+                  ? 'bg-amber-500/15 border-amber-500/40 text-amber-300'
+                  : 'bg-slate-800 border-slate-700 text-slate-400 hover:text-white'
+              }`}
+            >
+              <Eye className="w-3.5 h-3.5" /> Preview Effects
+            </motion.button>
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={() => setGoalsOpen(true)}
+              className="px-4 py-2 text-xs font-bold rounded-lg flex items-center gap-1.5 shadow-sm hover:opacity-90 transition-opacity text-black glow-pulse"
+              style={{backgroundColor:'#D6FF03'}}
+            >
+              <Settings className="w-3.5 h-3.5" /> Manage Goals
+            </motion.button>
+          </div>
         </motion.div>
 
         {/* Business Health KPIs */}
@@ -216,6 +232,18 @@ export default function AdminDashboard() {
             </div>
           </div>
         </motion.div>
+
+        {/* Performance Goal Preview */}
+        {showPerfTester && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }}
+            className="max-w-sm"
+          >
+            <MMPerformanceGoal plans={[]} showTester={true} />
+          </motion.div>
+        )}
 
         {/* No goal prompt */}
         {!currentGoal && (
