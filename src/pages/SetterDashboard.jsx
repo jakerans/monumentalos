@@ -249,8 +249,13 @@ export default function SetterDashboard() {
   if (!user) return null;
   if (l1 || l2) return <PageLoader message="Loading pipeline..." />;
 
-  // Filter leads — hide leads with a final outcome (sold/lost) or completed status
+  // Only show clients that are pay_per_set or pay_per_show (exclude retainer)
+  const settableClients = clients.filter(c => c.billing_type !== 'retainer');
+  const settableClientIds = new Set(settableClients.map(c => c.id));
+
+  // Filter leads — hide retainer client leads, final outcomes, and completed status
   const filtered = leads.filter(l => {
+    if (!settableClientIds.has(l.client_id)) return false;
     if (l.outcome === 'sold' || l.outcome === 'lost' || l.status === 'completed') return false;
     const matchSearch = !search || l.name?.toLowerCase().includes(search.toLowerCase()) || l.phone?.includes(search) || l.email?.toLowerCase().includes(search.toLowerCase());
     const matchClient = clientFilter === 'all' || l.client_id === clientFilter;
@@ -339,7 +344,7 @@ export default function SetterDashboard() {
               className="px-3 py-2 text-sm border border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#D6FF03] bg-slate-800 text-white"
             >
               <option value="all">All Clients</option>
-              {clients.map(c => (
+              {settableClients.map(c => (
                 <option key={c.id} value={c.id}>{c.name}</option>
               ))}
             </select>
@@ -444,7 +449,7 @@ export default function SetterDashboard() {
       <AddLeadModal
         open={addOpen}
         onOpenChange={setAddOpen}
-        clients={clients}
+        clients={settableClients}
         onAdd={handleAddLead}
         userId={user?.id}
       />

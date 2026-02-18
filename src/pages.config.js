@@ -64,9 +64,9 @@ import MMOnboard from './pages/MMOnboard';
 import MonthlyBilling from './pages/MonthlyBilling';
 import OnboardDashboard from './pages/OnboardDashboard';
 import RevenueDashboard from './pages/RevenueDashboard';
-import SetterDashboard from './pages/SetterDashboard';
 import SetterPerformance from './pages/SetterPerformance';
 import UserManagement from './pages/UserManagement';
+import SetterDashboard from './pages/SetterDashboard';
 import __Layout from './Layout.jsx';
 
 
@@ -88,9 +88,9 @@ export const PAGES = {
     "MonthlyBilling": MonthlyBilling,
     "OnboardDashboard": OnboardDashboard,
     "RevenueDashboard": RevenueDashboard,
-    "SetterDashboard": SetterDashboard,
     "SetterPerformance": SetterPerformance,
     "UserManagement": UserManagement,
+    "SetterDashboard": SetterDashboard,
 }
 
 export const pagesConfig = {
