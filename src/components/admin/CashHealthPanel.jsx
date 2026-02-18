@@ -79,7 +79,7 @@ export default function CashHealthPanel({ data }) {
           index={1}
           label="Projected Revenue"
           value={fmt(d.projectedRevenue)}
-          sub="Earned but not yet collected"
+          sub={`AR: ${fmt(d.activeInvoices)} + Accruals: ${fmt(d.liveAccruals)}`}
           icon={TrendingUp}
           iconColor="text-blue-400"
           iconBg="bg-blue-500/10"
