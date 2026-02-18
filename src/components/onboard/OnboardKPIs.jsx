@@ -2,8 +2,11 @@ import React, { useMemo } from 'react';
 import { Clock, CheckCircle, PlayCircle, BarChart3 } from 'lucide-react';
 import SparklineCard from '../shared/SparklineCard';
 
-export default function OnboardKPIs({ projects, tasks }) {
+export default function OnboardKPIs({ projects, tasks, precomputed }) {
   const stats = useMemo(() => {
+    // Use precomputed KPIs from backend if available
+    if (precomputed) return precomputed;
+
     const active = projects.filter(p => p.status === 'in_progress');
     const completed = projects.filter(p => p.status === 'completed');
 
@@ -24,7 +27,7 @@ export default function OnboardKPIs({ projects, tasks }) {
     const pendingTasks = tasks.filter(t => t.status === 'pending' || t.status === 'in_progress');
 
     return { activeCount: active.length, completedCount: completed.length, avgDays, pendingTaskCount: pendingTasks.length };
-  }, [projects, tasks]);
+  }, [projects, tasks, precomputed]);
 
   const cards = [
     { label: 'Active Projects', value: stats.activeCount, icon: PlayCircle, color: 'text-blue-400', bg: 'bg-blue-500/10', spark: '#60a5fa' },
