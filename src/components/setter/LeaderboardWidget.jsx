@@ -1,5 +1,5 @@
 import React, { useState, forwardRef } from 'react';
-import { Trophy, ChevronLeft, TrendingUp, TrendingDown, Minus, Clock, Crown, Medal } from 'lucide-react';
+import { Trophy, ChevronLeft, TrendingUp, TrendingDown, Minus, Clock, Crown, Medal, Gift, Flame, CheckCircle2, XCircle } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import FlipMove from 'react-flip-move';
 
@@ -80,7 +80,7 @@ function PodiumDisplay({ leaderboard, myRank }) {
   );
 }
 
-export default function LeaderboardWidget({ user, leaderboard, lastMonthBoard }) {
+export default function LeaderboardWidget({ user, leaderboard, lastMonthBoard, spiffs, leads }) {
   const [open, setOpen] = useState(false);
 
   const myIndex = leaderboard.findIndex(s => s.id === user.id);
@@ -106,6 +106,35 @@ export default function LeaderboardWidget({ user, leaderboard, lastMonthBoard })
     : isThird
     ? { border: 'border-orange-500/40', text: '#CD7F32', sub: 'text-orange-300', trophy: 'text-orange-400 drop-shadow-[0_0_4px_rgba(205,127,50,0.4)]', tabShadow: '0 0 10px rgba(205,127,50,0.25), 0 0 20px rgba(205,127,50,0.1)', panelShadow: '0 0 18px rgba(205,127,50,0.08), 5px 0 15px rgba(205,127,50,0.05)', innerGlow: 'linear-gradient(180deg, rgba(205,127,50,0.04) 0%, rgba(180,100,30,0.02) 30%, transparent 60%)', innerGlowBottom: 'linear-gradient(0deg, rgba(205,127,50,0.03) 0%, transparent 40%)', pulseGlow: false }
     : { border: 'border-slate-600', text: '#D6FF03', sub: 'text-slate-400', trophy: 'text-amber-400', tabShadow: 'none', panelShadow: 'none', innerGlow: 'none', innerGlowBottom: 'none', pulseGlow: false };
+
+  // Spiff calculations
+  const now = new Date();
+  const mtdStart = new Date(now.getFullYear(), now.getMonth(), 1);
+
+  const getSpiffProgress = (spiff) => {
+    if (spiff.qualifier === 'appointments') {
+      if (spiff.scope === 'team_company') {
+        return leads.filter(l => l.date_appointment_set && new Date(l.date_appointment_set) >= mtdStart).length;
+      }
+      const setterId = spiff.scope === 'individual' ? spiff.assigned_setter_id : user.id;
+      return leads.filter(l => l.booked_by_setter_id === setterId && l.date_appointment_set && new Date(l.date_appointment_set) >= mtdStart).length;
+    }
+    if (spiff.qualifier === 'stl') {
+      if (spiff.scope === 'team_company') {
+        const stlLeads = leads.filter(l => l.speed_to_lead_minutes != null && new Date(l.created_date) >= mtdStart);
+        return stlLeads.length > 0 ? Math.round(stlLeads.reduce((s, l) => s + l.speed_to_lead_minutes, 0) / stlLeads.length) : null;
+      }
+      const setterId = spiff.scope === 'individual' ? spiff.assigned_setter_id : user.id;
+      const stlLeads = leads.filter(l => l.setter_id === setterId && l.speed_to_lead_minutes != null && new Date(l.created_date) >= mtdStart);
+      return stlLeads.length > 0 ? Math.round(stlLeads.reduce((s, l) => s + l.speed_to_lead_minutes, 0) / stlLeads.length) : null;
+    }
+    return 0;
+  };
+
+  const relevantSpiffs = (spiffs || []).filter(sp => {
+    if (sp.scope === 'individual') return sp.assigned_setter_id === user.id;
+    return true;
+  });
 
   return (
     <>
@@ -275,6 +304,160 @@ export default function LeaderboardWidget({ user, leaderboard, lastMonthBoard })
             </FlipMove>
           </div>
 
+          {/* Spiffs Section */}
+          {relevantSpiffs.length > 0 && (
+            <div className="px-4 py-3 border-t border-slate-700/50">
+              <div className="flex items-center gap-1.5 mb-3">
+                <Gift className="w-3.5 h-3.5 text-purple-400" />
+                <p className="text-[10px] text-slate-400 uppercase tracking-wider">Spiffs & Bonuses</p>
+              </div>
+              <div className="space-y-2.5">
+                {relevantSpiffs.map(sp => {
+                  const progress = getSpiffProgress(sp);
+                  const isSTL = sp.qualifier === 'stl';
+                  const pct = isSTL
+                    ? (progress != null && sp.goal_value > 0 ? Math.min((sp.goal_value / Math.max(progress, 1)) * 100, 100) : 0)
+                    : (sp.goal_value > 0 ? Math.min((progress / sp.goal_value) * 100, 100) : 0);
+                  const met = isSTL ? (progress != null && progress <= sp.goal_value) : (progress >= sp.goal_value);
+                  const isExpired = sp.status === 'expired';
+                  const isCompleted = sp.status === 'completed';
+                  const isDone = isExpired || isCompleted;
+
+                  // Color configs per state
+                  const barColor = met ? '#ff6b35' : pct >= 75 ? '#D6FF03' : pct >= 50 ? '#8b5cf6' : '#475569';
+                  const barGlow = met ? 'rgba(255,107,53,0.5)' : pct >= 75 ? 'rgba(214,255,3,0.3)' : 'rgba(139,92,246,0.2)';
+
+                  return (
+                    <motion.div
+                      key={sp.id}
+                      initial={{ opacity: 0, x: -10 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      className="relative rounded-lg border overflow-hidden"
+                      style={{
+                        backgroundColor: met ? 'rgba(30,10,0,0.6)' : isExpired ? 'rgba(30,20,20,0.4)' : 'rgba(30,41,59,0.5)',
+                        borderColor: met ? 'rgba(255,107,53,0.4)' : isExpired ? 'rgba(239,68,68,0.2)' : 'rgba(51,65,85,0.5)',
+                      }}
+                    >
+                      {/* Inner glow for met spiffs */}
+                      {met && (
+                        <>
+                          <motion.div
+                            className="absolute inset-0 pointer-events-none"
+                            style={{ background: 'linear-gradient(180deg, rgba(255,69,0,0.12) 0%, rgba(255,170,0,0.06) 50%, transparent 100%)' }}
+                            animate={{ opacity: [0.5, 1, 0.5] }}
+                            transition={{ duration: 1.5, repeat: Infinity }}
+                          />
+                          <motion.div
+                            className="absolute bottom-0 left-0 right-0 h-[50%] pointer-events-none"
+                            style={{ background: 'linear-gradient(0deg, rgba(255,100,0,0.2) 0%, transparent 100%)' }}
+                            animate={{ y: [0, -2, 1, -1, 0] }}
+                            transition={{ duration: 2, repeat: Infinity }}
+                          />
+                          <motion.div
+                            className="absolute inset-0 pointer-events-none rounded-lg"
+                            style={{ boxShadow: 'inset 0 0 15px rgba(255,100,0,0.2)' }}
+                            animate={{ opacity: [0.5, 1, 0.5] }}
+                            transition={{ duration: 1, repeat: Infinity }}
+                          />
+                        </>
+                      )}
+
+                      {/* Inner glow for active high-progress spiffs */}
+                      {!met && !isDone && pct >= 75 && (
+                        <motion.div
+                          className="absolute inset-0 pointer-events-none rounded-lg"
+                          style={{ background: 'linear-gradient(180deg, rgba(214,255,3,0.06) 0%, transparent 50%)', boxShadow: 'inset 0 0 10px rgba(214,255,3,0.08)' }}
+                          animate={{ opacity: [0.4, 0.8, 0.4] }}
+                          transition={{ duration: 2, repeat: Infinity }}
+                        />
+                      )}
+
+                      <div className="relative z-10 p-3">
+                        {/* Header */}
+                        <div className="flex items-center justify-between mb-1.5">
+                          <div className="flex items-center gap-1.5">
+                            {met ? (
+                              <motion.div animate={{ scale: [1, 1.2, 1], rotate: [0, -5, 5, 0] }} transition={{ duration: 0.8, repeat: Infinity }}>
+                                <Flame className="w-3.5 h-3.5 text-orange-400 drop-shadow-[0_0_4px_rgba(255,100,0,0.5)]" />
+                              </motion.div>
+                            ) : isCompleted ? (
+                              <CheckCircle2 className="w-3.5 h-3.5 text-green-400" />
+                            ) : isExpired ? (
+                              <XCircle className="w-3.5 h-3.5 text-red-400/60" />
+                            ) : (
+                              <Gift className="w-3.5 h-3.5 text-purple-400" />
+                            )}
+                            <span className={`text-xs font-bold ${met ? 'text-orange-200' : isExpired ? 'text-slate-500' : 'text-white'}`}>
+                              {sp.title}
+                            </span>
+                            {isDone && (
+                              <span className={`text-[8px] font-bold uppercase px-1.5 py-0.5 rounded ${isCompleted ? 'bg-green-500/15 text-green-400' : 'bg-red-500/10 text-red-400/70'}`}>
+                                {sp.status}
+                              </span>
+                            )}
+                          </div>
+                          {sp.reward && (
+                            <motion.span
+                              className="text-[10px] font-bold px-1.5 py-0.5 rounded-full"
+                              style={{
+                                backgroundColor: met ? 'rgba(255,107,53,0.2)' : 'rgba(139,92,246,0.12)',
+                                color: met ? '#ffaa00' : '#c084fc',
+                              }}
+                              animate={met ? { textShadow: ['0 0 4px rgba(255,170,0,0.3)', '0 0 8px rgba(255,170,0,0.6)', '0 0 4px rgba(255,170,0,0.3)'] } : {}}
+                              transition={met ? { duration: 1.2, repeat: Infinity } : {}}
+                            >
+                              {sp.reward}
+                            </motion.span>
+                          )}
+                        </div>
+
+                        {/* Progress text */}
+                        <div className="flex items-center justify-between text-[10px] mb-1">
+                          <span className={met ? 'text-orange-300 font-medium' : 'text-slate-400'}>
+                            {isSTL ? `${progress ?? '—'}m avg` : `${progress} / ${sp.goal_value}`}
+                            {isSTL ? ` (goal: ≤${sp.goal_value}m)` : ` ${sp.qualifier}`}
+                          </span>
+                          <div className="flex items-center gap-2">
+                            {sp.due_date && (
+                              <span className="text-slate-500 flex items-center gap-0.5">
+                                <Clock className="w-2.5 h-2.5" />
+                                {new Date(sp.due_date + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                              </span>
+                            )}
+                            <span className={`font-bold ${met ? 'text-orange-400' : 'text-slate-500'}`}>{Math.round(pct)}%</span>
+                          </div>
+                        </div>
+
+                        {/* Progress bar */}
+                        <div className="relative w-full h-1.5 bg-slate-700/60 rounded-full overflow-hidden">
+                          <motion.div
+                            className="h-full rounded-full"
+                            initial={{ width: 0 }}
+                            animate={{ width: `${Math.min(pct, 100)}%` }}
+                            transition={{ duration: 0.8, ease: 'easeOut' }}
+                            style={{
+                              backgroundColor: isExpired && !met ? '#ef4444' : barColor,
+                              boxShadow: `0 0 8px ${barGlow}`,
+                            }}
+                          />
+                        </div>
+
+                        {met && (
+                          <motion.p
+                            className="text-[10px] font-bold text-orange-400 mt-1"
+                            animate={{ scale: [1, 1.02, 1] }}
+                            transition={{ duration: 1.5, repeat: Infinity }}
+                          >
+                            🔥 Goal Crushed!
+                          </motion.p>
+                        )}
+                      </div>
+                    </motion.div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
 
         </div>
       </div>
