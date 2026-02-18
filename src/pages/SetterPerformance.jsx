@@ -32,9 +32,9 @@ export default function SetterPerformance() {
   }, [navigate]);
 
   const { data: dashData, isLoading } = useQuery({
-    queryKey: ['setter-performance-data'],
+    queryKey: ['setter-performance-data', startDate, endDate],
     queryFn: async () => {
-      const res = await base44.functions.invoke('getSetterPerformanceData');
+      const res = await base44.functions.invoke('getSetterPerformanceData', { startDate, endDate });
       return res.data;
     },
     staleTime: 2 * 60 * 1000,
