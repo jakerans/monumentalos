@@ -60,9 +60,11 @@ export default function MMPerformanceGoal({ plans, showTester = false }) {
     let max = 0;
     displayPlans.forEach(plan => {
       const progress = progressOverride != null ? progressOverride : (plan.current_period_progress || 0);
-      const { currentIdx, maxThreshold, sorted: planSorted } = getTierInfo(plan.tiers, progress);
+      const raw = plan.tiers || [];
+      const normalized = raw.some(t => t.threshold === 0) || raw.length === 0 ? raw : [{ threshold: 0, percentage: 0, label: 'Base' }, ...raw];
+      const { currentIdx, maxThreshold, sorted: planSorted } = getTierInfo(normalized, progress);
       const pct = maxThreshold > 0 ? (progress / maxThreshold) * 100 : 0;
-      // Only blaze widget fire at T3 (last tier reached)
+      // Only blaze widget fire at last paid tier reached
       if (pct >= 100 || currentIdx >= planSorted.length - 1) { max = 4; }
     });
     return max;
