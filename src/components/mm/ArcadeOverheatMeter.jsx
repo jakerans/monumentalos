@@ -1,55 +1,67 @@
-import React, { useId } from 'react';
+import React, { useId, useMemo } from 'react';
 import { motion } from 'framer-motion';
 
-// tierIdx: -1=none, 0=T1, 1=T2, 2=T3
-// T1 = subtle white flames on bar
-// T2 = bright orange flames on bar, growing intensity toward T3
-// T3 = bar is fully lit (handled externally by WidgetFireBorder for the whole widget)
+// Continuous arcade power bar: particles start at T1 and ramp up through T2 to T3.
+// intensity is a 0→1 float mapped from T1 threshold to T3 threshold.
 
-function WhiteFlameParticle({ x, delay, size }) {
-  const colors = ['#ffffff', '#f1f5f9', '#e2e8f0', '#f8fafc'];
+function FlameParticle({ x, delay, size, intensity }) {
+  // Color shifts from cyan/teal at low intensity → orange → red/white at max
+  const colorBands = [
+    ['#22d3ee', '#06b6d4', '#67e8f9'],           // 0–0.2 cyan
+    ['#a78bfa', '#c084fc', '#e879f9'],           // 0.2–0.4 purple
+    ['#fbbf24', '#f59e0b', '#fcd34d'],           // 0.4–0.6 amber
+    ['#ff6b35', '#ffaa00', '#f97316'],           // 0.6–0.8 orange
+    ['#ff4500', '#ff2d2d', '#fff176', '#ffaa00'], // 0.8–1.0 red/fire
+  ];
+  const bandIdx = Math.min(4, Math.floor(intensity * 5));
+  const colors = colorBands[bandIdx];
   const color = colors[Math.floor(Math.random() * colors.length)];
+
+  const reach = 8 + intensity * 28;
+  const opacity = 0.4 + intensity * 0.6;
+  const scale = 0.8 + intensity * 0.7;
+
   return (
     <motion.div
       className="absolute rounded-full pointer-events-none"
       style={{
         left: `${x}%`, bottom: 0, width: size, height: size,
         background: `radial-gradient(circle, ${color}, transparent)`,
-        filter: 'blur(1.5px)',
+        filter: `blur(${1.5 - intensity * 0.5}px)`,
       }}
       animate={{
-        y: [0, -10 - Math.random() * 8],
-        x: [0, (Math.random() - 0.5) * 8],
-        opacity: [0, 0.5, 0],
-        scale: [0.3, 0.9, 0],
+        y: [0, -reach - Math.random() * reach * 0.5],
+        x: [0, (Math.random() - 0.5) * (8 + intensity * 8)],
+        opacity: [0, opacity, 0],
+        scale: [0.2, scale, 0],
       }}
-      transition={{ duration: 1.2 + Math.random() * 0.5, repeat: Infinity, delay, ease: 'easeOut' }}
+      transition={{
+        duration: 1.2 - intensity * 0.5 + Math.random() * 0.4,
+        repeat: Infinity, delay, ease: 'easeOut',
+      }}
     />
   );
 }
 
-function OrangeFlameParticle({ x, delay, size, intensityFactor }) {
-  // intensityFactor 0..1 controls how big/bright the flames get within T2
-  const colors = intensityFactor > 0.7
-    ? ['#ff4500', '#ff6b35', '#ffaa00', '#fff176']
-    : ['#ff6b35', '#ffaa00', '#ffd54f'];
-  const color = colors[Math.floor(Math.random() * colors.length)];
-  const reach = 14 + intensityFactor * 18;
+function EmberParticle({ delay, intensity }) {
+  const x = 10 + Math.random() * 80;
+  const color = intensity > 0.7 ? '#ffaa00' : intensity > 0.4 ? '#fbbf24' : '#a78bfa';
+  const glowColor = intensity > 0.7 ? '#ff6b35' : intensity > 0.4 ? '#f59e0b' : '#8b5cf6';
   return (
     <motion.div
-      className="absolute rounded-full pointer-events-none"
+      className="absolute w-1 h-1 rounded-full pointer-events-none"
       style={{
-        left: `${x}%`, bottom: 0, width: size, height: size,
-        background: `radial-gradient(circle, ${color}, transparent)`,
-        filter: 'blur(1px)',
+        left: `${x}%`, bottom: 0,
+        backgroundColor: color,
+        boxShadow: `0 0 4px ${glowColor}`,
       }}
       animate={{
-        y: [0, -reach - Math.random() * reach * 0.5],
-        x: [0, (Math.random() - 0.5) * 14],
-        opacity: [0, 0.7 + intensityFactor * 0.3, 0],
-        scale: [0.3, 1.1 + intensityFactor * 0.3, 0],
+        y: [0, -30 - intensity * 30 - Math.random() * 20],
+        x: [0, (Math.random() - 0.5) * 20],
+        opacity: [0, 1, 0],
+        scale: [0.5, 0.8, 0],
       }}
-      transition={{ duration: 0.7 + Math.random() * 0.5 - intensityFactor * 0.2, repeat: Infinity, delay, ease: 'easeOut' }}
+      transition={{ duration: 1.2 + Math.random() * 0.6, repeat: Infinity, delay, ease: 'easeOut' }}
     />
   );
 }
@@ -58,13 +70,16 @@ export default function ArcadeOverheatMeter({ fillPct, topped, tierIdx = -1 }) {
   const uid = useId();
   const clampedPct = Math.max(2, Math.min(fillPct, 100));
 
-  const isT1 = tierIdx === 0;
-  const isT2 = tierIdx === 1;
   const isT3 = tierIdx >= 2 || topped;
+  const hasParticles = tierIdx >= 0;
 
-  // For T2, compute how far through T2 we are (0 to 1) for flame intensity scaling
-  // T2 starts at ~70% of max, T3 at 100%. So we map 70-100 pct to 0-1
-  const t2IntensityFactor = isT2 ? Math.min(1, Math.max(0, (clampedPct - 70) / 30)) : 0;
+  // Continuous intensity: 0 at T1 threshold (50% of bar), 1 at T3 (100% of bar)
+  // Maps 50→100 fill pct to 0→1 intensity
+  const intensity = hasParticles ? Math.min(1, Math.max(0, (clampedPct - 50) / 50)) : 0;
+
+  // Particle count scales with intensity: 2 at start → 14 at max
+  const flameCount = hasParticles ? Math.round(2 + intensity * 12) : 0;
+  const emberCount = intensity > 0.3 ? Math.round(intensity * 6) : 0;
 
   const w = 72;
   const h = 80;
@@ -76,19 +91,44 @@ export default function ArcadeOverheatMeter({ fillPct, topped, tierIdx = -1 }) {
   const fillY = barY + barH - fillH;
   const ticks = [0, 25, 50, 75, 100];
 
-  // Flame counts based on tier
-  const whiteFlameCount = isT1 ? 4 : 0;
-  const orangeFlameCount = isT2 ? Math.round(3 + t2IntensityFactor * 8) : isT3 ? 12 : 0;
+  // Gradient colors ramp continuously with intensity
+  const fillBottom = isT3 ? '#ff2d2d'
+    : intensity > 0.6 ? '#f97316'
+    : intensity > 0.3 ? '#f59e0b'
+    : intensity > 0 ? '#8b5cf6'
+    : '#0ea5e9';
+  const fillMid = isT3 ? '#ff6b35'
+    : intensity > 0.6 ? '#ffaa00'
+    : intensity > 0.3 ? '#fbbf24'
+    : intensity > 0 ? '#a78bfa'
+    : '#38bdf8';
+  const fillTop = isT3 ? '#ffaa00'
+    : intensity > 0.6 ? '#fcd34d'
+    : intensity > 0.3 ? '#fde68a'
+    : intensity > 0 ? '#c4b5fd'
+    : '#7dd3fc';
 
-  // Bar fill colors by tier
-  const fillBottom = isT3 ? '#ff2d2d' : isT2 ? '#f97316' : isT1 ? '#94a3b8' : '#0ea5e9';
-  const fillMid = isT3 ? '#ff6b35' : isT2 ? '#ffaa00' : isT1 ? '#cbd5e1' : '#38bdf8';
-  const fillTop = isT3 ? '#ffaa00' : isT2 ? '#fcd34d' : isT1 ? '#f1f5f9' : '#7dd3fc';
+  const glowColor = isT3 ? 'rgba(255,45,45,0.6)'
+    : intensity > 0.6 ? 'rgba(249,115,22,0.4)'
+    : intensity > 0.3 ? 'rgba(245,158,11,0.35)'
+    : intensity > 0 ? 'rgba(139,92,246,0.35)'
+    : 'rgba(14,165,233,0.25)';
 
-  const glowColor = isT3 ? 'rgba(255,45,45,0.6)' : isT2 ? 'rgba(249,115,22,0.4)' : isT1 ? 'rgba(148,163,184,0.3)' : 'rgba(14,165,233,0.3)';
+  // Stable flame positions
+  const flamePositions = useMemo(() => {
+    return Array.from({ length: 14 }).map((_, i) => ({
+      x: 8 + (i / 14) * 84,
+      delay: i * 0.09 + (i * 17 % 7) * 0.04,
+      sizeBase: 3 + (i * 13 % 5),
+    }));
+  }, []);
+
+  const emberDelays = useMemo(() => {
+    return Array.from({ length: 6 }).map((_, i) => 0.2 + i * 0.18);
+  }, []);
 
   return (
-    <div className="relative" style={{ width: w, height: h + (isT3 ? 16 : isT2 ? 8 : isT1 ? 4 : 0) }}>
+    <div className="relative" style={{ width: w, height: h + (isT3 ? 16 : hasParticles ? 6 + intensity * 6 : 0) }}>
       {/* Ambient glow */}
       <motion.div
         className="absolute rounded-xl pointer-events-none"
@@ -96,33 +136,26 @@ export default function ArcadeOverheatMeter({ fillPct, topped, tierIdx = -1 }) {
         animate={isT3 ? {
           boxShadow: [`0 0 25px ${glowColor}`, `0 0 40px rgba(255,45,45,0.7)`, `0 0 25px ${glowColor}`],
         } : {
-          boxShadow: [`0 0 8px ${glowColor}`, `0 0 14px ${glowColor}`, `0 0 8px ${glowColor}`],
+          boxShadow: [`0 0 ${6 + intensity * 10}px ${glowColor}`, `0 0 ${10 + intensity * 14}px ${glowColor}`, `0 0 ${6 + intensity * 10}px ${glowColor}`],
         }}
-        transition={{ duration: isT3 ? 0.4 : 2, repeat: Infinity, ease: 'easeInOut' }}
+        transition={{ duration: isT3 ? 0.4 : 2 - intensity * 0.8, repeat: Infinity, ease: 'easeInOut' }}
       />
 
-      {/* White flame particles for T1 */}
-      {isT1 && (
+      {/* Flame particles — continuous from T1 onward */}
+      {hasParticles && (
         <div className="absolute overflow-visible pointer-events-none"
-          style={{ left: barX, width: barW, bottom: h - fillY, height: 20 }}>
-          {Array.from({ length: whiteFlameCount }).map((_, i) => (
-            <WhiteFlameParticle key={`wf${i}`} x={15 + (i / whiteFlameCount) * 70} delay={i * 0.25} size={4 + Math.random() * 3} />
-          ))}
-        </div>
-      )}
-
-      {/* Orange flame particles for T2 (grow in intensity toward T3) */}
-      {(isT2 || isT3) && (
-        <div className="absolute overflow-visible pointer-events-none"
-          style={{ left: barX, width: barW, bottom: h - fillY + (isT3 ? 8 : 0), height: 30 }}>
-          {Array.from({ length: orangeFlameCount }).map((_, i) => (
-            <OrangeFlameParticle
-              key={`of${i}`}
-              x={8 + (i / orangeFlameCount) * 84}
-              delay={i * 0.1}
-              size={isT3 ? 7 + Math.random() * 6 : 4 + t2IntensityFactor * 4 + Math.random() * 3}
-              intensityFactor={isT3 ? 1 : t2IntensityFactor}
+          style={{ left: barX, width: barW, bottom: h - fillY + (isT3 ? 8 : 0), height: 35 }}>
+          {flamePositions.slice(0, flameCount).map((fp, i) => (
+            <FlameParticle
+              key={`f${i}`}
+              x={fp.x}
+              delay={fp.delay}
+              size={fp.sizeBase + intensity * 5}
+              intensity={intensity}
             />
+          ))}
+          {emberDelays.slice(0, emberCount).map((d, i) => (
+            <EmberParticle key={`e${i}`} delay={d} intensity={intensity} />
           ))}
         </div>
       )}
@@ -166,13 +199,13 @@ export default function ArcadeOverheatMeter({ fillPct, topped, tierIdx = -1 }) {
         {/* Scanlines */}
         <rect x={barX + 1} y={fillY} width={barW - 2} height={fillH} rx={2} fill={`url(#${uid}-scan)`} />
 
-        {/* Pulsing top edge for T2+ */}
-        {(isT2 || isT3) && (
+        {/* Pulsing top edge — starts at T1, gets faster with intensity */}
+        {hasParticles && (
           <motion.rect
             x={barX + 1} y={fillY} width={barW - 2} height={3} rx={1}
-            fill={isT3 ? '#fff176' : '#ffaa00'}
-            animate={{ opacity: [0.4, 1, 0.4] }}
-            transition={{ duration: isT3 ? 0.2 : 0.6 - t2IntensityFactor * 0.3, repeat: Infinity }}
+            fill={isT3 ? '#fff176' : intensity > 0.5 ? '#ffaa00' : '#c4b5fd'}
+            animate={{ opacity: [0.3, 1, 0.3] }}
+            transition={{ duration: 1.2 - intensity * 0.8, repeat: Infinity }}
           />
         )}
 
@@ -181,7 +214,7 @@ export default function ArcadeOverheatMeter({ fillPct, topped, tierIdx = -1 }) {
           const dy = barY + barH - (dz / 100) * barH;
           return (
             <line key={dz} x1={barX + 2} y1={dy} x2={barX + barW - 2} y2={dy}
-              stroke={dz === 100 ? '#ff2d2d' : dz === 70 ? '#f97316' : '#94a3b8'}
+              stroke={dz === 100 ? '#ff2d2d' : dz === 70 ? '#f97316' : '#8b5cf6'}
               strokeWidth="0.5" strokeDasharray="3 2" opacity={0.5} />
           );
         })}
@@ -190,7 +223,7 @@ export default function ArcadeOverheatMeter({ fillPct, topped, tierIdx = -1 }) {
         <rect x={barX + 2} y={barY + 1} width={barW * 0.3} height={barH - 2} rx={2} fill="white" opacity={0.04} />
       </svg>
 
-      {/* T3 OVERHEAT text */}
+      {/* T3 MAX text */}
       {isT3 && (
         <motion.div
           className="absolute left-0 right-0 -bottom-1 text-center pointer-events-none z-20"
