@@ -79,16 +79,19 @@ function PodiumDisplay({ leaderboard, myRank }) {
   );
 }
 
-export default function LeaderboardWidget({ user, spiffs, leads }) {
+export default function LeaderboardWidget({ user, spiffs, leads, leaderboardProfiles }) {
   const [open, setOpen] = useState(false);
 
-  // Fetch leaderboard from SetterProfile — accessible to all roles
-  const { data: profiles = [] } = useQuery({
+  // Use pre-fetched profiles if available, otherwise fetch (backward compat)
+  const { data: fetchedProfiles = [] } = useQuery({
     queryKey: ['setter-profiles-leaderboard'],
     queryFn: () => base44.entities.SetterProfile.filter({ status: 'active' }),
     staleTime: 2 * 60 * 1000,
     retry: 2,
+    enabled: !leaderboardProfiles,
   });
+
+  const profiles = leaderboardProfiles || fetchedProfiles;
 
   // Sort by mtd_booked descending
   const leaderboard = [...profiles].sort((a, b) => (b.mtd_booked || 0) - (a.mtd_booked || 0));
