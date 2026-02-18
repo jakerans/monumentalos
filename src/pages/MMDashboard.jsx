@@ -44,109 +44,24 @@ export default function MMDashboard() {
     checkAuth();
   }, [navigate]);
 
-  const { data: clients = [], refetch: refetchClients, isLoading: l1 } = useQuery({
-    queryKey: ['mm-clients'],
-    queryFn: () => base44.entities.Client.filter({ status: 'active' }),
-    staleTime: 5 * 60 * 1000,
-    retry: 2,
-    retryDelay: (attempt) => Math.min(1000 * 2 ** attempt, 10000),
-  });
-
-  const { data: allLeads = [], isLoading: l2 } = useQuery({
-    queryKey: ['mm-leads'],
-    queryFn: () => base44.entities.Lead.list('-created_date', 5000),
-    staleTime: 2 * 60 * 1000,
-    retry: 2,
-    retryDelay: (attempt) => Math.min(1000 * 2 ** attempt, 10000),
-  });
-
-  const { data: allSpend = [], isLoading: l3 } = useQuery({
-    queryKey: ['mm-spend'],
-    queryFn: () => base44.entities.Spend.list('-date', 5000),
-    staleTime: 2 * 60 * 1000,
-    retry: 2,
-    retryDelay: (attempt) => Math.min(1000 * 2 ** attempt, 10000),
-  });
-
-  // Fetch pending onboard tasks for this MM
-  const { data: onboardTasks = [] } = useQuery({
-    queryKey: ['mm-onboard-tasks-nav'],
-    queryFn: () => base44.entities.OnboardTask.filter({ assigned_to: 'marketing_manager' }),
-    staleTime: 5 * 60 * 1000,
-    retry: 2,
-    retryDelay: (attempt) => Math.min(1000 * 2 ** attempt, 10000),
-  });
-
-  const { data: onboardProjects = [] } = useQuery({
-    queryKey: ['mm-onboard-projects-nav'],
-    queryFn: () => base44.entities.OnboardProject.filter({ status: 'in_progress' }),
-    staleTime: 5 * 60 * 1000,
-    retry: 2,
-    retryDelay: (attempt) => Math.min(1000 * 2 ** attempt, 10000),
-  });
-
-  // Fetch performance pay plans for this MM
-  const { data: myPerfPlans = [] } = useQuery({
-    queryKey: ['mm-perf-plans', user?.id],
+  // Single backend call for all dashboard data
+  const { data: dashData, isLoading: dashLoading, refetch: refetchDash } = useQuery({
+    queryKey: ['mm-dashboard-data'],
     queryFn: async () => {
-      if (!user) return [];
-      const employees = await base44.entities.Employee.filter({ user_id: user.id, status: 'active' });
-      if (employees.length === 0) return [];
-      const empId = employees[0].id;
-      const plans = await base44.entities.PerformancePay.filter({ employee_id: empId, status: 'active' });
-      return plans;
+      const res = await base44.functions.invoke('getMMDashboardData');
+      return res.data;
     },
-    enabled: !!user,
-    staleTime: 5 * 60 * 1000,
+    staleTime: 2 * 60 * 1000,
     retry: 2,
     retryDelay: (attempt) => Math.min(1000 * 2 ** attempt, 10000),
   });
 
-  // Calculate real-time billable revenue MTD from lead activity (not invoiced)
-  const livePerfPlans = useMemo(() => {
-    if (myPerfPlans.length === 0) return [];
-    const now = new Date();
-    const mtdStart = new Date(now.getFullYear(), now.getMonth(), 1);
-    const mtdStr = mtdStart.toISOString();
-
-    // Calculate billable revenue across all active clients
-    let billableRevenue = 0;
-    clients.forEach(client => {
-      const bt = client.billing_type || 'pay_per_show';
-      const cLeads = allLeads.filter(l => l.client_id === client.id);
-      if (bt === 'pay_per_show') {
-        const showed = cLeads.filter(l =>
-          l.appointment_date && l.appointment_date >= mtdStr &&
-          (l.disposition === 'showed' || l.outcome === 'sold' || l.outcome === 'lost')
-        ).length;
-        billableRevenue += showed * (client.price_per_shown_appointment || 0);
-      } else if (bt === 'pay_per_set') {
-        const set = cLeads.filter(l => l.date_appointment_set && l.date_appointment_set >= mtdStr).length;
-        billableRevenue += set * (client.price_per_set_appointment || 0);
-      } else if (bt === 'retainer') {
-        billableRevenue += (client.retainer_amount || 0);
-      }
-    });
-
-    // Override current_period_progress on revenue-based plans with live billable number
-    return myPerfPlans.map(plan => {
-      if (plan.metric === 'revenue') {
-        return { ...plan, current_period_progress: billableRevenue };
-      }
-      return plan;
-    });
-  }, [myPerfPlans, clients, allLeads]);
-
-  const pendingOnboardCount = useMemo(() => {
-    if (!user) return 0;
-    const myProjectIds = user.app_role === 'admin'
-      ? onboardProjects.map(p => p.id)
-      : onboardProjects.filter(p => p.assigned_mm_id === user.id).map(p => p.id);
-    return onboardTasks.filter(t =>
-      (t.status === 'pending' || t.status === 'in_progress') &&
-      myProjectIds.includes(t.project_id)
-    ).length;
-  }, [user, onboardTasks, onboardProjects]);
+  const clients = dashData?.clients || [];
+  const allLeads = dashData?.allLeads || [];
+  const allSpend = dashData?.allSpend || [];
+  const pendingOnboardCount = dashData?.pendingOnboardCount || 0;
+  const livePerfPlans = dashData?.livePerfPlans || [];
+  const refetchClients = refetchDash;
 
   // Resolve period start/end from the DateRangePicker
   const periodRange = useMemo(() => {
