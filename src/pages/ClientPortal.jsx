@@ -91,6 +91,7 @@ export default function ClientPortal() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
+  if (!user) return null;
   if (!portalData && portalLoading) return <PageLoader message="Loading appointments..." />;
 
   return (
