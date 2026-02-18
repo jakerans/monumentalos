@@ -53,7 +53,7 @@ export default function LeadDetailPanel({ lead, clientName, setterName, bookedBy
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent className="w-full sm:max-w-md overflow-y-auto p-0">
+      <SheetContent className="w-full sm:max-w-md p-0 overflow-hidden">
         <SheetHeader className="p-5 pb-3 border-b border-gray-200 bg-gray-50">
           <SheetTitle className="text-lg font-bold">{lead.name}</SheetTitle>
           <div className="flex flex-wrap items-center gap-2 mt-1">
