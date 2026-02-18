@@ -264,7 +264,7 @@ export default function MMDashboard() {
             onEndChange={setDateEnd}
           />
         </motion.div>
-        <MMTopStats stats={topStats} />
+        <MMTopStats stats={topStats} allLeads={allLeads} allSpend={allSpend} periodRange={periodRange} />
 
         {/* Chart toggle + chart */}
         <div className="flex items-center mb-3">

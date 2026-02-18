@@ -78,38 +78,37 @@ export default function ClientBreakdownChart({ clients, leads, periodStart, peri
           <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-sm" style={{ backgroundColor: DQ_COLOR }} /> DQ'd</span>
         </div>
       </div>
-      <ResponsiveContainer width="100%" height={Math.max(200, data.length * 40 + 40)}>
-        <BarChart data={data} layout="vertical" margin={{ top: 0, right: 60, left: 0, bottom: 0 }}>
-          <XAxis type="number" tick={{ fill: '#94a3b8', fontSize: 10 }} axisLine={false} tickLine={false} />
-          <YAxis
-            type="category"
+      <ResponsiveContainer width="100%" height={280}>
+        <BarChart data={data} margin={{ top: 20, right: 10, left: 10, bottom: 40 }}>
+          <XAxis
             dataKey="name"
-            width={110}
             tick={({ x, y, payload }) => {
               const item = data.find(d => d.name === payload.value);
               return (
-                <text x={x} y={y} dy={4} textAnchor="end" fontSize={11} fill={item?.lowConnection ? '#f87171' : '#e2e8f0'} fontWeight={item?.lowConnection ? 600 : 400}>
+                <text x={x} y={y + 12} textAnchor="middle" fontSize={10} fill={item?.lowConnection ? '#f87171' : '#e2e8f0'} fontWeight={item?.lowConnection ? 600 : 400}>
                   {payload.value}
                 </text>
               );
             }}
             axisLine={false}
             tickLine={false}
+            interval={0}
           />
+          <YAxis tick={{ fill: '#94a3b8', fontSize: 10 }} axisLine={false} tickLine={false} />
           <Tooltip content={<CustomTooltip />} cursor={{ fill: 'rgba(255,255,255,0.03)' }} />
           <Bar dataKey="appts" stackId="a" fill={APPTS_COLOR} radius={[0, 0, 0, 0]} />
           <Bar dataKey="dq" stackId="a" fill={DQ_COLOR} radius={[0, 0, 0, 0]} />
-          <Bar dataKey="remaining" stackId="a" fill={LEADS_COLOR} radius={[0, 4, 4, 0]}>
+          <Bar dataKey="remaining" stackId="a" fill={LEADS_COLOR} radius={[4, 4, 0, 0]}>
             <LabelList
-              content={({ x, y, width, height, index }) => {
+              content={({ x, y, width, index }) => {
                 const item = data[index];
                 if (!item || item.totalLeads === 0) return null;
                 const rate = `${item.connectionRate.toFixed(0)}%`;
                 return (
                   <text
-                    x={x + width + 6}
-                    y={y + height / 2}
-                    dy={4}
+                    x={x + width / 2}
+                    y={y - 6}
+                    textAnchor="middle"
                     fontSize={10}
                     fontWeight={600}
                     fill={item.lowConnection ? '#f87171' : '#94a3b8'}
