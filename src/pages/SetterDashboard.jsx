@@ -240,7 +240,7 @@ export default function SetterDashboard() {
     <div className="min-h-screen bg-[#0B0F1A] flex flex-col">
       <SetterNav user={user} />
 
-      <main className="flex-1 max-w-7xl w-full mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-6">
+      <main className="flex-1 max-w-7xl w-full mx-auto px-3 sm:pl-20 sm:pr-6 lg:pl-24 lg:pr-8 py-4 sm:py-6">
         {/* Hero row: Welcome + AI message on left, Spiff cards on right */}
         <div className="grid grid-cols-1 lg:grid-cols-5 gap-4 mb-4">
           <div className="lg:col-span-3 flex flex-col gap-3">
