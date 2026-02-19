@@ -225,13 +225,16 @@ export default function BillingTable({ rows, kpis, pagination, onRefresh, onPage
   );
 }
 
-const BillingRow = forwardRef(({ r, STATUS_CONFIG, BILLING_LABELS, BILLING_COLORS, setMarkPaidRecord, setEditRecord }, ref) => {
+const BillingRow = forwardRef(({ r, STATUS_CONFIG, BILLING_LABELS, BILLING_COLORS, setMarkPaidRecord, setEditRecord, selected, onToggle }, ref) => {
   const sc = STATUS_CONFIG[r.displayStatus] || STATUS_CONFIG.pending;
   const dueDay = r.retainerDueDay;
   const dueDaySuffix = dueDay === 1 ? 'st' : dueDay === 2 ? 'nd' : dueDay === 3 ? 'rd' : 'th';
 
   return (
-    <tr ref={ref} className="hover:bg-slate-700/20">
+    <tr ref={ref} className={`hover:bg-slate-700/20 ${selected ? 'bg-blue-500/10' : ''}`}>
+      <td className="px-3 py-3 text-center">
+        <input type="checkbox" checked={selected} onChange={onToggle} className="rounded border-slate-600 bg-slate-700 text-blue-500 w-3.5 h-3.5 cursor-pointer" />
+      </td>
       <td className="px-4 py-3"><span className="font-medium text-white">{r.clientName}</span></td>
       <td className="px-3 py-3">
         <span className={`px-1.5 py-0.5 text-[10px] font-medium rounded ${BILLING_COLORS[r.billing_type]}`}>{BILLING_LABELS[r.billing_type]}</span>
