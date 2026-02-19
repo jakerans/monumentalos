@@ -1,7 +1,17 @@
 import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { toast } from '@/components/ui/use-toast';
-import { RefreshCw, Sparkles, Loader2 } from 'lucide-react';
+import { RefreshCw, Sparkles, Loader2, Undo2 } from 'lucide-react';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 
 export default function ExpenseToolbar({ onRefresh }) {
   const [syncing, setSyncing] = useState(false);
