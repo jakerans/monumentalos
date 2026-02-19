@@ -19,7 +19,7 @@ async function runInBatches(items, batchSize, fn) {
   for (let i = 0; i < items.length; i += batchSize) {
     const chunk = items.slice(i, i + batchSize);
     await Promise.all(chunk.map(fn));
-    if (i + batchSize < items.length) await sleep(200);
+    if (i + batchSize < items.length) await sleep(500);
   }
 }
 
@@ -118,7 +118,7 @@ Return a JSON object with a "results" array. Each item must have: expense_id, su
       r => r.expense_id && categorySet.has(r.suggested_category) && typeSet.has(r.suggested_type) && batchMap.has(r.expense_id)
     );
 
-    // 6. Update in controlled batches of 10 to avoid rate limits
+    // 6. Update in controlled batches of 5 to avoid rate limits
     await runInBatches(validResults, 10, (r) => {
       const updateData = {
         suggested_category: r.suggested_category,
