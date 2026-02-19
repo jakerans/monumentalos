@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import { base44 } from '@/api/base44Client';
-import { LayoutDashboard, Users, Receipt, Calculator, Headset, UserCog, Menu, X, LogOut, ArrowRightLeft } from 'lucide-react';
+import { LayoutDashboard, Users, Receipt, Calculator, Headset, UserCog, Menu, X, LogOut, ArrowRightLeft, Settings } from 'lucide-react';
 
 const allNavItems = [
   { key: 'AdminDashboard', label: 'Dashboard', icon: LayoutDashboard },
@@ -91,7 +91,7 @@ export default function AdminMobileNav({ currentPage, clients = [] }) {
                 onClick={() => setOpen(false)}
                 className="flex items-center gap-3 px-3 py-2 rounded-lg text-slate-300 hover:bg-white/5 w-full text-left"
               >
-                <UserCog className="w-4 h-4" />
+                <Settings className="w-4 h-4" />
                 <span className="text-sm">Settings</span>
               </Link>
               <button
