@@ -45,9 +45,9 @@ export default function RevenueDashboard() {
   const revFetchStart = dayjs(startDate).subtract(6, 'month').format('YYYY-MM-DD');
 
   const { data: dashData, isLoading, refetch: refetchDash } = useQuery({
-    queryKey: ['revenue-dashboard-data', revFetchStart],
+    queryKey: ['revenue-dashboard-data', revFetchStart, startDate, endDate],
     queryFn: async () => {
-      const res = await base44.functions.invoke('getRevenueDashboardData', { revFetchStart });
+      const res = await base44.functions.invoke('getRevenueDashboardData', { revFetchStart, startDate, endDate });
       return res.data;
     },
     staleTime: 2 * 60 * 1000,
@@ -56,10 +56,13 @@ export default function RevenueDashboard() {
   });
 
   const clients = dashData?.clients || [];
-  const leads = dashData?.leads || [];
   const payments = dashData?.payments || [];
   const expenses = dashData?.expenses || [];
   const billingRecords = dashData?.billingRecords || [];
+  const monthlyPL = dashData?.monthlyPL || [];
+  const cashFlowData = dashData?.cashFlowData || [];
+  const kpis = dashData?.kpis || null;
+  const clientSummary = dashData?.clientSummary || [];
 
   const refetchPayments = refetchDash;
   const refetchExpenses = refetchDash;
@@ -119,8 +122,8 @@ export default function RevenueDashboard() {
         {/* P&L Tab */}
         {activeTab === 'pl' && (
           <div className="space-y-5">
-            <AccountingKPIs clients={clients} leads={leads} payments={payments} expenses={expenses} startDate={startDate} endDate={endDate} />
-            <MonthlyPLChart clients={clients} leads={leads} payments={payments} expenses={expenses} />
+            <AccountingKPIs kpis={kpis} payments={payments} expenses={expenses} />
+            <MonthlyPLChart data={monthlyPL} />
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               <PaymentLedger payments={payments} clients={clients} startDate={startDate} endDate={endDate} onRefresh={refetchPayments} />
               <ExpenseBreakdown expenses={expenses} clients={clients} startDate={startDate} endDate={endDate} onRefresh={refetchExpenses} />
@@ -135,12 +138,12 @@ export default function RevenueDashboard() {
 
         {/* Cash Flow Tab */}
         {activeTab === 'cashflow' && (
-          <CashFlowAnalysis payments={payments} expenses={expenses} billingRecords={billingRecords} />
+          <CashFlowAnalysis cashFlowData={cashFlowData} />
         )}
 
         {/* Clients Tab */}
         {activeTab === 'clients' && (
-          <RevenueClientTable clients={clients} leads={leads} payments={payments} />
+          <RevenueClientTable clients={clients} clientSummary={clientSummary} />
         )}
       </main>
 
