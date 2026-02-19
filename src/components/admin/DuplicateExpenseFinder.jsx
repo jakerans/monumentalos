@@ -151,7 +151,7 @@ export default function DuplicateExpenseFinder({ onCleanupDone }) {
                         </div>
                       </div>
                       <div className="mt-1 text-[10px] text-slate-500 pl-5">
-                        Keeping oldest · {g.duplicateIds.length} extra with same date &amp; description
+                        Keeping oldest · {g.duplicateIds.length} extra with same date, description &amp; amount
                       </div>
                     </div>
                   );
