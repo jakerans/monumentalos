@@ -37,7 +37,7 @@ export default function AdminNav({ user, currentPage, clients = [] }) {
             >
               Monumental<span style={{color:'#D6FF03'}}>OS</span>
             </motion.h1>
-            <div className="flex gap-1 overflow-x-auto scrollbar-hide min-w-0">
+            <div className="flex gap-1 overflow-x-auto scrollbar-hide min-w-0" style={{scrollbarWidth:'none', msOverflowStyle:'none'}}>
               {navItems.map((item, i) => (
                 <motion.div
                   key={item.key}
