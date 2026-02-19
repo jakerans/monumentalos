@@ -145,6 +145,7 @@ Deno.serve(async (req) => {
       if (!date) continue;
 
       const expenseAmount = Math.abs(amount);
+      const sheetRowId = getCell(row, BANK_ID_COL); // Column A unique ID
       const appId = getCell(row, APP_ID_COL);
       const sheetCategory = getCell(row, APP_CATEGORY_COL).toLowerCase();
       const sheetExpType = getCell(row, APP_EXP_TYPE_COL).toLowerCase();
@@ -157,7 +158,12 @@ Deno.serve(async (req) => {
         continue;
       }
 
-      if (appId && expenseById[appId]) {
+      // Primary dedup: if this row's Column A ID already exists in DB, treat as synced
+      const matchedBySheetId = sheetRowId ? expenseBySheetRowId[sheetRowId] : null;
+      const resolvedAppId = appId || (matchedBySheetId ? matchedBySheetId.id : '');
+      const resolvedExisting = resolvedAppId ? expenseById[resolvedAppId] : null;
+
+      if (resolvedExisting) {
         // ── Already synced — 2-way merge ──
         const existing = expenseById[appId];
         const dbUpdatesObj = {};
