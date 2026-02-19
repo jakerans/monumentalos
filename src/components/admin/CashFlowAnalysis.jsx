@@ -2,6 +2,35 @@ import React, { useMemo } from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, Line, ComposedChart, Area, AreaChart } from 'recharts';
 import { ArrowUpRight, ArrowDownRight, TrendingUp, Wallet } from 'lucide-react';
 
+const CashFlowTooltip = ({ active, payload, label }) => {
+  if (!active || !payload?.length) return null;
+  return (
+    <div className="bg-slate-900/95 backdrop-blur-sm border border-slate-600/50 rounded-xl px-4 py-3 shadow-2xl shadow-black/50">
+      <p className="text-[11px] font-semibold text-slate-300 mb-2">{label}</p>
+      {payload.map((entry, i) => (
+        <div key={i} className="flex items-center justify-between gap-6 py-0.5">
+          <div className="flex items-center gap-2">
+            <div className="w-2.5 h-2.5 rounded-full" style={{ background: entry.color }} />
+            <span className="text-[11px] text-slate-400">{entry.name}</span>
+          </div>
+          <span className="text-[11px] font-bold text-white">${(entry.value || 0).toLocaleString()}</span>
+        </div>
+      ))}
+    </div>
+  );
+};
+
+const CashFlowLegend = ({ payload }) => (
+  <div className="flex items-center justify-center gap-5 mt-2">
+    {payload?.map((entry, i) => (
+      <div key={i} className="flex items-center gap-1.5">
+        <div className="w-2 h-2 rounded-full" style={{ background: entry.color }} />
+        <span className="text-[10px] font-medium text-slate-400">{entry.value}</span>
+      </div>
+    ))}
+  </div>
+);
+
 export default function CashFlowAnalysis({ payments, expenses }) {
   const { monthlyData, summary } = useMemo(() => {
     const now = new Date();
@@ -108,38 +137,52 @@ export default function CashFlowAnalysis({ payments, expenses }) {
       {/* Charts */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         {/* Inflows vs Outflows */}
-        <div className="bg-slate-800/50 rounded-lg border border-slate-700/50 p-4">
-          <h3 className="text-sm font-bold text-white mb-3">Inflows vs Outflows (6 Months)</h3>
+        <div className="bg-slate-800/50 rounded-xl border border-slate-700/50 p-5">
+          <h3 className="text-sm font-bold text-white mb-4">Inflows vs Outflows</h3>
           <ResponsiveContainer width="100%" height={260}>
             <ComposedChart data={monthlyData}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" />
-              <XAxis dataKey="name" tick={{ fontSize: 11, fill: '#94a3b8' }} />
-              <YAxis tick={{ fontSize: 11, fill: '#94a3b8' }} tickFormatter={v => `$${(v / 1000).toFixed(0)}k`} />
-              <Tooltip contentStyle={{ backgroundColor: '#1e293b', border: '1px solid #334155', borderRadius: '8px', color: '#fff' }} formatter={v => `$${v.toLocaleString()}`} />
-              <Legend wrapperStyle={{ fontSize: 11 }} />
-              <Bar dataKey="Inflows" fill="#10b981" radius={[3, 3, 0, 0]} />
-              <Bar dataKey="Outflows" fill="#ef4444" radius={[3, 3, 0, 0]} />
-              <Line type="monotone" dataKey="Net Cash Flow" stroke="#D6FF03" strokeWidth={2} dot={{ r: 3, fill: '#D6FF03' }} />
+              <defs>
+                <linearGradient id="cfInflowGrad" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="#10b981" stopOpacity={0.9} />
+                  <stop offset="100%" stopColor="#10b981" stopOpacity={0.55} />
+                </linearGradient>
+                <linearGradient id="cfOutflowGrad" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="#ef4444" stopOpacity={0.9} />
+                  <stop offset="100%" stopColor="#ef4444" stopOpacity={0.55} />
+                </linearGradient>
+                <filter id="cfNetGlow">
+                  <feGaussianBlur stdDeviation="3" result="blur" />
+                  <feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge>
+                </filter>
+              </defs>
+              <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" vertical={false} />
+              <XAxis dataKey="name" tick={{ fontSize: 11, fill: '#64748b' }} axisLine={false} tickLine={false} />
+              <YAxis tick={{ fontSize: 11, fill: '#64748b' }} tickFormatter={v => `$${(v / 1000).toFixed(0)}k`} axisLine={false} tickLine={false} />
+              <Tooltip content={<CashFlowTooltip />} cursor={{ fill: 'rgba(148, 163, 184, 0.05)' }} />
+              <Legend content={<CashFlowLegend />} />
+              <Bar dataKey="Inflows" fill="url(#cfInflowGrad)" radius={[4, 4, 0, 0]} />
+              <Bar dataKey="Outflows" fill="url(#cfOutflowGrad)" radius={[4, 4, 0, 0]} />
+              <Line type="monotone" dataKey="Net Cash Flow" stroke="#D6FF03" strokeWidth={2.5} dot={{ r: 4, fill: '#D6FF03', strokeWidth: 2, stroke: '#0f172a' }} activeDot={{ r: 6 }} filter="url(#cfNetGlow)" />
             </ComposedChart>
           </ResponsiveContainer>
         </div>
 
         {/* Cumulative cash position */}
-        <div className="bg-slate-800/50 rounded-lg border border-slate-700/50 p-4">
-          <h3 className="text-sm font-bold text-white mb-3">Cumulative Cash Position (6 Months)</h3>
+        <div className="bg-slate-800/50 rounded-xl border border-slate-700/50 p-5">
+          <h3 className="text-sm font-bold text-white mb-4">Cumulative Cash Position</h3>
           <ResponsiveContainer width="100%" height={260}>
             <AreaChart data={monthlyData}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" />
-              <XAxis dataKey="name" tick={{ fontSize: 11, fill: '#94a3b8' }} />
-              <YAxis tick={{ fontSize: 11, fill: '#94a3b8' }} tickFormatter={v => `$${(v / 1000).toFixed(0)}k`} />
-              <Tooltip contentStyle={{ backgroundColor: '#1e293b', border: '1px solid #334155', borderRadius: '8px', color: '#fff' }} formatter={v => `$${v.toLocaleString()}`} />
               <defs>
-                <linearGradient id="cumulativeGrad" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#10b981" stopOpacity={0.3} />
-                  <stop offset="95%" stopColor="#10b981" stopOpacity={0} />
+                <linearGradient id="cfCumulativeGrad" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="#10b981" stopOpacity={0.35} />
+                  <stop offset="100%" stopColor="#10b981" stopOpacity={0.02} />
                 </linearGradient>
               </defs>
-              <Area type="monotone" dataKey="Cumulative" stroke="#10b981" strokeWidth={2} fill="url(#cumulativeGrad)" dot={{ r: 3, fill: '#10b981' }} />
+              <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" vertical={false} />
+              <XAxis dataKey="name" tick={{ fontSize: 11, fill: '#64748b' }} axisLine={false} tickLine={false} />
+              <YAxis tick={{ fontSize: 11, fill: '#64748b' }} tickFormatter={v => `$${(v / 1000).toFixed(0)}k`} axisLine={false} tickLine={false} />
+              <Tooltip content={<CashFlowTooltip />} cursor={{ stroke: '#475569', strokeWidth: 1, strokeDasharray: '4 4' }} />
+              <Area type="monotone" dataKey="Cumulative" stroke="#10b981" strokeWidth={2.5} fill="url(#cfCumulativeGrad)" dot={{ r: 4, fill: '#10b981', strokeWidth: 2, stroke: '#0f172a' }} activeDot={{ r: 6, fill: '#10b981', stroke: '#0f172a', strokeWidth: 2 }} />
             </AreaChart>
           </ResponsiveContainer>
         </div>
