@@ -56,13 +56,28 @@ export default function RevenueDashboard() {
   });
 
   const clients = dashData?.clients || [];
-  const payments = dashData?.payments || [];
+  const rawPayments = dashData?.payments || [];
   const expenses = dashData?.expenses || [];
   const billingRecords = dashData?.billingRecords || [];
   const monthlyPL = dashData?.monthlyPL || [];
   const cashFlowData = dashData?.cashFlowData || [];
   const kpis = dashData?.kpis || null;
   const clientSummary = dashData?.clientSummary || [];
+
+  // Merge Payment entity records + paid MonthlyBilling into a unified "payments" list for ledger & sparklines
+  const payments = React.useMemo(() => {
+    const fromPayments = rawPayments.map(p => ({ ...p, _source: 'payment' }));
+    const fromBilling = billingRecords.map(b => ({
+      id: b.id,
+      client_id: b.client_id,
+      amount: b.paid_amount || b.calculated_amount || 0,
+      date: b.paid_date,
+      method: 'invoice',
+      notes: `Invoice ${b.invoice_id || ''} (${b.billing_month})`,
+      _source: 'billing',
+    }));
+    return [...fromPayments, ...fromBilling];
+  }, [rawPayments, billingRecords]);
 
   const refetchPayments = refetchDash;
   const refetchExpenses = refetchDash;
