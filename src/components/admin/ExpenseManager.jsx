@@ -35,6 +35,8 @@ export default function ExpenseManager({ startDate, endDate, onAddExpense }) {
   const [filterCat, setFilterCat] = useState('all');
   const [filterType, setFilterType] = useState('all');
   const [page, setPage] = useState(0);
+  const [sortField, setSortField] = useState('date');
+  const [sortDir, setSortDir] = useState('desc');
   const { data, isLoading, refetch } = useQuery({
     queryKey: ['expense-tab-data', startDate, endDate, filterCat, filterType, page],
     queryFn: async () => {
