@@ -86,6 +86,7 @@ Return a JSON object with a "results" array. Each item must have: expense_id, su
                 expense_id: { type: 'string' },
                 suggested_category: { type: 'string' },
                 suggested_type: { type: 'string' },
+                suggested_vendor: { type: ['string', 'null'] },
               },
               required: ['expense_id', 'suggested_category', 'suggested_type'],
             },
