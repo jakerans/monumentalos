@@ -127,8 +127,11 @@ Deno.serve(async (req) => {
     const bookedSparkline = buildDailySparkline(leads.filter(l => l.date_appointment_set), 'date_appointment_set');
 
     // ========== Cash Health Metrics ==========
-    // Realized Revenue = cash actually collected MTD (Payment entity only — cash basis)
-    const realizedRevenue = payments.filter(p => inMTD(p.date)).reduce((s, p) => s + (p.amount || 0), 0);
+    // Realized Revenue = cash actually collected MTD (Payment entity + paid MonthlyBilling by paid_date)
+    const paidBillingRecords = billingRecords.filter(b => b.status === 'paid');
+    const paymentRevenueMTD = payments.filter(p => inMTD(p.date)).reduce((s, p) => s + (p.amount || 0), 0);
+    const billingRevenueMTD = paidBillingRecords.filter(b => inMTD(b.paid_date)).reduce((s, b) => s + (b.paid_amount || b.calculated_amount || 0), 0);
+    const realizedRevenue = paymentRevenueMTD + billingRevenueMTD;
 
     // --- Active Invoices (AR): last month's billing records that are NOT yet paid ---
     const lastMonthUnpaid = billingRecords
@@ -321,7 +324,10 @@ Deno.serve(async (req) => {
           grossRevenue += (client.retainer_amount || 0);
         }
       });
-      const collected = payments.filter(p => rangeFn(p.date)).reduce((s, p) => s + (p.amount || 0), 0);
+      // Collected = Payment entity + paid MonthlyBilling by paid_date
+      const payCollected = payments.filter(p => rangeFn(p.date)).reduce((s, p) => s + (p.amount || 0), 0);
+      const billCollected = paidBillingRecords.filter(b => rangeFn(b.paid_date)).reduce((s, b) => s + (b.paid_amount || b.calculated_amount || 0), 0);
+      const collected = payCollected + billCollected;
       const rangeExpenses = expenses.filter(e => rangeFn(e.date) && e.expense_type !== 'distribution');
       const cogs = rangeExpenses.filter(e => e.expense_type === 'cogs').reduce((s, e) => s + (e.amount || 0), 0);
       const overhead = rangeExpenses.filter(e => e.expense_type === 'overhead').reduce((s, e) => s + (e.amount || 0), 0);
@@ -336,9 +342,11 @@ Deno.serve(async (req) => {
     const priorPL = calcPeriod(inLM);
 
     // ========== Stat Compare (Income vs Expenses) ==========
-    const mtdIncome = payments.filter(p => inMTD(p.date)).reduce((s, p) => s + (p.amount || 0), 0);
+    const mtdIncome = payments.filter(p => inMTD(p.date)).reduce((s, p) => s + (p.amount || 0), 0)
+      + paidBillingRecords.filter(b => inMTD(b.paid_date)).reduce((s, b) => s + (b.paid_amount || b.calculated_amount || 0), 0);
     const mtdExpenses = expenses.filter(e => inMTD(e.date) && e.expense_type !== 'distribution').reduce((s, e) => s + (e.amount || 0), 0);
-    const lmIncome = payments.filter(p => inLM(p.date)).reduce((s, p) => s + (p.amount || 0), 0);
+    const lmIncome = payments.filter(p => inLM(p.date)).reduce((s, p) => s + (p.amount || 0), 0)
+      + paidBillingRecords.filter(b => inLM(b.paid_date)).reduce((s, b) => s + (b.paid_amount || b.calculated_amount || 0), 0);
     const lmExpenses = expenses.filter(e => inLM(e.date) && e.expense_type !== 'distribution').reduce((s, e) => s + (e.amount || 0), 0);
     const cogsTotal = expenses.filter(e => inMTD(e.date) && e.expense_type === 'cogs').reduce((s, e) => s + (e.amount || 0), 0);
     const overheadTotal = mtdExpenses - cogsTotal;
