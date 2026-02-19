@@ -23,7 +23,16 @@ export default function SetterPerformanceTable({ users, leads, clients, startDat
     const avgSTL = stlValues.length ? Math.round(stlValues.reduce((a, b) => a + b, 0) / stlValues.length) : null;
     const bookingRate = firstCalls.length > 0 ? ((booked.length / firstCalls.length) * 100).toFixed(1) : 0;
     const showRate = booked.length > 0 ? ((showed.length / booked.length) * 100).toFixed(1) : 0;
-    const revenue = leads.filter(l => l.booked_by_setter_id === setter.id && l.outcome === 'sold' && l.sale_amount && l.date_sold && inRange(l.date_sold)).reduce((s, l) => s + (l.sale_amount || 0), 0);
+    let revenue = 0;
+    booked.forEach(l => {
+      const client = clients.find(c => c.id === l.client_id);
+      if (!client) return;
+      if (client.billing_type === 'pay_per_set' && client.price_per_set_appointment) {
+        revenue += client.price_per_set_appointment;
+      } else if (client.billing_type === 'pay_per_show' && l.disposition === 'showed' && client.price_per_shown_appointment) {
+        revenue += client.price_per_shown_appointment;
+      }
+    });
     return { id: setter.id, name: setter.full_name, firstCalls: firstCalls.length, booked: booked.length, showed: showed.length, dq: dq.length, avgSTL, bookingRate: parseFloat(bookingRate), showRate: parseFloat(showRate), revenue };
   }).sort((a, b) => b.booked - a.booked), [setters, leads, startDate, endDate]);
 
