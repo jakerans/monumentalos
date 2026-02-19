@@ -4,7 +4,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import dayjs from 'dayjs';
-import DateRangePicker from '../components/admin/DateRangePicker';
+import { Calendar } from 'lucide-react';
 import ClientViewNav from '../components/clientview/ClientViewNav';
 import ClientKPIGrid from '../components/clientview/ClientKPIGrid';
 import ClientFunnel from '../components/clientview/ClientFunnel';
@@ -165,12 +165,12 @@ export default function ClientView() {
                `$${client?.price_per_shown_appointment || 0} / shown appt`} · {client?.status || 'active'}
             </p>
           </div>
-          <DateRangePicker
-            startDate={startDate}
-            endDate={endDate}
-            onStartChange={setStartDate}
-            onEndChange={setEndDate}
-          />
+          <div className="flex items-center gap-2">
+            <Calendar className="w-4 h-4 text-[#D6FF03]" />
+            <input type="date" value={startDate} onChange={e => setStartDate(e.target.value)} className="px-2 py-1.5 text-xs bg-slate-800 border border-slate-700 text-slate-200 rounded-md" />
+            <span className="text-slate-500 text-xs">to</span>
+            <input type="date" value={endDate} onChange={e => setEndDate(e.target.value)} className="px-2 py-1.5 text-xs bg-slate-800 border border-slate-700 text-slate-200 rounded-md" />
+          </div>
         </div>
 
         {/* KPI Grid */}
