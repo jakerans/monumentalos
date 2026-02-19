@@ -10,12 +10,13 @@ export default function MarkPaidModal({ record, clientName, open, onOpenChange, 
   const [paidAmount, setPaidAmount] = useState(String(defaultAmount));
   const [paidDate, setPaidDate] = useState(new Date().toISOString().split('T')[0]);
   const [method, setMethod] = useState('ach');
+  const [processingFee, setProcessingFee] = useState('');
   const [notes, setNotes] = useState(record.notes || '');
   const [saving, setSaving] = useState(false);
 
   const handleConfirm = async () => {
     setSaving(true);
-    await onConfirm(record, Number(paidAmount), paidDate, method, notes);
+    await onConfirm(record, Number(paidAmount), paidDate, method, notes, Number(processingFee) || 0);
     setSaving(false);
     toast({ title: 'Payment Confirmed', description: `$${Number(paidAmount).toLocaleString()} from ${clientName}`, variant: 'success' });
     onOpenChange(false);
@@ -63,6 +64,17 @@ export default function MarkPaidModal({ record, clientName, open, onOpenChange, 
               <option value="cash">Cash</option>
               <option value="other">Other</option>
             </select>
+          </div>
+          <div>
+            <label className="text-xs font-medium text-gray-700">Processing Fee ($)</label>
+            <input
+              type="number"
+              value={processingFee}
+              onChange={e => setProcessingFee(e.target.value)}
+              placeholder="0.00"
+              className="w-full mt-1 px-3 py-2 text-sm border border-gray-300 rounded-md"
+            />
+            <p className="text-[10px] text-gray-400 mt-0.5">e.g. credit card or ACH fee — auto-logged as COGS expense</p>
           </div>
           <div>
             <label className="text-xs font-medium text-gray-700">Notes (optional)</label>
