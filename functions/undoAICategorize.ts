@@ -38,20 +38,20 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Forbidden: Admin access required' }, { status: 403 });
     }
 
-    // Server-side filter: only expenses with a non-empty suggested_category
-    const withSuggestions = await fetchAllFiltered(
-      base44.entities.Expense,
-      { suggested_category: { $ne: '' } },
-      '-date'
+    // Fetch all expenses, then filter in memory for ones with real AI suggestions
+    // ($ne on the DB returns nulls too, so we must filter in JS)
+    const all = await fetchAllFiltered(base44.entities.Expense, {}, '-date');
+    const toRevert = all.filter(e => 
+      e.suggested_category && 
+      typeof e.suggested_category === 'string' && 
+      e.suggested_category.trim() !== ''
     );
-
-    // Also grab ones where suggested_category is a real value (not null/empty)
-    // The $ne filter should handle this, but let's also double-check in memory
-    const toRevert = withSuggestions.filter(e => e.suggested_category && e.suggested_category.trim() !== '');
 
     if (toRevert.length === 0) {
       return Response.json({ message: 'No AI suggestions to undo', reverted: 0 });
     }
+
+    console.log(`[undoAICategorize] Found ${toRevert.length} expenses with AI suggestions to revert`);
 
     const clearData = { suggested_category: '', suggested_type: '', ai_approved: false };
     let reverted = 0;
