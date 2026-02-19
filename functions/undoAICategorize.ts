@@ -13,6 +13,13 @@ async function fetchAllFiltered(entity, filter, sort) {
   return results;
 }
 
+async function runInBatches(items, batchSize, fn) {
+  for (let i = 0; i < items.length; i += batchSize) {
+    const chunk = items.slice(i, i + batchSize);
+    await Promise.all(chunk.map(fn));
+  }
+}
+
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
@@ -32,15 +39,13 @@ Deno.serve(async (req) => {
       return Response.json({ message: 'No AI suggestions to undo', reverted: 0 });
     }
 
-    // Clear suggestions in parallel
-    await Promise.all(
-      withSuggestions.map(e =>
-        base44.asServiceRole.entities.Expense.update(e.id, {
-          suggested_category: '',
-          suggested_type: '',
-          ai_approved: false,
-        })
-      )
+    // Clear suggestions in controlled batches of 10 to avoid rate limits
+    await runInBatches(withSuggestions, 10, (e) =>
+      base44.asServiceRole.entities.Expense.update(e.id, {
+        suggested_category: '',
+        suggested_type: '',
+        ai_approved: false,
+      })
     );
 
     return Response.json({ success: true, reverted: withSuggestions.length });

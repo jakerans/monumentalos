@@ -13,6 +13,16 @@ async function fetchAllFiltered(entity, filter, sort) {
   return results;
 }
 
+async function runInBatches(items, batchSize, fn) {
+  let completed = 0;
+  for (let i = 0; i < items.length; i += batchSize) {
+    const chunk = items.slice(i, i + batchSize);
+    await Promise.all(chunk.map(fn));
+    completed += chunk.length;
+  }
+  return completed;
+}
+
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
@@ -99,7 +109,7 @@ Return a JSON object with a "results" array. Each item must have: expense_id, su
 
     const results = aiResponse?.results || [];
 
-    // 5. Validate and parallel update
+    // 5. Validate results
     const categorySet = new Set(allowedCategories);
     const typeSet = new Set(allowedTypes);
     const batchMap = new Map(batch.map(e => [e.id, e]));
@@ -108,20 +118,19 @@ Return a JSON object with a "results" array. Each item must have: expense_id, su
       r => r.expense_id && categorySet.has(r.suggested_category) && typeSet.has(r.suggested_type) && batchMap.has(r.expense_id)
     );
 
-    await Promise.all(
-      validResults.map(r => {
-        const updateData = {
-          suggested_category: r.suggested_category,
-          suggested_type: r.suggested_type,
-          ai_approved: false,
-        };
-        const original = batchMap.get(r.expense_id);
-        if (!original?.vendor && r.suggested_vendor) {
-          updateData.vendor = r.suggested_vendor;
-        }
-        return base44.asServiceRole.entities.Expense.update(r.expense_id, updateData);
-      })
-    );
+    // 6. Update in controlled batches of 10 to avoid rate limits
+    await runInBatches(validResults, 10, (r) => {
+      const updateData = {
+        suggested_category: r.suggested_category,
+        suggested_type: r.suggested_type,
+        ai_approved: false,
+      };
+      const original = batchMap.get(r.expense_id);
+      if (!original?.vendor && r.suggested_vendor) {
+        updateData.vendor = r.suggested_vendor;
+      }
+      return base44.asServiceRole.entities.Expense.update(r.expense_id, updateData);
+    });
 
     return Response.json({
       message: 'Batch categorization complete',
