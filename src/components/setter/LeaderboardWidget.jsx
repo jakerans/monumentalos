@@ -195,10 +195,10 @@ export default function LeaderboardWidget({ user, spiffs, leads, leaderboardProf
           </div>
         )}
 
-        <Trophy className={`w-6 h-6 relative z-10 ${rankConfig.trophy}`} />
+        <Trophy className={`w-5 h-5 sm:w-6 sm:h-6 relative z-10 ${rankConfig.trophy}`} />
         <div className="flex flex-col items-start relative z-10">
-          <span className="text-lg font-black leading-tight" style={{ color: rankConfig.text }}>#{displayRank || '—'}</span>
-          <span className={`text-[10px] font-medium ${rankConfig.sub}`}>Leaderboard</span>
+          <span className="text-base sm:text-lg font-black leading-tight" style={{ color: rankConfig.text }}>#{displayRank || '—'}</span>
+          <span className={`text-[9px] sm:text-[10px] font-medium ${rankConfig.sub}`}>Leaderboard</span>
         </div>
       </motion.button>
 
