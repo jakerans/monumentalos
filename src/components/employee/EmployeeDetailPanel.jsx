@@ -33,8 +33,12 @@ export default function EmployeeDetailPanel({ employee, payrollSettings, open, o
       updates.hourly_rate = parseFloat(form.hourly_rate) || 0;
       updates.standard_monthly_hours = parseFloat(form.standard_monthly_hours) || 0;
     }
-    if (form.classification === 'contractor' && form.contractor_billing_type !== 'per_project') {
-      updates.contractor_rate = parseFloat(form.contractor_rate) || 0;
+    if (form.classification === 'contractor') {
+      if (form.contractor_billing_type === 'per_cycle') {
+        updates.pay_per_cycle = parseFloat(form.pay_per_cycle) || 0;
+      } else if (form.contractor_billing_type !== 'per_project') {
+        updates.contractor_rate = parseFloat(form.contractor_rate) || 0;
+      }
     }
     await base44.entities.Employee.update(employee.id, updates);
     setEditing(false);
@@ -115,8 +119,12 @@ export default function EmployeeDetailPanel({ employee, payrollSettings, open, o
                 )}
                 {form.classification === 'contractor' && (
                   <div className="grid grid-cols-2 gap-3">
-                    <div><label className={labelCls}>Billing Type</label><select className={inputCls} value={form.contractor_billing_type || 'monthly'} onChange={e => setForm({ ...form, contractor_billing_type: e.target.value })}><option value="hourly">Hourly</option><option value="monthly">Monthly</option><option value="per_project">Per Project</option></select></div>
-                    {form.contractor_billing_type !== 'per_project' && <div><label className={labelCls}>Rate ($)</label><input type="number" className={inputCls} value={form.contractor_rate || ''} onChange={e => setForm({ ...form, contractor_rate: e.target.value })} /></div>}
+                    <div><label className={labelCls}>Billing Type</label><select className={inputCls} value={form.contractor_billing_type || 'monthly'} onChange={e => setForm({ ...form, contractor_billing_type: e.target.value })}><option value="hourly">Hourly</option><option value="monthly">Monthly</option><option value="per_cycle">Per Cycle</option><option value="per_project">Per Project</option></select></div>
+                    {form.contractor_billing_type === 'per_cycle' ? (
+                      <div><label className={labelCls}>Pay Per Cycle ($)</label><input type="number" className={inputCls} value={form.pay_per_cycle || ''} onChange={e => setForm({ ...form, pay_per_cycle: e.target.value })} placeholder="e.g. 2500" /></div>
+                    ) : form.contractor_billing_type !== 'per_project' ? (
+                      <div><label className={labelCls}>Rate ($)</label><input type="number" className={inputCls} value={form.contractor_rate || ''} onChange={e => setForm({ ...form, contractor_rate: e.target.value })} /></div>
+                    ) : null}
                   </div>
                 )}
                 <div>

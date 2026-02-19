@@ -113,7 +113,7 @@ export default function EmployeeTable({ employees, payrollSettings, onSelect }) 
                     )}
                   </td>
                   <td className="px-4 py-3 text-xs font-medium text-slate-200">
-                    {emp.classification === 'salary' ? (pay.perCycle || '—') : '—'}
+                    {(emp.classification === 'salary' || (emp.classification === 'contractor' && emp.contractor_billing_type === 'per_cycle')) ? (pay.perCycle || '—') : '—'}
                   </td>
                   <td className="px-4 py-3 text-xs font-medium text-slate-200">{pay.monthly}</td>
                   <td className="px-4 py-3 text-xs text-slate-400">{pay.annual}</td>

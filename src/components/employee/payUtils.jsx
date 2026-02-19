@@ -30,6 +30,17 @@ export function getPayDisplay(emp, payrollSettings) {
   }
   if (emp.classification === 'contractor') {
     if (emp.contractor_billing_type === 'per_project') return { monthly: 'Per Project', annual: 'Per Project' };
+    if (emp.contractor_billing_type === 'per_cycle') {
+      const perCycle = emp.pay_per_cycle || 0;
+      const annual = perCycle * cycles;
+      const monthly = annual / 12;
+      return {
+        monthly: `$${Math.round(monthly).toLocaleString()}`,
+        annual: `$${Math.round(annual).toLocaleString()}`,
+        perCycle: `$${perCycle.toLocaleString()}`,
+        rate: `$${perCycle.toLocaleString()}/cycle × ${cycles} cycles/yr`,
+      };
+    }
     if (emp.contractor_billing_type === 'hourly') {
       const monthly = (emp.contractor_rate || 0) * 160;
       return { monthly: `~$${monthly.toLocaleString()}/mo`, annual: `~$${(monthly * 12).toLocaleString()}/yr`, rate: `$${emp.contractor_rate}/hr` };
@@ -45,6 +56,7 @@ export function getMonthlyBasePay(emp, payrollSettings) {
   if (emp.classification === 'salary') return ((emp.pay_per_cycle || 0) * cycles) / 12;
   if (emp.classification === 'hourly') return (emp.hourly_rate || 0) * (emp.standard_monthly_hours || 0);
   if (emp.classification === 'contractor') {
+    if (emp.contractor_billing_type === 'per_cycle') return ((emp.pay_per_cycle || 0) * cycles) / 12;
     if (emp.contractor_billing_type === 'monthly') return emp.contractor_rate || 0;
     if (emp.contractor_billing_type === 'hourly') return (emp.contractor_rate || 0) * 160;
   }

@@ -30,7 +30,9 @@ export default function AddEmployeeModal({ open, onOpenChange, onAdd }) {
       data.standard_monthly_hours = parseFloat(form.standard_monthly_hours) || 0;
     } else if (form.classification === 'contractor') {
       data.contractor_billing_type = form.contractor_billing_type;
-      if (form.contractor_billing_type !== 'per_project') {
+      if (form.contractor_billing_type === 'per_cycle') {
+        data.pay_per_cycle = parseFloat(form.pay_per_cycle) || 0;
+      } else if (form.contractor_billing_type !== 'per_project') {
         data.contractor_rate = parseFloat(form.contractor_rate) || 0;
       }
     }
@@ -94,12 +96,15 @@ export default function AddEmployeeModal({ open, onOpenChange, onAdd }) {
                 <select className={selectCls} value={form.contractor_billing_type} onChange={e => set('contractor_billing_type', e.target.value)}>
                   <option value="hourly">Hourly</option>
                   <option value="monthly">Monthly</option>
+                  <option value="per_cycle">Per Cycle</option>
                   <option value="per_project">Per Project</option>
                 </select>
               </div>
-              {form.contractor_billing_type !== 'per_project' && (
+              {form.contractor_billing_type === 'per_cycle' ? (
+                <div><label className={labelCls}>Pay Per Cycle ($)</label><input type="number" className={inputCls} value={form.pay_per_cycle} onChange={e => set('pay_per_cycle', e.target.value)} placeholder="e.g. 2500" /></div>
+              ) : form.contractor_billing_type !== 'per_project' ? (
                 <div><label className={labelCls}>{form.contractor_billing_type === 'hourly' ? 'Hourly Rate ($)' : 'Monthly Rate ($)'}</label><input type="number" className={inputCls} value={form.contractor_rate} onChange={e => set('contractor_rate', e.target.value)} /></div>
-              )}
+              ) : null}
             </div>
           )}
 
