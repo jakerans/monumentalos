@@ -12,7 +12,6 @@ const allNavItems = [
   { key: 'SetterPerformance', label: 'Setters', icon: Headset },
   { key: 'EmployeeManagement', label: 'Employees', icon: UserCog },
   { key: 'UserManagement', label: 'Users', icon: Users },
-  { key: 'LeadFieldSettings', label: 'Lead Fields', icon: Users },
 ];
 
 const switchViews = [

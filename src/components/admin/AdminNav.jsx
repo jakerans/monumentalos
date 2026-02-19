@@ -5,6 +5,7 @@ import { base44 } from '@/api/base44Client';
 import { motion } from 'framer-motion';
 import { Zap, ZapOff } from 'lucide-react';
 import { useEffectsToggle } from '../shared/useEffectsToggle';
+import AdminUserMenu from './AdminUserMenu';
 
 export default function AdminNav({ user, currentPage, clients = [] }) {
   const { effectsOn, toggle: toggleEffects } = useEffectsToggle();
@@ -18,7 +19,6 @@ export default function AdminNav({ user, currentPage, clients = [] }) {
     { key: 'SetterPerformance', label: 'Setters' },
     { key: 'EmployeeManagement', label: 'Employees' },
     { key: 'UserManagement', label: 'Users' },
-    { key: 'LeadFieldSettings', label: 'Lead Fields' },
   ];
 
   return (
@@ -96,15 +96,7 @@ export default function AdminNav({ user, currentPage, clients = [] }) {
             >
               {effectsOn ? <Zap className="w-3.5 h-3.5" /> : <ZapOff className="w-3.5 h-3.5" />}
             </button>
-            <span className="text-[10px] sm:text-xs text-slate-400 hidden sm:inline">{user?.full_name}</span>
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              onClick={() => base44.auth.logout()}
-              className="text-xs text-slate-500 hover:text-white transition-colors"
-            >
-              Logout
-            </motion.button>
+            <AdminUserMenu user={user} />
           </div>
         </div>
       </div>
