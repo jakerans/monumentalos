@@ -190,7 +190,7 @@ export default function EmployeeManagement() {
           </button>
         </div>
 
-        <EmployeeTable employees={filtered} payrollSettings={payrollSettings} onSelect={handleSelectEmp} />
+        <EmployeeTable employees={filtered} payrollSettings={payrollSettings} onSelect={handleSelectEmp} lastMonthCollected={lastMonthCollected} />
 
         {/* Performance Pay Section */}
         <PerformancePayWidget
