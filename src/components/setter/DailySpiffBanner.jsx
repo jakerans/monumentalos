@@ -58,10 +58,10 @@ export default function DailySpiffBanner({ spiffs, leads, user }) {
   const now = new Date();
   const dayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
 
-  // Find daily spiffs relevant to this user
+  // Find daily spiffs relevant to this user — only show if due_date is today
   const dailySpiffs = (spiffs || []).filter(sp => {
     if (!sp.is_daily || sp.status === 'expired') return false;
-    if (sp.due_date && sp.due_date !== today && sp.status === 'active') return false;
+    if (sp.due_date !== today) return false;
     if (sp.scope === 'individual') return sp.assigned_setter_id === user?.id;
     return true;
   });

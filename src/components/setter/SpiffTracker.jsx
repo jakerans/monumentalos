@@ -4,24 +4,33 @@ import SpiffCard from './SpiffCard';
 
 export default function SpiffTracker({ spiffs, leads, user }) {
   const now = new Date();
-  const mtdStart = new Date(now.getFullYear(), now.getMonth(), 1);
   const [activeIndex, setActiveIndex] = useState(0);
 
+  const getDateRange = (spiff) => {
+    if (spiff.is_daily && spiff.due_date) {
+      return { rangeStart: new Date(spiff.due_date + 'T00:00:00'), rangeEnd: new Date(spiff.due_date + 'T23:59:59') };
+    }
+    return { rangeStart: new Date(now.getFullYear(), now.getMonth(), 1), rangeEnd: now };
+  };
+
   const getProgress = (spiff) => {
+    const { rangeStart, rangeEnd } = getDateRange(spiff);
+    const inRange = (d) => d ? new Date(d) >= rangeStart && new Date(d) <= rangeEnd : false;
+
     if (spiff.qualifier === 'appointments') {
       if (spiff.scope === 'team_company') {
-        return leads.filter(l => l.date_appointment_set && new Date(l.date_appointment_set) >= mtdStart).length;
+        return leads.filter(l => inRange(l.date_appointment_set)).length;
       }
       const setterId = spiff.scope === 'individual' ? spiff.assigned_setter_id : user?.id;
-      return leads.filter(l => l.booked_by_setter_id === setterId && l.date_appointment_set && new Date(l.date_appointment_set) >= mtdStart).length;
+      return leads.filter(l => l.booked_by_setter_id === setterId && inRange(l.date_appointment_set)).length;
     }
     if (spiff.qualifier === 'stl') {
       if (spiff.scope === 'team_company') {
-        const stlLeads = leads.filter(l => l.speed_to_lead_minutes != null && new Date(l.created_date) >= mtdStart);
+        const stlLeads = leads.filter(l => l.speed_to_lead_minutes != null && inRange(l.created_date));
         return stlLeads.length > 0 ? Math.round(stlLeads.reduce((s, l) => s + l.speed_to_lead_minutes, 0) / stlLeads.length) : null;
       }
       const setterId = spiff.scope === 'individual' ? spiff.assigned_setter_id : user?.id;
-      const stlLeads = leads.filter(l => l.setter_id === setterId && l.speed_to_lead_minutes != null && new Date(l.created_date) >= mtdStart);
+      const stlLeads = leads.filter(l => l.setter_id === setterId && l.speed_to_lead_minutes != null && inRange(l.created_date));
       return stlLeads.length > 0 ? Math.round(stlLeads.reduce((s, l) => s + l.speed_to_lead_minutes, 0) / stlLeads.length) : null;
     }
     return 0;
