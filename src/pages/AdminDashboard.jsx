@@ -90,7 +90,7 @@ export default function AdminDashboard() {
     <div className="min-h-screen bg-[#0B0F1A]">
       <AdminNav user={user} currentPage="AdminDashboard" clients={clients} />
 
-      <main className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-5">
+      <main className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-6 pb-20 sm:pb-6 space-y-5">
         <motion.div
           initial={effectsOn ? { opacity: 0, y: 16 } : false}
           animate={effectsOn ? { opacity: 1, y: 0 } : false}

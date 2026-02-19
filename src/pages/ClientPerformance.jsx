@@ -51,7 +51,7 @@ export default function ClientPerformance() {
     <PageErrorBoundary>
     <div className="min-h-screen bg-[#0B0F1A]">
       <AdminNav user={user} currentPage="ClientPerformance" clients={clients} />
-      <main className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+      <main className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-6 pb-20 sm:pb-6 space-y-6">
         <div>
           <h1 className="text-2xl font-bold text-white">Client Performance</h1>
           <p className="text-sm text-slate-400">Detailed client metrics and trends</p>
