@@ -1,7 +1,7 @@
 import React from 'react';
 import { CircleDot } from 'lucide-react';
 import { useAutoAnimate } from '@formkit/auto-animate/react';
-import { getPayDisplay } from './payUtils';
+import { getPayDisplay, getMonthlyBasePay } from './payUtils';
 
 const DISC_COLORS = {
   green: 'text-green-400',
@@ -15,7 +15,38 @@ const ROLE_LABELS = {
 };
 
 export default function EmployeeTable({ employees, payrollSettings, onSelect }) {
+  const totalMonthly = employees.reduce((sum, emp) => sum + getMonthlyBasePay(emp, payrollSettings), 0);
+  const totalAnnual = totalMonthly * 12;
+  const cogsMonthly = employees.filter(e => e.cost_type === 'cogs').reduce((sum, emp) => sum + getMonthlyBasePay(emp, payrollSettings), 0);
+  const overheadMonthly = employees.filter(e => e.cost_type !== 'cogs').reduce((sum, emp) => sum + getMonthlyBasePay(emp, payrollSettings), 0);
+
   return (
+    <div className="space-y-3">
+      {/* Summary bar */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3">
+        <div className="bg-slate-800/50 rounded-lg border border-slate-700/50 px-3 sm:px-4 py-2.5 sm:py-3">
+          <p className="text-[10px] sm:text-xs font-medium text-slate-400 uppercase">Headcount</p>
+          <p className="text-lg sm:text-xl font-bold text-white">{employees.length}</p>
+        </div>
+        <div className="bg-slate-800/50 rounded-lg border border-slate-700/50 px-3 sm:px-4 py-2.5 sm:py-3">
+          <p className="text-[10px] sm:text-xs font-medium text-slate-400 uppercase">Total Monthly</p>
+          <p className="text-lg sm:text-xl font-bold text-white">${Math.round(totalMonthly).toLocaleString()}</p>
+        </div>
+        <div className="bg-slate-800/50 rounded-lg border border-slate-700/50 px-3 sm:px-4 py-2.5 sm:py-3">
+          <p className="text-[10px] sm:text-xs font-medium text-slate-400 uppercase">Total Annual</p>
+          <p className="text-lg sm:text-xl font-bold text-white">${Math.round(totalAnnual).toLocaleString()}</p>
+        </div>
+        <div className="bg-slate-800/50 rounded-lg border border-slate-700/50 px-3 sm:px-4 py-2.5 sm:py-3">
+          <p className="text-[10px] sm:text-xs font-medium text-slate-400 uppercase">COGS / Overhead</p>
+          <p className="text-sm sm:text-base font-bold text-white">
+            <span className="text-orange-400">${Math.round(cogsMonthly).toLocaleString()}</span>
+            <span className="text-slate-500 mx-1">/</span>
+            <span className="text-blue-400">${Math.round(overheadMonthly).toLocaleString()}</span>
+            <span className="text-[10px] text-slate-500 font-normal">/mo</span>
+          </p>
+        </div>
+      </div>
+
     <div className="bg-slate-800/50 rounded-lg border border-slate-700/50 overflow-hidden">
       {/* Mobile card view */}
       <div className="sm:hidden divide-y divide-slate-700/30">
@@ -107,6 +138,7 @@ export default function EmployeeTable({ employees, payrollSettings, onSelect }) 
           </tbody>
         </table>
       </div>
+    </div>
     </div>
   );
 }
