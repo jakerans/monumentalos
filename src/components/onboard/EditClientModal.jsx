@@ -14,6 +14,7 @@ export default function EditClientModal({ open, onOpenChange, client, onSaved })
   const [retainerAmount, setRetainerAmount] = useState('');
   const [retainerDueDay, setRetainerDueDay] = useState('1');
   const [adAccountId, setAdAccountId] = useState('');
+  const [stripeCustomerId, setStripeCustomerId] = useState('');
   const [bookingLink, setBookingLink] = useState('');
   const [serviceRadius, setServiceRadius] = useState('');
   const [targetZipCodes, setTargetZipCodes] = useState('');
@@ -35,6 +36,7 @@ export default function EditClientModal({ open, onOpenChange, client, onSaved })
       setRetainerAmount(client.retainer_amount ?? '');
       setRetainerDueDay(String(client.retainer_due_day || 1));
       setAdAccountId(client.ad_account_id || '');
+      setStripeCustomerId(client.stripe_customer_id || '');
       setBookingLink(client.booking_link || '');
       setServiceRadius(client.service_radius || '');
       setTargetZipCodes(client.target_zip_codes || '');
@@ -65,6 +67,7 @@ export default function EditClientModal({ open, onOpenChange, client, onSaved })
       industries,
       billing_type: billingType,
       ad_account_id: adAccountId.trim() || undefined,
+      stripe_customer_id: stripeCustomerId.trim() || undefined,
       booking_link: bookingLink.trim() || undefined,
       service_radius: serviceRadius.trim() || undefined,
       target_zip_codes: targetZipCodes.trim() || undefined,
@@ -169,9 +172,15 @@ export default function EditClientModal({ open, onOpenChange, client, onSaved })
               </div>
             </div>
           )}
-          <div>
-            <label className={labelClass}>Ad Account ID</label>
-            <input value={adAccountId} onChange={e => setAdAccountId(e.target.value)} className={inputClass} placeholder="act_123456789" />
+          <div className="grid grid-cols-2 gap-2">
+            <div>
+              <label className={labelClass}>Ad Account ID</label>
+              <input value={adAccountId} onChange={e => setAdAccountId(e.target.value)} className={inputClass} placeholder="act_123456789" />
+            </div>
+            <div>
+              <label className={labelClass}>Stripe Customer ID</label>
+              <input value={stripeCustomerId} onChange={e => setStripeCustomerId(e.target.value)} className={inputClass} placeholder="cus_xxxxx" />
+            </div>
           </div>
           <div className="grid grid-cols-2 gap-2">
             <div>

@@ -14,6 +14,7 @@ export default function CreateClientModal({ open, onOpenChange, onCreated }) {
   const [retainerAmount, setRetainerAmount] = useState('');
   const [retainerDueDay, setRetainerDueDay] = useState('1');
   const [adAccountId, setAdAccountId] = useState('');
+  const [stripeCustomerId, setStripeCustomerId] = useState('');
   const [bookingLink, setBookingLink] = useState('');
   const [serviceRadius, setServiceRadius] = useState('');
   const [startDate, setStartDate] = useState(new Date().toISOString().split('T')[0]);
@@ -48,6 +49,7 @@ export default function CreateClientModal({ open, onOpenChange, onCreated }) {
       industries: industries.length > 0 ? industries : undefined,
       billing_type: billingType,
       ad_account_id: adAccountId.trim() || undefined,
+      stripe_customer_id: stripeCustomerId.trim() || undefined,
       booking_link: bookingLink.trim() || undefined,
       service_radius: serviceRadius.trim() || undefined,
       status: 'active',
@@ -95,6 +97,7 @@ export default function CreateClientModal({ open, onOpenChange, onCreated }) {
     setRetainerAmount('');
     setRetainerDueDay('1');
     setAdAccountId('');
+    setStripeCustomerId('');
     setBookingLink('');
     setServiceRadius('');
     setStartDate(new Date().toISOString().split('T')[0]);
@@ -158,9 +161,15 @@ export default function CreateClientModal({ open, onOpenChange, onCreated }) {
             <label className="text-xs font-medium text-gray-700">Start Date</label>
             <input type="date" value={startDate} onChange={e => setStartDate(e.target.value)} className="w-full mt-1 px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500" />
           </div>
-          <div>
-            <label className="text-xs font-medium text-gray-700">Ad Account ID</label>
-            <input value={adAccountId} onChange={e => setAdAccountId(e.target.value)} className="w-full mt-1 px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="e.g. act_123456789" />
+          <div className="grid grid-cols-2 gap-2">
+            <div>
+              <label className="text-xs font-medium text-gray-700">Ad Account ID</label>
+              <input value={adAccountId} onChange={e => setAdAccountId(e.target.value)} className="w-full mt-1 px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="e.g. act_123456789" />
+            </div>
+            <div>
+              <label className="text-xs font-medium text-gray-700">Stripe Customer ID</label>
+              <input value={stripeCustomerId} onChange={e => setStripeCustomerId(e.target.value)} className="w-full mt-1 px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="e.g. cus_xxxxx" />
+            </div>
           </div>
           <div className="grid grid-cols-2 gap-2">
             <div>
