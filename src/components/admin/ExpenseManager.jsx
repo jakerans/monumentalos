@@ -335,6 +335,22 @@ function InlineEditCell({ value, displayValue, field, expenseId, onUpdate, type 
   );
 }
 
+function SortableHeader({ field, label, current, dir, onClick, align = 'left' }) {
+  const active = current === field;
+  const Icon = active ? (dir === 'asc' ? ArrowUp : ArrowDown) : ArrowUpDown;
+  return (
+    <th
+      className={`text-${align} px-3 py-2 font-medium cursor-pointer select-none hover:text-white transition-colors ${active ? 'text-[#D6FF03]' : ''}`}
+      onClick={() => onClick(field)}
+    >
+      <span className={`inline-flex items-center gap-1 ${align === 'right' ? 'justify-end w-full' : ''}`}>
+        {label}
+        <Icon className={`w-3 h-3 ${active ? 'opacity-100' : 'opacity-40'}`} />
+      </span>
+    </th>
+  );
+}
+
 function ExpenseRow({ expense: e, clients, onUpdate, onDelete, onApproveAI }) {
   const categoryOptions = Object.entries(CATEGORY_LABELS).map(([k, v]) => ({ value: k, label: v }));
   const typeOptions = [{ value: 'cogs', label: 'COGS' }, { value: 'overhead', label: 'Overhead' }];
