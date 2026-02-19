@@ -4,6 +4,7 @@ import isBetween from 'dayjs/plugin/isBetween';
 import { Trash2 } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import FlipMove from 'react-flip-move';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 dayjs.extend(isBetween);
 
