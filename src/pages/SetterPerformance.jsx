@@ -46,6 +46,8 @@ export default function SetterPerformance() {
   const clients = dashData?.clients || [];
   const leads = dashData?.leads || [];
   const users = dashData?.users || [];
+  const priorStart = dashData?.priorStart || null;
+  const priorEnd = dashData?.priorEnd || null;
 
   if (!user) return null;
   if (isLoading) return <PageLoader message="Loading setter performance..." />;
@@ -64,7 +66,7 @@ export default function SetterPerformance() {
           <DateRangePicker startDate={startDate} endDate={endDate} onStartChange={setStartDate} onEndChange={setEndDate} />
         </div>
 
-        <SetterPerformanceTable users={users} leads={leads} clients={clients} startDate={startDate} endDate={endDate} />
+        <SetterPerformanceTable users={users} leads={leads} clients={clients} startDate={startDate} endDate={endDate} priorStart={priorStart} priorEnd={priorEnd} />
 
         <SpiffManager leads={leads} users={users} />
       </main>
