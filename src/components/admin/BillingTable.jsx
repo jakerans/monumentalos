@@ -90,6 +90,22 @@ export default function BillingTable({ rows, kpis, pagination, onRefresh, onPage
         </div>
       </div>
 
+      {/* Bulk delete toolbar */}
+      {selectedIds.size > 0 && (
+        <div className="flex items-center gap-3 mb-3 p-3 bg-red-500/10 border border-red-500/30 rounded-lg">
+          <span className="text-xs text-red-300 font-medium">{selectedIds.size} selected</span>
+          <button
+            onClick={handleBulkDelete}
+            disabled={deleting}
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium bg-red-600 text-white rounded-md hover:bg-red-700 disabled:opacity-50"
+          >
+            {deleting ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Trash2 className="w-3.5 h-3.5" />}
+            {deleting ? 'Deleting...' : 'Delete Selected'}
+          </button>
+          <button onClick={() => setSelectedIds(new Set())} className="text-xs text-slate-400 hover:text-white">Cancel</button>
+        </div>
+      )}
+
       <div className="bg-slate-800/50 rounded-lg border border-slate-700/50 overflow-hidden">
         {/* Mobile card view */}
         <div className="sm:hidden divide-y divide-slate-700/30">
@@ -100,7 +116,10 @@ export default function BillingTable({ rows, kpis, pagination, onRefresh, onPage
             return (
               <div key={r.id} className="px-4 py-3 space-y-2">
                 <div className="flex items-center justify-between">
-                  <span className="font-medium text-white text-sm">{r.clientName}</span>
+                  <div className="flex items-center gap-2">
+                    <input type="checkbox" checked={selectedIds.has(r.id)} onChange={() => toggleSelect(r.id)} className="rounded border-slate-600 bg-slate-700 text-blue-500 w-3.5 h-3.5 cursor-pointer" />
+                    <span className="font-medium text-white text-sm">{r.clientName}</span>
+                  </div>
                   <span className={`inline-flex items-center gap-1 px-2 py-0.5 text-[10px] font-medium rounded-full border ${sc.bg} ${sc.color}`}>
                     <sc.icon className="w-3 h-3" />{sc.label}
                   </span>
