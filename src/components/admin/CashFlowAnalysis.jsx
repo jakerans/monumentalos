@@ -47,7 +47,7 @@ export default function CashFlowAnalysis({ payments, expenses }) {
       const inRange = (d) => { if (!d) return false; const dt = new Date(d); return dt >= mStart && dt <= mEnd; };
 
       const inflows = payments.filter(p => inRange(p.date)).reduce((s, p) => s + (p.amount || 0), 0);
-      const outflows = expenses.filter(e => inRange(e.date) && e.category !== 'distribution').reduce((s, e) => s + (e.amount || 0), 0);
+      const outflows = expenses.filter(e => inRange(e.date) && e.expense_type !== 'distribution').reduce((s, e) => s + (e.amount || 0), 0);
       const net = inflows - outflows;
       cumulative += net;
 
