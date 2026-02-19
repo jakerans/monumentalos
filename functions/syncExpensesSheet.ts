@@ -109,6 +109,11 @@ Deno.serve(async (req) => {
     let skippedPositive = 0;
     const sheetUpdates = [];
 
+    // Collect new expenses to bulk-create
+    const newExpenseBatch = []; // { rowIndex, data }
+    // Collect DB updates
+    const dbUpdateBatch = []; // { id, data }
+
     // 3. Process each row (skip header)
     for (let i = 1; i < rows.length; i++) {
       const row = rows[i];
@@ -125,7 +130,7 @@ Deno.serve(async (req) => {
       const rawDate = getCell(row, BANK_DATE_COL);
       const rawDesc = getCell(row, BANK_DESC_COL);
       const date = parseDate(rawDate);
-      if (!date) continue; // can't import without a date
+      if (!date) continue;
 
       const expenseAmount = Math.abs(amount);
       const appId = getCell(row, APP_ID_COL);
@@ -137,24 +142,23 @@ Deno.serve(async (req) => {
       if (appId && expenseById[appId]) {
         // ── Already synced — 2-way merge ──
         const existing = expenseById[appId];
-        const dbUpdates = {};
+        const dbUpdatesObj = {};
 
-        // Sheet → DB (sheet wins for non-empty values that differ)
         if (sheetCategory && VALID_CATEGORIES.includes(sheetCategory) && sheetCategory !== existing.category) {
-          dbUpdates.category = sheetCategory;
+          dbUpdatesObj.category = sheetCategory;
         }
         if (sheetExpType && VALID_TYPES.includes(sheetExpType) && sheetExpType !== existing.expense_type) {
-          dbUpdates.expense_type = sheetExpType;
+          dbUpdatesObj.expense_type = sheetExpType;
         }
         if (sheetClientId && sheetClientId !== (existing.client_id || '')) {
-          dbUpdates.client_id = sheetClientId;
+          dbUpdatesObj.client_id = sheetClientId;
         }
         if (sheetVendor && sheetVendor !== (existing.vendor || '')) {
-          dbUpdates.vendor = sheetVendor;
+          dbUpdatesObj.vendor = sheetVendor;
         }
 
-        if (Object.keys(dbUpdates).length > 0) {
-          await base44.asServiceRole.entities.Expense.update(appId, dbUpdates);
+        if (Object.keys(dbUpdatesObj).length > 0) {
+          dbUpdateBatch.push({ id: appId, data: dbUpdatesObj });
           updatedFromSheet++;
         }
 
@@ -167,8 +171,6 @@ Deno.serve(async (req) => {
           existing.vendor || '',
           'Yes',
         ];
-
-        // Only update if something changed
         const currentAppCells = [
           getCell(row, APP_ID_COL),
           getCell(row, APP_CATEGORY_COL),
@@ -178,13 +180,12 @@ Deno.serve(async (req) => {
           getCell(row, APP_SYNCED_COL),
         ];
 
-        // Fill empty cells from DB
         let changed = false;
         for (let c = 0; c < appCells.length; c++) {
           if (!currentAppCells[c] && appCells[c]) {
             changed = true;
           } else if (currentAppCells[c]) {
-            appCells[c] = currentAppCells[c]; // keep sheet value
+            appCells[c] = currentAppCells[c];
           }
         }
 
@@ -196,7 +197,7 @@ Deno.serve(async (req) => {
           updatedToSheet++;
         }
       } else if (!appId) {
-        // ── New bank transaction — import to DB ──
+        // ── New bank transaction — queue for bulk import ──
         const newExpense = {
           category: (sheetCategory && VALID_CATEGORIES.includes(sheetCategory)) ? sheetCategory : 'other',
           expense_type: (sheetExpType && VALID_TYPES.includes(sheetExpType)) ? sheetExpType : 'overhead',
@@ -206,23 +207,39 @@ Deno.serve(async (req) => {
           vendor: sheetVendor || '',
         };
         if (sheetClientId) newExpense.client_id = sheetClientId;
+        newExpenseBatch.push({ rowIndex: i, data: newExpense });
+      }
+    }
 
-        const created = await base44.asServiceRole.entities.Expense.create(newExpense);
-        imported++;
+    // 3b. Bulk create new expenses in batches of 50
+    for (let b = 0; b < newExpenseBatch.length; b += 50) {
+      const batch = newExpenseBatch.slice(b, b + 50);
+      const dataArr = batch.map(item => item.data);
+      const created = await base44.asServiceRole.entities.Expense.bulkCreate(dataArr);
+      imported += created.length;
 
-        // Write our app columns back to sheet
+      // Write App ID + app columns back to sheet for each created record
+      for (let j = 0; j < created.length; j++) {
+        const rowIdx = batch[j].rowIndex;
+        const rec = created[j];
+        const exp = batch[j].data;
         sheetUpdates.push({
-          range: `${SHEET_NAME}!${colLetter(APP_ID_COL)}${i + 1}:${colLetter(APP_SYNCED_COL)}${i + 1}`,
+          range: `${SHEET_NAME}!${colLetter(APP_ID_COL)}${rowIdx + 1}:${colLetter(APP_SYNCED_COL)}${rowIdx + 1}`,
           values: [[
-            created.id,
-            newExpense.category,
-            newExpense.expense_type,
-            newExpense.client_id || '',
-            newExpense.vendor,
+            rec.id,
+            exp.category,
+            exp.expense_type,
+            exp.client_id || '',
+            exp.vendor,
             'Yes',
           ]],
         });
       }
+    }
+
+    // 3c. Process DB updates (one by one, but these should be few)
+    for (const upd of dbUpdateBatch) {
+      await base44.asServiceRole.entities.Expense.update(upd.id, upd.data);
     }
 
     // 4. Batch update sheet (groups of 100)
