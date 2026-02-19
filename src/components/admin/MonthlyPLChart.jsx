@@ -33,7 +33,7 @@ export default function MonthlyPLChart({ clients, leads, payments, expenses }) {
       });
 
       const collected = payments.filter(p => inRange(p.date)).reduce((s, p) => s + (p.amount || 0), 0);
-      const mExpenses = expenses.filter(e => inRange(e.date));
+      const mExpenses = expenses.filter(e => inRange(e.date) && e.category !== 'distribution');
       const cogs = mExpenses.filter(e => e.expense_type === 'cogs').reduce((s, e) => s + (e.amount || 0), 0);
       const overhead = mExpenses.filter(e => e.expense_type !== 'cogs').reduce((s, e) => s + (e.amount || 0), 0);
       const grossProfit = grossRevenue - cogs;
