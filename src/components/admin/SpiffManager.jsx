@@ -181,11 +181,10 @@ export default function SpiffManager({ leads, users }) {
   };
 
   const handleCreate = () => {
-    const finalDueDate = form.is_daily ? new Date().toISOString().split('T')[0] : form.due_date;
     const data = {
       ...form,
       goal_value: Number(form.goal_value),
-      due_date: finalDueDate,
+      due_date: form.due_date,
       ...(form.scope !== 'individual' ? { assigned_setter_id: undefined } : {}),
     };
     createMutation.mutate(data);
@@ -352,11 +351,17 @@ export default function SpiffManager({ leads, users }) {
               </button>
               <div>
                 <span className="text-xs text-white font-medium">Daily Spiff</span>
-                <p className="text-[10px] text-slate-500">Due by end of today — shows blazing banner on setter dashboard</p>
+                <p className="text-[10px] text-slate-500">Only counts activity on the chosen day — expires at EOD if not met</p>
               </div>
             </div>
 
-            {!form.is_daily && (
+            {form.is_daily ? (
+              <div>
+                <label className="text-[10px] text-slate-400 uppercase mb-1 block">Spiff Day</label>
+                <input type="date" value={form.due_date} onChange={e => setForm({ ...form, due_date: e.target.value })}
+                  className="w-full px-3 py-2 text-sm bg-slate-900 border border-slate-700 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-[#D6FF03]" />
+              </div>
+            ) : (
               <div>
                 <label className="text-[10px] text-slate-400 uppercase mb-1 block">Due Date</label>
                 <input type="date" value={form.due_date} onChange={e => setForm({ ...form, due_date: e.target.value })}
