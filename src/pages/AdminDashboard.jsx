@@ -13,9 +13,8 @@ import MTDGoalProgress from '../components/admin/MTDGoalProgress';
 import GoalManagementModal from '../components/admin/GoalManagementModal';
 import PLComparisonRow from '../components/admin/PLComparisonRow.jsx';
 import StatCompareCard from '../components/admin/StatCompareCard.jsx';
-import { Settings, Trophy, Eye, RefreshCw, Sparkles } from 'lucide-react';
+import { Settings, Trophy, Eye, RefreshCw } from 'lucide-react';
 import InfoTooltip from '../components/shared/InfoTooltip';
-import AICoachInstructionsModal from '../components/admin/AICoachInstructionsModal';
 import PageErrorBoundary from '../components/shared/PageErrorBoundary';
 import PageLoader from '../components/shared/PageLoader';
 import AdminDashboardSkeleton from '../components/admin/AdminDashboardSkeleton';
@@ -34,7 +33,6 @@ export default function AdminDashboard() {
   const [goalsOpen, setGoalsOpen] = useState(false);
   const [showPerfTester, setShowPerfTester] = useState(false);
   const [syncing, setSyncing] = useState(false);
-  const [aiCoachOpen, setAiCoachOpen] = useState(false);
   const effectsOn = getEffectsEnabled();
   const now = new Date();
 
@@ -135,14 +133,6 @@ export default function AdminDashboard() {
               }`}
             >
               <Eye className="w-3.5 h-3.5" /> Preview Effects
-            </motion.button>
-            <motion.button
-              whileHover={effectsOn ? { scale: 1.05 } : {}}
-              whileTap={effectsOn ? { scale: 0.95 } : {}}
-              onClick={() => setAiCoachOpen(true)}
-              className="px-3 py-2 text-xs font-bold rounded-lg flex items-center gap-1.5 transition-all border bg-slate-800 border-slate-700 text-slate-400 hover:text-white"
-            >
-              <Sparkles className="w-3.5 h-3.5" /> AI Coach
             </motion.button>
             <motion.button
               whileHover={effectsOn ? { scale: 1.05 } : {}}
@@ -274,7 +264,6 @@ export default function AdminDashboard() {
       </main>
 
       <GoalManagementModal open={goalsOpen} onOpenChange={setGoalsOpen} goals={goals} onSaved={refetchDash} />
-      <AICoachInstructionsModal open={aiCoachOpen} onOpenChange={setAiCoachOpen} />
       <AdminMobileNav currentPage="AdminDashboard" clients={clients} />
     </div>
     </PageErrorBoundary>
