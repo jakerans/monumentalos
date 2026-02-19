@@ -1,9 +1,9 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useRef, useEffect } from 'react';
 import dayjs from 'dayjs';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import { toast } from '@/components/ui/use-toast';
-import { Trash2, Pencil, Plus, Filter, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Trash2, Plus, Filter, ChevronLeft, ChevronRight, Check, X } from 'lucide-react';
 import ExpenseTabSkeleton from './ExpenseTabSkeleton';
 
 const CATEGORY_LABELS = {
@@ -34,9 +34,6 @@ export default function ExpenseManager({ startDate, endDate, onAddExpense }) {
   const [filterCat, setFilterCat] = useState('all');
   const [filterType, setFilterType] = useState('all');
   const [page, setPage] = useState(0);
-  const [editingId, setEditingId] = useState(null);
-  const [editData, setEditData] = useState({});
-  const [savingEdit, setSavingEdit] = useState(false);
 
   const { data, isLoading, refetch } = useQuery({
     queryKey: ['expense-tab-data', startDate, endDate, filterCat, filterType, page],
@@ -73,31 +70,11 @@ export default function ExpenseManager({ startDate, endDate, onAddExpense }) {
     refetch();
   };
 
-  const startEdit = (e) => {
-    setEditingId(e.id);
-    setEditData({
-      category: e.category || 'other',
-      expense_type: e.expense_type || 'overhead',
-      description: e.description || '',
-      amount: e.amount || 0,
-      date: e.date || '',
-      vendor: e.vendor || '',
-      recurring: e.recurring || false,
-      client_id: e.client_id || '',
-    });
-  };
-
-  const saveEdit = async () => {
-    if (!editData.amount || !editData.date) return;
-    setSavingEdit(true);
-    await base44.entities.Expense.update(editingId, {
-      ...editData,
-      amount: Number(editData.amount),
-      client_id: editData.client_id || undefined,
-    });
-    setSavingEdit(false);
-    setEditingId(null);
-    toast({ title: 'Expense Updated', variant: 'success' });
+  const handleInlineUpdate = async (id, field, value) => {
+    const update = { [field]: field === 'amount' ? Number(value) : value };
+    if (field === 'client_id' && !value) update.client_id = undefined;
+    await base44.entities.Expense.update(id, update);
+    toast({ title: 'Updated', variant: 'success' });
     refetch();
   };
 
@@ -180,10 +157,8 @@ export default function ExpenseManager({ startDate, endDate, onAddExpense }) {
             <tbody className="divide-y divide-slate-700/30">
               {expenses.length === 0 ? (
                 <tr><td colSpan={8} className="text-center py-8 text-slate-500">No expenses match your filters</td></tr>
-              ) : expenses.map(e => editingId === e.id ? (
-                <EditRow key={e.id} editData={editData} setEditData={setEditData} clients={clients} onSave={saveEdit} onCancel={() => setEditingId(null)} saving={savingEdit} />
-              ) : (
-                <ExpenseRow key={e.id} expense={e} onEdit={() => startEdit(e)} onDelete={() => handleDelete(e.id)} />
+              ) : expenses.map(e => (
+                <ExpenseRow key={e.id} expense={e} clients={clients} onUpdate={handleInlineUpdate} onDelete={() => handleDelete(e.id)} />
               ))}
             </tbody>
           </table>
@@ -218,72 +193,74 @@ function SummaryCard({ label, value, color, subtitle }) {
   );
 }
 
-function ExpenseRow({ expense: e, onEdit, onDelete }) {
+function InlineEditCell({ value, displayValue, field, expenseId, onUpdate, type = 'text', options, className = '' }) {
+  const [editing, setEditing] = useState(false);
+  const [localVal, setLocalVal] = useState(value);
+  const inputRef = useRef(null);
+
+  useEffect(() => { setLocalVal(value); }, [value]);
+  useEffect(() => {
+    if (editing && inputRef.current) inputRef.current.focus();
+  }, [editing]);
+
+  const save = () => {
+    if (localVal !== value) onUpdate(expenseId, field, localVal);
+    setEditing(false);
+  };
+  const cancel = () => { setLocalVal(value); setEditing(false); };
+  const onKey = (ev) => { if (ev.key === 'Enter') save(); if (ev.key === 'Escape') cancel(); };
+
+  if (!editing) {
+    return (
+      <div onClick={() => setEditing(true)} className={`cursor-pointer rounded px-1 -mx-1 hover:bg-slate-600/30 transition-colors ${className}`}>
+        {displayValue}
+      </div>
+    );
+  }
+
+  if (options) {
+    return (
+      <select ref={inputRef} value={localVal} onChange={ev => { const v = ev.target.value; setLocalVal(v); onUpdate(expenseId, field, v); setEditing(false); }} onBlur={() => setEditing(false)} className="w-full min-w-0 px-1 py-0.5 text-xs bg-slate-900 border border-[#D6FF03]/50 rounded text-white outline-none">
+        {options.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
+      </select>
+    );
+  }
+
   return (
-    <tr className="hover:bg-slate-700/20 transition-colors">
-      <td className="px-3 py-2 text-slate-300 truncate">{dayjs(e.date).format('MMM D, YYYY')}</td>
-      <td className="px-3 py-2">
-        <span className={`px-1.5 py-0.5 text-[10px] font-medium rounded border ${CATEGORY_COLORS[e.category] || CATEGORY_COLORS.other}`}>
-          {CATEGORY_LABELS[e.category] || e.category}
-        </span>
-      </td>
-      <td className="px-3 py-2">
-        <span className={`px-1.5 py-0.5 text-[10px] font-medium rounded border ${TYPE_COLORS[e.expense_type] || TYPE_COLORS.overhead}`}>
-          {TYPE_LABELS[e.expense_type] || 'OH'}
-        </span>
-      </td>
-      <td className="px-3 py-2 text-white truncate">{e.description || '—'}</td>
-      <td className="px-3 py-2 text-slate-400 truncate">{e.vendor || '—'}</td>
-      <td className="px-3 py-2 text-slate-400 truncate">{e.client_name || '—'}</td>
-      <td className="px-3 py-2 text-right font-bold text-red-400">${(e.amount || 0).toLocaleString()}</td>
-      <td className="px-3 py-2 text-center">
-        <div className="flex items-center justify-center gap-1">
-          <button onClick={onEdit} className="p-1 text-slate-500 hover:text-blue-400 transition-colors"><Pencil className="w-3 h-3" /></button>
-          <button onClick={onDelete} className="p-1 text-slate-500 hover:text-red-400 transition-colors"><Trash2 className="w-3 h-3" /></button>
-        </div>
-      </td>
-    </tr>
+    <input ref={inputRef} type={type} value={localVal} onChange={ev => setLocalVal(ev.target.value)} onBlur={save} onKeyDown={onKey} className={`w-full min-w-0 px-1 py-0.5 text-xs bg-slate-900 border border-[#D6FF03]/50 rounded text-white outline-none ${type === 'number' ? 'text-right' : ''}`} />
   );
 }
 
-function EditRow({ editData, setEditData, clients, onSave, onCancel, saving }) {
+function ExpenseRow({ expense: e, clients, onUpdate, onDelete }) {
+  const categoryOptions = Object.entries(CATEGORY_LABELS).map(([k, v]) => ({ value: k, label: v }));
+  const typeOptions = [{ value: 'cogs', label: 'COGS' }, { value: 'overhead', label: 'Overhead' }];
+  const clientOptions = [{ value: '', label: 'None' }, ...clients.map(c => ({ value: c.id, label: c.name }))];
+
   return (
-    <tr className="bg-slate-700/30">
-      <td className="px-3 py-2">
-        <input type="date" value={editData.date} onChange={ev => setEditData({ ...editData, date: ev.target.value })} className="w-full min-w-0 px-1.5 py-1 text-xs bg-slate-900 border border-slate-600 rounded text-white" />
+    <tr className="hover:bg-slate-700/20 transition-colors group">
+      <td className="px-3 py-2 text-slate-300">
+        <InlineEditCell value={e.date || ''} displayValue={dayjs(e.date).format('MMM D, YYYY')} field="date" expenseId={e.id} onUpdate={onUpdate} type="date" />
       </td>
       <td className="px-3 py-2">
-        <select value={editData.category} onChange={ev => setEditData({ ...editData, category: ev.target.value })} className="w-full min-w-0 px-1.5 py-1 text-xs bg-slate-900 border border-slate-600 rounded text-white">
-          {Object.entries(CATEGORY_LABELS).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
-        </select>
+        <InlineEditCell value={e.category || 'other'} displayValue={<span className={`px-1.5 py-0.5 text-[10px] font-medium rounded border ${CATEGORY_COLORS[e.category] || CATEGORY_COLORS.other}`}>{CATEGORY_LABELS[e.category] || e.category}</span>} field="category" expenseId={e.id} onUpdate={onUpdate} options={categoryOptions} />
       </td>
       <td className="px-3 py-2">
-        <select value={editData.expense_type} onChange={ev => setEditData({ ...editData, expense_type: ev.target.value })} className="w-full min-w-0 px-1.5 py-1 text-xs bg-slate-900 border border-slate-600 rounded text-white">
-          <option value="cogs">COGS</option>
-          <option value="overhead">OH</option>
-          <option value="distribution">Dist</option>
-        </select>
+        <InlineEditCell value={e.expense_type || 'overhead'} displayValue={<span className={`px-1.5 py-0.5 text-[10px] font-medium rounded border ${TYPE_COLORS[e.expense_type] || TYPE_COLORS.overhead}`}>{TYPE_LABELS[e.expense_type] || 'OH'}</span>} field="expense_type" expenseId={e.id} onUpdate={onUpdate} options={typeOptions} />
       </td>
-      <td className="px-3 py-2">
-        <input value={editData.description} onChange={ev => setEditData({ ...editData, description: ev.target.value })} className="w-full min-w-0 px-1.5 py-1 text-xs bg-slate-900 border border-slate-600 rounded text-white" />
+      <td className="px-3 py-2 text-white">
+        <InlineEditCell value={e.description || ''} displayValue={<span className="truncate block">{e.description || '—'}</span>} field="description" expenseId={e.id} onUpdate={onUpdate} />
       </td>
-      <td className="px-3 py-2">
-        <input value={editData.vendor} onChange={ev => setEditData({ ...editData, vendor: ev.target.value })} className="w-full min-w-0 px-1.5 py-1 text-xs bg-slate-900 border border-slate-600 rounded text-white" />
+      <td className="px-3 py-2 text-slate-400">
+        <InlineEditCell value={e.vendor || ''} displayValue={<span className="truncate block">{e.vendor || '—'}</span>} field="vendor" expenseId={e.id} onUpdate={onUpdate} />
       </td>
-      <td className="px-3 py-2">
-        <select value={editData.client_id} onChange={ev => setEditData({ ...editData, client_id: ev.target.value })} className="w-full min-w-0 px-1.5 py-1 text-xs bg-slate-900 border border-slate-600 rounded text-white">
-          <option value="">None</option>
-          {clients.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
-        </select>
+      <td className="px-3 py-2 text-slate-400">
+        <InlineEditCell value={e.client_id || ''} displayValue={<span className="truncate block">{e.client_name || '—'}</span>} field="client_id" expenseId={e.id} onUpdate={onUpdate} options={clientOptions} />
       </td>
-      <td className="px-3 py-2">
-        <input type="number" value={editData.amount} onChange={ev => setEditData({ ...editData, amount: ev.target.value })} className="w-full min-w-0 px-1.5 py-1 text-xs bg-slate-900 border border-slate-600 rounded text-white text-right" />
+      <td className="px-3 py-2 text-right font-bold text-red-400">
+        <InlineEditCell value={e.amount || 0} displayValue={`$${(e.amount || 0).toLocaleString()}`} field="amount" expenseId={e.id} onUpdate={onUpdate} type="number" className="text-right" />
       </td>
       <td className="px-3 py-2 text-center">
-        <div className="flex items-center justify-center gap-1">
-          <button onClick={onSave} disabled={saving} className="px-2 py-1 text-[10px] font-medium bg-[#D6FF03] text-black rounded hover:bg-[#c2e600]">{saving ? '...' : 'Save'}</button>
-          <button onClick={onCancel} className="px-2 py-1 text-[10px] font-medium text-slate-400 hover:text-white">×</button>
-        </div>
+        <button onClick={onDelete} className="p-1 text-slate-600 opacity-0 group-hover:opacity-100 hover:text-red-400 transition-all"><Trash2 className="w-3 h-3" /></button>
       </td>
     </tr>
   );
