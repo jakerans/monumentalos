@@ -1,7 +1,7 @@
 import React, { useMemo } from 'react';
 import dayjs from 'dayjs';
 import isBetween from 'dayjs/plugin/isBetween';
-import { Timer, Calendar, Target, TrendingUp, Award } from 'lucide-react';
+import { Timer, Calendar, Target, TrendingUp, Award, DollarSign } from 'lucide-react';
 import SparklineCard from '../shared/SparklineCard';
 import AnimatedTable from '../shared/AnimatedTable';
 
@@ -39,6 +39,7 @@ export default function SetterPerformanceTable({ users, leads, clients, startDat
     { label: 'Total Booked', value: totalBooked, icon: Calendar, color: 'text-purple-400', bg: 'bg-purple-500/10', spark: '#c084fc' },
     { label: 'Total Showed', value: totalShowed, icon: Target, color: 'text-green-400', bg: 'bg-green-500/10', spark: '#34d399' },
     { label: 'Avg Booking Rate', value: totalCalls > 0 ? `${((totalBooked / totalCalls) * 100).toFixed(1)}%` : '—', icon: TrendingUp, color: 'text-amber-400', bg: 'bg-amber-500/10', spark: '#fbbf24' },
+    { label: 'Total Revenue', value: `$${stats.reduce((s, r) => s + r.revenue, 0).toLocaleString()}`, icon: DollarSign, color: 'text-emerald-400', bg: 'bg-emerald-500/10', spark: '#34d399' },
   ];
 
   const columns = [
@@ -97,7 +98,7 @@ export default function SetterPerformanceTable({ users, leads, clients, startDat
 
   return (
     <div className="space-y-6">
-      <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+      <div className="grid grid-cols-2 md:grid-cols-6 gap-3">
         {summaryCards.map((c, i) => (
           <SparklineCard key={c.label} index={i} label={c.label} value={c.value} icon={c.icon} iconBg={c.bg} iconColor={c.color} sparkColor={c.spark} />
         ))}
