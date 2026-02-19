@@ -37,13 +37,9 @@ export default function EmployeeTable({ employees, payrollSettings, onSelect, la
           <p className="text-lg sm:text-xl font-bold text-white">${Math.round(totalAnnual).toLocaleString()}</p>
         </div>
         <div className="bg-slate-800/50 rounded-lg border border-slate-700/50 px-3 sm:px-4 py-2.5 sm:py-3">
-          <p className="text-[10px] sm:text-xs font-medium text-slate-400 uppercase">COGS / Overhead</p>
-          <p className="text-sm sm:text-base font-bold text-white">
-            <span className="text-orange-400">${Math.round(cogsMonthly).toLocaleString()}</span>
-            <span className="text-slate-500 mx-1">/</span>
-            <span className="text-blue-400">${Math.round(overheadMonthly).toLocaleString()}</span>
-            <span className="text-[10px] text-slate-500 font-normal">/mo</span>
-          </p>
+          <p className="text-[10px] sm:text-xs font-medium text-slate-400 uppercase">Revenue / FTE</p>
+          <p className="text-lg sm:text-xl font-bold text-white">${revenuePerFTE.toLocaleString()}</p>
+          <p className="text-[10px] text-slate-500">Last month collected</p>
         </div>
       </div>
 
