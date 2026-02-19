@@ -4,6 +4,7 @@ import { useQuery } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import AdminNav from '../components/admin/AdminNav';
+import AdminMobileNav from '../components/admin/AdminMobileNav';
 import ClientOverviewTable from '../components/admin/ClientOverviewTable';
 import ClientPerfKPIs from '../components/admin/ClientPerfKPIs';
 import ClientPerfCharts from '../components/admin/ClientPerfCharts';
@@ -60,6 +61,7 @@ export default function ClientPerformance() {
         <ClientPerfCharts clients={clients} leads={leads} spend={spend} />
         <ClientOverviewTable clients={clients} leads={leads} spend={spend} payments={payments} />
       </main>
+      <AdminMobileNav currentPage="ClientPerformance" clients={clients} />
     </div>
     </PageErrorBoundary>
   );
