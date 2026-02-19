@@ -4,24 +4,35 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Gift, Plus, Trash2, Users, User, Clock, Target } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 
-function SpiffProgressBar({ spiff, leads, users }) {
+function getDateRangeForSpiff(spiff) {
   const now = new Date();
-  const mtdStart = new Date(now.getFullYear(), now.getMonth(), 1);
+  if (spiff.is_daily && spiff.due_date) {
+    const dayStart = new Date(spiff.due_date + 'T00:00:00');
+    const dayEnd = new Date(spiff.due_date + 'T23:59:59');
+    return { rangeStart: dayStart, rangeEnd: dayEnd };
+  }
+  return { rangeStart: new Date(now.getFullYear(), now.getMonth(), 1), rangeEnd: now };
+}
+
+function SpiffProgressBar({ spiff, leads, users }) {
+  const { rangeStart, rangeEnd } = getDateRangeForSpiff(spiff);
   const setters = users.filter(u => u.app_role === 'setter');
+
+  const inRange = (d) => d ? new Date(d) >= rangeStart && new Date(d) <= rangeEnd : false;
 
   const getProgress = (setterId) => {
     if (spiff.qualifier === 'appointments') {
-      return leads.filter(l => l.booked_by_setter_id === setterId && l.date_appointment_set && new Date(l.date_appointment_set) >= mtdStart).length;
+      return leads.filter(l => l.booked_by_setter_id === setterId && inRange(l.date_appointment_set)).length;
     }
-    const stlLeads = leads.filter(l => l.setter_id === setterId && l.speed_to_lead_minutes != null && new Date(l.created_date) >= mtdStart);
+    const stlLeads = leads.filter(l => l.setter_id === setterId && l.speed_to_lead_minutes != null && inRange(l.created_date));
     return stlLeads.length > 0 ? Math.round(stlLeads.reduce((s, l) => s + l.speed_to_lead_minutes, 0) / stlLeads.length) : null;
   };
 
   const getTeamProgress = () => {
     if (spiff.qualifier === 'appointments') {
-      return leads.filter(l => l.date_appointment_set && new Date(l.date_appointment_set) >= mtdStart).length;
+      return leads.filter(l => inRange(l.date_appointment_set)).length;
     }
-    const stlLeads = leads.filter(l => l.speed_to_lead_minutes != null && new Date(l.created_date) >= mtdStart);
+    const stlLeads = leads.filter(l => l.speed_to_lead_minutes != null && inRange(l.created_date));
     return stlLeads.length > 0 ? Math.round(stlLeads.reduce((s, l) => s + l.speed_to_lead_minutes, 0) / stlLeads.length) : null;
   };
 
@@ -91,23 +102,24 @@ function SpiffProgressBar({ spiff, leads, users }) {
 }
 
 function checkSpiffGoalMet(spiff, leads, users) {
-  const now = new Date();
-  const mtdStart = new Date(now.getFullYear(), now.getMonth(), 1);
+  const { rangeStart, rangeEnd } = getDateRangeForSpiff(spiff);
   const setters = users.filter(u => u.app_role === 'setter');
+
+  const inRange = (d) => d ? new Date(d) >= rangeStart && new Date(d) <= rangeEnd : false;
 
   const getProgress = (setterId) => {
     if (spiff.qualifier === 'appointments') {
-      return leads.filter(l => l.booked_by_setter_id === setterId && l.date_appointment_set && new Date(l.date_appointment_set) >= mtdStart).length;
+      return leads.filter(l => l.booked_by_setter_id === setterId && inRange(l.date_appointment_set)).length;
     }
-    const stlLeads = leads.filter(l => l.setter_id === setterId && l.speed_to_lead_minutes != null && new Date(l.created_date) >= mtdStart);
+    const stlLeads = leads.filter(l => l.setter_id === setterId && l.speed_to_lead_minutes != null && inRange(l.created_date));
     return stlLeads.length > 0 ? Math.round(stlLeads.reduce((s, l) => s + l.speed_to_lead_minutes, 0) / stlLeads.length) : null;
   };
 
   const getTeamProgress = () => {
     if (spiff.qualifier === 'appointments') {
-      return leads.filter(l => l.date_appointment_set && new Date(l.date_appointment_set) >= mtdStart).length;
+      return leads.filter(l => inRange(l.date_appointment_set)).length;
     }
-    const stlLeads = leads.filter(l => l.speed_to_lead_minutes != null && new Date(l.created_date) >= mtdStart);
+    const stlLeads = leads.filter(l => l.speed_to_lead_minutes != null && inRange(l.created_date));
     return stlLeads.length > 0 ? Math.round(stlLeads.reduce((s, l) => s + l.speed_to_lead_minutes, 0) / stlLeads.length) : null;
   };
 
