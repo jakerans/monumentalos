@@ -165,7 +165,11 @@ export default function SpiffManager({ leads, users }) {
       if (goalMet) {
         await base44.entities.Spiff.update(spiff.id, { status: 'completed' });
         refetch();
-      } else if (spiff.due_date && spiff.due_date < todayStr) {
+      } else if (spiff.is_daily && spiff.due_date && spiff.due_date < todayStr) {
+        // Daily spiff expired — day has passed without meeting goal
+        await base44.entities.Spiff.update(spiff.id, { status: 'expired' });
+        refetch();
+      } else if (!spiff.is_daily && spiff.due_date && spiff.due_date < todayStr) {
         await base44.entities.Spiff.update(spiff.id, { status: 'expired' });
         refetch();
       }
@@ -247,8 +251,10 @@ export default function SpiffManager({ leads, users }) {
                   {sp.description && <p className="text-[10px] text-slate-500 mt-0.5">{sp.description}</p>}
                   <div className="flex items-center gap-3 mt-1 text-[10px] text-slate-500">
                     {sp.reward && <span className="text-purple-400 font-medium">{sp.reward}</span>}
-                    {sp.is_daily && (
-                      <span className="text-orange-400 font-bold flex items-center gap-0.5">🔥 Daily</span>
+                    {sp.is_daily && sp.due_date && (
+                      <span className="text-orange-400 font-bold flex items-center gap-0.5">
+                        🔥 Daily — {new Date(sp.due_date + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                      </span>
                     )}
                     {sp.due_date && !sp.is_daily && (
                       <span className="flex items-center gap-0.5">
