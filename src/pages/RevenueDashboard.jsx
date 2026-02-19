@@ -4,7 +4,7 @@ import { useQuery } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import dayjs from 'dayjs';
-import { DollarSign, Receipt, BarChart3, TrendingUp, Users } from 'lucide-react';
+import { DollarSign, Receipt, BarChart3, TrendingUp, Users, Wallet } from 'lucide-react';
 import AdminNav from '../components/admin/AdminNav';
 import DateRangePicker from '../components/admin/DateRangePicker';
 import AccountingKPIs from '../components/admin/AccountingKPIs';
@@ -13,6 +13,7 @@ import MonthlyPLChart from '../components/admin/MonthlyPLChart';
 import ExpenseBreakdown from '../components/admin/ExpenseBreakdown';
 import PaymentLedger from '../components/admin/PaymentLedger';
 import CashFlowAnalysis from '../components/admin/CashFlowAnalysis';
+import ExpenseManager from '../components/admin/ExpenseManager';
 import AddPaymentModal from '../components/admin/AddPaymentModal';
 import AddExpenseModal from '../components/admin/AddExpenseModal';
 import PageErrorBoundary from '../components/shared/PageErrorBoundary';
@@ -86,6 +87,7 @@ export default function RevenueDashboard() {
           <div className="flex gap-1 bg-slate-800/50 rounded-lg p-1 border border-slate-700/50">
             {[
               { key: 'pl', label: 'P&L', icon: BarChart3 },
+              { key: 'expenses', label: 'Expenses', icon: Wallet },
               { key: 'cashflow', label: 'Cash Flow', icon: TrendingUp },
               { key: 'clients', label: 'Clients', icon: Users },
             ].map(tab => (
@@ -123,6 +125,11 @@ export default function RevenueDashboard() {
               <ExpenseBreakdown expenses={expenses} clients={clients} startDate={startDate} endDate={endDate} onRefresh={refetchExpenses} />
             </div>
           </div>
+        )}
+
+        {/* Expenses Tab */}
+        {activeTab === 'expenses' && (
+          <ExpenseManager expenses={expenses} clients={clients} startDate={startDate} endDate={endDate} onRefresh={refetchExpenses} onAddExpense={() => setExpenseOpen(true)} />
         )}
 
         {/* Cash Flow Tab */}
