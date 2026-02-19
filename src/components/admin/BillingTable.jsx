@@ -169,9 +169,9 @@ export default function BillingTable({ rows, kpis, pagination, onRefresh, onPage
             </thead>
             <FlipMove typeName="tbody" duration={350} easing="cubic-bezier(0.25, 0.46, 0.45, 0.94)" staggerDurationBy={15} enterAnimation="fade" leaveAnimation="fade" className="divide-y divide-slate-700/30">
               {rows.length === 0 ? (
-                <tr key="empty"><td colSpan={9} className="px-4 py-8 text-center text-slate-500">No billing records for this month</td></tr>
+                <tr key="empty"><td colSpan={10} className="px-4 py-8 text-center text-slate-500">No billing records for this month</td></tr>
               ) : rows.map(r => (
-                <BillingRow key={r.id} r={r} STATUS_CONFIG={STATUS_CONFIG} BILLING_LABELS={BILLING_LABELS} BILLING_COLORS={BILLING_COLORS} setMarkPaidRecord={setMarkPaidRecord} setEditRecord={setEditRecord} />
+                <BillingRow key={r.id} r={r} STATUS_CONFIG={STATUS_CONFIG} BILLING_LABELS={BILLING_LABELS} BILLING_COLORS={BILLING_COLORS} setMarkPaidRecord={setMarkPaidRecord} setEditRecord={setEditRecord} selected={selectedIds.has(r.id)} onToggle={() => toggleSelect(r.id)} />
               ))}
             </FlipMove>
           </table>
