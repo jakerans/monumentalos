@@ -33,7 +33,7 @@ const CashFlowLegend = ({ payload }) => (
   </div>
 );
 
-export default function CashFlowAnalysis({ payments, expenses }) {
+export default function CashFlowAnalysis({ payments, expenses, billingRecords = [] }) {
   const [bankBalance, setBankBalance] = useState(0);
   const [editingBalance, setEditingBalance] = useState(false);
   const [balanceInput, setBalanceInput] = useState('');
@@ -81,9 +81,14 @@ export default function CashFlowAnalysis({ payments, expenses }) {
       const mEnd = new Date(m.year, m.month + 1, 0, 23, 59, 59);
       const inRange = (d) => { if (!d) return false; const dt = new Date(d); return dt >= mStart && dt <= mEnd; };
 
-      const inflows = payments.filter(p => inRange(p.date)).reduce((s, p) => s + (p.amount || 0), 0);
-      const opEx = expenses.filter(e => inRange(e.date) && e.expense_type !== 'distribution').reduce((s, e) => s + (e.amount || 0), 0);
-      const distributions = expenses.filter(e => inRange(e.date) && e.expense_type === 'distribution').reduce((s, e) => s + (e.amount || 0), 0);
+      // Inflows = Payment entity + paid MonthlyBilling records (by paid_date)
+      const paymentInflows = payments.filter(p => inRange(p.date)).reduce((s, p) => s + (p.amount || 0), 0);
+      const billingInflows = billingRecords.filter(b => inRange(b.paid_date)).reduce((s, b) => s + (b.paid_amount || b.calculated_amount || 0), 0);
+      const inflows = paymentInflows + billingInflows;
+      // Operating expenses = everything that is NOT a distribution (by expense_type OR category)
+      const opEx = expenses.filter(e => inRange(e.date) && e.expense_type !== 'distribution' && e.category !== 'distribution').reduce((s, e) => s + (e.amount || 0), 0);
+      // Distributions = category OR expense_type is distribution
+      const distributions = expenses.filter(e => inRange(e.date) && (e.expense_type === 'distribution' || e.category === 'distribution')).reduce((s, e) => s + (e.amount || 0), 0);
       const totalOutflows = opEx + distributions;
       const net = inflows - totalOutflows;
       cumulative += net;
