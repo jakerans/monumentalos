@@ -1,5 +1,6 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
 
+// Google Sheet ID (same workbook as clients/leads)
 const SPREADSHEET_ID = '1qn4-rYBgi5ruOm7tB6obbA3yBvSyOU313yNI3b41STM';
 const SHEET_NAME = 'Expense Sheet';
 const SHEETS_API = 'https://sheets.googleapis.com/v4/spreadsheets';
