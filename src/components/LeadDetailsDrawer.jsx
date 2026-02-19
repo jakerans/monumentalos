@@ -4,6 +4,7 @@ import { base44 } from '@/api/base44Client';
 import { Mail, Phone, Calendar, DollarSign, Clock, Briefcase, Ruler, FileText, X, Pencil, Save, Tag } from 'lucide-react';
 import { toast } from '@/components/ui/use-toast';
 import confetti from 'canvas-confetti';
+import { ProjectSizeSelect, ProjectTypeSelect } from './shared/LeadFieldSelects';
 import {
   Sheet,
   SheetContent,
