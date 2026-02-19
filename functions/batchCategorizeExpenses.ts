@@ -13,14 +13,14 @@ async function fetchAllFiltered(entity, filter, sort) {
   return results;
 }
 
+const sleep = (ms) => new Promise(r => setTimeout(r, ms));
+
 async function runInBatches(items, batchSize, fn) {
-  let completed = 0;
   for (let i = 0; i < items.length; i += batchSize) {
     const chunk = items.slice(i, i + batchSize);
     await Promise.all(chunk.map(fn));
-    completed += chunk.length;
+    if (i + batchSize < items.length) await sleep(200);
   }
-  return completed;
 }
 
 Deno.serve(async (req) => {
