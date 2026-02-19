@@ -17,8 +17,6 @@ export default function ClientPerfCharts({ clients, leads, spend }) {
       .sort((a, b) => b.booked - a.booked);
   }, [active, leads, spend]);
 
-  const chartHeight = Math.max(180, Math.min(250, clientBars.length * 35));
-
   if (clientBars.length === 0) {
     return (
       <div className="bg-slate-800/50 rounded-lg border border-slate-700/50 p-6 text-center">
@@ -33,27 +31,27 @@ export default function ClientPerfCharts({ clients, leads, spend }) {
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
       <div className="bg-slate-800/50 rounded-lg border border-slate-700/50 p-4">
         <h3 className="text-sm font-bold text-white mb-3">MTD Appointments by Client</h3>
-        <ResponsiveContainer width="100%" height={chartHeight}>
-          <BarChart data={clientBars} layout="vertical" margin={{ left: 4, right: 12, top: 4, bottom: 4 }}>
-            <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" horizontal={false} />
-            <XAxis type="number" tick={{ fontSize: 10, fill: '#94a3b8' }} allowDecimals={false} />
-            <YAxis type="category" dataKey="name" tick={{ fontSize: 10, fill: '#94a3b8' }} width={80} />
+        <ResponsiveContainer width="100%" height={250}>
+          <BarChart data={clientBars} margin={{ left: -10, right: 8, top: 4, bottom: 4 }}>
+            <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" vertical={false} />
+            <XAxis dataKey="name" tick={{ fontSize: 9, fill: '#94a3b8' }} angle={-35} textAnchor="end" height={50} interval={0} />
+            <YAxis tick={{ fontSize: 10, fill: '#94a3b8' }} allowDecimals={false} />
             <Tooltip contentStyle={tooltipStyle} />
             <Legend wrapperStyle={{ fontSize: 10 }} />
-            <Bar dataKey="booked" fill="#8b5cf6" name="Booked" radius={[0, 2, 2, 0]} barSize={14} />
-            <Bar dataKey="showed" fill="#10b981" name="Showed" radius={[0, 2, 2, 0]} barSize={14} />
+            <Bar dataKey="booked" fill="#8b5cf6" name="Booked" radius={[2, 2, 0, 0]} />
+            <Bar dataKey="showed" fill="#10b981" name="Showed" radius={[2, 2, 0, 0]} />
           </BarChart>
         </ResponsiveContainer>
       </div>
       <div className="bg-slate-800/50 rounded-lg border border-slate-700/50 p-4">
         <h3 className="text-sm font-bold text-white mb-3">MTD Ad Spend by Client</h3>
-        <ResponsiveContainer width="100%" height={chartHeight}>
-          <BarChart data={clientBars} layout="vertical" margin={{ left: 4, right: 12, top: 4, bottom: 4 }}>
-            <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" horizontal={false} />
-            <XAxis type="number" tick={{ fontSize: 10, fill: '#94a3b8' }} tickFormatter={v => `$${v}`} />
-            <YAxis type="category" dataKey="name" tick={{ fontSize: 10, fill: '#94a3b8' }} width={80} />
+        <ResponsiveContainer width="100%" height={250}>
+          <BarChart data={clientBars} margin={{ left: -10, right: 8, top: 4, bottom: 4 }}>
+            <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" vertical={false} />
+            <XAxis dataKey="name" tick={{ fontSize: 9, fill: '#94a3b8' }} angle={-35} textAnchor="end" height={50} interval={0} />
+            <YAxis tick={{ fontSize: 10, fill: '#94a3b8' }} tickFormatter={v => `$${v}`} />
             <Tooltip contentStyle={tooltipStyle} formatter={v => `$${v.toLocaleString()}`} />
-            <Bar dataKey="adSpend" fill="#ef4444" name="Ad Spend" radius={[0, 2, 2, 0]} barSize={14} />
+            <Bar dataKey="adSpend" fill="#ef4444" name="Ad Spend" radius={[2, 2, 0, 0]} />
           </BarChart>
         </ResponsiveContainer>
       </div>
