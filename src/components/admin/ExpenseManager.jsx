@@ -9,7 +9,7 @@ import ExpenseTabSkeleton from './ExpenseTabSkeleton';
 const CATEGORY_LABELS = {
   ad_spend: 'Ad Spend', payroll: 'Payroll', software: 'Software',
   office: 'Office', contractor: 'Contractor', travel: 'Travel',
-  distribution: 'Distribution', other: 'Other',
+  other: 'Other',
 };
 const CATEGORY_COLORS = {
   ad_spend: 'bg-red-500/15 text-red-400 border-red-500/30',
@@ -18,14 +18,12 @@ const CATEGORY_COLORS = {
   office: 'bg-amber-500/15 text-amber-400 border-amber-500/30',
   contractor: 'bg-indigo-500/15 text-indigo-400 border-indigo-500/30',
   travel: 'bg-teal-500/15 text-teal-400 border-teal-500/30',
-  distribution: 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30',
   other: 'bg-slate-500/15 text-slate-400 border-slate-500/30',
 };
-const TYPE_LABELS = { cogs: 'COGS', overhead: 'Overhead', distribution: 'Distribution' };
+const TYPE_LABELS = { cogs: 'COGS', overhead: 'Overhead' };
 const TYPE_COLORS = {
   cogs: 'bg-orange-500/15 text-orange-400 border-orange-500/30',
   overhead: 'bg-slate-500/15 text-slate-400 border-slate-500/30',
-  distribution: 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30',
 };
 
 const PAGE_SIZE = 50;
