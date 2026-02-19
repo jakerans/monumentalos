@@ -45,13 +45,20 @@ Deno.serve(async (req) => {
 
     const sr = base44.asServiceRole.entities;
 
+    // Calculate prior period (same duration, immediately before)
+    const startMs = new Date(startDate + 'T00:00:00.000Z').getTime();
+    const endMs = new Date(endDate + 'T23:59:59.999Z').getTime();
+    const durationMs = endMs - startMs;
+    const priorStart = new Date(startMs - durationMs).toISOString().split('T')[0];
+    const priorEnd = new Date(startMs - 1).toISOString().split('T')[0];
+
     const [clients, leads, users] = await Promise.all([
       fetchAll(sr.Client, '-created_date'),
       fetchAll(sr.Lead, '-created_date'),
       sr.User.list(),
     ]);
 
-    return Response.json({ clients, leads, users });
+    return Response.json({ clients, leads, users, priorStart, priorEnd });
   } catch (error) {
     console.error('getSetterPerformanceData error:', error);
     return Response.json({ error: error.message }, { status: 500 });
