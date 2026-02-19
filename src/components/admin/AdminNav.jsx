@@ -72,9 +72,9 @@ export default function AdminNav({ user, currentPage, clients = [] }) {
                   navigate(createPageUrl('ClientPortal'));
                 }
               }}
-              className="px-2 py-1 text-xs bg-slate-800/80 border border-slate-700/50 text-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#D6FF03] transition-all hover:border-slate-600"
+              className="px-1.5 py-0.5 text-[10px] sm:text-xs bg-slate-800/80 border border-slate-700/50 text-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#D6FF03] transition-all hover:border-slate-600 max-w-[100px] sm:max-w-none"
             >
-              <option value="">Switch View</option>
+              <option value="">Switch</option>
               <option value="mm">Marketing Manager</option>
               <option value="onboard">Onboard Admin</option>
               <option value="setter">Setter</option>
@@ -95,7 +95,7 @@ export default function AdminNav({ user, currentPage, clients = [] }) {
             >
               {effectsOn ? <Zap className="w-3.5 h-3.5" /> : <ZapOff className="w-3.5 h-3.5" />}
             </button>
-            <span className="text-xs text-slate-400">{user?.full_name}</span>
+            <span className="text-[10px] sm:text-xs text-slate-400 hidden sm:inline">{user?.full_name}</span>
             <motion.button
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
