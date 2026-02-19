@@ -225,9 +225,13 @@ export default function ExpenseManager({ startDate, endDate, onAddExpense }) {
           <div className="bg-slate-800/50 rounded-lg border border-slate-700/50 px-4 py-8 text-center text-slate-500 text-xs">No expenses match your filters</div>
         ) : expenses.map(e => {
           const hasPendingAI = !e.ai_approved && e.suggested_category;
+          const isSelected = selected.has(e.id);
           return (
-            <div key={e.id} className={`bg-slate-800/50 rounded-lg border border-slate-700/50 px-3 py-3 space-y-2 ${hasPendingAI ? 'border-l-2 border-l-yellow-500/50' : ''}`}>
+            <div key={e.id} className={`bg-slate-800/50 rounded-lg border border-slate-700/50 px-3 py-3 space-y-2 ${hasPendingAI ? 'border-l-2 border-l-yellow-500/50' : ''} ${isSelected ? 'ring-1 ring-red-500/50' : ''}`}>
               <div className="flex items-center justify-between">
+                <button onClick={() => toggleSelect(e.id)} className="mr-2 shrink-0">
+                  {isSelected ? <CheckSquare className="w-4 h-4 text-red-400" /> : <Square className="w-4 h-4 text-slate-600" />}
+                </button>
                 <span className="text-xs font-medium text-white truncate flex-1">{e.description || '—'}</span>
                 <span className="text-sm font-bold text-red-400 ml-2">${(e.amount || 0).toLocaleString()}</span>
               </div>
