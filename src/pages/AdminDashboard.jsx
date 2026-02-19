@@ -94,7 +94,7 @@ export default function AdminDashboard() {
           initial={effectsOn ? { opacity: 0, y: 16 } : false}
           animate={effectsOn ? { opacity: 1, y: 0 } : false}
           transition={effectsOn ? { duration: 0.4, ease: [0.25, 0.46, 0.45, 0.94] } : { duration: 0 }}
-          className="flex items-center justify-between"
+          className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3"
         >
           <div>
             <h1 className="text-2xl font-bold text-white">Company Dashboard</h1>
@@ -102,7 +102,7 @@ export default function AdminDashboard() {
               {now.toLocaleString('default', { month: 'long', year: 'numeric' })} overview
             </p>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap">
             <motion.button
               whileHover={effectsOn ? { scale: 1.05 } : {}}
               whileTap={effectsOn ? { scale: 0.95 } : {}}
