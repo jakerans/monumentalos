@@ -23,9 +23,8 @@ export default function SetterPerformanceTable({ users, leads, clients, startDat
     const avgSTL = stlValues.length ? Math.round(stlValues.reduce((a, b) => a + b, 0) / stlValues.length) : null;
     const bookingRate = firstCalls.length > 0 ? ((booked.length / firstCalls.length) * 100).toFixed(1) : 0;
     const showRate = booked.length > 0 ? ((showed.length / booked.length) * 100).toFixed(1) : 0;
-    const clientBreakdown = {};
-    booked.forEach(l => { const cn = getClientName(l.client_id); clientBreakdown[cn] = (clientBreakdown[cn] || 0) + 1; });
-    return { id: setter.id, name: setter.full_name, firstCalls: firstCalls.length, booked: booked.length, showed: showed.length, dq: dq.length, avgSTL, bookingRate: parseFloat(bookingRate), showRate: parseFloat(showRate), clientBreakdown };
+    const revenue = leads.filter(l => l.booked_by_setter_id === setter.id && l.outcome === 'sold' && l.sale_amount && l.date_sold && inRange(l.date_sold)).reduce((s, l) => s + (l.sale_amount || 0), 0);
+    return { id: setter.id, name: setter.full_name, firstCalls: firstCalls.length, booked: booked.length, showed: showed.length, dq: dq.length, avgSTL, bookingRate: parseFloat(bookingRate), showRate: parseFloat(showRate), revenue };
   }).sort((a, b) => b.booked - a.booked), [setters, leads, startDate, endDate]);
 
   const totalBooked = stats.reduce((s, r) => s + r.booked, 0);
@@ -65,14 +64,8 @@ export default function SetterPerformanceTable({ users, leads, clients, startDat
     { key: 'bookingRate', label: 'Booking %', align: 'right', sortable: true, render: (r) => <span className="font-medium text-slate-300">{r.bookingRate}%</span> },
     { key: 'showRate', label: 'Show %', align: 'right', sortable: true, render: (r) => <span className="font-medium text-slate-300">{r.showRate}%</span> },
     {
-      key: 'clients', label: 'Client Breakdown', align: 'left', sortable: false,
-      render: (r) => (
-        <div className="flex flex-wrap gap-1">
-          {Object.entries(r.clientBreakdown).map(([name, count]) => (
-            <span key={name} className="px-1.5 py-0.5 bg-slate-700 text-slate-300 text-[10px] rounded">{name}: {count}</span>
-          ))}
-        </div>
-      ),
+      key: 'revenue', label: 'Revenue', align: 'right', sortable: true,
+      render: (r) => <span className="font-bold text-emerald-400">{r.revenue > 0 ? `$${r.revenue.toLocaleString()}` : '—'}</span>,
     },
   ];
 
