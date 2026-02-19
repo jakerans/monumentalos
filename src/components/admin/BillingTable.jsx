@@ -17,6 +17,31 @@ const STATUS_CONFIG = {
 export default function BillingTable({ rows, kpis, pagination, onRefresh, onPageChange }) {
   const [markPaidRecord, setMarkPaidRecord] = useState(null);
   const [editRecord, setEditRecord] = useState(null);
+  const [selectedIds, setSelectedIds] = useState(new Set());
+  const [deleting, setDeleting] = useState(false);
+
+  const toggleSelect = (id) => {
+    setSelectedIds(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id); else next.add(id);
+      return next;
+    });
+  };
+  const toggleAll = () => {
+    if (selectedIds.size === rows.length) setSelectedIds(new Set());
+    else setSelectedIds(new Set(rows.map(r => r.id)));
+  };
+  const handleBulkDelete = async () => {
+    if (selectedIds.size === 0) return;
+    if (!window.confirm(`Delete ${selectedIds.size} billing record${selectedIds.size > 1 ? 's' : ''}? This cannot be undone.`)) return;
+    setDeleting(true);
+    for (const id of selectedIds) {
+      await base44.entities.MonthlyBilling.delete(id);
+    }
+    setSelectedIds(new Set());
+    setDeleting(false);
+    onRefresh();
+  };
 
   const handleMarkPaid = async (record, paidAmount, paidDate, method, notes, processingFee = 0) => {
     await base44.entities.MonthlyBilling.update(record.id, {
