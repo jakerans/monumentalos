@@ -74,6 +74,32 @@ export default function SetterPerformanceTable({ users, leads, clients, startDat
     },
   ];
 
+  const mobileCard = (r, i) => (
+    <div className="px-4 py-3 space-y-2">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <span className={`w-5 h-5 inline-flex items-center justify-center rounded-full text-[10px] font-bold ${
+            i === 0 ? 'bg-yellow-500/20 text-yellow-400' : i === 1 ? 'bg-slate-600 text-slate-300' : i === 2 ? 'bg-orange-500/20 text-orange-400' : 'bg-slate-700 text-slate-400'
+          }`}>{i + 1}</span>
+          <span className="font-medium text-white text-sm">{r.name}</span>
+        </div>
+        {r.avgSTL != null && (
+          <span className={`text-xs font-medium ${r.avgSTL <= 5 ? 'text-green-400' : r.avgSTL <= 15 ? 'text-amber-400' : 'text-red-400'}`}>{r.avgSTL}m STL</span>
+        )}
+      </div>
+      <div className="grid grid-cols-4 gap-2 text-[11px]">
+        <div><span className="text-slate-500">Calls</span><p className="text-slate-300 font-medium">{r.firstCalls}</p></div>
+        <div><span className="text-slate-500">Booked</span><p className="text-blue-400 font-bold">{r.booked}</p></div>
+        <div><span className="text-slate-500">Showed</span><p className="text-green-400 font-medium">{r.showed}</p></div>
+        <div><span className="text-slate-500">DQ</span><p className="text-red-400">{r.dq}</p></div>
+      </div>
+      <div className="flex gap-2 text-[11px]">
+        <span className="text-slate-500">Booking: <span className="text-slate-300">{r.bookingRate}%</span></span>
+        <span className="text-slate-500">Show: <span className="text-slate-300">{r.showRate}%</span></span>
+      </div>
+    </div>
+  );
+
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
@@ -87,6 +113,7 @@ export default function SetterPerformanceTable({ users, leads, clients, startDat
         title="Individual Setter Stats"
         emptyMessage="No setters found"
         initialSort={{ key: 'booked', direction: 'desc' }}
+        mobileCardRender={mobileCard}
       />
     </div>
   );

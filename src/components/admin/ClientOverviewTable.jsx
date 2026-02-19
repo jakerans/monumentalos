@@ -73,6 +73,25 @@ export default function ClientOverviewTable({ clients, leads, spend, payments })
     { key: 'mtdPaid', label: 'Collected', align: 'right', sortable: true, render: (r) => <span className="font-medium text-emerald-400">${r.mtdPaid.toLocaleString()}</span> },
   ];
 
+  const mobileCard = (r) => (
+    <div className="px-4 py-3 space-y-2">
+      <div className="flex items-center justify-between">
+        <Link to={createPageUrl('ClientView') + `?clientId=${r.id}`} className="font-medium text-blue-400 text-sm">{r.name}</Link>
+        <span className={`px-1.5 py-0.5 text-[10px] font-medium rounded ${BILLING_COLORS[r.billingType] || 'bg-slate-700 text-slate-300'}`}>
+          {BILLING_LABELS[r.billingType] || r.billingType}
+        </span>
+      </div>
+      <div className="grid grid-cols-3 gap-2 text-[11px]">
+        <div><span className="text-slate-500">Leads</span><p className="text-slate-300 font-medium">{r.mtdLeads}</p></div>
+        <div><span className="text-slate-500">Booked</span><p className="text-slate-300 font-medium">{r.mtdBooked}</p></div>
+        <div><span className="text-slate-500">Showed</span><p className="text-slate-300 font-medium">{r.mtdShowed}</p></div>
+        <div><span className="text-slate-500">Ad Spend</span><p className="text-slate-300 font-medium">${r.mtdSpend.toLocaleString()}</p></div>
+        <div><span className="text-slate-500">Billed</span><p className="text-green-400 font-medium">${r.mtdBilled.toLocaleString()}</p></div>
+        <div><span className="text-slate-500">Collected</span><p className="text-emerald-400 font-medium">${r.mtdPaid.toLocaleString()}</p></div>
+      </div>
+    </div>
+  );
+
   return (
     <AnimatedTable
       columns={columns}
@@ -85,6 +104,7 @@ export default function ClientOverviewTable({ clients, leads, spend, payments })
       }
       emptyMessage="No active clients"
       initialSort={{ key: 'mtdBilled', direction: 'desc' }}
+      mobileCardRender={mobileCard}
     />
   );
 }
