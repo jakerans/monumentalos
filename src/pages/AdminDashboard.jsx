@@ -189,20 +189,20 @@ export default function AdminDashboard() {
           <StatCompareCard data={statCompare} />
 
           {/* Setter leaderboard */}
-          <div className="bg-slate-800/50 rounded-lg border border-slate-700/50 overflow-hidden">
-            <div className="px-4 py-3 border-b border-slate-700/50 flex items-center gap-2">
+          <div className="bg-slate-800/50 rounded-lg border border-slate-700/50 overflow-hidden flex flex-col max-h-[400px]">
+            <div className="px-4 py-3 border-b border-slate-700/50 flex items-center gap-2 shrink-0">
               <Trophy className="w-4 h-4 text-amber-400" />
               <h3 className="text-sm font-bold text-white">Setter Leaderboard (MTD)</h3>
               <InfoTooltip text="Rankings based on appointments booked this month. STL = average Speed-to-Lead in minutes (lower is better). Top performers are highlighted." />
             </div>
-            <div className="px-4 py-1.5 flex items-center justify-between border-b border-slate-700/30">
+            <div className="px-4 py-1.5 flex items-center justify-between border-b border-slate-700/30 shrink-0">
               <span className="text-[10px] text-slate-500 uppercase tracking-wider">Setter</span>
               <div className="flex items-center gap-3">
                 <span className="text-[10px] text-slate-500 uppercase tracking-wider min-w-[40px] text-right">STL</span>
                 <span className="text-[10px] text-slate-500 uppercase tracking-wider min-w-[55px] text-right">Booked</span>
               </div>
             </div>
-            <div ref={leaderboardRef} className="divide-y divide-slate-700/30">
+            <div ref={leaderboardRef} className="divide-y divide-slate-700/30 overflow-y-auto flex-1">
               {setterStats.length === 0 ? (
                 <div className="px-4 py-6 text-xs text-slate-500 text-center">No setters found</div>
               ) : setterStats.slice(0, 8).map((s, i) => (
