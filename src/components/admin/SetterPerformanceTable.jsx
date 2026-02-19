@@ -134,7 +134,11 @@ export default function SetterPerformanceTable({ users, leads, clients, startDat
     { key: 'showRate', label: 'Show %', align: 'right', sortable: true, render: (r) => <span className="font-medium text-slate-300">{r.showRate}%</span> },
     {
       key: 'revenue', label: 'Revenue', align: 'right', sortable: true,
-      render: (r) => <span className="font-bold text-emerald-400">{r.revenue > 0 ? `$${r.revenue.toLocaleString()}` : '—'}</span>,
+      render: (r) => (
+        <RevenueTooltip revenue={r.revenue} setRevenue={r.setRevenue} showRevenue={r.showRevenue}>
+          <span className="font-bold text-emerald-400 cursor-default">{r.revenue > 0 ? `$${r.revenue.toLocaleString()}` : '—'}</span>
+        </RevenueTooltip>
+      ),
     },
   ];
 
@@ -166,9 +170,9 @@ export default function SetterPerformanceTable({ users, leads, clients, startDat
 
   return (
     <div className="space-y-6">
-      <div className="grid grid-cols-2 md:grid-cols-6 gap-3">
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 xl:grid-cols-9 gap-3">
         {summaryCards.map((c, i) => (
-          <SparklineCard key={c.label} index={i} label={c.label} value={c.value} icon={c.icon} iconBg={c.bg} iconColor={c.color} sparkColor={c.spark} />
+          <SparklineCard key={c.label} index={i} label={c.label} value={c.value} subtitle={c.subtitle} icon={c.icon} iconBg={c.bg} iconColor={c.color} sparkColor={c.spark} sparkData={c.sparkData} comparison={c.comparison} />
         ))}
       </div>
       <AnimatedTable
