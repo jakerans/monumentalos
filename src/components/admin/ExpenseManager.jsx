@@ -37,6 +37,8 @@ export default function ExpenseManager({ startDate, endDate, onAddExpense }) {
   const [page, setPage] = useState(0);
   const [sortField, setSortField] = useState('date');
   const [sortDir, setSortDir] = useState('desc');
+  const [selected, setSelected] = useState(new Set());
+  const [bulkDeleting, setBulkDeleting] = useState(false);
   const { data, isLoading, isFetching, refetch } = useQuery({
     queryKey: ['expenses-table', startDate, endDate, filterCat, filterType, page, sortField, sortDir],
     queryFn: async () => {
