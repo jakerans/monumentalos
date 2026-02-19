@@ -114,13 +114,7 @@ export default function ExpenseManager({ startDate, endDate, onAddExpense }) {
     if (!window.confirm(`Delete ${selected.size} expense${selected.size > 1 ? 's' : ''}? This cannot be undone.`)) return;
     setBulkDeleting(true);
     const ids = [...selected];
-    const BATCH = 5;
-    const DELAY = 500;
-    for (let i = 0; i < ids.length; i += BATCH) {
-      const batch = ids.slice(i, i + BATCH);
-      await Promise.all(batch.map(id => base44.entities.Expense.delete(id)));
-      if (i + BATCH < ids.length) await new Promise(r => setTimeout(r, DELAY));
-    }
+    await base44.functions.invoke('bulkDeleteExpenses', { ids });
     toast({ title: `${ids.length} Expense${ids.length > 1 ? 's' : ''} Deleted`, variant: 'success' });
     setSelected(new Set());
     setSelectAllMode(null);
