@@ -133,8 +133,18 @@ Deno.serve(async (req) => {
     const unbilledRevenue = Math.max(0, projectedRevenue - realizedRevenue);
 
     // ========== Accrued Expense & Real-Time Margin ==========
-    const employees = await fetchAll(sr.Employee, '-created_date');
+    const [employees, perfPlans, perfRecords, companySettings] = await Promise.all([
+      fetchAll(sr.Employee, '-created_date'),
+      fetchAll(sr.PerformancePay, '-created_date'),
+      fetchAll(sr.PerformancePayRecord, '-created_date'),
+      sr.CompanySettings.filter({ key: 'payroll' }, '-created_date', 1),
+    ]);
     const activeEmployees = employees.filter(e => e.status === 'active');
+    const payrollSettings = companySettings[0] || {};
+
+    // Payroll cycles per year
+    const freq = payrollSettings.payroll_frequency || 'biweekly';
+    const cyclesPerYear = freq === 'weekly' ? 52 : freq === 'biweekly' ? 26 : freq === 'semi_monthly' ? 24 : 12;
 
     const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
     const dayOfMonth = now.getDate();
@@ -144,21 +154,47 @@ Deno.serve(async (req) => {
     activeEmployees.forEach(emp => {
       let monthlyCost = 0;
       if (emp.classification === 'salary' && emp.pay_per_cycle) {
-        monthlyCost = emp.pay_per_cycle * 2.167;
+        monthlyCost = (emp.pay_per_cycle * cyclesPerYear) / 12;
       } else if (emp.classification === 'hourly') {
         monthlyCost = (emp.hourly_rate || 0) * (emp.standard_monthly_hours || 160);
       } else if (emp.classification === 'contractor') {
-        if (emp.contractor_billing_type === 'monthly') monthlyCost = emp.contractor_rate || 0;
+        if (emp.contractor_billing_type === 'per_cycle' && emp.pay_per_cycle) monthlyCost = (emp.pay_per_cycle * cyclesPerYear) / 12;
+        else if (emp.contractor_billing_type === 'monthly') monthlyCost = emp.contractor_rate || 0;
         else if (emp.contractor_billing_type === 'hourly') monthlyCost = (emp.contractor_rate || 0) * 160;
       }
       accruedSalary += monthlyCost * proRataFraction;
     });
 
+    // Performance Pay Accrual: current month unpaid + previous month unpaid
+    const activePerfPlans = perfPlans.filter(p => p.status === 'active');
+    let accruedPerfPay = 0;
+
+    activePerfPlans.forEach(plan => {
+      // Current month accrued payout
+      accruedPerfPay += (plan.current_period_payout || 0);
+
+      // Check if previous month was paid via PerformancePayRecord
+      const prevMonthPaid = perfRecords.some(r =>
+        r.performance_pay_id === plan.id && r.period === lastMonthStr && r.status === 'paid'
+      );
+      if (!prevMonthPaid) {
+        // Previous month unpaid – check if there's a calculated record
+        const prevCalc = perfRecords.find(r =>
+          r.performance_pay_id === plan.id && r.period === lastMonthStr && r.status === 'calculated'
+        );
+        if (prevCalc) {
+          accruedPerfPay += (prevCalc.payout || 0);
+        }
+      }
+    });
+
+    const totalAccruedPayroll = accruedSalary + accruedPerfPay;
+
     const recordedExpensesMTD = expenses.filter(e => inMTD(e.date) && e.expense_type !== 'distribution').reduce((s, e) => s + (e.amount || 0), 0);
     const recordedCogsMTD = expenses.filter(e => inMTD(e.date) && e.expense_type === 'cogs').reduce((s, e) => s + (e.amount || 0), 0);
 
-    const totalAccruedExpenses = Math.max(accruedSalary, recordedExpensesMTD);
-    const accruedGrossProfit = projectedRevenue - Math.max(accruedSalary * 0.6, recordedCogsMTD);
+    const totalAccruedExpenses = Math.max(totalAccruedPayroll, recordedExpensesMTD);
+    const accruedGrossProfit = projectedRevenue - Math.max(totalAccruedPayroll * 0.6, recordedCogsMTD);
     const accruedGrossMargin = projectedRevenue > 0 ? (accruedGrossProfit / projectedRevenue) * 100 : 0;
 
     const realtimeNetProfit = realizedRevenue - totalAccruedExpenses;
@@ -207,6 +243,8 @@ Deno.serve(async (req) => {
       liveAccruals,
       unbilledRevenue,
       accruedExpenses: totalAccruedExpenses,
+      accruedSalary: Math.round(accruedSalary),
+      accruedPerfPay: Math.round(accruedPerfPay),
       accruedGrossMargin,
       realtimeNetProfit,
       realtimeNetMargin,

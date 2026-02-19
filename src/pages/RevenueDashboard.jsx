@@ -4,7 +4,7 @@ import { useQuery } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import dayjs from 'dayjs';
-import { DollarSign, Receipt, BarChart3, TrendingUp, Users, Wallet } from 'lucide-react';
+import { DollarSign, Receipt, BarChart3, TrendingUp, Users, Wallet, Banknote } from 'lucide-react';
 import AdminNav from '../components/admin/AdminNav';
 import AdminMobileNav from '../components/admin/AdminMobileNav';
 import DateRangePicker from '../components/admin/DateRangePicker';
@@ -17,6 +17,7 @@ import CashFlowAnalysis from '../components/admin/CashFlowAnalysis';
 import ExpenseManager from '../components/admin/ExpenseManager';
 import RecordPaymentModal from '../components/admin/RecordPaymentModal';
 import AddExpenseModal from '../components/admin/AddExpenseModal';
+import RunPayrollModal from '../components/admin/RunPayrollModal';
 import PageErrorBoundary from '../components/shared/PageErrorBoundary';
 import RevenueDashboardSkeleton from '../components/admin/RevenueDashboardSkeleton';
 
@@ -27,6 +28,7 @@ export default function RevenueDashboard() {
   const [endDate, setEndDate] = useState(dayjs().format('YYYY-MM-DD'));
   const [paymentOpen, setPaymentOpen] = useState(false);
   const [expenseOpen, setExpenseOpen] = useState(false);
+  const [payrollOpen, setPayrollOpen] = useState(false);
   const [activeTab, setActiveTab] = useState('pl');
 
   useEffect(() => {
@@ -122,13 +124,18 @@ export default function RevenueDashboard() {
               </button>
             ))}
           </div>
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-2">
             <button onClick={() => setPaymentOpen(true)} className="px-3 py-1.5 text-xs font-medium bg-emerald-600 text-white rounded-md hover:bg-emerald-700 flex items-center gap-1">
               <DollarSign className="w-3.5 h-3.5" /> Record Payment
             </button>
             <button onClick={() => setExpenseOpen(true)} className="px-3 py-1.5 text-xs font-medium bg-red-600 text-white rounded-md hover:bg-red-700 flex items-center gap-1">
               <Receipt className="w-3.5 h-3.5" /> Add Expense
             </button>
+            {activeTab === 'expenses' && (
+              <button onClick={() => setPayrollOpen(true)} className="px-3 py-1.5 text-xs font-medium bg-purple-600 text-white rounded-md hover:bg-purple-700 flex items-center gap-1">
+                <Banknote className="w-3.5 h-3.5" /> Run Payroll
+              </button>
+            )}
           </div>
         </div>
 
@@ -162,6 +169,7 @@ export default function RevenueDashboard() {
 
       <RecordPaymentModal open={paymentOpen} onOpenChange={setPaymentOpen} clients={clients} billingRecords={billingRecords} onCreated={refetchAll} />
       <AddExpenseModal open={expenseOpen} onOpenChange={setExpenseOpen} clients={clients} onCreated={refetchAll} />
+      <RunPayrollModal open={payrollOpen} onOpenChange={setPayrollOpen} onComplete={refetchAll} />
       <AdminMobileNav currentPage="RevenueDashboard" clients={clients} />
     </div>
     </PageErrorBoundary>
