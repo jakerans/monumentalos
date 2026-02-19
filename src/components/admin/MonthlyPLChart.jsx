@@ -1,77 +1,36 @@
-import React, { useMemo } from 'react';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, Line, ComposedChart, Area, AreaChart } from 'recharts';
+import React from 'react';
+import { XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, Line, ComposedChart, Area, AreaChart, Bar } from 'recharts';
 
-export default function MonthlyPLChart({ clients, leads, payments, expenses }) {
-  const data = useMemo(() => {
-    const now = new Date();
-    const months = [];
-    for (let i = 5; i >= 0; i--) {
-      const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
-      months.push({
-        year: d.getFullYear(),
-        month: d.getMonth(),
-        label: d.toLocaleString('default', { month: 'short', year: '2-digit' }),
-      });
-    }
-
-    return months.map(m => {
-      const mStart = new Date(m.year, m.month, 1);
-      const mEnd = new Date(m.year, m.month + 1, 0, 23, 59, 59);
-      const inRange = (d) => { if (!d) return false; const dt = new Date(d); return dt >= mStart && dt <= mEnd; };
-
-      let grossRevenue = 0;
-      clients.filter(c => c.status === 'active').forEach(client => {
-        const bt = client.billing_type || 'pay_per_show';
-        const cLeads = leads.filter(l => l.client_id === client.id);
-        if (bt === 'pay_per_show') {
-          grossRevenue += cLeads.filter(l => l.disposition === 'showed' && inRange(l.appointment_date)).length * (client.price_per_shown_appointment || 0);
-        } else if (bt === 'pay_per_set') {
-          grossRevenue += cLeads.filter(l => l.date_appointment_set && inRange(l.date_appointment_set)).length * (client.price_per_set_appointment || 0);
-        } else if (bt === 'retainer') {
-          grossRevenue += (client.retainer_amount || 0);
-        }
-      });
-
-      const collected = payments.filter(p => inRange(p.date)).reduce((s, p) => s + (p.amount || 0), 0);
-      const mExpenses = expenses.filter(e => inRange(e.date) && e.expense_type !== 'distribution');
-      const cogs = mExpenses.filter(e => e.expense_type === 'cogs').reduce((s, e) => s + (e.amount || 0), 0);
-      const overhead = mExpenses.filter(e => e.expense_type === 'overhead').reduce((s, e) => s + (e.amount || 0), 0);
-      const grossProfit = grossRevenue - cogs;
-      const netProfit = collected - cogs - overhead;
-
-      return { name: m.label, Revenue: Math.round(grossRevenue), Collected: Math.round(collected), COGS: Math.round(cogs), Overhead: Math.round(overhead), 'Gross Profit': Math.round(grossProfit), 'Net Profit': Math.round(netProfit) };
-    });
-  }, [clients, leads, payments, expenses]);
-
-  const CustomTooltip = ({ active, payload, label }) => {
-    if (!active || !payload?.length) return null;
-    return (
-      <div className="bg-slate-900/95 backdrop-blur-sm border border-slate-600/50 rounded-xl px-4 py-3 shadow-2xl shadow-black/50">
-        <p className="text-[11px] font-semibold text-slate-300 mb-2">{label}</p>
-        {payload.map((entry, i) => (
-          <div key={i} className="flex items-center justify-between gap-6 py-0.5">
-            <div className="flex items-center gap-2">
-              <div className="w-2.5 h-2.5 rounded-full" style={{ background: entry.color }} />
-              <span className="text-[11px] text-slate-400">{entry.name}</span>
-            </div>
-            <span className="text-[11px] font-bold text-white">${(entry.value || 0).toLocaleString()}</span>
+const CustomTooltip = ({ active, payload, label }) => {
+  if (!active || !payload?.length) return null;
+  return (
+    <div className="bg-slate-900/95 backdrop-blur-sm border border-slate-600/50 rounded-xl px-4 py-3 shadow-2xl shadow-black/50">
+      <p className="text-[11px] font-semibold text-slate-300 mb-2">{label}</p>
+      {payload.map((entry, i) => (
+        <div key={i} className="flex items-center justify-between gap-6 py-0.5">
+          <div className="flex items-center gap-2">
+            <div className="w-2.5 h-2.5 rounded-full" style={{ background: entry.color }} />
+            <span className="text-[11px] text-slate-400">{entry.name}</span>
           </div>
-        ))}
-      </div>
-    );
-  };
-
-  const CustomLegend = ({ payload }) => (
-    <div className="flex items-center justify-center gap-5 mt-2">
-      {payload?.map((entry, i) => (
-        <div key={i} className="flex items-center gap-1.5">
-          <div className="w-2 h-2 rounded-full" style={{ background: entry.color }} />
-          <span className="text-[10px] font-medium text-slate-400">{entry.value}</span>
+          <span className="text-[11px] font-bold text-white">${(entry.value || 0).toLocaleString()}</span>
         </div>
       ))}
     </div>
   );
+};
 
+const CustomLegend = ({ payload }) => (
+  <div className="flex items-center justify-center gap-5 mt-2">
+    {payload?.map((entry, i) => (
+      <div key={i} className="flex items-center gap-1.5">
+        <div className="w-2 h-2 rounded-full" style={{ background: entry.color }} />
+        <span className="text-[10px] font-medium text-slate-400">{entry.value}</span>
+      </div>
+    ))}
+  </div>
+);
+
+export default function MonthlyPLChart({ data = [] }) {
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
       <div className="bg-slate-800/50 rounded-xl border border-slate-700/50 p-5">

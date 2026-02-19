@@ -1,10 +1,6 @@
 import React, { useMemo } from 'react';
-import dayjs from 'dayjs';
-import isBetween from 'dayjs/plugin/isBetween';
 import { DollarSign, TrendingUp, TrendingDown, ArrowDownRight, Percent, BarChart3 } from 'lucide-react';
 import SparklineCard from '../shared/SparklineCard';
-
-dayjs.extend(isBetween);
 
 function buildDailyAmountSparkline(items, dateKey, amountKey = 'amount', days = 14) {
   const now = new Date();
@@ -23,45 +19,12 @@ function pct(cur, prior) {
   return Math.round(((cur - prior) / Math.abs(prior)) * 100);
 }
 
-function calcPeriod(clients, leads, payments, expenses, rangeFn) {
-  let grossRevenue = 0;
-  clients.filter(c => c.status === 'active').forEach(client => {
-    const bt = client.billing_type || 'pay_per_show';
-    const cLeads = leads.filter(l => l.client_id === client.id);
-    if (bt === 'pay_per_show') {
-      grossRevenue += cLeads.filter(l => l.disposition === 'showed' && rangeFn(l.appointment_date)).length * (client.price_per_shown_appointment || 0);
-    } else if (bt === 'pay_per_set') {
-      grossRevenue += cLeads.filter(l => l.date_appointment_set && rangeFn(l.date_appointment_set)).length * (client.price_per_set_appointment || 0);
-    } else if (bt === 'retainer') {
-      grossRevenue += (client.retainer_amount || 0);
-    }
-  });
-  const collected = payments.filter(p => rangeFn(p.date)).reduce((s, p) => s + (p.amount || 0), 0);
-  const re = expenses.filter(e => rangeFn(e.date) && e.expense_type !== 'distribution');
-  const cogs = re.filter(e => e.expense_type === 'cogs').reduce((s, e) => s + (e.amount || 0), 0);
-  const overhead = re.filter(e => e.expense_type === 'overhead').reduce((s, e) => s + (e.amount || 0), 0);
-  const grossProfit = grossRevenue - cogs;
-  const netProfit = collected - cogs - overhead;
-  const grossMargin = grossRevenue > 0 ? (grossProfit / grossRevenue) * 100 : 0;
-  const netMargin = collected > 0 ? (netProfit / collected) * 100 : 0;
-  return { grossRevenue, collected, outstanding: grossRevenue - collected, cogs, overhead, grossProfit, netProfit, grossMargin, netMargin };
-}
-
-export default function AccountingKPIs({ clients, leads, payments, expenses, startDate, endDate }) {
-  const start = dayjs(startDate).startOf('day');
-  const end = dayjs(endDate).endOf('day');
-  const rangeDays = end.diff(start, 'day') + 1;
-  const priorEnd = start.subtract(1, 'day').endOf('day');
-  const priorStart = start.subtract(rangeDays, 'day').startOf('day');
-
-  const inRange = (d) => d ? dayjs(d).isBetween(start, end, null, '[]') : false;
-  const inPrior = (d) => d ? dayjs(d).isBetween(priorStart, priorEnd, null, '[]') : false;
-
-  const cur = useMemo(() => calcPeriod(clients, leads, payments, expenses, inRange), [clients, leads, payments, expenses, startDate, endDate]);
-  const pri = useMemo(() => calcPeriod(clients, leads, payments, expenses, inPrior), [clients, leads, payments, expenses, startDate, endDate]);
+export default function AccountingKPIs({ kpis, payments = [], expenses = [] }) {
+  const cur = kpis?.current || { grossRevenue: 0, collected: 0, outstanding: 0, cogs: 0, overhead: 0, grossProfit: 0, netProfit: 0, grossMargin: 0, netMargin: 0 };
+  const pri = kpis?.prior || { grossRevenue: 0, collected: 0, outstanding: 0, cogs: 0, overhead: 0, grossProfit: 0, netProfit: 0, grossMargin: 0, netMargin: 0 };
 
   const paySpk = useMemo(() => buildDailyAmountSparkline(payments, 'date'), [payments]);
-  const expSpk = useMemo(() => buildDailyAmountSparkline(expenses, 'date'), [expenses]);
+  const expSpk = useMemo(() => buildDailyAmountSparkline(expenses.filter(e => e.expense_type !== 'distribution'), 'date'), [expenses]);
 
   const cards = [
     { label: 'Gross Revenue', value: `$${cur.grossRevenue.toLocaleString()}`, icon: DollarSign, color: 'text-blue-400', bg: 'bg-blue-500/10', spark: '#60a5fa', comp: { prior: `$${pri.grossRevenue.toLocaleString()}`, change: pct(cur.grossRevenue, pri.grossRevenue) } },

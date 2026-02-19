@@ -33,7 +33,7 @@ const CashFlowLegend = ({ payload }) => (
   </div>
 );
 
-export default function CashFlowAnalysis({ payments, expenses, billingRecords = [] }) {
+export default function CashFlowAnalysis({ cashFlowData = [] }) {
   const [bankBalance, setBankBalance] = useState(0);
   const [editingBalance, setEditingBalance] = useState(false);
   const [balanceInput, setBalanceInput] = useState('');
@@ -67,68 +67,27 @@ export default function CashFlowAnalysis({ payments, expenses, billingRecords = 
     toast({ title: 'Bank balance saved' });
   };
 
-  const { monthlyData, summary } = useMemo(() => {
-    const now = new Date();
-    const months = [];
-    for (let i = 5; i >= 0; i--) {
-      const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
-      months.push({ year: d.getFullYear(), month: d.getMonth(), label: d.toLocaleString('default', { month: 'short', year: '2-digit' }) });
-    }
-
-    let cumulative = 0;
-    const monthlyData = months.map(m => {
-      const mStart = new Date(m.year, m.month, 1);
-      const mEnd = new Date(m.year, m.month + 1, 0, 23, 59, 59);
-      const inRange = (d) => { if (!d) return false; const dt = new Date(d); return dt >= mStart && dt <= mEnd; };
-
-      // Inflows = Payment entity + paid MonthlyBilling records (by paid_date)
-      const paymentInflows = payments.filter(p => inRange(p.date)).reduce((s, p) => s + (p.amount || 0), 0);
-      const billingInflows = billingRecords.filter(b => inRange(b.paid_date)).reduce((s, b) => s + (b.paid_amount || b.calculated_amount || 0), 0);
-      const inflows = paymentInflows + billingInflows;
-      // Operating expenses = everything that is NOT a distribution (by expense_type OR category)
-      const opEx = expenses.filter(e => inRange(e.date) && e.expense_type !== 'distribution' && e.category !== 'distribution').reduce((s, e) => s + (e.amount || 0), 0);
-      // Distributions = category OR expense_type is distribution
-      const distributions = expenses.filter(e => inRange(e.date) && (e.expense_type === 'distribution' || e.category === 'distribution')).reduce((s, e) => s + (e.amount || 0), 0);
-      const totalOutflows = opEx + distributions;
-      const net = inflows - totalOutflows;
-      cumulative += net;
-
-      return {
-        name: m.label,
-        Inflows: Math.round(inflows),
-        'Operating Expenses': Math.round(opEx),
-        Distributions: Math.round(distributions),
-        'Net Cash Flow': Math.round(net),
-        Cumulative: Math.round(cumulative),
-      };
-    });
-
+  const summary = useMemo(() => {
+    const monthlyData = cashFlowData;
     const cur = monthlyData[monthlyData.length - 1] || {};
     const prev = monthlyData[monthlyData.length - 2] || {};
-    const totalInflows6 = monthlyData.reduce((s, m) => s + m.Inflows, 0);
-    const totalOpEx6 = monthlyData.reduce((s, m) => s + m['Operating Expenses'], 0);
-    const totalDist6 = monthlyData.reduce((s, m) => s + m.Distributions, 0);
+    const totalOpEx6 = monthlyData.reduce((s, m) => s + (m['Operating Expenses'] || 0), 0);
+    const totalDist6 = monthlyData.reduce((s, m) => s + (m.Distributions || 0), 0);
     const totalOutflows6 = totalOpEx6 + totalDist6;
     const avgBurn = monthlyData.length > 0 ? Math.round(totalOutflows6 / monthlyData.length) : 0;
 
-    const curOperatingCF = cur.Inflows - cur['Operating Expenses'];
-    const curOwnerActivity = cur.Distributions;
+    const curOperatingCF = (cur.Inflows || 0) - (cur['Operating Expenses'] || 0);
+    const curOwnerActivity = cur.Distributions || 0;
     const curTrueNet = curOperatingCF - curOwnerActivity;
 
     return {
-      monthlyData,
-      summary: {
-        operatingCF: curOperatingCF || 0,
-        ownerActivity: curOwnerActivity || 0,
-        trueNet: curTrueNet || 0,
-        prevNet: prev['Net Cash Flow'] || 0,
-        cumulative: cur.Cumulative || 0,
-        avgBurn,
-        totalInflows6,
-        totalOutflows6,
-      }
+      operatingCF: curOperatingCF,
+      ownerActivity: curOwnerActivity,
+      trueNet: curTrueNet,
+      cumulative: cur.Cumulative || 0,
+      avgBurn,
     };
-  }, [payments, expenses]);
+  }, [cashFlowData]);
 
   const runway = summary.avgBurn > 0
     ? ((bankBalance + summary.cumulative) / summary.avgBurn).toFixed(1)
@@ -141,9 +100,7 @@ export default function CashFlowAnalysis({ payments, expenses, billingRecords = 
         <h3 className="text-[10px] font-bold text-slate-400 uppercase mb-3">Cash Flow Breakdown (This Month)</h3>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div className="flex items-start gap-3">
-            <div className="p-2 rounded-lg bg-blue-500/10 mt-0.5">
-              <TrendingUp className="w-4 h-4 text-blue-400" />
-            </div>
+            <div className="p-2 rounded-lg bg-blue-500/10 mt-0.5"><TrendingUp className="w-4 h-4 text-blue-400" /></div>
             <div>
               <p className="text-[10px] text-slate-500 mb-0.5">Operating Cash Flow</p>
               <p className={`text-xl font-bold ${summary.operatingCF >= 0 ? 'text-blue-400' : 'text-red-400'}`}>
@@ -153,21 +110,15 @@ export default function CashFlowAnalysis({ payments, expenses, billingRecords = 
             </div>
           </div>
           <div className="flex items-start gap-3">
-            <div className="p-2 rounded-lg bg-emerald-500/10 mt-0.5">
-              <Banknote className="w-4 h-4 text-emerald-400" />
-            </div>
+            <div className="p-2 rounded-lg bg-emerald-500/10 mt-0.5"><Banknote className="w-4 h-4 text-emerald-400" /></div>
             <div>
               <p className="text-[10px] text-slate-500 mb-0.5">Owner Distributions</p>
-              <p className="text-xl font-bold text-emerald-400">
-                ${summary.ownerActivity.toLocaleString()}
-              </p>
+              <p className="text-xl font-bold text-emerald-400">${summary.ownerActivity.toLocaleString()}</p>
               <p className="text-[9px] text-slate-600 mt-0.5">Not in P&L</p>
             </div>
           </div>
           <div className="flex items-start gap-3">
-            <div className="p-2 rounded-lg bg-[#D6FF03]/10 mt-0.5">
-              <Wallet className="w-4 h-4 text-[#D6FF03]" />
-            </div>
+            <div className="p-2 rounded-lg bg-[#D6FF03]/10 mt-0.5"><Wallet className="w-4 h-4 text-[#D6FF03]" /></div>
             <div>
               <p className="text-[10px] text-slate-500 mb-0.5">True Net Cash Change</p>
               <p className={`text-xl font-bold ${summary.trueNet >= 0 ? 'text-[#D6FF03]' : 'text-red-400'}`}>
@@ -192,31 +143,22 @@ export default function CashFlowAnalysis({ payments, expenses, billingRecords = 
             {summary.cumulative < 0 ? '-' : ''}${Math.abs(summary.cumulative).toLocaleString()}
           </p>
         </div>
-
         <div className="bg-slate-800/50 rounded-lg border border-slate-700/50 p-3">
           <div className="flex items-center justify-between mb-1">
             <p className="text-[9px] font-medium text-slate-400 uppercase">Avg Monthly Burn</p>
-            <div className="p-1 rounded bg-orange-500/10">
-              <ArrowDownRight className="w-3 h-3 text-orange-400" />
-            </div>
+            <div className="p-1 rounded bg-orange-500/10"><ArrowDownRight className="w-3 h-3 text-orange-400" /></div>
           </div>
           <p className="text-lg font-bold text-orange-400">${summary.avgBurn.toLocaleString()}</p>
           <p className="text-[9px] text-slate-600 mt-0.5">Incl. distributions</p>
         </div>
-
-        {/* Cash Runway */}
         <div className="bg-slate-800/50 rounded-lg border border-cyan-700/30 p-3">
           <div className="flex items-center justify-between mb-1">
             <p className="text-[9px] font-medium text-slate-400 uppercase">Cash Runway</p>
-            <div className="p-1 rounded bg-cyan-500/10">
-              <Shield className="w-3 h-3 text-cyan-400" />
-            </div>
+            <div className="p-1 rounded bg-cyan-500/10"><Shield className="w-3 h-3 text-cyan-400" /></div>
           </div>
           <p className="text-lg font-bold text-cyan-400">{runway === '∞' ? '∞' : `${runway} mo`}</p>
           <p className="text-[9px] text-slate-600 mt-0.5">(Bank + Cumulative) ÷ Burn</p>
         </div>
-
-        {/* Starting Bank Balance */}
         <div className="bg-slate-800/50 rounded-lg border border-slate-700/50 p-3">
           <div className="flex items-center justify-between mb-1">
             <p className="text-[9px] font-medium text-slate-400 uppercase">Starting Bank Balance</p>
@@ -227,17 +169,8 @@ export default function CashFlowAnalysis({ payments, expenses, billingRecords = 
           {editingBalance ? (
             <div className="flex items-center gap-1">
               <span className="text-sm font-bold text-slate-400">$</span>
-              <input
-                type="number"
-                value={balanceInput}
-                onChange={ev => setBalanceInput(ev.target.value)}
-                onKeyDown={ev => { if (ev.key === 'Enter') saveBalance(); if (ev.key === 'Escape') setEditingBalance(false); }}
-                autoFocus
-                className="w-full px-1 py-0.5 text-sm font-bold bg-slate-900 border border-[#D6FF03]/50 rounded text-white outline-none"
-              />
-              <button onClick={saveBalance} disabled={savingBalance} className="p-1 rounded bg-[#D6FF03]/20 hover:bg-[#D6FF03]/30">
-                <Save className="w-3 h-3 text-[#D6FF03]" />
-              </button>
+              <input type="number" value={balanceInput} onChange={ev => setBalanceInput(ev.target.value)} onKeyDown={ev => { if (ev.key === 'Enter') saveBalance(); if (ev.key === 'Escape') setEditingBalance(false); }} autoFocus className="w-full px-1 py-0.5 text-sm font-bold bg-slate-900 border border-[#D6FF03]/50 rounded text-white outline-none" />
+              <button onClick={saveBalance} disabled={savingBalance} className="p-1 rounded bg-[#D6FF03]/20 hover:bg-[#D6FF03]/30"><Save className="w-3 h-3 text-[#D6FF03]" /></button>
             </div>
           ) : (
             <p className="text-lg font-bold text-white">${bankBalance.toLocaleString()}</p>
@@ -247,28 +180,15 @@ export default function CashFlowAnalysis({ payments, expenses, billingRecords = 
 
       {/* Charts */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        {/* Inflows vs Outflows (stacked) */}
         <div className="bg-slate-800/50 rounded-xl border border-slate-700/50 p-5">
           <h3 className="text-sm font-bold text-white mb-4">Inflows vs Outflows</h3>
           <ResponsiveContainer width="100%" height={280}>
-            <ComposedChart data={monthlyData}>
+            <ComposedChart data={cashFlowData}>
               <defs>
-                <linearGradient id="cfInflowGrad" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="#10b981" stopOpacity={0.9} />
-                  <stop offset="100%" stopColor="#10b981" stopOpacity={0.55} />
-                </linearGradient>
-                <linearGradient id="cfOpExGrad" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="#ef4444" stopOpacity={0.9} />
-                  <stop offset="100%" stopColor="#ef4444" stopOpacity={0.55} />
-                </linearGradient>
-                <linearGradient id="cfDistGrad" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="#f59e0b" stopOpacity={0.9} />
-                  <stop offset="100%" stopColor="#f59e0b" stopOpacity={0.55} />
-                </linearGradient>
-                <filter id="cfNetGlow">
-                  <feGaussianBlur stdDeviation="3" result="blur" />
-                  <feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge>
-                </filter>
+                <linearGradient id="cfInflowGrad" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#10b981" stopOpacity={0.9} /><stop offset="100%" stopColor="#10b981" stopOpacity={0.55} /></linearGradient>
+                <linearGradient id="cfOpExGrad" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#ef4444" stopOpacity={0.9} /><stop offset="100%" stopColor="#ef4444" stopOpacity={0.55} /></linearGradient>
+                <linearGradient id="cfDistGrad" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#f59e0b" stopOpacity={0.9} /><stop offset="100%" stopColor="#f59e0b" stopOpacity={0.55} /></linearGradient>
+                <filter id="cfNetGlow"><feGaussianBlur stdDeviation="3" result="blur" /><feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge></filter>
               </defs>
               <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" vertical={false} />
               <XAxis dataKey="name" tick={{ fontSize: 11, fill: '#64748b' }} axisLine={false} tickLine={false} />
@@ -282,17 +202,12 @@ export default function CashFlowAnalysis({ payments, expenses, billingRecords = 
             </ComposedChart>
           </ResponsiveContainer>
         </div>
-
-        {/* Cumulative cash position */}
         <div className="bg-slate-800/50 rounded-xl border border-slate-700/50 p-5">
           <h3 className="text-sm font-bold text-white mb-4">Cumulative Cash Position</h3>
           <ResponsiveContainer width="100%" height={280}>
-            <AreaChart data={monthlyData}>
+            <AreaChart data={cashFlowData}>
               <defs>
-                <linearGradient id="cfCumulativeGrad" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="#10b981" stopOpacity={0.35} />
-                  <stop offset="100%" stopColor="#10b981" stopOpacity={0.02} />
-                </linearGradient>
+                <linearGradient id="cfCumulativeGrad" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#10b981" stopOpacity={0.35} /><stop offset="100%" stopColor="#10b981" stopOpacity={0.02} /></linearGradient>
               </defs>
               <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" vertical={false} />
               <XAxis dataKey="name" tick={{ fontSize: 11, fill: '#64748b' }} axisLine={false} tickLine={false} />
