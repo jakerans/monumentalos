@@ -15,12 +15,17 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'No ids provided' }, { status: 400 });
     }
 
+    // Delete in parallel batches of 25 for speed without overwhelming the API
     let deleted = 0;
-    for (const id of ids) {
-      await base44.asServiceRole.entities.Expense.delete(id);
-      deleted++;
+    for (let i = 0; i < ids.length; i += 25) {
+      const batch = ids.slice(i, i + 25);
+      const results = await Promise.allSettled(
+        batch.map(id => base44.asServiceRole.entities.Expense.delete(id))
+      );
+      deleted += results.filter(r => r.status === 'fulfilled').length;
     }
 
+    console.log(`[deleteDuplicateExpenses] Deleted ${deleted}/${ids.length} duplicate expenses`);
     return Response.json({ success: true, deleted });
   } catch (error) {
     return Response.json({ error: error.message }, { status: 500 });
