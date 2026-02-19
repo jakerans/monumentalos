@@ -14,7 +14,6 @@ export default function AdminNav({ user, currentPage, clients = [] }) {
     { key: 'AdminDashboard', label: 'Dashboard' },
     { key: 'ClientPerformance', label: 'Clients' },
     { key: 'MonthlyBilling', label: 'Billing' },
-    { key: 'RevenueDashboard', label: 'Accounting' },
     { key: 'SetterPerformance', label: 'Setters' },
     { key: 'EmployeeManagement', label: 'Employees' },
     { key: 'UserManagement', label: 'Users' },
