@@ -77,7 +77,7 @@ export default function ExpenseManager({ startDate, endDate, onAddExpense }) {
   };
 
   // Clear selection when page/filters change
-  useEffect(() => { setSelected(new Set()); }, [page, filterCat, filterType, startDate, endDate]);
+  useEffect(() => { setSelected(new Set()); setSelectAllMode(null); }, [page, filterCat, filterType, startDate, endDate]);
 
   const toggleSelect = (id) => {
     setSelected(prev => {
