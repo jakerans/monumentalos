@@ -1,5 +1,7 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
 
+const sleep = (ms) => new Promise(r => setTimeout(r, ms));
+
 async function fetchAllFiltered(entity, filter, sort) {
   const results = [];
   let skip = 0;
@@ -13,19 +15,14 @@ async function fetchAllFiltered(entity, filter, sort) {
   return results;
 }
 
-const sleep = (ms) => new Promise(r => setTimeout(r, ms));
-
-async function updateWithRetry(entity, id, data, maxRetries = 5) {
-  for (let attempt = 0; attempt <= maxRetries; attempt++) {
+async function updateWithRetry(entity, id, data) {
+  for (let attempt = 0; attempt < 5; attempt++) {
     try {
       await entity.update(id, data);
-      return true;
+      return;
     } catch (err) {
-      const isRateLimit = err.message?.includes('Rate limit') || err.message?.includes('429');
-      if (isRateLimit && attempt < maxRetries) {
-        const backoff = 2000 * Math.pow(2, attempt); // 2s, 4s, 8s, 16s, 32s
-        console.log(`[undoAICategorize] Rate limited on ${id}, retry ${attempt + 1} after ${backoff}ms`);
-        await sleep(backoff);
+      if ((err.message?.includes('Rate limit') || err.message?.includes('429')) && attempt < 4) {
+        await sleep(2000 * Math.pow(2, attempt));
         continue;
       }
       throw err;
@@ -41,22 +38,26 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Forbidden: Admin access required' }, { status: 403 });
     }
 
-    // Server-side filter: only fetch expenses that actually have AI suggestions
+    // Server-side filter: only expenses with a non-empty suggested_category
     const withSuggestions = await fetchAllFiltered(
       base44.entities.Expense,
       { suggested_category: { $ne: '' } },
       '-date'
     );
 
-    if (withSuggestions.length === 0) {
+    // Also grab ones where suggested_category is a real value (not null/empty)
+    // The $ne filter should handle this, but let's also double-check in memory
+    const toRevert = withSuggestions.filter(e => e.suggested_category && e.suggested_category.trim() !== '');
+
+    if (toRevert.length === 0) {
       return Response.json({ message: 'No AI suggestions to undo', reverted: 0 });
     }
 
     const clearData = { suggested_category: '', suggested_type: '', ai_approved: false };
     let reverted = 0;
 
-    // Process one at a time with 500ms gaps to stay under rate limits
-    for (const e of withSuggestions) {
+    // Process one at a time with 500ms delay to stay under rate limits
+    for (const e of toRevert) {
       await updateWithRetry(base44.asServiceRole.entities.Expense, e.id, clearData);
       reverted++;
       await sleep(500);
