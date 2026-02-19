@@ -58,6 +58,7 @@ export default function EmployeeManagement() {
   const clients = dashData?.clients || [];
   const payrollSettings = dashData?.payrollSettings || null;
   const users = dashData?.users || [];
+  const lastMonthCollected = dashData?.lastMonthCollected || 0;
 
   const refetch = refetchAll;
   const refetchPlans = refetchAll;
