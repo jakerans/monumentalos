@@ -32,6 +32,16 @@ const CashFlowLegend = ({ payload }) => (
 );
 
 export default function CashFlowAnalysis({ payments, expenses }) {
+  // Compute MTD distributions for the summary card
+  const distSummary = useMemo(() => {
+    const now = new Date();
+    const thisMonthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+    const dists = expenses.filter(e => e.expense_type === 'distribution');
+    const mtd = dists.filter(e => e.date && new Date(e.date) >= thisMonthStart).reduce((s, e) => s + (e.amount || 0), 0);
+    const total = dists.reduce((s, e) => s + (e.amount || 0), 0);
+    return { mtd, total };
+  }, [expenses]);
+
   const { monthlyData, summary } = useMemo(() => {
     const now = new Date();
     const months = [];
@@ -131,6 +141,26 @@ export default function CashFlowAnalysis({ payments, expenses }) {
             </div>
           </div>
           <p className="text-lg font-bold text-orange-400">${summary.burnRate.toLocaleString()}</p>
+        </div>
+      </div>
+
+      {/* Distributions summary */}
+      <div className="bg-slate-800/50 rounded-lg border border-emerald-700/30 p-4">
+        <div className="flex items-center justify-between">
+          <div>
+            <p className="text-[9px] font-medium text-slate-400 uppercase mb-1">Owner Distributions (Not in P&L)</p>
+            <div className="flex items-center gap-4">
+              <div>
+                <p className="text-[10px] text-slate-500">This Month</p>
+                <p className="text-lg font-bold text-emerald-400">${distSummary.mtd.toLocaleString()}</p>
+              </div>
+              <div className="w-px h-8 bg-slate-700" />
+              <div>
+                <p className="text-[10px] text-slate-500">All Time</p>
+                <p className="text-lg font-bold text-emerald-400">${distSummary.total.toLocaleString()}</p>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 

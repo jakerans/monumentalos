@@ -61,7 +61,7 @@ export default function AddExpenseModal({ open, onOpenChange, clients, onCreated
               <select value={expenseType} onChange={e => setExpenseType(e.target.value)} className="w-full mt-1 px-3 py-2 text-sm border border-gray-300 rounded-md">
                 <option value="cogs">COGS (Cost of Goods Sold)</option>
                 <option value="overhead">Overhead</option>
-                <option value="distribution">Distribution (Owner Draw)</option>
+                <option value="distribution">Distribution (Owner Draw — not in P&L)</option>
               </select>
             </div>
           </div>

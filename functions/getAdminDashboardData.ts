@@ -342,7 +342,7 @@ Deno.serve(async (req) => {
     const lmExpenses = expenses.filter(e => inLM(e.date) && e.expense_type !== 'distribution').reduce((s, e) => s + (e.amount || 0), 0);
     const cogsTotal = expenses.filter(e => inMTD(e.date) && e.expense_type === 'cogs').reduce((s, e) => s + (e.amount || 0), 0);
     const overheadTotal = mtdExpenses - cogsTotal;
-    const chartData14 = build14DayChart(payments, expenses);
+    const chartData14 = build14DayChart(payments, expenses.filter(e => e.expense_type !== 'distribution'));
 
     const statCompare = {
       mtdIncome,

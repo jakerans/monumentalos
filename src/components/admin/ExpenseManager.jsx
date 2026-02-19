@@ -55,7 +55,7 @@ export default function ExpenseManager({ startDate, endDate, onAddExpense }) {
     keepPreviousData: true,
   });
 
-  const kpis = data?.kpis || { total: 0, cogsTotal: 0, overheadTotal: 0, distTotal: 0 };
+  const kpis = data?.kpis || { total: 0, cogsTotal: 0, overheadTotal: 0 };
   const byCategory = data?.byCategory || [];
   const expenses = data?.expenses || [];
   const totalFiltered = data?.totalFiltered || 0;
@@ -106,11 +106,10 @@ export default function ExpenseManager({ startDate, endDate, onAddExpense }) {
   return (
     <div className="space-y-4">
       {/* Summary cards */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+      <div className="grid grid-cols-3 gap-3">
         <SummaryCard label="Total Expenses" value={kpis.total} color="text-red-400" />
         <SummaryCard label="COGS" value={kpis.cogsTotal} color="text-orange-400" />
         <SummaryCard label="Overhead" value={kpis.overheadTotal} color="text-slate-300" />
-        <SummaryCard label="Distributions" value={kpis.distTotal} color="text-emerald-400" subtitle="Excluded from P&L" />
       </div>
 
       {/* Category breakdown */}
@@ -144,7 +143,6 @@ export default function ExpenseManager({ startDate, endDate, onAddExpense }) {
           <option value="all">All Types</option>
           <option value="cogs">COGS</option>
           <option value="overhead">Overhead</option>
-          <option value="distribution">Distribution</option>
         </select>
         <div className="flex-1" />
         <span className="text-xs text-slate-500">{totalFiltered} expense{totalFiltered !== 1 ? 's' : ''}</span>

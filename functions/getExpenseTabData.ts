@@ -52,15 +52,15 @@ Deno.serve(async (req) => {
       return d >= startDate && d <= endDate;
     };
 
-    const rangeExpenses = allExpenses.filter(e => inRange(e.date));
+    // Exclude distributions from expense tab entirely
+    const rangeExpenses = allExpenses.filter(e => inRange(e.date) && e.expense_type !== 'distribution');
 
-    // Compute KPIs on ALL range expenses (before category/type filters)
+    // Compute KPIs on range expenses (distributions excluded)
     const total = rangeExpenses.reduce((s, e) => s + (e.amount || 0), 0);
     const cogsTotal = rangeExpenses.filter(e => e.expense_type === 'cogs').reduce((s, e) => s + (e.amount || 0), 0);
     const overheadTotal = rangeExpenses.filter(e => e.expense_type === 'overhead').reduce((s, e) => s + (e.amount || 0), 0);
-    const distTotal = rangeExpenses.filter(e => e.expense_type === 'distribution').reduce((s, e) => s + (e.amount || 0), 0);
 
-    // Category breakdown (on all range expenses)
+    // Category breakdown (distributions excluded)
     const byCategoryMap = {};
     rangeExpenses.forEach(e => {
       const cat = e.category || 'other';
@@ -94,7 +94,7 @@ Deno.serve(async (req) => {
     }));
 
     return Response.json({
-      kpis: { total, cogsTotal, overheadTotal, distTotal },
+      kpis: { total, cogsTotal, overheadTotal },
       byCategory,
       expenses,
       totalFiltered,
