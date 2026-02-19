@@ -1,18 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
 
-async function fetchAll(entity) {
-  const results = [];
-  let skip = 0;
-  const limit = 200;
-  while (true) {
-    const batch = await entity.filter({}, '-date', limit, skip);
-    results.push(...batch);
-    if (batch.length < limit) break;
-    skip += limit;
-  }
-  return results;
-}
-
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
@@ -21,9 +8,18 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Forbidden' }, { status: 403 });
     }
 
-    // Step 1: Find all duplicates (same logic as findDuplicateExpenses)
-    const all = await fetchAll(base44.asServiceRole.entities.Expense);
+    // Step 1: Fetch all expenses in small pages
+    const all = [];
+    let skip = 0;
+    const limit = 100;
+    while (true) {
+      const batch = await base44.asServiceRole.entities.Expense.filter({}, '-date', limit, skip);
+      all.push(...batch);
+      if (batch.length < limit) break;
+      skip += limit;
+    }
 
+    // Step 2: Group by date+description+amount to find duplicates
     const groups = {};
     for (const e of all) {
       const desc = (e.description || '').trim().toLowerCase();
@@ -50,9 +46,9 @@ Deno.serve(async (req) => {
       return Response.json({ deleted: 0, totalScanned: all.length, duplicateAmount: 0 });
     }
 
-    // Step 2: Delete in chunks of 500 using deleteMany
-    const CHUNK = 500;
+    // Step 3: Delete using deleteMany in chunks of 500
     let totalDeleted = 0;
+    const CHUNK = 500;
     for (let i = 0; i < duplicateIds.length; i += CHUNK) {
       const chunk = duplicateIds.slice(i, i + CHUNK);
       const result = await base44.asServiceRole.entities.Expense.deleteMany({ id: { $in: chunk } });
@@ -62,7 +58,7 @@ Deno.serve(async (req) => {
     return Response.json({
       deleted: totalDeleted,
       totalScanned: all.length,
-      duplicateAmount,
+      duplicateAmount: Math.round(duplicateAmount * 100) / 100,
     });
   } catch (error) {
     return Response.json({ error: error.message }, { status: 500 });
