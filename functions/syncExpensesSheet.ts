@@ -227,12 +227,21 @@ Deno.serve(async (req) => {
         }
       } else if (!resolvedAppId) {
         // ── New bank transaction — check for existing duplicate first ──
+        // If the row has a Column A ID that we already queued for import this sync, skip
+        if (sheetRowId && expenseBySheetRowId[sheetRowId]) {
+          skippedPositive++;
+          continue;
+        }
         const dedupKey = `${date}|${expenseAmount}|${rawDesc || ''}`;
         if (dedupIndex.has(dedupKey)) {
           skippedPositive++;
           continue;
         }
         dedupIndex.add(dedupKey);
+        if (sheetRowId) {
+          // Mark this sheet ID as "pending" so later rows with the same ID are skipped
+          expenseBySheetRowId[sheetRowId] = true;
+        }
 
         const newExpense = {
           category: (sheetCategory && VALID_CATEGORIES.includes(sheetCategory)) ? sheetCategory : 'other',
@@ -242,6 +251,7 @@ Deno.serve(async (req) => {
           date: date,
           vendor: sheetVendor || '',
         };
+        if (sheetRowId) newExpense.sheet_row_id = sheetRowId;
         if (sheetClientId) newExpense.client_id = sheetClientId;
         newExpenseBatch.push({ rowIndex: i, data: newExpense });
       }
