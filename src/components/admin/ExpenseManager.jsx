@@ -156,7 +156,17 @@ export default function ExpenseManager({ startDate, endDate, onAddExpense }) {
       {/* Table */}
       <div className="bg-slate-800/50 rounded-lg border border-slate-700/50 overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="w-full text-xs">
+          <table className="w-full text-xs" style={{ tableLayout: 'fixed' }}>
+            <colgroup>
+              <col style={{ width: '100px' }} />
+              <col style={{ width: '95px' }} />
+              <col style={{ width: '85px' }} />
+              <col />
+              <col style={{ width: '100px' }} />
+              <col style={{ width: '100px' }} />
+              <col style={{ width: '90px' }} />
+              <col style={{ width: '70px' }} />
+            </colgroup>
             <thead>
               <tr className="border-b border-slate-700/50 text-slate-400">
                 <th className="text-left px-3 py-2 font-medium">Date</th>
@@ -166,7 +176,7 @@ export default function ExpenseManager({ startDate, endDate, onAddExpense }) {
                 <th className="text-left px-3 py-2 font-medium">Vendor</th>
                 <th className="text-left px-3 py-2 font-medium">Client</th>
                 <th className="text-right px-3 py-2 font-medium">Amount</th>
-                <th className="text-center px-3 py-2 font-medium w-16">Actions</th>
+                <th className="text-center px-3 py-2 font-medium">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-700/30">
@@ -213,7 +223,7 @@ function SummaryCard({ label, value, color, subtitle }) {
 function ExpenseRow({ expense: e, onEdit, onDelete }) {
   return (
     <tr className="hover:bg-slate-700/20 transition-colors">
-      <td className="px-3 py-2 text-slate-300">{dayjs(e.date).format('MMM D, YYYY')}</td>
+      <td className="px-3 py-2 text-slate-300 truncate">{dayjs(e.date).format('MMM D, YYYY')}</td>
       <td className="px-3 py-2">
         <span className={`px-1.5 py-0.5 text-[10px] font-medium rounded border ${CATEGORY_COLORS[e.category] || CATEGORY_COLORS.other}`}>
           {CATEGORY_LABELS[e.category] || e.category}
@@ -224,9 +234,9 @@ function ExpenseRow({ expense: e, onEdit, onDelete }) {
           {TYPE_LABELS[e.expense_type] || 'OH'}
         </span>
       </td>
-      <td className="px-3 py-2 text-white">{e.description || '—'}</td>
-      <td className="px-3 py-2 text-slate-400">{e.vendor || '—'}</td>
-      <td className="px-3 py-2 text-slate-400">{e.client_name || '—'}</td>
+      <td className="px-3 py-2 text-white truncate">{e.description || '—'}</td>
+      <td className="px-3 py-2 text-slate-400 truncate">{e.vendor || '—'}</td>
+      <td className="px-3 py-2 text-slate-400 truncate">{e.client_name || '—'}</td>
       <td className="px-3 py-2 text-right font-bold text-red-400">${(e.amount || 0).toLocaleString()}</td>
       <td className="px-3 py-2 text-center">
         <div className="flex items-center justify-center gap-1">
@@ -242,39 +252,39 @@ function EditRow({ editData, setEditData, clients, onSave, onCancel, saving }) {
   return (
     <tr className="bg-slate-700/30">
       <td className="px-3 py-2">
-        <input type="date" value={editData.date} onChange={ev => setEditData({ ...editData, date: ev.target.value })} className="w-full px-1.5 py-1 text-xs bg-slate-900 border border-slate-600 rounded text-white" />
+        <input type="date" value={editData.date} onChange={ev => setEditData({ ...editData, date: ev.target.value })} className="w-full min-w-0 px-1.5 py-1 text-xs bg-slate-900 border border-slate-600 rounded text-white" />
       </td>
       <td className="px-3 py-2">
-        <select value={editData.category} onChange={ev => setEditData({ ...editData, category: ev.target.value })} className="px-1.5 py-1 text-xs bg-slate-900 border border-slate-600 rounded text-white">
+        <select value={editData.category} onChange={ev => setEditData({ ...editData, category: ev.target.value })} className="w-full min-w-0 px-1.5 py-1 text-xs bg-slate-900 border border-slate-600 rounded text-white">
           {Object.entries(CATEGORY_LABELS).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
         </select>
       </td>
       <td className="px-3 py-2">
-        <select value={editData.expense_type} onChange={ev => setEditData({ ...editData, expense_type: ev.target.value })} className="px-1.5 py-1 text-xs bg-slate-900 border border-slate-600 rounded text-white">
+        <select value={editData.expense_type} onChange={ev => setEditData({ ...editData, expense_type: ev.target.value })} className="w-full min-w-0 px-1.5 py-1 text-xs bg-slate-900 border border-slate-600 rounded text-white">
           <option value="cogs">COGS</option>
-          <option value="overhead">Overhead</option>
-          <option value="distribution">Distribution</option>
+          <option value="overhead">OH</option>
+          <option value="distribution">Dist</option>
         </select>
       </td>
       <td className="px-3 py-2">
-        <input value={editData.description} onChange={ev => setEditData({ ...editData, description: ev.target.value })} className="w-full px-1.5 py-1 text-xs bg-slate-900 border border-slate-600 rounded text-white" />
+        <input value={editData.description} onChange={ev => setEditData({ ...editData, description: ev.target.value })} className="w-full min-w-0 px-1.5 py-1 text-xs bg-slate-900 border border-slate-600 rounded text-white" />
       </td>
       <td className="px-3 py-2">
-        <input value={editData.vendor} onChange={ev => setEditData({ ...editData, vendor: ev.target.value })} className="w-full px-1.5 py-1 text-xs bg-slate-900 border border-slate-600 rounded text-white" />
+        <input value={editData.vendor} onChange={ev => setEditData({ ...editData, vendor: ev.target.value })} className="w-full min-w-0 px-1.5 py-1 text-xs bg-slate-900 border border-slate-600 rounded text-white" />
       </td>
       <td className="px-3 py-2">
-        <select value={editData.client_id} onChange={ev => setEditData({ ...editData, client_id: ev.target.value })} className="px-1.5 py-1 text-xs bg-slate-900 border border-slate-600 rounded text-white">
+        <select value={editData.client_id} onChange={ev => setEditData({ ...editData, client_id: ev.target.value })} className="w-full min-w-0 px-1.5 py-1 text-xs bg-slate-900 border border-slate-600 rounded text-white">
           <option value="">None</option>
           {clients.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
         </select>
       </td>
       <td className="px-3 py-2">
-        <input type="number" value={editData.amount} onChange={ev => setEditData({ ...editData, amount: ev.target.value })} className="w-full px-1.5 py-1 text-xs bg-slate-900 border border-slate-600 rounded text-white text-right" />
+        <input type="number" value={editData.amount} onChange={ev => setEditData({ ...editData, amount: ev.target.value })} className="w-full min-w-0 px-1.5 py-1 text-xs bg-slate-900 border border-slate-600 rounded text-white text-right" />
       </td>
       <td className="px-3 py-2 text-center">
         <div className="flex items-center justify-center gap-1">
           <button onClick={onSave} disabled={saving} className="px-2 py-1 text-[10px] font-medium bg-[#D6FF03] text-black rounded hover:bg-[#c2e600]">{saving ? '...' : 'Save'}</button>
-          <button onClick={onCancel} className="px-2 py-1 text-[10px] font-medium text-slate-400 hover:text-white">Cancel</button>
+          <button onClick={onCancel} className="px-2 py-1 text-[10px] font-medium text-slate-400 hover:text-white">×</button>
         </div>
       </td>
     </tr>
