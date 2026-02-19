@@ -135,36 +135,40 @@ export default function EmployeeManagement() {
       <AdminNav user={user} currentPage="EmployeeManagement" clients={clients} />
 
       <main className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-5">
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div className="flex items-center gap-3">
-            <Users className="w-6 h-6 text-slate-300" />
+            <Users className="w-6 h-6 text-slate-300 hidden sm:block" />
             <div>
-              <h1 className="text-2xl font-bold text-white">Employee Management</h1>
-              <p className="text-sm text-slate-400">{employees.filter(e => e.status === 'active').length} active employees</p>
+              <h1 className="text-xl sm:text-2xl font-bold text-white">Employee Management</h1>
+              <p className="text-xs sm:text-sm text-slate-400">{employees.filter(e => e.status === 'active').length} active employees</p>
             </div>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap">
             <button
               onClick={() => setPayrollOpen(true)}
-              className="px-3 py-2 text-sm font-medium rounded-lg border border-slate-600 text-slate-300 hover:bg-slate-800 flex items-center gap-2"
+              className="px-2.5 sm:px-3 py-1.5 sm:py-2 text-xs sm:text-sm font-medium rounded-lg border border-slate-600 text-slate-300 hover:bg-slate-800 flex items-center gap-1.5 sm:gap-2"
             >
-              <Settings className="w-4 h-4" />
+              <Settings className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
               <span className="hidden sm:inline">Payroll:</span>
-              <span className="text-xs font-bold text-white capitalize">{payrollSettings?.payroll_frequency?.replace('_', '-') || 'Bi-Weekly'}</span>
+              <span className="text-[10px] sm:text-xs font-bold text-white capitalize">{payrollSettings?.payroll_frequency?.replace('_', '-') || 'Bi-Weekly'}</span>
             </button>
             <button
               onClick={handleSyncFromUsers}
               disabled={syncing}
-              className="px-4 py-2 text-sm font-medium rounded-lg border border-slate-600 text-slate-300 hover:bg-slate-800 flex items-center gap-2 disabled:opacity-50"
+              className="px-2.5 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm font-medium rounded-lg border border-slate-600 text-slate-300 hover:bg-slate-800 flex items-center gap-1.5 sm:gap-2 disabled:opacity-50"
             >
-              <RefreshCw className={`w-4 h-4 ${syncing ? 'animate-spin' : ''}`} /> Sync from Users
+              <RefreshCw className={`w-3.5 h-3.5 sm:w-4 sm:h-4 ${syncing ? 'animate-spin' : ''}`} />
+              <span className="hidden sm:inline">Sync from Users</span>
+              <span className="sm:hidden">Sync</span>
             </button>
             <button
               onClick={() => setAddOpen(true)}
-              className="px-4 py-2 text-sm font-bold text-black rounded-lg hover:opacity-90 flex items-center gap-2"
+              className="px-2.5 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm font-bold text-black rounded-lg hover:opacity-90 flex items-center gap-1.5 sm:gap-2"
               style={{ backgroundColor: '#D6FF03' }}
             >
-              <UserPlus className="w-4 h-4" /> Add Employee
+              <UserPlus className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+              <span className="hidden sm:inline">Add Employee</span>
+              <span className="sm:hidden">Add</span>
             </button>
           </div>
         </div>
