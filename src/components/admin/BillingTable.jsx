@@ -1,6 +1,6 @@
 import React, { useState, forwardRef } from 'react';
 import { base44 } from '@/api/base44Client';
-import { Check, Clock, AlertTriangle, DollarSign, Pencil } from 'lucide-react';
+import { Check, Clock, AlertTriangle, DollarSign, Pencil, Trash2, Loader2 } from 'lucide-react';
 import FlipMove from 'react-flip-move';
 import MarkPaidModal from './MarkPaidModal';
 import EditInvoiceModal from './EditInvoiceModal';
