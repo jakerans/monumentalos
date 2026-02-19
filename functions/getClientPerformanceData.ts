@@ -37,27 +37,25 @@ Deno.serve(async (req) => {
 
     const sr = base44.asServiceRole.entities;
 
-    const [clients, leads, spend, payments, paidBilling] = await Promise.all([
+    const [clients, leads, spend, paidBilling] = await Promise.all([
       sr.Client.list(),
       fetchAll(sr.Lead, '-created_date'),
       fetchAll(sr.Spend, '-date'),
-      fetchAll(sr.Payment, '-date'),
       fetchAllFiltered(sr.MonthlyBilling, { status: 'paid' }, '-paid_date'),
     ]);
 
-    // Merge Payment records + paid MonthlyBilling into unified collections list
-    const mergedPayments = [
-      ...payments.map(p => ({ ...p, _source: 'payment' })),
-      ...paidBilling.map(b => ({
-        id: b.id,
-        client_id: b.client_id,
-        amount: b.paid_amount || b.calculated_amount || 0,
-        date: b.paid_date,
-        _source: 'billing',
-      })),
-    ];
+    // Build unified payments list from paid billing records
+    const payments = paidBilling.map(b => ({
+      id: b.id,
+      client_id: b.client_id,
+      amount: b.paid_amount || b.calculated_amount || 0,
+      date: b.paid_date,
+      method: b.payment_method || 'invoice',
+      notes: `Invoice ${b.invoice_id || ''} (${b.billing_month})`,
+      _source: 'billing',
+    }));
 
-    return Response.json({ clients, leads, spend, payments: mergedPayments });
+    return Response.json({ clients, leads, spend, payments });
   } catch (error) {
     console.error('getClientPerformanceData error:', error);
     return Response.json({ error: error.message }, { status: 500 });

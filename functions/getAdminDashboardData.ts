@@ -1,6 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
 
-// Paginated fetch: keeps pulling pages until fewer than PAGE_SIZE rows return
 async function fetchAll(entityRef, sort, pageSize = 5000) {
   let all = [];
   let skip = 0;
@@ -42,21 +41,6 @@ function buildDailySparkline(items, dateKey, days = 14) {
   return data;
 }
 
-function build14DayChart(payments, expenses) {
-  const now = new Date();
-  const data = [];
-  for (let i = 13; i >= 0; i--) {
-    const d = new Date(now);
-    d.setDate(d.getDate() - i);
-    const dayStr = d.toISOString().split('T')[0];
-    const dayLabel = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-    const dayIncome = payments.filter(p => (p.date || '').startsWith(dayStr)).reduce((s, p) => s + (p.amount || 0), 0);
-    const dayExpense = expenses.filter(e => (e.date || '').startsWith(dayStr)).reduce((s, e) => s + (e.amount || 0), 0);
-    data.push({ label: dayLabel, income: dayIncome, expenses: dayExpense });
-  }
-  return data;
-}
-
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
@@ -67,12 +51,10 @@ Deno.serve(async (req) => {
 
     const sr = base44.asServiceRole.entities;
 
-    // Fetch all data in parallel with pagination safety
-    const [clients, leads, spend, payments, expenses, goals, billingRecords, users, spiffs] = await Promise.all([
+    const [clients, leads, spend, expenses, goals, billingRecords, users, spiffs] = await Promise.all([
       sr.Client.list(),
       fetchAll(sr.Lead, '-created_date'),
       fetchAll(sr.Spend, '-date'),
-      fetchAll(sr.Payment, '-date'),
       fetchAll(sr.Expense, '-date'),
       sr.CompanyGoal.list(),
       fetchAll(sr.MonthlyBilling, '-billing_month'),
@@ -127,18 +109,13 @@ Deno.serve(async (req) => {
     const bookedSparkline = buildDailySparkline(leads.filter(l => l.date_appointment_set), 'date_appointment_set');
 
     // ========== Cash Health Metrics ==========
-    // Realized Revenue = cash actually collected MTD (Payment entity + paid MonthlyBilling by paid_date)
     const paidBillingRecords = billingRecords.filter(b => b.status === 'paid');
-    const paymentRevenueMTD = payments.filter(p => inMTD(p.date)).reduce((s, p) => s + (p.amount || 0), 0);
-    const billingRevenueMTD = paidBillingRecords.filter(b => inMTD(b.paid_date)).reduce((s, b) => s + (b.paid_amount || b.calculated_amount || 0), 0);
-    const realizedRevenue = paymentRevenueMTD + billingRevenueMTD;
+    const realizedRevenue = paidBillingRecords.filter(b => inMTD(b.paid_date)).reduce((s, b) => s + (b.paid_amount || b.calculated_amount || 0), 0);
 
-    // --- Active Invoices (AR): last month's billing records that are NOT yet paid ---
     const lastMonthUnpaid = billingRecords
       .filter(b => b.billing_month === lastMonthStr && b.status !== 'paid')
       .reduce((s, b) => s + (b.paid_amount || b.calculated_amount || b.manual_amount || 0), 0);
 
-    // --- Live Accruals: this month's activity that will be billed next month ---
     let liveAccruals = 0;
     activeClients.forEach(client => {
       const bt = client.billing_type || 'pay_per_show';
@@ -148,14 +125,11 @@ Deno.serve(async (req) => {
       } else if (bt === 'pay_per_set') {
         liveAccruals += cLeads.filter(l => l.date_appointment_set && inMTD(l.date_appointment_set)).length * (client.price_per_set_appointment || 0);
       } else if (bt === 'retainer') {
-        // Retainer for this month accrues as owed next billing cycle
         liveAccruals += (client.retainer_amount || 0);
       }
     });
 
-    // Projected Revenue = Total Outstanding Value (AR + Live Accruals)
     const projectedRevenue = lastMonthUnpaid + liveAccruals;
-    // Unbilled = total outstanding minus cash collected this month
     const unbilledRevenue = Math.max(0, projectedRevenue - realizedRevenue);
 
     // ========== Accrued Expense & Real-Time Margin ==========
@@ -170,7 +144,6 @@ Deno.serve(async (req) => {
     activeEmployees.forEach(emp => {
       let monthlyCost = 0;
       if (emp.classification === 'salary' && emp.pay_per_cycle) {
-        // Assume biweekly → ~2.167 cycles/month; approximate monthly = pay_per_cycle * 2.167
         monthlyCost = emp.pay_per_cycle * 2.167;
       } else if (emp.classification === 'hourly') {
         monthlyCost = (emp.hourly_rate || 0) * (emp.standard_monthly_hours || 160);
@@ -181,16 +154,13 @@ Deno.serve(async (req) => {
       accruedSalary += monthlyCost * proRataFraction;
     });
 
-    // Recorded expenses MTD (exclude distributions from P&L)
     const recordedExpensesMTD = expenses.filter(e => inMTD(e.date) && e.expense_type !== 'distribution').reduce((s, e) => s + (e.amount || 0), 0);
     const recordedCogsMTD = expenses.filter(e => inMTD(e.date) && e.expense_type === 'cogs').reduce((s, e) => s + (e.amount || 0), 0);
 
-    // Total accrued = max of recorded or accrued payroll, plus other recorded
     const totalAccruedExpenses = Math.max(accruedSalary, recordedExpensesMTD);
-    const accruedGrossProfit = projectedRevenue - Math.max(accruedSalary * 0.6, recordedCogsMTD); // rough COGS ~60% of salary accrual, or recorded
+    const accruedGrossProfit = projectedRevenue - Math.max(accruedSalary * 0.6, recordedCogsMTD);
     const accruedGrossMargin = projectedRevenue > 0 ? (accruedGrossProfit / projectedRevenue) * 100 : 0;
 
-    // Real-time margin using accrued expenses
     const realtimeNetProfit = realizedRevenue - totalAccruedExpenses;
     const realtimeNetMargin = realizedRevenue > 0 ? (realtimeNetProfit / realizedRevenue) * 100 : 0;
 
@@ -199,7 +169,6 @@ Deno.serve(async (req) => {
       .filter(c => (c.billing_type || 'pay_per_show') === 'retainer')
       .reduce((s, c) => s + (c.retainer_amount || 0), 0);
 
-    // Fixed overhead = salary/hourly employees + software-category expenses (monthly avg)
     const monthlyFixedOverhead = activeEmployees.reduce((s, emp) => {
       let monthlyCost = 0;
       if (emp.classification === 'salary' && emp.pay_per_cycle) monthlyCost = emp.pay_per_cycle * 2.167;
@@ -207,7 +176,6 @@ Deno.serve(async (req) => {
       else if (emp.classification === 'contractor' && emp.contractor_billing_type === 'monthly') monthlyCost = emp.contractor_rate || 0;
       return s + monthlyCost;
     }, 0);
-    // Add recurring software expenses (last 90 days / 3)
     const softwareExpenses90d = expenses
       .filter(e => e.category === 'software' && new Date(e.date) >= ninetyDaysAgo)
       .reduce((s, e) => s + (e.amount || 0), 0);
@@ -216,17 +184,12 @@ Deno.serve(async (req) => {
     const retainerCoverageRatio = totalFixedOverhead > 0 ? Math.round((monthlyRetainerRevenue / totalFixedOverhead) * 100) : 0;
 
     // ========== AR Health Light ==========
-    // Check billing records: pending/overdue invoices
-    const allBillingRecords = await fetchAll(sr.MonthlyBilling, '-billing_month');
-    let arHealth = 'green'; // default
-    const todayDate = now.toISOString().split('T')[0];
-
-    allBillingRecords.forEach(bill => {
+    let arHealth = 'green';
+    billingRecords.forEach(bill => {
       if (bill.status === 'paid') return;
-      // Estimate invoice date as 1st of the month after billing_month
       const [y, m] = (bill.billing_month || '').split('-').map(Number);
       if (!y || !m) return;
-      const invoiceDate = new Date(y, m, 1); // 1st of next month
+      const invoiceDate = new Date(y, m, 1);
       const daysPastDue = Math.floor((now - invoiceDate) / (1000 * 60 * 60 * 24));
       const amount = bill.calculated_amount || bill.manual_amount || 0;
 
@@ -324,10 +287,7 @@ Deno.serve(async (req) => {
           grossRevenue += (client.retainer_amount || 0);
         }
       });
-      // Collected = Payment entity + paid MonthlyBilling by paid_date
-      const payCollected = payments.filter(p => rangeFn(p.date)).reduce((s, p) => s + (p.amount || 0), 0);
-      const billCollected = paidBillingRecords.filter(b => rangeFn(b.paid_date)).reduce((s, b) => s + (b.paid_amount || b.calculated_amount || 0), 0);
-      const collected = payCollected + billCollected;
+      const collected = paidBillingRecords.filter(b => rangeFn(b.paid_date)).reduce((s, b) => s + (b.paid_amount || b.calculated_amount || 0), 0);
       const rangeExpenses = expenses.filter(e => rangeFn(e.date) && e.expense_type !== 'distribution');
       const cogs = rangeExpenses.filter(e => e.expense_type === 'cogs').reduce((s, e) => s + (e.amount || 0), 0);
       const overhead = rangeExpenses.filter(e => e.expense_type === 'overhead').reduce((s, e) => s + (e.amount || 0), 0);
@@ -342,15 +302,12 @@ Deno.serve(async (req) => {
     const priorPL = calcPeriod(inLM);
 
     // ========== Stat Compare (Income vs Expenses) ==========
-    const mtdIncome = payments.filter(p => inMTD(p.date)).reduce((s, p) => s + (p.amount || 0), 0)
-      + paidBillingRecords.filter(b => inMTD(b.paid_date)).reduce((s, b) => s + (b.paid_amount || b.calculated_amount || 0), 0);
+    const mtdIncome = paidBillingRecords.filter(b => inMTD(b.paid_date)).reduce((s, b) => s + (b.paid_amount || b.calculated_amount || 0), 0);
     const mtdExpenses = expenses.filter(e => inMTD(e.date) && e.expense_type !== 'distribution').reduce((s, e) => s + (e.amount || 0), 0);
-    const lmIncome = payments.filter(p => inLM(p.date)).reduce((s, p) => s + (p.amount || 0), 0)
-      + paidBillingRecords.filter(b => inLM(b.paid_date)).reduce((s, b) => s + (b.paid_amount || b.calculated_amount || 0), 0);
+    const lmIncome = paidBillingRecords.filter(b => inLM(b.paid_date)).reduce((s, b) => s + (b.paid_amount || b.calculated_amount || 0), 0);
     const lmExpenses = expenses.filter(e => inLM(e.date) && e.expense_type !== 'distribution').reduce((s, e) => s + (e.amount || 0), 0);
     const cogsTotal = expenses.filter(e => inMTD(e.date) && e.expense_type === 'cogs').reduce((s, e) => s + (e.amount || 0), 0);
     const overheadTotal = mtdExpenses - cogsTotal;
-    // Build 14-day chart: income = Payment records + paid MonthlyBilling by paid_date
     const chartData14 = (() => {
       const now2 = new Date();
       const data = [];
@@ -359,10 +316,9 @@ Deno.serve(async (req) => {
         d.setDate(d.getDate() - i);
         const dayStr = d.toISOString().split('T')[0];
         const dayLabel = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-        const dayPaymentIncome = payments.filter(p => (p.date || '').startsWith(dayStr)).reduce((s, p) => s + (p.amount || 0), 0);
         const dayBillingIncome = paidBillingRecords.filter(b => (b.paid_date || '').startsWith(dayStr)).reduce((s, b) => s + (b.paid_amount || b.calculated_amount || 0), 0);
         const dayExpense = expenses.filter(e => (e.date || '').startsWith(dayStr) && e.expense_type !== 'distribution').reduce((s, e) => s + (e.amount || 0), 0);
-        data.push({ label: dayLabel, income: dayPaymentIncome + dayBillingIncome, expenses: dayExpense });
+        data.push({ label: dayLabel, income: dayBillingIncome, expenses: dayExpense });
       }
       return data;
     })();
