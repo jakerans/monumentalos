@@ -14,6 +14,7 @@ const APP_VENDOR_COL = 20;
 const APP_SYNCED_COL = 21;
 
 // Bank columns
+const BANK_ID_COL = 0;        // "ID" — Column A unique row identifier
 const BANK_DATE_COL = 1;       // "Date"
 const BANK_DESC_COL = 3;       // "Description"
 const BANK_AMOUNT_COL = 6;     // "Amount" (negative = expense)
