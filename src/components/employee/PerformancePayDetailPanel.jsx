@@ -75,11 +75,11 @@ export default function PerformancePayDetailPanel({ plan, employees, open, onOpe
 
           {!editing ? (
             <div className="space-y-3">
-              <div className="grid grid-cols-2 gap-3">
-                <div><p className={labelCls}>Type</p><p className="text-sm text-slate-200 capitalize">{plan.type?.replace('_', ' ')}</p></div>
-                <div><p className={labelCls}>Metric</p><p className="text-sm text-slate-200 capitalize">{plan.metric}</p></div>
-                <div><p className={labelCls}>Current Progress</p><p className="text-sm font-medium text-white">${(plan.current_period_progress || 0).toLocaleString()}</p></div>
-                <div><p className={labelCls}>Current Payout</p><p className="text-sm font-medium text-green-400">${(plan.current_period_payout || 0).toLocaleString()}</p></div>
+              <div className="grid grid-cols-2 gap-2 sm:gap-3">
+                <div><p className={labelCls}>Type</p><p className="text-xs sm:text-sm text-slate-200 capitalize">{plan.type?.replace('_', ' ')}</p></div>
+                <div><p className={labelCls}>Metric</p><p className="text-xs sm:text-sm text-slate-200 capitalize">{plan.metric}</p></div>
+                <div><p className={labelCls}>Current Progress</p><p className="text-xs sm:text-sm font-medium text-white">${(plan.current_period_progress || 0).toLocaleString()}</p></div>
+                <div><p className={labelCls}>Current Payout</p><p className="text-xs sm:text-sm font-medium text-green-400">${(plan.current_period_payout || 0).toLocaleString()}</p></div>
               </div>
 
               {plan.tiers && plan.tiers.length > 0 && (
@@ -115,12 +115,12 @@ export default function PerformancePayDetailPanel({ plan, employees, open, onOpe
                 <div>
                   <label className={labelCls}>Tiers</label>
                   {form.tiers.map((t, i) => (
-                    <div key={i} className="flex items-center gap-2 mb-1">
-                      <input className={inputCls + ' !w-20'} value={t.label} onChange={e => updateTier(i, 'label', e.target.value)} />
+                    <div key={i} className="flex flex-wrap items-center gap-1.5 sm:gap-2 mb-2">
+                      <input className={inputCls + ' !w-16 sm:!w-20'} value={t.label} onChange={e => updateTier(i, 'label', e.target.value)} placeholder="Label" />
                       <span className="text-xs text-slate-500">$</span>
-                      <input type="number" className={inputCls + ' !w-24'} value={t.threshold} onChange={e => updateTier(i, 'threshold', e.target.value)} />
+                      <input type="number" className={inputCls + ' !w-20 sm:!w-24'} value={t.threshold} onChange={e => updateTier(i, 'threshold', e.target.value)} />
                       <span className="text-xs text-slate-500">→</span>
-                      <input type="number" className={inputCls + ' !w-14'} value={t.percentage} onChange={e => updateTier(i, 'percentage', e.target.value)} />
+                      <input type="number" className={inputCls + ' !w-12 sm:!w-14'} value={t.percentage} onChange={e => updateTier(i, 'percentage', e.target.value)} />
                       <span className="text-xs text-slate-500">%</span>
                       {form.tiers.length > 1 && (
                         <button type="button" onClick={() => setForm({ ...form, tiers: form.tiers.filter((_, idx) => idx !== i) })} className="text-xs text-red-400 hover:text-red-300">×</button>

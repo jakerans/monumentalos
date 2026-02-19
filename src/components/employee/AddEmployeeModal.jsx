@@ -48,7 +48,7 @@ export default function AddEmployeeModal({ open, onOpenChange, onAdd }) {
       <DialogContent className="bg-slate-900 border-slate-700 text-white max-w-lg max-h-[90vh] overflow-y-auto">
         <DialogHeader><DialogTitle>Add Employee</DialogTitle></DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-3">
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div><label className={labelCls}>Full Name *</label><input className={inputCls} value={form.full_name} onChange={e => set('full_name', e.target.value)} required /></div>
             <div><label className={labelCls}>Email</label><input className={inputCls} value={form.email} onChange={e => set('email', e.target.value)} /></div>
             <div><label className={labelCls}>Phone</label><input className={inputCls} value={form.phone} onChange={e => set('phone', e.target.value)} /></div>
@@ -58,7 +58,7 @@ export default function AddEmployeeModal({ open, onOpenChange, onAdd }) {
 
           <hr className="border-slate-700" />
 
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
               <label className={labelCls}>Classification *</label>
               <select className={selectCls} value={form.classification} onChange={e => set('classification', e.target.value)}>
@@ -81,14 +81,14 @@ export default function AddEmployeeModal({ open, onOpenChange, onAdd }) {
           )}
 
           {form.classification === 'hourly' && (
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div><label className={labelCls}>Hourly Rate ($)</label><input type="number" className={inputCls} value={form.hourly_rate} onChange={e => set('hourly_rate', e.target.value)} placeholder="e.g. 25" /></div>
               <div><label className={labelCls}>Standard Monthly Hours</label><input type="number" className={inputCls} value={form.standard_monthly_hours} onChange={e => set('standard_monthly_hours', e.target.value)} placeholder="e.g. 160" /></div>
             </div>
           )}
 
           {form.classification === 'contractor' && (
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
                 <label className={labelCls}>Billing Type</label>
                 <select className={selectCls} value={form.contractor_billing_type} onChange={e => set('contractor_billing_type', e.target.value)}>
