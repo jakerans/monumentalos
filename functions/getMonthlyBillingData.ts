@@ -23,26 +23,166 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Forbidden' }, { status: 403 });
     }
 
-    const { selectedMonth } = await req.json();
+    const { selectedMonth, page = 0, pageSize = 50, action } = await req.json();
     const [selYear, selMonth] = selectedMonth.split('-').map(Number);
-    const monthStart = new Date(selYear, selMonth - 1, 1).toISOString();
-    const monthEnd = new Date(selYear, selMonth, 0, 23, 59, 59).toISOString();
 
     const sr = base44.asServiceRole.entities;
 
-    const [clients, billingRecords, leads] = await Promise.all([
-      sr.Client.list(),
-      fetchAllFiltered(sr.MonthlyBilling, { billing_month: selectedMonth }, '-billing_month'),
-      // Only fetch leads relevant to this billing month (showed or booked within the month)
-      fetchAllFiltered(sr.Lead, {
+    // ========== ACTION: Generate billing records server-side ==========
+    if (action === 'generate') {
+      const [clients, existingBilling] = await Promise.all([
+        sr.Client.list(),
+        fetchAllFiltered(sr.MonthlyBilling, { billing_month: selectedMonth }, '-billing_month'),
+      ]);
+
+      const activeClients = clients.filter(c => c.status === 'active');
+      const existingClientIds = new Set(existingBilling.map(r => r.client_id));
+      const missingClients = activeClients.filter(c => !existingClientIds.has(c.id));
+
+      if (missingClients.length === 0) {
+        return Response.json({ generated: 0 });
+      }
+
+      // Fetch leads for this billing month
+      const monthStart = new Date(selYear, selMonth - 1, 1).toISOString();
+      const monthEnd = new Date(selYear, selMonth, 0, 23, 59, 59).toISOString();
+      const leads = await fetchAllFiltered(sr.Lead, {
         $or: [
           { appointment_date: { $gte: monthStart, $lte: monthEnd } },
           { date_appointment_set: { $gte: monthStart, $lte: monthEnd } }
         ]
-      }, '-created_date'),
+      }, '-created_date');
+
+      const monthStartDate = new Date(selYear, selMonth - 1, 1);
+      const monthEndDate = new Date(selYear, selMonth, 0, 23, 59, 59);
+
+      const records = missingClients.map(client => {
+        const bt = client.billing_type || 'pay_per_show';
+        const cLeads = leads.filter(l => l.client_id === client.id);
+
+        let quantity = 0;
+        let rate = 0;
+        let calculatedAmount = 0;
+
+        if (bt === 'pay_per_show') {
+          const showed = cLeads.filter(l =>
+            l.disposition === 'showed' && l.appointment_date &&
+            new Date(l.appointment_date) >= monthStartDate && new Date(l.appointment_date) <= monthEndDate
+          );
+          quantity = showed.length;
+          rate = client.price_per_shown_appointment || 0;
+          calculatedAmount = quantity * rate;
+        } else if (bt === 'pay_per_set') {
+          const booked = cLeads.filter(l =>
+            l.date_appointment_set &&
+            new Date(l.date_appointment_set) >= monthStartDate && new Date(l.date_appointment_set) <= monthEndDate
+          );
+          quantity = booked.length;
+          rate = client.price_per_set_appointment || 0;
+          calculatedAmount = quantity * rate;
+        } else if (bt === 'retainer') {
+          rate = client.retainer_amount || 0;
+          calculatedAmount = rate;
+        }
+
+        return {
+          client_id: client.id,
+          billing_month: selectedMonth,
+          billing_type: bt,
+          calculated_amount: calculatedAmount,
+          quantity,
+          rate,
+          status: 'pending',
+        };
+      });
+
+      if (records.length > 0) {
+        await sr.MonthlyBilling.bulkCreate(records);
+      }
+
+      // Auto-flag overdue
+      const now = new Date();
+      const dueDate = new Date(selYear, selMonth, 5);
+      if (now > dueDate) {
+        const pendingRecords = existingBilling.filter(r => r.status === 'pending');
+        for (const r of pendingRecords) {
+          await sr.MonthlyBilling.update(r.id, { status: 'overdue' });
+        }
+      }
+
+      return Response.json({ generated: records.length });
+    }
+
+    // ========== DEFAULT: Return paginated billing data with pre-computed KPIs ==========
+    const [clients, allBillingForMonth] = await Promise.all([
+      sr.Client.list(),
+      fetchAllFiltered(sr.MonthlyBilling, { billing_month: selectedMonth }, '-billing_month'),
     ]);
 
-    return Response.json({ clients, billingRecords, leads });
+    // Build client lookup
+    const clientMap = {};
+    clients.forEach(c => { clientMap[c.id] = c; });
+
+    // Overdue logic
+    const now = new Date();
+    const dueDate = new Date(selYear, selMonth, 5);
+    const isOverdueMonth = now > dueDate;
+
+    // ---- Compute KPIs server-side ----
+    let totalAmount = 0;
+    let totalPaid = 0;
+    allBillingForMonth.forEach(record => {
+      const amount = record.billing_type === 'retainer'
+        ? (record.manual_amount || record.calculated_amount || 0)
+        : (record.calculated_amount || 0);
+      totalAmount += amount;
+      if (record.status === 'paid') {
+        totalPaid += (record.paid_amount || amount);
+      }
+    });
+    const totalPending = totalAmount - totalPaid;
+
+    // ---- Which active clients are missing billing records? ----
+    const activeClients = clients.filter(c => c.status === 'active');
+    const existingClientIds = new Set(allBillingForMonth.map(r => r.client_id));
+    const missingClientCount = activeClients.filter(c => !existingClientIds.has(c.id)).length;
+
+    // ---- Paginate billing rows ----
+    const totalCount = allBillingForMonth.length;
+    const skip = page * pageSize;
+    const pageRows = allBillingForMonth.slice(skip, skip + pageSize);
+
+    // Enrich each row with client name, computed amount, and display status
+    const rows = pageRows.map(record => {
+      const client = clientMap[record.client_id];
+      const amount = record.billing_type === 'retainer'
+        ? (record.manual_amount || record.calculated_amount || 0)
+        : (record.calculated_amount || 0);
+      const displayStatus = (isOverdueMonth && record.status === 'pending') ? 'overdue' : record.status;
+
+      return {
+        ...record,
+        clientName: client?.name || '—',
+        retainerDueDay: client?.retainer_due_day || null,
+        amount,
+        displayStatus,
+      };
+    });
+
+    return Response.json({
+      kpis: { totalAmount, totalPaid, totalPending },
+      rows,
+      pagination: {
+        page,
+        pageSize,
+        totalCount,
+        totalPages: Math.ceil(totalCount / pageSize),
+      },
+      isOverdueMonth,
+      missingClientCount,
+      // Still need minimal client list for AdminNav
+      clients: clients.map(c => ({ id: c.id, name: c.name, status: c.status })),
+    });
   } catch (error) {
     console.error('getMonthlyBillingData error:', error);
     return Response.json({ error: error.message }, { status: 500 });
