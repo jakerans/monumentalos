@@ -6,6 +6,7 @@ import { toast } from '@/components/ui/use-toast';
 import { Trash2, Plus, Filter, ChevronLeft, ChevronRight, Check, X, Sparkles, CheckCircle } from 'lucide-react';
 import ExpenseTabSkeleton from './ExpenseTabSkeleton';
 import DuplicateExpenseFinder from './DuplicateExpenseFinder';
+import ExpenseToolbar from './ExpenseToolbar';
 
 const CATEGORY_LABELS = {
   ad_spend: 'Ad Spend', payroll: 'Payroll', software: 'Software',
