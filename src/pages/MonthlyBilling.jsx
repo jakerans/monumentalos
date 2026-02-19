@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import dayjs from 'dayjs';
@@ -17,9 +17,9 @@ function getPrevMonth() {
 
 export default function MonthlyBilling() {
   const navigate = useNavigate();
-  const queryClient = useQueryClient();
   const [user, setUser] = useState(null);
   const [selectedMonth, setSelectedMonth] = useState(getPrevMonth());
+  const [page, setPage] = useState(0);
   const [generating, setGenerating] = useState(false);
 
   useEffect(() => {
@@ -35,10 +35,13 @@ export default function MonthlyBilling() {
     checkAuth();
   }, [navigate]);
 
-  const { data: dashData, refetch: refetchAll, isLoading } = useQuery({
-    queryKey: ['monthly-billing-data', selectedMonth],
+  // Reset page when month changes
+  useEffect(() => { setPage(0); }, [selectedMonth]);
+
+  const { data: dashData, refetch, isLoading } = useQuery({
+    queryKey: ['monthly-billing-data', selectedMonth, page],
     queryFn: async () => {
-      const res = await base44.functions.invoke('getMonthlyBillingData', { selectedMonth });
+      const res = await base44.functions.invoke('getMonthlyBillingData', { selectedMonth, page, pageSize: 50 });
       return res.data;
     },
     staleTime: 2 * 60 * 1000,
@@ -46,82 +49,20 @@ export default function MonthlyBilling() {
     retryDelay: (attempt) => Math.min(1000 * 2 ** attempt, 10000),
   });
 
+  const rows = dashData?.rows || [];
+  const kpis = dashData?.kpis || {};
+  const pagination = dashData?.pagination || {};
+  const isOverdueMonth = dashData?.isOverdueMonth || false;
+  const missingClientCount = dashData?.missingClientCount || 0;
   const clients = dashData?.clients || [];
-  const billingRecords = dashData?.billingRecords || [];
-  const leads = dashData?.leads || [];
-  const refetchBilling = refetchAll;
 
-  // Check if this month is past the 5th (for overdue logic)
-  const now = new Date();
   const [selYear, selMonth] = selectedMonth.split('-').map(Number);
-  // Billing for month X is due by the 5th of month X+1
-  const dueDate = new Date(selYear, selMonth, 5); // month is 0-indexed so selMonth = next month
-  const isOverdueMonth = now > dueDate;
-
-  const activeClients = clients.filter(c => c.status === 'active');
-  const existingClientIds = new Set(billingRecords.map(r => r.client_id));
-  const missingClients = activeClients.filter(c => !existingClientIds.has(c.id));
 
   const generateBillingRecords = async () => {
     setGenerating(true);
-
-    const monthStart = new Date(selYear, selMonth - 1, 1);
-    const monthEnd = new Date(selYear, selMonth, 0, 23, 59, 59);
-
-    const records = missingClients.map(client => {
-      const bt = client.billing_type || 'pay_per_show';
-      const cLeads = leads.filter(l => l.client_id === client.id);
-
-      let quantity = 0;
-      let rate = 0;
-      let calculatedAmount = 0;
-
-      if (bt === 'pay_per_show') {
-        const showed = cLeads.filter(l =>
-          l.disposition === 'showed' && l.appointment_date &&
-          new Date(l.appointment_date) >= monthStart && new Date(l.appointment_date) <= monthEnd
-        );
-        quantity = showed.length;
-        rate = client.price_per_shown_appointment || 0;
-        calculatedAmount = quantity * rate;
-      } else if (bt === 'pay_per_set') {
-        const booked = cLeads.filter(l =>
-          l.date_appointment_set &&
-          new Date(l.date_appointment_set) >= monthStart && new Date(l.date_appointment_set) <= monthEnd
-        );
-        quantity = booked.length;
-        rate = client.price_per_set_appointment || 0;
-        calculatedAmount = quantity * rate;
-      } else if (bt === 'retainer') {
-        rate = client.retainer_amount || 0;
-        calculatedAmount = rate;
-      }
-
-      return {
-        client_id: client.id,
-        billing_month: selectedMonth,
-        billing_type: bt,
-        calculated_amount: calculatedAmount,
-        quantity,
-        rate,
-        status: 'pending',
-      };
-    });
-
-    if (records.length > 0) {
-      await base44.entities.MonthlyBilling.bulkCreate(records);
-    }
-
-    // Also auto-flag overdue records
-    if (isOverdueMonth) {
-      const pendingRecords = billingRecords.filter(r => r.status === 'pending');
-      for (const r of pendingRecords) {
-        await base44.entities.MonthlyBilling.update(r.id, { status: 'overdue' });
-      }
-    }
-
+    await base44.functions.invoke('getMonthlyBillingData', { selectedMonth, action: 'generate' });
     setGenerating(false);
-    refetchBilling();
+    refetch();
   };
 
   if (!user) return null;
@@ -144,7 +85,7 @@ export default function MonthlyBilling() {
         </div>
 
         {/* Overdue banner */}
-        {isOverdueMonth && billingRecords.some(r => r.status === 'pending' || r.status === 'overdue') && (
+        {isOverdueMonth && rows.some(r => r.status === 'pending' || r.status === 'overdue') && (
           <div className="bg-red-500/10 border border-red-500/20 rounded-lg px-4 py-3 flex items-center gap-2">
             <span className="text-red-400 text-xs font-medium">
               ⚠ This billing period is past due (due by {new Date(selYear, selMonth, 5).toLocaleDateString()}). Unpaid invoices are overdue.
@@ -153,10 +94,10 @@ export default function MonthlyBilling() {
         )}
 
         {/* Generate button if there are missing clients */}
-        {missingClients.length > 0 && (
+        {missingClientCount > 0 && (
           <div className="bg-blue-500/10 border border-blue-500/20 rounded-lg px-4 py-3 flex items-center justify-between">
             <span className="text-blue-400 text-xs font-medium">
-              {missingClients.length} active client{missingClients.length > 1 ? 's' : ''} don't have billing records for this month yet.
+              {missingClientCount} active client{missingClientCount > 1 ? 's' : ''} don't have billing records for this month yet.
             </span>
             <button
               onClick={generateBillingRecords}
@@ -170,10 +111,11 @@ export default function MonthlyBilling() {
         )}
 
         <BillingTable
-          billingRecords={billingRecords}
-          clients={clients}
-          onRefresh={refetchBilling}
-          isOverdueMonth={isOverdueMonth}
+          rows={rows}
+          kpis={kpis}
+          pagination={pagination}
+          onRefresh={refetch}
+          onPageChange={setPage}
         />
       </main>
     </div>
