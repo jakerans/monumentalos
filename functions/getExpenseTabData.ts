@@ -52,8 +52,8 @@ Deno.serve(async (req) => {
       return d >= startDate && d <= endDate;
     };
 
-    // Exclude distributions from expense tab entirely
-    const rangeExpenses = allExpenses.filter(e => inRange(e.date) && e.expense_type !== 'distribution');
+    // Exclude distributions from expense tab entirely (by type OR category)
+    const rangeExpenses = allExpenses.filter(e => inRange(e.date) && e.expense_type !== 'distribution' && e.category !== 'distribution');
 
     // Compute KPIs on range expenses (distributions excluded)
     const total = rangeExpenses.reduce((s, e) => s + (e.amount || 0), 0);

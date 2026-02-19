@@ -22,7 +22,7 @@ const TYPE_COLORS = { cogs: 'bg-orange-100 text-orange-700', overhead: 'bg-gray-
 export default function ExpenseBreakdown({ expenses, clients, startDate, endDate, onRefresh }) {
   const start = dayjs(startDate).startOf('day');
   const end = dayjs(endDate).endOf('day');
-  const filtered = expenses.filter(e => e.date && e.expense_type !== 'distribution' && dayjs(e.date).isBetween(start, end, null, '[]'));
+  const filtered = expenses.filter(e => e.date && e.expense_type !== 'distribution' && e.category !== 'distribution' && dayjs(e.date).isBetween(start, end, null, '[]'));
 
   // Group by category
   const byCat = {};
