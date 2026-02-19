@@ -5,8 +5,8 @@ import FlipMove from 'react-flip-move';
 import MarkPaidModal from './MarkPaidModal';
 import EditInvoiceModal from './EditInvoiceModal';
 
-const BILLING_LABELS = { pay_per_show: 'Per Show', pay_per_set: 'Per Set', retainer: 'Retainer' };
-const BILLING_COLORS = { pay_per_show: 'bg-blue-100 text-blue-700', pay_per_set: 'bg-purple-100 text-purple-700', retainer: 'bg-amber-100 text-amber-700' };
+const BILLING_LABELS = { pay_per_show: 'Per Show', pay_per_set: 'Per Set', retainer: 'Retainer', setup_fee: 'Setup Fee' };
+const BILLING_COLORS = { pay_per_show: 'bg-blue-100 text-blue-700', pay_per_set: 'bg-purple-100 text-purple-700', retainer: 'bg-amber-100 text-amber-700', setup_fee: 'bg-emerald-100 text-emerald-700' };
 
 const STATUS_CONFIG = {
   pending: { label: 'Pending', icon: Clock, color: 'text-amber-600', bg: 'bg-amber-50 border-amber-200' },

@@ -75,7 +75,7 @@ export default function CreateClientModal({ open, onOpenChange, onCreated }) {
       const billingData = {
         client_id: client.id,
         billing_month: billingMonth,
-        billing_type: billingType,
+        billing_type: 'setup_fee',
         calculated_amount: parseFloat(setupFeeAmount),
         manual_amount: parseFloat(setupFeeAmount),
         quantity: 1,
