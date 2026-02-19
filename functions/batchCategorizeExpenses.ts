@@ -108,11 +108,17 @@ Return a JSON object with a "results" array. Each item must have: expense_id, su
         return r.expense_id && categorySet.has(r.suggested_category) && typeSet.has(r.suggested_type);
       })
       .map(async (r) => {
-        await base44.asServiceRole.entities.Expense.update(r.expense_id, {
+        const updateData = {
           suggested_category: r.suggested_category,
           suggested_type: r.suggested_type,
           ai_approved: false,
-        });
+        };
+        // Only set vendor if it was empty and AI deduced one
+        const original = batch.find(e => e.id === r.expense_id);
+        if (!original?.vendor && r.suggested_vendor) {
+          updateData.vendor = r.suggested_vendor;
+        }
+        await base44.asServiceRole.entities.Expense.update(r.expense_id, updateData);
         updated++;
       });
 
