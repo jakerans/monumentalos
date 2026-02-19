@@ -316,9 +316,31 @@ export default function LeadDetailsDrawer({ leadId, open, onOpenChange, onLeadUp
               <div>
                   <h3 className="text-xs font-semibold text-gray-500 uppercase mb-3">Project Details</h3>
                   <div className="space-y-3">
-                    <InfoRow icon={Briefcase} label="Project Type" value={lead.project_type} editing={editing} editValue={editData.project_type} onEditChange={(v) => setEditData(d => ({...d, project_type: v}))} />
-                    <InfoRow icon={Ruler} label="Project Size" value={lead.project_size} editing={editing} editValue={editData.project_size} onEditChange={(v) => setEditData(d => ({...d, project_size: v}))} />
-                    <InfoRow icon={Clock} label="Timeline" value={lead.timeline} editing={editing} editValue={editData.timeline} onEditChange={(v) => setEditData(d => ({...d, timeline: v}))} />
+                    {editing ? (
+                      <>
+                        <div className="flex items-start gap-3">
+                          <Briefcase className="w-4 h-4 mt-0.5 text-gray-400" />
+                          <div className="flex-1">
+                            <p className="text-xs text-gray-500">Project Type</p>
+                            <ProjectTypeSelect value={editData.project_type} onChange={(v) => setEditData(d => ({...d, project_type: v}))} industries={editData.industries} className="mt-0.5 !bg-white !border-gray-300 !text-gray-900" />
+                          </div>
+                        </div>
+                        <div className="flex items-start gap-3">
+                          <Ruler className="w-4 h-4 mt-0.5 text-gray-400" />
+                          <div className="flex-1">
+                            <p className="text-xs text-gray-500">Project Size</p>
+                            <ProjectSizeSelect value={editData.project_size} onChange={(v) => setEditData(d => ({...d, project_size: v}))} className="mt-0.5 !bg-white !border-gray-300 !text-gray-900" />
+                          </div>
+                        </div>
+                        <InfoRow icon={Clock} label="Timeline" value={lead.timeline} editing={editing} editValue={editData.timeline} onEditChange={(v) => setEditData(d => ({...d, timeline: v}))} />
+                      </>
+                    ) : (
+                      <>
+                        <InfoRow icon={Briefcase} label="Project Type" value={lead.project_type} editing={false} />
+                        <InfoRow icon={Ruler} label="Project Size" value={lead.project_size} editing={false} />
+                        <InfoRow icon={Clock} label="Timeline" value={lead.timeline} editing={false} />
+                      </>
+                    )}
                   </div>
                 </div>
 
