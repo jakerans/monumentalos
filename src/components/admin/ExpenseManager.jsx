@@ -94,6 +94,9 @@ export default function ExpenseManager({ startDate, endDate, onAddExpense }) {
 
   return (
     <div className="space-y-4">
+      {/* Sync + AI buttons */}
+      <ExpenseToolbar onRefresh={refetch} />
+
       {/* Summary cards */}
       <div className="grid grid-cols-3 gap-3">
         <SummaryCard label="Total Expenses" value={kpis.total} color="text-red-400" />
