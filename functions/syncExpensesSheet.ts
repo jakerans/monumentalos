@@ -165,6 +165,9 @@ Deno.serve(async (req) => {
     }
 
     // ─── STEP 4: Bulk create new expenses (batches of 50) ───
+    console.log(`[syncExpenses] ${existingSheetIds.size} existing sheet_row_ids in DB Set`);
+    console.log(`[syncExpenses] ${newRows.length} new rows to create · ${skipped} skipped (positive/empty/transfer) · ${updateRows.length} existing to merge`);
+
     let added = 0;
     const sheetUpdates = [];
 
