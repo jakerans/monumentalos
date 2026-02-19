@@ -26,14 +26,15 @@ Deno.serve(async (req) => {
     const { revFetchStart } = await req.json();
     const sr = base44.asServiceRole.entities;
 
-    const [clients, leads, payments, expenses] = await Promise.all([
+    const [clients, leads, payments, expenses, billingRecords] = await Promise.all([
       sr.Client.list(),
       fetchAllFiltered(sr.Lead, { created_date: { $gte: revFetchStart } }, '-created_date'),
       fetchAllFiltered(sr.Payment, { date: { $gte: revFetchStart } }, '-date'),
       fetchAllFiltered(sr.Expense, { date: { $gte: revFetchStart } }, '-date'),
+      fetchAllFiltered(sr.MonthlyBilling, { status: 'paid' }, '-paid_date'),
     ]);
 
-    return Response.json({ clients, leads, payments, expenses });
+    return Response.json({ clients, leads, payments, expenses, billingRecords });
   } catch (error) {
     console.error('getRevenueDashboardData error:', error);
     return Response.json({ error: error.message }, { status: 500 });
