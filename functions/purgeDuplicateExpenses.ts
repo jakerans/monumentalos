@@ -13,18 +13,22 @@ Deno.serve(async (req) => {
     const idsToDelete = body.ids || [];
 
     if (mode === 'purge') {
-      // Step 2: Just delete the provided IDs
       if (idsToDelete.length === 0) {
         return Response.json({ deleted: 0 });
       }
-      let totalDeleted = 0;
-      const CHUNK = 500;
-      for (let i = 0; i < idsToDelete.length; i += CHUNK) {
-        const chunk = idsToDelete.slice(i, i + CHUNK);
-        const result = await base44.asServiceRole.entities.Expense.deleteMany({ id: { $in: chunk } });
-        totalDeleted += result?.deleted || chunk.length;
+      // Delete individually with small delays to avoid rate limits
+      const delay = (ms) => new Promise(r => setTimeout(r, ms));
+      let deleted = 0;
+      for (const id of idsToDelete) {
+        try {
+          await base44.asServiceRole.entities.Expense.delete(id);
+          deleted++;
+        } catch (e) {
+          // skip not-found
+        }
+        if (deleted % 5 === 0) await delay(300);
       }
-      return Response.json({ deleted: totalDeleted });
+      return Response.json({ deleted });
     }
 
     // mode === 'scan': Fetch and find duplicates
