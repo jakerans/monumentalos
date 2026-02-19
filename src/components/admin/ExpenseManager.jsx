@@ -3,9 +3,8 @@ import dayjs from 'dayjs';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import { toast } from '@/components/ui/use-toast';
-import { Trash2, Plus, Filter, ChevronLeft, ChevronRight, Check, X, Settings, Sparkles, CheckCircle } from 'lucide-react';
+import { Trash2, Plus, Filter, ChevronLeft, ChevronRight, Check, X, Sparkles, CheckCircle } from 'lucide-react';
 import ExpenseTabSkeleton from './ExpenseTabSkeleton';
-import AIExpenseSettingsModal from './AIExpenseSettingsModal';
 
 const CATEGORY_LABELS = {
   ad_spend: 'Ad Spend', payroll: 'Payroll', software: 'Software',
@@ -33,8 +32,6 @@ export default function ExpenseManager({ startDate, endDate, onAddExpense }) {
   const [filterCat, setFilterCat] = useState('all');
   const [filterType, setFilterType] = useState('all');
   const [page, setPage] = useState(0);
-  const [aiSettingsOpen, setAiSettingsOpen] = useState(false);
-
   const { data, isLoading, refetch } = useQuery({
     queryKey: ['expense-tab-data', startDate, endDate, filterCat, filterType, page],
     queryFn: async () => {
@@ -135,15 +132,10 @@ export default function ExpenseManager({ startDate, endDate, onAddExpense }) {
         </select>
         <div className="flex-1" />
         <span className="text-xs text-slate-500">{totalFiltered} expense{totalFiltered !== 1 ? 's' : ''}</span>
-        <button onClick={() => setAiSettingsOpen(true)} className="px-3 py-1.5 text-xs font-medium bg-slate-700 text-slate-300 rounded-md hover:bg-slate-600 flex items-center gap-1" title="AI Settings">
-          <Settings className="w-3.5 h-3.5" /> AI Settings
-        </button>
         <button onClick={onAddExpense} className="px-3 py-1.5 text-xs font-medium bg-red-600 text-white rounded-md hover:bg-red-700 flex items-center gap-1">
           <Plus className="w-3.5 h-3.5" /> Add Expense
         </button>
       </div>
-
-      <AIExpenseSettingsModal open={aiSettingsOpen} onOpenChange={setAiSettingsOpen} />
 
       {/* Mobile card view */}
       <div className="sm:hidden space-y-2">
