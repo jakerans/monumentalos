@@ -10,6 +10,7 @@ export default function RecordPaymentModal({ open, onOpenChange, clients, billin
   const [amount, setAmount] = useState('');
   const [date, setDate] = useState(dayjs().format('YYYY-MM-DD'));
   const [method, setMethod] = useState('ach');
+  const [processingFee, setProcessingFee] = useState('');
   const [notes, setNotes] = useState('');
   const [saving, setSaving] = useState(false);
 
@@ -32,12 +33,15 @@ export default function RecordPaymentModal({ open, onOpenChange, clients, billin
     if (!clientId || !amount) return;
     setSaving(true);
 
+    const feeAmount = Number(processingFee) || 0;
+
     if (billingId && selectedRecord) {
       await base44.entities.MonthlyBilling.update(billingId, {
         status: 'paid',
         paid_amount: Number(amount),
         paid_date: date,
         payment_method: method,
+        processing_fee: feeAmount || undefined,
         notes: notes || selectedRecord.notes || undefined,
       });
     } else {
@@ -51,15 +55,30 @@ export default function RecordPaymentModal({ open, onOpenChange, clients, billin
         paid_amount: Number(amount),
         paid_date: date,
         payment_method: method,
+        processing_fee: feeAmount || undefined,
         status: 'paid',
         notes: notes || 'Manual payment',
+      });
+    }
+
+    // Auto-create processing fee expense as COGS
+    if (feeAmount > 0) {
+      const cName = clients.find(c => c.id === clientId)?.name || 'Client';
+      await base44.entities.Expense.create({
+        category: 'processing_fee',
+        expense_type: 'cogs',
+        description: `Processing fee — ${cName}`,
+        amount: feeAmount,
+        date: date,
+        client_id: clientId,
+        vendor: method === 'credit_card' ? 'Credit Card Processor' : 'Payment Processor',
       });
     }
 
     setSaving(false);
     const cName = clients.find(c => c.id === clientId)?.name || 'Client';
     toast({ title: 'Payment Recorded', description: `$${Number(amount).toLocaleString()} from ${cName}`, variant: 'success' });
-    setClientId(''); setBillingId(''); setAmount(''); setNotes('');
+    setClientId(''); setBillingId(''); setAmount(''); setProcessingFee(''); setNotes('');
     onCreated();
     onOpenChange(false);
   };
@@ -113,6 +132,11 @@ export default function RecordPaymentModal({ open, onOpenChange, clients, billin
               <option value="cash">Cash</option>
               <option value="other">Other</option>
             </select>
+          </div>
+          <div>
+            <label className="text-xs font-medium text-gray-700">Processing Fee ($)</label>
+            <input type="number" value={processingFee} onChange={e => setProcessingFee(e.target.value)} placeholder="0.00" className="w-full mt-1 px-3 py-2 text-sm border border-gray-300 rounded-md" />
+            <p className="text-[10px] text-gray-400 mt-0.5">Auto-logged as COGS expense</p>
           </div>
           <div>
             <label className="text-xs font-medium text-gray-700">Notes</label>
