@@ -100,7 +100,7 @@ Deno.serve(async (req) => {
         rate,
         status: 'pending',
       };
-    });
+    }).filter(r => r.quantity > 0);
 
     let created = 0;
     if (records.length > 0) {
