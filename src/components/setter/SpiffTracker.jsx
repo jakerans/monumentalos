@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
+import { ChevronDown, ChevronUp, Gift, Clock, Trophy } from 'lucide-react';
 import SpiffCard from './SpiffCard';
 
 export default function SpiffTracker({ spiffs, leads, user }) {
