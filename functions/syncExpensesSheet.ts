@@ -165,8 +165,13 @@ Deno.serve(async (req) => {
 
       if (resolvedExisting) {
         // ── Already synced — 2-way merge ──
-        const existing = expenseById[appId];
+        const existing = resolvedExisting;
         const dbUpdatesObj = {};
+
+        // Backfill sheet_row_id if the DB record doesn't have it yet
+        if (sheetRowId && !existing.sheet_row_id) {
+          dbUpdatesObj.sheet_row_id = sheetRowId;
+        }
 
         if (sheetCategory && VALID_CATEGORIES.includes(sheetCategory) && sheetCategory !== existing.category) {
           dbUpdatesObj.category = sheetCategory;
@@ -182,13 +187,13 @@ Deno.serve(async (req) => {
         }
 
         if (Object.keys(dbUpdatesObj).length > 0) {
-          dbUpdateBatch.push({ id: appId, data: dbUpdatesObj });
+          dbUpdateBatch.push({ id: existing.id, data: dbUpdatesObj });
           updatedFromSheet++;
         }
 
         // DB → Sheet (fill empty sheet cells from DB)
         const appCells = [
-          appId,
+          existing.id,
           existing.category || '',
           existing.expense_type || '',
           existing.client_id || '',
@@ -220,7 +225,7 @@ Deno.serve(async (req) => {
           });
           updatedToSheet++;
         }
-      } else if (!appId) {
+      } else if (!resolvedAppId) {
         // ── New bank transaction — check for existing duplicate first ──
         const dedupKey = `${date}|${expenseAmount}|${rawDesc || ''}`;
         if (dedupIndex.has(dedupKey)) {
