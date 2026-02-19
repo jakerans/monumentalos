@@ -14,6 +14,7 @@ import GoalManagementModal from '../components/admin/GoalManagementModal';
 import PLComparisonRow from '../components/admin/PLComparisonRow.jsx';
 import StatCompareCard from '../components/admin/StatCompareCard.jsx';
 import { Settings, Trophy, Eye, RefreshCw, Sparkles } from 'lucide-react';
+import InfoTooltip from '../components/shared/InfoTooltip';
 import AICoachInstructionsModal from '../components/admin/AICoachInstructionsModal';
 import PageErrorBoundary from '../components/shared/PageErrorBoundary';
 import PageLoader from '../components/shared/PageLoader';
@@ -180,7 +181,10 @@ export default function AdminDashboard() {
           transition={effectsOn ? { delay: 0.3, duration: 0.4 } : { duration: 0 }}
           className="bg-slate-800/50 rounded-lg border border-slate-700/50 p-4"
         >
-          <h3 className="text-sm font-bold text-white mb-3">P&L Snapshot (MTD vs Last Month)</h3>
+          <div className="flex items-center gap-2 mb-3">
+            <h3 className="text-sm font-bold text-white">P&L Snapshot (MTD vs Last Month)</h3>
+            <InfoTooltip text="Side-by-side comparison of this month's P&L metrics versus last month. Green/red badges show the % change. COGS and Overhead are inverted — decreases are good." />
+          </div>
           <PLComparisonRow current={mtd} prior={priorPL} />
         </motion.div>
 
@@ -199,6 +203,7 @@ export default function AdminDashboard() {
             <div className="px-4 py-3 border-b border-slate-700/50 flex items-center gap-2">
               <Trophy className="w-4 h-4 text-amber-400" />
               <h3 className="text-sm font-bold text-white">Setter Leaderboard (MTD)</h3>
+              <InfoTooltip text="Rankings based on appointments booked this month. STL = average Speed-to-Lead in minutes (lower is better). Top performers are highlighted." />
             </div>
             <div className="px-4 py-1.5 flex items-center justify-between border-b border-slate-700/30">
               <span className="text-[10px] text-slate-500 uppercase tracking-wider">Setter</span>
