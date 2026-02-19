@@ -48,14 +48,8 @@ export default function DuplicateExpenseFinder({ onCleanupDone }) {
     if (selected.size === 0) return;
     setDeleting(true);
     const ids = Array.from(selected);
-    // Delete in batches of 50
-    let totalDeleted = 0;
-    for (let i = 0; i < ids.length; i += 50) {
-      const batch = ids.slice(i, i + 50);
-      const res = await base44.functions.invoke('deleteDuplicateExpenses', { ids: batch });
-      totalDeleted += res.data.deleted || 0;
-    }
-    toast({ title: `Deleted ${totalDeleted} duplicate expenses`, variant: 'success' });
+    const res = await base44.functions.invoke('deleteDuplicateExpenses', { ids });
+    toast({ title: `Deleted ${res.data.deleted} duplicate expenses`, variant: 'success' });
     setDeleting(false);
     setResult(null);
     if (onCleanupDone) onCleanupDone();
