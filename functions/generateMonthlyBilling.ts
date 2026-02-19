@@ -1,0 +1,117 @@
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
+
+// Runs on the 1st of each month — generates billing records for pay_per_show and pay_per_set clients
+// for the PRIOR month's activity.
+
+async function fetchAll(entityRef, sort, pageSize = 5000) {
+  let all = [];
+  let skip = 0;
+  while (true) {
+    const page = await entityRef.list(sort, pageSize, skip);
+    all = all.concat(page);
+    if (page.length < pageSize) break;
+    skip += pageSize;
+  }
+  return all;
+}
+
+async function fetchAllFiltered(entityRef, filter, sort, pageSize = 5000) {
+  let all = [];
+  let skip = 0;
+  while (true) {
+    const page = await entityRef.filter(filter, sort, pageSize, skip);
+    all = all.concat(page);
+    if (page.length < pageSize) break;
+    skip += pageSize;
+  }
+  return all;
+}
+
+Deno.serve(async (req) => {
+  try {
+    const base44 = createClientFromRequest(req);
+    const user = await base44.auth.me();
+    if (user?.role !== 'admin') {
+      return Response.json({ error: 'Forbidden: Admin access required' }, { status: 403 });
+    }
+
+    const sr = base44.asServiceRole.entities;
+
+    // Determine the prior month
+    const now = new Date();
+    const priorMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+    const billingMonthStr = `${priorMonth.getFullYear()}-${String(priorMonth.getMonth() + 1).padStart(2, '0')}`;
+    const monthStart = new Date(priorMonth.getFullYear(), priorMonth.getMonth(), 1);
+    const monthEnd = new Date(priorMonth.getFullYear(), priorMonth.getMonth() + 1, 0, 23, 59, 59);
+
+    // Fetch clients, existing billing records, and leads in parallel
+    const [clients, existingRecords, leads] = await Promise.all([
+      sr.Client.list(),
+      fetchAllFiltered(sr.MonthlyBilling, { billing_month: billingMonthStr }, '-billing_month'),
+      fetchAllFiltered(sr.Lead, {
+        $or: [
+          { appointment_date: { $gte: monthStart.toISOString(), $lte: monthEnd.toISOString() } },
+          { date_appointment_set: { $gte: monthStart.toISOString(), $lte: monthEnd.toISOString() } }
+        ]
+      }, '-created_date'),
+    ]);
+
+    const activeClients = clients.filter(c => c.status === 'active');
+    const existingClientIds = new Set(existingRecords.map(r => r.client_id));
+
+    // Only generate for pay_per_show and pay_per_set clients that don't already have a record
+    const eligibleClients = activeClients.filter(c => {
+      const bt = c.billing_type || 'pay_per_show';
+      return (bt === 'pay_per_show' || bt === 'pay_per_set') && !existingClientIds.has(c.id);
+    });
+
+    const records = eligibleClients.map(client => {
+      const bt = client.billing_type || 'pay_per_show';
+      const cLeads = leads.filter(l => l.client_id === client.id);
+
+      let quantity = 0;
+      let rate = 0;
+      let calculatedAmount = 0;
+
+      if (bt === 'pay_per_show') {
+        const showed = cLeads.filter(l =>
+          l.disposition === 'showed' && l.appointment_date &&
+          new Date(l.appointment_date) >= monthStart && new Date(l.appointment_date) <= monthEnd
+        );
+        quantity = showed.length;
+        rate = client.price_per_shown_appointment || 0;
+        calculatedAmount = quantity * rate;
+      } else if (bt === 'pay_per_set') {
+        const booked = cLeads.filter(l =>
+          l.date_appointment_set &&
+          new Date(l.date_appointment_set) >= monthStart && new Date(l.date_appointment_set) <= monthEnd
+        );
+        quantity = booked.length;
+        rate = client.price_per_set_appointment || 0;
+        calculatedAmount = quantity * rate;
+      }
+
+      return {
+        client_id: client.id,
+        billing_month: billingMonthStr,
+        billing_type: bt,
+        calculated_amount: calculatedAmount,
+        quantity,
+        rate,
+        status: 'pending',
+      };
+    });
+
+    let created = 0;
+    if (records.length > 0) {
+      await sr.MonthlyBilling.bulkCreate(records);
+      created = records.length;
+    }
+
+    console.log(`generateMonthlyBilling: Created ${created} records for ${billingMonthStr}`);
+    return Response.json({ success: true, billingMonth: billingMonthStr, created });
+  } catch (error) {
+    console.error('generateMonthlyBilling error:', error);
+    return Response.json({ error: error.message }, { status: 500 });
+  }
+});
