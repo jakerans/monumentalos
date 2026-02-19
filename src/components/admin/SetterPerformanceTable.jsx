@@ -1,7 +1,7 @@
 import React, { useMemo } from 'react';
 import dayjs from 'dayjs';
 import isBetween from 'dayjs/plugin/isBetween';
-import { Phone, Calendar, Target, TrendingUp, Award } from 'lucide-react';
+import { Timer, Calendar, Target, TrendingUp, Award } from 'lucide-react';
 import SparklineCard from '../shared/SparklineCard';
 import AnimatedTable from '../shared/AnimatedTable';
 
@@ -28,13 +28,15 @@ export default function SetterPerformanceTable({ users, leads, clients, startDat
     return { id: setter.id, name: setter.full_name, firstCalls: firstCalls.length, booked: booked.length, showed: showed.length, dq: dq.length, avgSTL, bookingRate: parseFloat(bookingRate), showRate: parseFloat(showRate), clientBreakdown };
   }).sort((a, b) => b.booked - a.booked), [setters, leads, startDate, endDate]);
 
-  const totalCalls = stats.reduce((s, r) => s + r.firstCalls, 0);
   const totalBooked = stats.reduce((s, r) => s + r.booked, 0);
   const totalShowed = stats.reduce((s, r) => s + r.showed, 0);
+  const totalCalls = stats.reduce((s, r) => s + r.firstCalls, 0);
+  const allSTLValues = stats.filter(r => r.avgSTL != null).map(r => r.avgSTL);
+  const overallAvgSTL = allSTLValues.length ? Math.round(allSTLValues.reduce((a, b) => a + b, 0) / allSTLValues.length) : null;
 
   const summaryCards = [
     { label: 'Total Setters', value: setters.length, icon: Award, color: 'text-indigo-400', bg: 'bg-indigo-500/10', spark: '#818cf8' },
-    { label: 'Total First Calls', value: totalCalls, icon: Phone, color: 'text-blue-400', bg: 'bg-blue-500/10', spark: '#60a5fa' },
+    { label: 'Avg Speed to Lead', value: overallAvgSTL != null ? `${overallAvgSTL}m` : '—', icon: Timer, color: overallAvgSTL != null && overallAvgSTL <= 5 ? 'text-green-400' : overallAvgSTL != null && overallAvgSTL <= 15 ? 'text-amber-400' : 'text-blue-400', bg: overallAvgSTL != null && overallAvgSTL <= 5 ? 'bg-green-500/10' : overallAvgSTL != null && overallAvgSTL <= 15 ? 'bg-amber-500/10' : 'bg-blue-500/10', spark: '#60a5fa' },
     { label: 'Total Booked', value: totalBooked, icon: Calendar, color: 'text-purple-400', bg: 'bg-purple-500/10', spark: '#c084fc' },
     { label: 'Total Showed', value: totalShowed, icon: Target, color: 'text-green-400', bg: 'bg-green-500/10', spark: '#34d399' },
     { label: 'Avg Booking Rate', value: totalCalls > 0 ? `${((totalBooked / totalCalls) * 100).toFixed(1)}%` : '—', icon: TrendingUp, color: 'text-amber-400', bg: 'bg-amber-500/10', spark: '#fbbf24' },
