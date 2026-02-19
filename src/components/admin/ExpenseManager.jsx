@@ -3,7 +3,7 @@ import dayjs from 'dayjs';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import { toast } from '@/components/ui/use-toast';
-import { Trash2, Plus, Filter, ChevronLeft, ChevronRight, Check, X, Sparkles, CheckCircle } from 'lucide-react';
+import { Trash2, Plus, Filter, ChevronLeft, ChevronRight, Check, X, Sparkles, CheckCircle, ArrowUp, ArrowDown, ArrowUpDown } from 'lucide-react';
 import ExpenseTabSkeleton from './ExpenseTabSkeleton';
 import DuplicateExpenseFinder from './DuplicateExpenseFinder';
 import ExpenseToolbar from './ExpenseToolbar';
