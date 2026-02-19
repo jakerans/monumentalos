@@ -129,8 +129,12 @@ Deno.serve(async (req) => {
     // ========== Cash Health Metrics ==========
     // Realized Revenue = cash actually collected MTD (Payment entity + paid MonthlyBilling by paid_date)
     const paidBillingRecords = billingRecords.filter(b => b.status === 'paid');
+    console.log('DEBUG: billingRecords count:', billingRecords.length, 'paidBillingRecords count:', paidBillingRecords.length);
+    console.log('DEBUG: paidBillingRecords paid_dates:', paidBillingRecords.map(b => ({ paid_date: b.paid_date, paid_amount: b.paid_amount, status: b.status })));
+    console.log('DEBUG: thisMonthStart:', thisMonthStart.toISOString());
     const paymentRevenueMTD = payments.filter(p => inMTD(p.date)).reduce((s, p) => s + (p.amount || 0), 0);
     const billingRevenueMTD = paidBillingRecords.filter(b => inMTD(b.paid_date)).reduce((s, b) => s + (b.paid_amount || b.calculated_amount || 0), 0);
+    console.log('DEBUG: paymentRevenueMTD:', paymentRevenueMTD, 'billingRevenueMTD:', billingRevenueMTD);
     const realizedRevenue = paymentRevenueMTD + billingRevenueMTD;
 
     // --- Active Invoices (AR): last month's billing records that are NOT yet paid ---
