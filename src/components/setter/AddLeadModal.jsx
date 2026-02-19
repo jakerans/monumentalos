@@ -185,23 +185,18 @@ export default function AddLeadModal({ open, onOpenChange, clients, onAdd, userI
                 </div>
                 <div>
                   <label className="block text-xs font-medium text-slate-300 mb-1">Project Type</label>
-                  <input
-                    type="text"
+                  <ProjectTypeSelect
                     value={form.project_type}
-                    onChange={(e) => update('project_type', e.target.value)}
-                    className="w-full px-3 py-2 border border-slate-700 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#D6FF03] bg-slate-800 text-white placeholder-slate-500"
-                    placeholder="e.g. Kitchen Remodel"
+                    onChange={(v) => update('project_type', v)}
+                    industries={form.industries}
                   />
                 </div>
                 <div className="grid grid-cols-2 gap-3">
                   <div>
                     <label className="block text-xs font-medium text-slate-300 mb-1">Project Size</label>
-                    <input
-                      type="text"
+                    <ProjectSizeSelect
                       value={form.project_size}
-                      onChange={(e) => update('project_size', e.target.value)}
-                      className="w-full px-3 py-2 border border-slate-700 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#D6FF03] bg-slate-800 text-white placeholder-slate-500"
-                      placeholder="e.g. Large"
+                      onChange={(v) => update('project_size', v)}
                     />
                   </div>
                   <div>
