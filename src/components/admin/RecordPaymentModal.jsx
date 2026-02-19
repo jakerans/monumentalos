@@ -1,33 +1,68 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import dayjs from 'dayjs';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { toast } from '@/components/ui/use-toast';
 import { base44 } from '@/api/base44Client';
 
-export default function AddPaymentModal({ open, onOpenChange, clients, onCreated }) {
+export default function RecordPaymentModal({ open, onOpenChange, clients, billingRecords = [], onCreated }) {
   const [clientId, setClientId] = useState('');
+  const [billingId, setBillingId] = useState('');
   const [amount, setAmount] = useState('');
   const [date, setDate] = useState(dayjs().format('YYYY-MM-DD'));
   const [method, setMethod] = useState('ach');
   const [notes, setNotes] = useState('');
-
   const [saving, setSaving] = useState(false);
+
+  // Unpaid billing records for the selected client
+  const unpaidRecords = useMemo(() => {
+    if (!clientId) return [];
+    return billingRecords.filter(b => b.client_id === clientId && b.status !== 'paid');
+  }, [billingRecords, clientId]);
+
+  const selectedRecord = unpaidRecords.find(b => b.id === billingId);
+
+  const handleSelectBilling = (id) => {
+    setBillingId(id);
+    const rec = unpaidRecords.find(b => b.id === id);
+    if (rec) {
+      setAmount(String(rec.calculated_amount || rec.manual_amount || 0));
+    }
+  };
 
   const handleSave = async () => {
     if (!clientId || !amount) return;
     setSaving(true);
-    await base44.entities.Payment.create({
-      client_id: clientId,
-      amount: Number(amount),
-      date,
-      method,
-      notes: notes || undefined,
 
-    });
+    if (billingId && selectedRecord) {
+      // Mark existing billing record as paid
+      await base44.entities.MonthlyBilling.update(billingId, {
+        status: 'paid',
+        paid_amount: Number(amount),
+        paid_date: date,
+        payment_method: method,
+        notes: notes || selectedRecord.notes || undefined,
+      });
+    } else {
+      // Create a new ad-hoc billing record as paid
+      const client = clients.find(c => c.id === clientId);
+      const monthStr = dayjs(date).format('YYYY-MM');
+      await base44.entities.MonthlyBilling.create({
+        client_id: clientId,
+        billing_month: monthStr,
+        billing_type: client?.billing_type || 'pay_per_set',
+        calculated_amount: Number(amount),
+        paid_amount: Number(amount),
+        paid_date: date,
+        payment_method: method,
+        status: 'paid',
+        notes: notes || 'Manual payment',
+      });
+    }
+
     setSaving(false);
     const cName = clients.find(c => c.id === clientId)?.name || 'Client';
     toast({ title: 'Payment Recorded', description: `$${Number(amount).toLocaleString()} from ${cName}`, variant: 'success' });
-    setClientId(''); setAmount(''); setNotes('');
+    setClientId(''); setBillingId(''); setAmount(''); setNotes('');
     onCreated();
     onOpenChange(false);
   };
@@ -41,11 +76,26 @@ export default function AddPaymentModal({ open, onOpenChange, clients, onCreated
         <div className="space-y-3 mt-2">
           <div>
             <label className="text-xs font-medium text-gray-700">Client *</label>
-            <select value={clientId} onChange={e => setClientId(e.target.value)} className="w-full mt-1 px-3 py-2 text-sm border border-gray-300 rounded-md">
+            <select value={clientId} onChange={e => { setClientId(e.target.value); setBillingId(''); setAmount(''); }} className="w-full mt-1 px-3 py-2 text-sm border border-gray-300 rounded-md">
               <option value="">Select client...</option>
               {clients.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
             </select>
           </div>
+
+          {unpaidRecords.length > 0 && (
+            <div>
+              <label className="text-xs font-medium text-gray-700">Link to Invoice (optional)</label>
+              <select value={billingId} onChange={e => handleSelectBilling(e.target.value)} className="w-full mt-1 px-3 py-2 text-sm border border-gray-300 rounded-md">
+                <option value="">Ad-hoc payment (no invoice)</option>
+                {unpaidRecords.map(b => (
+                  <option key={b.id} value={b.id}>
+                    {b.invoice_id || b.billing_month} — ${(b.calculated_amount || b.manual_amount || 0).toLocaleString()} ({b.status})
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
+
           <div className="grid grid-cols-2 gap-3">
             <div>
               <label className="text-xs font-medium text-gray-700">Amount *</label>
@@ -67,7 +117,6 @@ export default function AddPaymentModal({ open, onOpenChange, clients, onCreated
               <option value="other">Other</option>
             </select>
           </div>
-
           <div>
             <label className="text-xs font-medium text-gray-700">Notes</label>
             <textarea value={notes} onChange={e => setNotes(e.target.value)} rows={2} className="w-full mt-1 px-3 py-2 text-sm border border-gray-300 rounded-md" placeholder="Optional..." />
