@@ -13,25 +13,27 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'No ids provided' }, { status: 400 });
     }
 
-    let deleted = 0;
+    // Process one at a time with delay to avoid rate limits
     const delay = (ms) => new Promise(r => setTimeout(r, ms));
-    for (let i = 0; i < ids.length; i++) {
+    let deleted = 0;
+    const errors = [];
+
+    for (const id of ids) {
       try {
-        await base44.asServiceRole.entities.Expense.delete(ids[i]);
+        await base44.asServiceRole.entities.Expense.delete(id);
         deleted++;
       } catch (e) {
-        if (e.message?.includes('Rate limit')) {
-          await delay(2000);
-          await base44.asServiceRole.entities.Expense.delete(ids[i]);
-          deleted++;
-        } else if (!e.message?.includes('not found')) {
-          throw e;
+        if (e.message?.includes('not found')) {
+          // Already deleted, skip
+          continue;
         }
+        errors.push({ id, error: e.message });
       }
-      if ((i + 1) % 3 === 0) await delay(500);
+      // Wait between each delete to stay under rate limits
+      await delay(200);
     }
 
-    return Response.json({ success: true, deleted });
+    return Response.json({ success: true, deleted, errors });
   } catch (error) {
     return Response.json({ error: error.message }, { status: 500 });
   }
