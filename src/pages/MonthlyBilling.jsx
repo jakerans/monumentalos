@@ -6,6 +6,7 @@ import { createPageUrl } from '@/utils';
 import dayjs from 'dayjs';
 import { RefreshCw } from 'lucide-react';
 import AdminNav from '../components/admin/AdminNav';
+import AdminMobileNav from '../components/admin/AdminMobileNav';
 import BillingMonthSelector from '../components/admin/BillingMonthSelector';
 import BillingTable from '../components/admin/BillingTable';
 import PageErrorBoundary from '../components/shared/PageErrorBoundary';
@@ -118,6 +119,7 @@ export default function MonthlyBilling() {
           onPageChange={setPage}
         />
       </main>
+      <AdminMobileNav currentPage="MonthlyBilling" clients={clients} />
     </div>
     </PageErrorBoundary>
   );

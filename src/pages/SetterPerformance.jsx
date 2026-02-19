@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import dayjs from 'dayjs';
 import AdminNav from '../components/admin/AdminNav';
+import AdminMobileNav from '../components/admin/AdminMobileNav';
 import SetterPerformanceTable from '../components/admin/SetterPerformanceTable';
 import DateRangePicker from '../components/admin/DateRangePicker';
 import SpiffManager from '../components/admin/SpiffManager';
@@ -67,6 +68,7 @@ export default function SetterPerformance() {
 
         <SpiffManager leads={leads} users={users} />
       </main>
+      <AdminMobileNav currentPage="SetterPerformance" clients={clients} />
     </div>
     </PageErrorBoundary>
   );

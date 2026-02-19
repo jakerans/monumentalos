@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import { UserPlus, Users } from 'lucide-react';
 import AdminNav from '../components/admin/AdminNav';
+import AdminMobileNav from '../components/admin/AdminMobileNav';
 import UserTable from '../components/admin/UserTable';
 import InviteUserModal from '../components/admin/InviteUserModal';
 import PageErrorBoundary from '../components/shared/PageErrorBoundary';
@@ -118,6 +119,7 @@ export default function UserManagement() {
         clients={clients}
         onInvited={refetchUsers}
       />
+      <AdminMobileNav currentPage="UserManagement" clients={clients} />
     </div>
     </PageErrorBoundary>
   );

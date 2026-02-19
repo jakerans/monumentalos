@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import { Users, UserPlus, RefreshCw, Settings } from 'lucide-react';
 import AdminNav from '../components/admin/AdminNav';
+import AdminMobileNav from '../components/admin/AdminMobileNav';
 import EmployeeTable from '../components/employee/EmployeeTable';
 import EmployeeDetailPanel from '../components/employee/EmployeeDetailPanel';
 import AddEmployeeModal from '../components/employee/AddEmployeeModal';
@@ -219,6 +220,7 @@ export default function EmployeeManagement() {
         settings={payrollSettings}
         onSaved={refetchSettings}
       />
+      <AdminMobileNav currentPage="EmployeeManagement" clients={clients} />
     </div>
     </PageErrorBoundary>
   );

@@ -6,6 +6,7 @@ import { createPageUrl } from '@/utils';
 import dayjs from 'dayjs';
 import { DollarSign, Receipt, BarChart3, TrendingUp, Users, Wallet } from 'lucide-react';
 import AdminNav from '../components/admin/AdminNav';
+import AdminMobileNav from '../components/admin/AdminMobileNav';
 import DateRangePicker from '../components/admin/DateRangePicker';
 import AccountingKPIs from '../components/admin/AccountingKPIs';
 import RevenueClientTable from '../components/admin/RevenueClientTable';
@@ -164,6 +165,7 @@ export default function RevenueDashboard() {
 
       <AddPaymentModal open={paymentOpen} onOpenChange={setPaymentOpen} clients={clients} onCreated={refetchPayments} />
       <AddExpenseModal open={expenseOpen} onOpenChange={setExpenseOpen} clients={clients} onCreated={refetchExpenses} />
+      <AdminMobileNav currentPage="RevenueDashboard" clients={clients} />
     </div>
     </PageErrorBoundary>
   );
