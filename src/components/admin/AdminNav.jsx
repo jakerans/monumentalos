@@ -18,6 +18,7 @@ export default function AdminNav({ user, currentPage, clients = [] }) {
     { key: 'SetterPerformance', label: 'Setters' },
     { key: 'EmployeeManagement', label: 'Employees' },
     { key: 'UserManagement', label: 'Users' },
+    { key: 'LeadFieldSettings', label: 'Lead Fields' },
   ];
 
   return (
