@@ -15,9 +15,18 @@ async function fetchAllFiltered(entity, filter, sort) {
 
 const sleep = (ms) => new Promise(r => setTimeout(r, ms));
 
-async function runSequential(items, fn) {
-  for (const item of items) {
-    await fn(item);
+async function updateWithRetry(entity, id, data, maxRetries = 3) {
+  for (let attempt = 0; attempt <= maxRetries; attempt++) {
+    try {
+      await entity.update(id, data);
+      return true;
+    } catch (err) {
+      if (err.message?.includes('Rate limit') && attempt < maxRetries) {
+        await sleep(1000 * (attempt + 1));
+        continue;
+      }
+      throw err;
+    }
   }
 }
 
@@ -40,16 +49,18 @@ Deno.serve(async (req) => {
       return Response.json({ message: 'No AI suggestions to undo', reverted: 0 });
     }
 
-    // Clear suggestions sequentially to avoid rate limits
-    await runSequential(withSuggestions, (e) =>
-      base44.asServiceRole.entities.Expense.update(e.id, {
-        suggested_category: '',
-        suggested_type: '',
-        ai_approved: false,
-      })
-    );
+    const clearData = { suggested_category: '', suggested_type: '', ai_approved: false };
+    let reverted = 0;
 
-    return Response.json({ success: true, reverted: withSuggestions.length });
+    // Process sequentially with delay between each to avoid rate limits
+    for (const e of withSuggestions) {
+      await updateWithRetry(base44.asServiceRole.entities.Expense, e.id, clearData);
+      reverted++;
+      // Small delay between updates
+      if (reverted % 3 === 0) await sleep(300);
+    }
+
+    return Response.json({ success: true, reverted });
   } catch (error) {
     return Response.json({ error: error.message }, { status: 500 });
   }

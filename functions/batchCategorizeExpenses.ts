@@ -15,11 +15,18 @@ async function fetchAllFiltered(entity, filter, sort) {
 
 const sleep = (ms) => new Promise(r => setTimeout(r, ms));
 
-async function runInBatches(items, batchSize, fn) {
-  for (let i = 0; i < items.length; i += batchSize) {
-    const chunk = items.slice(i, i + batchSize);
-    await Promise.all(chunk.map(fn));
-    if (i + batchSize < items.length) await sleep(500);
+async function updateWithRetry(entity, id, data, maxRetries = 3) {
+  for (let attempt = 0; attempt <= maxRetries; attempt++) {
+    try {
+      await entity.update(id, data);
+      return true;
+    } catch (err) {
+      if (err.message?.includes('Rate limit') && attempt < maxRetries) {
+        await sleep(1000 * (attempt + 1));
+        continue;
+      }
+      throw err;
+    }
   }
 }
 
@@ -118,8 +125,9 @@ Return a JSON object with a "results" array. Each item must have: expense_id, su
       r => r.expense_id && categorySet.has(r.suggested_category) && typeSet.has(r.suggested_type) && batchMap.has(r.expense_id)
     );
 
-    // 6. Update in controlled batches of 5 to avoid rate limits
-    await runInBatches(validResults, 10, (r) => {
+    // 6. Update sequentially with retry to avoid rate limits
+    let updated = 0;
+    for (const r of validResults) {
       const updateData = {
         suggested_category: r.suggested_category,
         suggested_type: r.suggested_type,
@@ -129,14 +137,16 @@ Return a JSON object with a "results" array. Each item must have: expense_id, su
       if (!original?.vendor && r.suggested_vendor) {
         updateData.vendor = r.suggested_vendor;
       }
-      return base44.asServiceRole.entities.Expense.update(r.expense_id, updateData);
-    });
+      await updateWithRetry(base44.asServiceRole.entities.Expense, r.expense_id, updateData);
+      updated++;
+      if (updated % 3 === 0) await sleep(300);
+    }
 
     return Response.json({
       message: 'Batch categorization complete',
       total_uncategorized: uncategorized.length,
       batch_size: batch.length,
-      updated: validResults.length,
+      updated,
       skipped_invalid: results.length - validResults.length,
     });
   } catch (error) {
