@@ -34,15 +34,7 @@ export default function MMNav({ user, clients, pendingOnboardCount = 0 }) {
             >
               Monumental<span style={{color:'#D6FF03'}}>OS</span>
             </motion.h1>
-            <motion.span
-              initial={{ scale: 0.8, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              transition={{ delay: 0.3 }}
-              className="text-[10px] sm:text-xs bg-white/10 px-1.5 sm:px-2 py-0.5 rounded-full font-medium hidden sm:inline" 
-              style={{color:'#D6FF03'}}
-            >
-              {clients?.length || 0} clients
-            </motion.span>
+
             <motion.div
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
