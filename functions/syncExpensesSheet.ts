@@ -140,8 +140,8 @@ Deno.serve(async (req) => {
       const sheetClientId = getCell(row, APP_CLIENT_ID_COL);
       const sheetVendor = getCell(row, APP_VENDOR_COL);
 
-      // Skip rows marked as "transaction" in the category column
-      if (SKIP_CATEGORIES.includes(sheetCategory)) {
+      // Skip rows whose category contains any skip keyword
+      if (SKIP_CATEGORIES.some(kw => sheetCategory.includes(kw))) {
         skippedPositive++;
         continue;
       }
