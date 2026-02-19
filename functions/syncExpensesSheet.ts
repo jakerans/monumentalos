@@ -19,6 +19,7 @@ const BANK_DESC_COL = 3;       // "Description"
 const BANK_AMOUNT_COL = 6;     // "Amount" (negative = expense)
 
 const VALID_CATEGORIES = ['ad_spend', 'payroll', 'software', 'office', 'contractor', 'travel', 'distribution', 'processing_fee', 'other'];
+const SKIP_CATEGORIES = ['transaction'];
 const VALID_TYPES = ['cogs', 'overhead', 'distribution'];
 
 function colLetter(index) {
