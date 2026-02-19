@@ -152,13 +152,19 @@ Deno.serve(async (req) => {
 
     let accruedSalary = 0;
     activeEmployees.forEach(emp => {
-      // Only accrue payroll burden for salary and hourly employees, not contractors
-      if (emp.classification === 'contractor') return;
       let monthlyCost = 0;
       if (emp.classification === 'salary' && emp.pay_per_cycle) {
         monthlyCost = (emp.pay_per_cycle * cyclesPerYear) / 12;
       } else if (emp.classification === 'hourly') {
         monthlyCost = (emp.hourly_rate || 0) * (emp.standard_monthly_hours || 160);
+      } else if (emp.classification === 'contractor') {
+        if (emp.contractor_billing_type === 'monthly' && emp.contractor_rate) {
+          monthlyCost = emp.contractor_rate;
+        } else if (emp.contractor_billing_type === 'per_cycle' && emp.pay_per_cycle) {
+          monthlyCost = (emp.pay_per_cycle * cyclesPerYear) / 12;
+        } else if (emp.contractor_billing_type === 'hourly' && emp.contractor_rate) {
+          monthlyCost = emp.contractor_rate * (emp.standard_monthly_hours || 160);
+        }
       }
       accruedSalary += monthlyCost * proRataFraction;
     });
