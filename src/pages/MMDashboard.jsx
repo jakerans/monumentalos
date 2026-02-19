@@ -61,6 +61,7 @@ export default function MMDashboard() {
   const allSpend = dashData?.allSpend || [];
   const pendingOnboardCount = dashData?.pendingOnboardCount || 0;
   const livePerfPlans = dashData?.livePerfPlans || [];
+  const lastMonthPerfRecords = dashData?.lastMonthPerfRecords || [];
   const refetchClients = refetchDash;
 
   // Resolve period start/end from the DateRangePicker
@@ -281,7 +282,7 @@ export default function MMDashboard() {
               />
             ) : (
               <>
-                <MMPerformanceGoal plans={livePerfPlans} />
+                <MMPerformanceGoal plans={livePerfPlans} lastMonthRecords={lastMonthPerfRecords} />
                 <MMTaskBoard clients={clients} />
               </>
             )}
