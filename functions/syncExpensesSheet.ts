@@ -102,7 +102,12 @@ Deno.serve(async (req) => {
     // 2. Get all expenses from DB
     const expenses = await fetchAllExpenses(base44);
     const expenseById = {};
-    expenses.forEach(e => { expenseById[e.id] = e; });
+    // Also build a dedup index to prevent re-importing identical rows
+    const dedupIndex = new Set();
+    expenses.forEach(e => {
+      expenseById[e.id] = e;
+      dedupIndex.add(`${e.date}|${e.amount}|${e.description || ''}`);
+    });
 
     let imported = 0;
     let updatedFromSheet = 0;
