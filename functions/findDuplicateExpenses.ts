@@ -23,12 +23,13 @@ Deno.serve(async (req) => {
 
     const all = await fetchAll(base44.entities.Expense);
 
-    // Group by description + date (skip blank descriptions to avoid false positives)
+    // Group by date + description + amount (all three must match)
+    // Skip expenses with no description to avoid false positives
     const groups = {};
     for (const e of all) {
       const desc = (e.description || '').trim().toLowerCase();
-      if (!desc) continue; // skip expenses with no description
-      const key = `${e.date}|${desc}`;
+      if (!desc) continue;
+      const key = `${e.date}|${desc}|${e.amount}`;
       if (!groups[key]) groups[key] = [];
       groups[key].push(e);
     }
