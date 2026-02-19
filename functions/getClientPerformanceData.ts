@@ -12,6 +12,18 @@ async function fetchAll(entityRef, sort, pageSize = 5000) {
   return all;
 }
 
+async function fetchAllFiltered(entityRef, filter, sort, pageSize = 5000) {
+  let all = [];
+  let skip = 0;
+  while (true) {
+    const page = await entityRef.filter(filter, sort, pageSize, skip);
+    all = all.concat(page);
+    if (page.length < pageSize) break;
+    skip += pageSize;
+  }
+  return all;
+}
+
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
@@ -25,14 +37,27 @@ Deno.serve(async (req) => {
 
     const sr = base44.asServiceRole.entities;
 
-    const [clients, leads, spend, payments] = await Promise.all([
+    const [clients, leads, spend, payments, paidBilling] = await Promise.all([
       sr.Client.list(),
       fetchAll(sr.Lead, '-created_date'),
       fetchAll(sr.Spend, '-date'),
       fetchAll(sr.Payment, '-date'),
+      fetchAllFiltered(sr.MonthlyBilling, { status: 'paid' }, '-paid_date'),
     ]);
 
-    return Response.json({ clients, leads, spend, payments });
+    // Merge Payment records + paid MonthlyBilling into unified collections list
+    const mergedPayments = [
+      ...payments.map(p => ({ ...p, _source: 'payment' })),
+      ...paidBilling.map(b => ({
+        id: b.id,
+        client_id: b.client_id,
+        amount: b.paid_amount || b.calculated_amount || 0,
+        date: b.paid_date,
+        _source: 'billing',
+      })),
+    ];
+
+    return Response.json({ clients, leads, spend, payments: mergedPayments });
   } catch (error) {
     console.error('getClientPerformanceData error:', error);
     return Response.json({ error: error.message }, { status: 500 });
