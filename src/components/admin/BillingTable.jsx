@@ -18,14 +18,29 @@ export default function BillingTable({ rows, kpis, pagination, onRefresh, onPage
   const [markPaidRecord, setMarkPaidRecord] = useState(null);
   const [editRecord, setEditRecord] = useState(null);
 
-  const handleMarkPaid = async (record, paidAmount, paidDate, method, notes) => {
+  const handleMarkPaid = async (record, paidAmount, paidDate, method, notes, processingFee = 0) => {
     await base44.entities.MonthlyBilling.update(record.id, {
       status: 'paid',
       paid_amount: paidAmount,
       paid_date: paidDate,
       payment_method: method || 'ach',
+      processing_fee: processingFee || undefined,
       notes: notes || record.notes,
     });
+
+    // Auto-create processing fee expense as COGS
+    if (processingFee > 0) {
+      await base44.entities.Expense.create({
+        category: 'processing_fee',
+        expense_type: 'cogs',
+        description: `Processing fee — ${record.clientName}`,
+        amount: processingFee,
+        date: paidDate,
+        client_id: record.client_id,
+        vendor: method === 'credit_card' ? 'Credit Card Processor' : 'Payment Processor',
+      });
+    }
+
     onRefresh();
   };
 
