@@ -50,7 +50,46 @@ export default function BillingTable({ rows, kpis, pagination, onRefresh, onPage
       </div>
 
       <div className="bg-slate-800/50 rounded-lg border border-slate-700/50 overflow-hidden">
-        <div className="overflow-x-auto">
+        {/* Mobile card view */}
+        <div className="sm:hidden divide-y divide-slate-700/30">
+          {rows.length === 0 ? (
+            <div className="px-4 py-8 text-center text-slate-500 text-sm">No billing records for this month</div>
+          ) : rows.map(r => {
+            const sc = STATUS_CONFIG[r.displayStatus] || STATUS_CONFIG.pending;
+            return (
+              <div key={r.id} className="px-4 py-3 space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="font-medium text-white text-sm">{r.clientName}</span>
+                  <span className={`inline-flex items-center gap-1 px-2 py-0.5 text-[10px] font-medium rounded-full border ${sc.bg} ${sc.color}`}>
+                    <sc.icon className="w-3 h-3" />{sc.label}
+                  </span>
+                </div>
+                <div className="flex items-center gap-2 flex-wrap">
+                  <span className={`px-1.5 py-0.5 text-[10px] font-medium rounded ${BILLING_COLORS[r.billing_type]}`}>{BILLING_LABELS[r.billing_type]}</span>
+                  {r.billing_type !== 'retainer' && <span className="text-[11px] text-slate-400">Qty: {r.quantity || 0}</span>}
+                  {r.rate && <span className="text-[11px] text-slate-400">@ ${r.rate}</span>}
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-medium text-white">${r.amount.toLocaleString()}</span>
+                  <div className="flex items-center gap-2">
+                    {r.status === 'paid' && <span className="text-xs font-medium text-emerald-600">${(r.paid_amount || r.amount).toLocaleString()}</span>}
+                    {r.status !== 'paid' && (
+                      <button onClick={() => setMarkPaidRecord(r)} className="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium bg-emerald-600 text-white rounded hover:bg-emerald-700">
+                        <DollarSign className="w-3 h-3" /> Pay
+                      </button>
+                    )}
+                    <button onClick={() => setEditRecord(r)} className="p-1 text-gray-400 hover:text-blue-400 rounded">
+                      <Pencil className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+
+        {/* Desktop table view */}
+        <div className="hidden sm:block overflow-x-auto">
           <table className="w-full text-sm">
             <thead className="bg-slate-900/50 text-xs text-slate-400 uppercase">
               <tr>

@@ -74,7 +74,52 @@ export default function UserTable({ users, clients = [], onUpdated }) {
 
   return (
     <div className="bg-slate-800/50 rounded-lg border border-slate-700/50 overflow-hidden">
-      <div className="overflow-x-auto">
+      {/* Mobile card view */}
+      <div className="sm:hidden divide-y divide-slate-700/30">
+        {users.length === 0 ? (
+          <div className="px-4 py-8 text-center text-xs text-slate-500">No users found</div>
+        ) : users.map(u => (
+          <div key={u.id} className="px-4 py-3 space-y-2">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-white">{u.full_name || '—'}</p>
+                <p className="text-[11px] text-slate-400">{u.email}</p>
+              </div>
+              <div className="flex items-center gap-1.5">
+                {editingId === u.id ? (
+                  <div className="flex items-center gap-1">
+                    <select value={editRole} onChange={(e) => setEditRole(e.target.value)} className="px-1.5 py-0.5 text-[10px] border border-gray-300 rounded focus:outline-none">
+                      {ROLE_OPTIONS.map(r => <option key={r.value} value={r.value}>{r.label}</option>)}
+                    </select>
+                    <button onClick={() => saveRole(u.id)} disabled={saving} className="p-1 text-green-600"><Check className="w-3.5 h-3.5" /></button>
+                    <button onClick={cancelEdit} className="p-1 text-gray-400"><X className="w-3.5 h-3.5" /></button>
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-1">
+                    {getRoleBadge(u.app_role || 'user')}
+                    <button onClick={() => startEdit(u)} className="p-0.5 text-gray-400"><Pencil className="w-3 h-3" /></button>
+                  </div>
+                )}
+              </div>
+            </div>
+            <div className="flex items-center justify-between text-[11px]">
+              <span className="text-slate-500">{u.created_date ? new Date(u.created_date).toLocaleDateString() : ''}</span>
+              {deletingId === u.id ? (
+                <div className="flex items-center gap-1">
+                  <span className="text-[10px] text-red-600 font-medium">Delete?</span>
+                  <button onClick={() => handleDelete(u.id)} disabled={saving} className="px-2 py-0.5 text-[10px] bg-red-600 text-white rounded">Yes</button>
+                  <button onClick={() => setDeletingId(null)} className="px-2 py-0.5 text-[10px] bg-gray-100 text-gray-600 rounded">No</button>
+                </div>
+              ) : (
+                <button onClick={() => setDeletingId(u.id)} className="p-1 text-gray-400 hover:text-red-600"><Trash2 className="w-3.5 h-3.5" /></button>
+              )}
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Desktop table view */}
+      <div className="hidden sm:block overflow-x-auto">
         <table className="w-full text-sm">
           <thead>
             <tr className="bg-slate-900/50 border-b border-slate-700/50">

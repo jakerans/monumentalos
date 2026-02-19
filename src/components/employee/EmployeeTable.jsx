@@ -17,7 +17,38 @@ const ROLE_LABELS = {
 export default function EmployeeTable({ employees, payrollSettings, onSelect }) {
   return (
     <div className="bg-slate-800/50 rounded-lg border border-slate-700/50 overflow-hidden">
-      <div className="overflow-x-auto">
+      {/* Mobile card view */}
+      <div className="sm:hidden divide-y divide-slate-700/30">
+        {employees.length === 0 ? (
+          <div className="px-4 py-8 text-center text-sm text-slate-500">No employees found</div>
+        ) : employees.map(emp => {
+          const pay = getPayDisplay(emp, payrollSettings);
+          return (
+            <div key={emp.id} onClick={() => onSelect(emp)} className="px-4 py-3 space-y-2 cursor-pointer active:bg-slate-700/20">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-white">{emp.full_name}</p>
+                  <p className="text-[10px] text-slate-500">{emp.email}</p>
+                </div>
+                <div className="flex items-center gap-2">
+                  <CircleDot className={`w-4 h-4 ${DISC_COLORS[emp.discipline_status] || 'text-slate-500'}`} />
+                  <span className={`text-[10px] font-bold uppercase px-2 py-0.5 rounded-full ${emp.cost_type === 'cogs' ? 'bg-orange-500/15 text-orange-400' : 'bg-blue-500/15 text-blue-400'}`}>
+                    {emp.cost_type || 'overhead'}
+                  </span>
+                </div>
+              </div>
+              <div className="grid grid-cols-3 gap-2 text-[11px]">
+                <div><span className="text-slate-500">Role</span><p className="text-slate-300">{ROLE_LABELS[emp.app_role] || emp.app_role || '—'}</p></div>
+                <div><span className="text-slate-500">Type</span><p className="text-slate-300 capitalize">{emp.classification}</p></div>
+                <div><span className="text-slate-500">Monthly</span><p className="text-slate-200 font-medium">{pay.monthly}</p></div>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Desktop table view */}
+      <div className="hidden sm:block overflow-x-auto">
         <table className="w-full">
           <thead className="bg-slate-900/50">
             <tr>

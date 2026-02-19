@@ -19,7 +19,36 @@ export default function RevenueClientTable({ clients, clientSummary = [] }) {
       <div className="px-4 py-3 border-b border-slate-700/50">
         <h2 className="text-sm font-bold text-white">Client Revenue</h2>
       </div>
-      <div className="overflow-x-auto">
+
+      {/* Mobile card view */}
+      <div className="sm:hidden divide-y divide-slate-700/30">
+        {rows.length === 0 ? (
+          <div className="px-4 py-6 text-center text-xs text-slate-500">No client data</div>
+        ) : rows.map(r => (
+          <div key={r.id} className="px-4 py-3">
+            <div className="flex items-center justify-between mb-1">
+              <Link to={createPageUrl('ClientView') + `?clientId=${r.id}`} className="font-medium text-blue-400 text-sm">{r.name}</Link>
+              <span className={`px-1.5 py-0.5 text-[10px] font-medium rounded ${BILLING_COLORS[r.billing_type] || 'bg-slate-700 text-slate-400'}`}>
+                {BILLING_LABELS[r.billing_type] || r.billing_type}
+              </span>
+            </div>
+            <div className="flex items-center justify-between text-[11px]">
+              <span className="text-slate-500">LTV: <span className="text-emerald-400 font-medium">${r.ltv.toLocaleString()}</span></span>
+              <span className="text-slate-500">Outstanding: <span className="text-amber-400 font-medium">{r.outstanding > 0 ? `$${r.outstanding.toLocaleString()}` : '—'}</span></span>
+            </div>
+          </div>
+        ))}
+        <div className="px-4 py-2.5 bg-slate-900/50 flex items-center justify-between text-xs font-bold text-slate-300">
+          <span>TOTALS</span>
+          <div className="flex gap-4">
+            <span className="text-emerald-400">${totals.ltv.toLocaleString()}</span>
+            <span className="text-amber-400">{totals.outstanding > 0 ? `$${totals.outstanding.toLocaleString()}` : '—'}</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Desktop table view */}
+      <div className="hidden sm:block overflow-x-auto">
         <table className="w-full text-sm">
           <thead className="bg-slate-900/50 text-xs text-slate-400 uppercase">
             <tr>
