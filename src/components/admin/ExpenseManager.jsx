@@ -157,7 +157,10 @@ export default function ExpenseManager({ startDate, endDate, onAddExpense }) {
           <option value="overhead">Overhead</option>
         </select>
         <div className="flex-1" />
-        <span className="text-xs text-slate-500">{totalFiltered} expense{totalFiltered !== 1 ? 's' : ''}</span>
+        <span className="text-xs text-slate-500">
+          {totalFiltered} expense{totalFiltered !== 1 ? 's' : ''}
+          {filterCat !== 'all' || filterType !== 'all' ? ` · $${filteredTotal.toLocaleString()}` : ''}
+        </span>
         <button onClick={onAddExpense} className="px-3 py-1.5 text-xs font-medium bg-red-600 text-white rounded-md hover:bg-red-700 flex items-center gap-1">
           <Plus className="w-3.5 h-3.5" /> Add Expense
         </button>
