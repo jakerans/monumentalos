@@ -13,7 +13,7 @@ export default function ExpenseToolbar({ onRefresh }) {
     const d = res.data;
     toast({
       title: 'Sync Complete',
-      description: `Imported ${d.imported || 0} new · Updated ${d.updated || 0} · Skipped ${d.skippedPositive || 0} positive`,
+      description: `Added ${d.added || 0} · Updated ${d.updated || 0} · Skipped ${d.skipped || 0} · ${d.totalProcessed || 0} rows processed`,
       variant: 'success',
     });
     setSyncing(false);
