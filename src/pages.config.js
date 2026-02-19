@@ -55,6 +55,7 @@ import ClientPerformance from './pages/ClientPerformance';
 import ClientPortal from './pages/ClientPortal';
 import ClientReport from './pages/ClientReport';
 import ClientSettings from './pages/ClientSettings';
+import ClientView from './pages/ClientView';
 import EmployeeManagement from './pages/EmployeeManagement';
 import HealthMonitor from './pages/HealthMonitor';
 import LeadDetails from './pages/LeadDetails';
@@ -62,11 +63,10 @@ import MMDashboard from './pages/MMDashboard';
 import MMOnboard from './pages/MMOnboard';
 import MonthlyBilling from './pages/MonthlyBilling';
 import OnboardDashboard from './pages/OnboardDashboard';
+import RevenueDashboard from './pages/RevenueDashboard';
 import SetterDashboard from './pages/SetterDashboard';
 import SetterPerformance from './pages/SetterPerformance';
 import UserManagement from './pages/UserManagement';
-import ClientView from './pages/ClientView';
-import RevenueDashboard from './pages/RevenueDashboard';
 import __Layout from './Layout.jsx';
 
 
@@ -79,6 +79,7 @@ export const PAGES = {
     "ClientPortal": ClientPortal,
     "ClientReport": ClientReport,
     "ClientSettings": ClientSettings,
+    "ClientView": ClientView,
     "EmployeeManagement": EmployeeManagement,
     "HealthMonitor": HealthMonitor,
     "LeadDetails": LeadDetails,
@@ -86,11 +87,10 @@ export const PAGES = {
     "MMOnboard": MMOnboard,
     "MonthlyBilling": MonthlyBilling,
     "OnboardDashboard": OnboardDashboard,
+    "RevenueDashboard": RevenueDashboard,
     "SetterDashboard": SetterDashboard,
     "SetterPerformance": SetterPerformance,
     "UserManagement": UserManagement,
-    "ClientView": ClientView,
-    "RevenueDashboard": RevenueDashboard,
 }
 
 export const pagesConfig = {

@@ -59,6 +59,7 @@ export default function RevenueDashboard() {
   const leads = dashData?.leads || [];
   const payments = dashData?.payments || [];
   const expenses = dashData?.expenses || [];
+  const billingRecords = dashData?.billingRecords || [];
 
   const refetchPayments = refetchDash;
   const refetchExpenses = refetchDash;
@@ -134,7 +135,7 @@ export default function RevenueDashboard() {
 
         {/* Cash Flow Tab */}
         {activeTab === 'cashflow' && (
-          <CashFlowAnalysis payments={payments} expenses={expenses} />
+          <CashFlowAnalysis payments={payments} expenses={expenses} billingRecords={billingRecords} />
         )}
 
         {/* Clients Tab */}
