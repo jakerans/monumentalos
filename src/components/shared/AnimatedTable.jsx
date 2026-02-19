@@ -23,6 +23,7 @@ export default function AnimatedTable({
   onRowClick,
   rowClassName,
   initialSort,   // { key, direction }
+  mobileCardRender, // (row, idx) => JSX — optional mobile card renderer
 }) {
   const [sort, setSort] = useState(initialSort || { key: null, direction: null });
 
@@ -82,7 +83,36 @@ export default function AnimatedTable({
           {titleRight}
         </div>
       )}
-      <div className="overflow-x-auto">
+      {/* Mobile card view */}
+      {mobileCardRender && (
+        <div className="sm:hidden divide-y divide-slate-700/30">
+          <AnimatePresence mode="popLayout">
+            {sortedData.length === 0 ? (
+              <motion.div key="empty" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="px-4 py-6 text-center text-slate-500">
+                {emptyMessage}
+              </motion.div>
+            ) : sortedData.map((row, idx) => {
+              const key = row[rowKey] || idx;
+              return (
+                <motion.div
+                  key={key}
+                  layout
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  className={onRowClick ? 'cursor-pointer' : ''}
+                  onClick={() => onRowClick?.(row)}
+                >
+                  {mobileCardRender(row, idx)}
+                </motion.div>
+              );
+            })}
+          </AnimatePresence>
+        </div>
+      )}
+
+      {/* Desktop table view */}
+      <div className={`overflow-x-auto ${mobileCardRender ? 'hidden sm:block' : ''}`}>
         <table className="w-full text-sm">
           <thead className="bg-slate-900/50 text-xs text-slate-400 uppercase">
             <tr>
