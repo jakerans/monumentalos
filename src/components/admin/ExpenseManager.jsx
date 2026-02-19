@@ -9,7 +9,7 @@ import ExpenseTabSkeleton from './ExpenseTabSkeleton';
 const CATEGORY_LABELS = {
   ad_spend: 'Ad Spend', payroll: 'Payroll', software: 'Software',
   office: 'Office', contractor: 'Contractor', travel: 'Travel',
-  other: 'Other',
+  processing_fee: 'Processing Fee', other: 'Other',
 };
 const CATEGORY_COLORS = {
   ad_spend: 'bg-red-500/15 text-red-400 border-red-500/30',
@@ -18,6 +18,7 @@ const CATEGORY_COLORS = {
   office: 'bg-amber-500/15 text-amber-400 border-amber-500/30',
   contractor: 'bg-indigo-500/15 text-indigo-400 border-indigo-500/30',
   travel: 'bg-teal-500/15 text-teal-400 border-teal-500/30',
+  processing_fee: 'bg-pink-500/15 text-pink-400 border-pink-500/30',
   other: 'bg-slate-500/15 text-slate-400 border-slate-500/30',
 };
 const TYPE_LABELS = { cogs: 'COGS', overhead: 'Overhead' };
