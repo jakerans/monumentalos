@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 import ArcadeOverheatMeter from './ArcadeOverheatMeter';
 import WidgetFireBorder from './WidgetFireBorder';
 import PerfGoalTester from './PerfGoalTester';
+import PerfLastMonthTooltip from './PerfLastMonthTooltip';
 
 function getTierInfo(tiers, progress) {
   const sorted = [...(tiers || [])].sort((a, b) => a.threshold - b.threshold);
@@ -39,7 +40,7 @@ function calcTieredBonus(tiers, progress) {
   return bonus;
 }
 
-export default function MMPerformanceGoal({ plans, showTester = false }) {
+export default function MMPerformanceGoal({ plans, showTester = false, lastMonthRecords = [] }) {
   const activePlans = (plans || []).filter(p => p.status === 'active');
   const [progressOverride, setProgressOverride] = useState(null);
   if (activePlans.length === 0 && !showTester) return null;
@@ -88,24 +89,27 @@ export default function MMPerformanceGoal({ plans, showTester = false }) {
             transition={{ duration: 2, repeat: Infinity }}
           />
         )}
-        <div className="px-4 py-3 border-b border-slate-700/50 flex items-center gap-2 relative z-10">
-          {isT3 ? (
-            <motion.div animate={{ scale: [1, 1.2, 1], rotate: [0, -5, 5, 0] }} transition={{ duration: 0.8, repeat: Infinity }}>
-              <Flame className="w-4 h-4 text-orange-400" />
-            </motion.div>
-          ) : (
-            <Trophy className="w-4 h-4 text-amber-400" />
-          )}
-          <h3 className="text-sm font-bold text-white">
+        <div className="px-4 py-3 border-b border-slate-700/50 flex items-center justify-between relative z-10">
+          <div className="flex items-center gap-2">
             {isT3 ? (
-              <motion.span
-                animate={{ color: ['#ffffff', '#ff6b35', '#ffaa00', '#ffffff'] }}
-                transition={{ duration: 1.5, repeat: Infinity }}
-              >
-                🔥 PERFORMANCE ON FIRE 🔥
-              </motion.span>
-            ) : 'My Performance Goals'}
-          </h3>
+              <motion.div animate={{ scale: [1, 1.2, 1], rotate: [0, -5, 5, 0] }} transition={{ duration: 0.8, repeat: Infinity }}>
+                <Flame className="w-4 h-4 text-orange-400" />
+              </motion.div>
+            ) : (
+              <Trophy className="w-4 h-4 text-amber-400" />
+            )}
+            <h3 className="text-sm font-bold text-white">
+              {isT3 ? (
+                <motion.span
+                  animate={{ color: ['#ffffff', '#ff6b35', '#ffaa00', '#ffffff'] }}
+                  transition={{ duration: 1.5, repeat: Infinity }}
+                >
+                  🔥 PERFORMANCE ON FIRE 🔥
+                </motion.span>
+              ) : 'My Performance Goals'}
+            </h3>
+          </div>
+          <PerfLastMonthTooltip records={lastMonthRecords} />
         </div>
         <div className="p-3 space-y-3 relative z-10">
           {showTester && <PerfGoalTester onOverride={setProgressOverride} />}
