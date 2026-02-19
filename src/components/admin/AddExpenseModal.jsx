@@ -52,6 +52,7 @@ export default function AddExpenseModal({ open, onOpenChange, clients, onCreated
                 <option value="office">Office</option>
                 <option value="contractor">Contractor</option>
                 <option value="travel">Travel</option>
+                <option value="distribution">Distribution</option>
                 <option value="other">Other</option>
               </select>
             </div>

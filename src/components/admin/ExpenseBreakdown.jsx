@@ -8,13 +8,13 @@ dayjs.extend(isBetween);
 
 const CATEGORY_LABELS = {
   ad_spend: 'Ad Spend', payroll: 'Payroll', software: 'Software',
-  office: 'Office', contractor: 'Contractor', travel: 'Travel', other: 'Other',
+  office: 'Office', contractor: 'Contractor', travel: 'Travel', distribution: 'Distribution', other: 'Other',
 };
 const CATEGORY_COLORS = {
   ad_spend: 'bg-red-100 text-red-700', payroll: 'bg-blue-100 text-blue-700',
   software: 'bg-purple-100 text-purple-700', office: 'bg-amber-100 text-amber-700',
   contractor: 'bg-indigo-100 text-indigo-700', travel: 'bg-teal-100 text-teal-700',
-  other: 'bg-gray-100 text-gray-700',
+  distribution: 'bg-emerald-100 text-emerald-700', other: 'bg-gray-100 text-gray-700',
 };
 const TYPE_COLORS = { cogs: 'bg-orange-100 text-orange-700', overhead: 'bg-gray-100 text-gray-700' };
 
