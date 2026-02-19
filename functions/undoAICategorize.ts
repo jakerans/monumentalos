@@ -1,11 +1,11 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
 
-async function fetchAll(entity) {
+async function fetchAllFiltered(entity, filter, sort) {
   const results = [];
   let skip = 0;
   const limit = 200;
   while (true) {
-    const batch = await entity.filter({}, '-date', limit, skip);
+    const batch = await entity.filter(filter, sort, limit, skip);
     results.push(...batch);
     if (batch.length < limit) break;
     skip += limit;
@@ -21,16 +21,19 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Forbidden: Admin access required' }, { status: 403 });
     }
 
-    // Find all expenses that have AI suggestions (suggested_category set)
-    const all = await fetchAll(base44.entities.Expense);
-    const withSuggestions = all.filter(e => e.suggested_category && e.suggested_category !== '');
+    // Server-side filter: only fetch expenses that actually have AI suggestions
+    const withSuggestions = await fetchAllFiltered(
+      base44.entities.Expense,
+      { suggested_category: { $ne: '' } },
+      '-date'
+    );
 
     if (withSuggestions.length === 0) {
       return Response.json({ message: 'No AI suggestions to undo', reverted: 0 });
     }
 
-    // Clear suggested_category, suggested_type, and set ai_approved to false
-    const results = await Promise.allSettled(
+    // Clear suggestions in parallel
+    await Promise.all(
       withSuggestions.map(e =>
         base44.asServiceRole.entities.Expense.update(e.id, {
           suggested_category: '',
@@ -40,10 +43,7 @@ Deno.serve(async (req) => {
       )
     );
 
-    const reverted = results.filter(r => r.status === 'fulfilled').length;
-    console.log(`[undoAICategorize] Reverted ${reverted}/${withSuggestions.length} expenses`);
-
-    return Response.json({ success: true, reverted, total: withSuggestions.length });
+    return Response.json({ success: true, reverted: withSuggestions.length });
   } catch (error) {
     return Response.json({ error: error.message }, { status: 500 });
   }

@@ -1,6 +1,6 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
 
-async function fetchAll(entity, filter, sort) {
+async function fetchAllFiltered(entity, filter, sort) {
   const results = [];
   let skip = 0;
   const limit = 100;
@@ -21,14 +21,15 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Forbidden: Admin access required' }, { status: 403 });
     }
 
-    // 1. Fetch all uncategorized expenses (ai_approved=false AND no suggested_category)
-    const allExpenses = await fetchAll(base44.entities.Expense, {}, '-date');
-    const uncategorized = allExpenses.filter(
-      e => !e.ai_approved && (!e.suggested_category || e.suggested_category === '')
+    // 1. Server-side filter: only fetch expenses without AI suggestions and not yet approved
+    const uncategorized = await fetchAllFiltered(
+      base44.entities.Expense,
+      { ai_approved: false, suggested_category: '' },
+      '-date'
     );
 
     if (uncategorized.length === 0) {
-      return Response.json({ message: 'No uncategorized expenses to process', processed: 0 });
+      return Response.json({ message: 'All expenses already have AI suggestions.', processed: 0, updated: 0, skipped_invalid: 0 });
     }
 
     // 2. Fetch AI expense settings
@@ -45,7 +46,7 @@ Deno.serve(async (req) => {
 
     const customInstructions = settings.ai_custom_instructions || '';
 
-    // 3. Build the expense list for the prompt (cap at 200 to stay within token limits)
+    // 3. Build expense list (cap at 200 for token limits)
     const batch = uncategorized.slice(0, 200);
     const expenseList = batch.map(e => ({
       id: e.id,
@@ -98,38 +99,36 @@ Return a JSON object with a "results" array. Each item must have: expense_id, su
 
     const results = aiResponse?.results || [];
 
-    // 5. Validate and bulk update
-    let updated = 0;
+    // 5. Validate and parallel update
     const categorySet = new Set(allowedCategories);
     const typeSet = new Set(allowedTypes);
+    const batchMap = new Map(batch.map(e => [e.id, e]));
 
-    const updatePromises = results
-      .filter(r => {
-        return r.expense_id && categorySet.has(r.suggested_category) && typeSet.has(r.suggested_type);
-      })
-      .map(async (r) => {
+    const validResults = results.filter(
+      r => r.expense_id && categorySet.has(r.suggested_category) && typeSet.has(r.suggested_type) && batchMap.has(r.expense_id)
+    );
+
+    await Promise.all(
+      validResults.map(r => {
         const updateData = {
           suggested_category: r.suggested_category,
           suggested_type: r.suggested_type,
           ai_approved: false,
         };
-        // Only set vendor if it was empty and AI deduced one
-        const original = batch.find(e => e.id === r.expense_id);
+        const original = batchMap.get(r.expense_id);
         if (!original?.vendor && r.suggested_vendor) {
           updateData.vendor = r.suggested_vendor;
         }
-        await base44.asServiceRole.entities.Expense.update(r.expense_id, updateData);
-        updated++;
-      });
-
-    await Promise.all(updatePromises);
+        return base44.asServiceRole.entities.Expense.update(r.expense_id, updateData);
+      })
+    );
 
     return Response.json({
-      message: `Batch categorization complete`,
+      message: 'Batch categorization complete',
       total_uncategorized: uncategorized.length,
       batch_size: batch.length,
-      updated,
-      skipped_invalid: results.length - updated,
+      updated: validResults.length,
+      skipped_invalid: results.length - validResults.length,
     });
   } catch (error) {
     return Response.json({ error: error.message }, { status: 500 });
