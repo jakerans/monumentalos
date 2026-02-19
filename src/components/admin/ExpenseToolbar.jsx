@@ -16,6 +16,8 @@ import {
 export default function ExpenseToolbar({ onRefresh }) {
   const [syncing, setSyncing] = useState(false);
   const [categorizing, setCategorizing] = useState(false);
+  const [undoing, setUndoing] = useState(false);
+  const [showUndoConfirm, setShowUndoConfirm] = useState(false);
 
   const handleSync = async () => {
     setSyncing(true);
