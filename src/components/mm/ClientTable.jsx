@@ -67,11 +67,56 @@ export default function ClientTable({ clientMetrics, onSelectClient }) {
             filterAlerts ? 'bg-red-500/10 border-red-500/30 text-red-400' : 'border-slate-700 text-slate-400 hover:bg-slate-700'
           }`}
         >
-          <Filter className="w-3 h-3" /> Alerts Only
+          <Filter className="w-3 h-3" /> <span className="hidden sm:inline">Alerts Only</span><span className="sm:hidden">Alerts</span>
         </button>
-        <span className="text-xs text-slate-500">{filtered.length} clients</span>
+        <span className="text-xs text-slate-500 hidden sm:inline">{filtered.length} clients</span>
       </div>
-      <div className="overflow-auto flex-1">
+
+      {/* Mobile card view */}
+      <div className="sm:hidden overflow-auto flex-1 divide-y divide-slate-700/30">
+        {filtered.length === 0 ? (
+          <div className="px-4 py-8 text-center text-sm text-slate-500">
+            {search ? 'No clients match your search' : 'No clients found'}
+          </div>
+        ) : filtered.map(c => {
+          const hasAlert = c.alerts.length > 0;
+          return (
+            <div key={c.id} onClick={() => onSelectClient(c)} className={`px-3 py-3 space-y-2 cursor-pointer active:bg-slate-700/20 ${hasAlert ? 'bg-red-500/5' : ''}`}>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-1.5">
+                  {hasAlert && <span className="w-2 h-2 rounded-full bg-red-500 flex-shrink-0" />}
+                  <span className="text-sm font-medium text-slate-200">{c.name}</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  {c.effectiveGoalStatus && (
+                    <span className={`text-[9px] font-semibold px-1.5 py-0.5 rounded-full ${
+                      c.effectiveGoalStatus === 'goal_met' ? 'bg-green-100 text-green-700' :
+                      c.effectiveGoalStatus === 'on_track' ? 'bg-blue-100 text-blue-700' :
+                      c.effectiveGoalStatus === 'behind_confident' ? 'bg-amber-100 text-amber-700' :
+                      'bg-red-100 text-red-700'
+                    }`}>{c.effectiveGoalStatus === 'goal_met' ? 'Met' : c.effectiveGoalStatus === 'on_track' ? 'On Track' : c.effectiveGoalStatus === 'behind_confident' ? 'Behind' : "Won't Meet"}</span>
+                  )}
+                  {hasAlert && <span className="text-[10px] bg-red-100 text-red-700 px-1.5 py-0.5 rounded font-medium">{c.alerts.length}</span>}
+                </div>
+              </div>
+              <div className="grid grid-cols-4 gap-2 text-[11px]">
+                <div><span className="text-slate-500">Spend</span><p className="text-slate-300 font-medium">${c.spendCur.toLocaleString()}</p></div>
+                <div><span className="text-slate-500">Leads</span><p className="text-slate-300 font-medium">{c.leadsCur}</p></div>
+                <div><span className="text-slate-500">Appts</span><p className="text-slate-300 font-medium">{c.apptsCur}</p></div>
+                <div><span className="text-slate-500">CPA</span><p className={`font-semibold ${c.cpaCur > 300 ? 'text-red-400' : c.cpaCur > 200 ? 'text-amber-400' : 'text-green-400'}`}>{c.cpaCur === Infinity || isNaN(c.cpaCur) ? '—' : `$${c.cpaCur.toFixed(0)}`}</p></div>
+              </div>
+              <div className="flex gap-3 text-[11px]">
+                <span className="text-slate-500">STL: <span className={`font-medium ${c.stl !== null && c.stl > 15 ? 'text-red-400' : c.stl !== null && c.stl > 5 ? 'text-amber-400' : 'text-green-400'}`}>{c.stl === null ? '—' : `${c.stl.toFixed(0)}m`}</span></span>
+                <span className="text-slate-500">Show: <span className="text-slate-300">{c.showRateCur}</span></span>
+                {c.goal_type && c.goal_value ? <span className="text-slate-500">Goal: <span className="text-slate-300">{c.goalActual ?? 0}/{c.goal_value}</span></span> : null}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Desktop table view */}
+      <div className="overflow-auto flex-1 hidden sm:block">
         <table className="w-full text-sm">
           <thead className="bg-slate-900/50 sticky top-0 z-10">
             <tr>

@@ -31,7 +31,46 @@ export default function ClientList({ clients, onInviteUser, onEditClient }) {
         </div>
         <span className="text-xs text-slate-500">{filtered.length} clients</span>
       </div>
-      <div className="overflow-auto max-h-[calc(100vh-240px)]">
+      {/* Mobile card view */}
+      <div className="sm:hidden divide-y divide-slate-700/30 overflow-auto max-h-[calc(100vh-240px)]">
+        {filtered.length === 0 ? (
+          <div className="px-4 py-8 text-center text-sm text-slate-500">
+            {search ? 'No clients match your search' : 'No clients found'}
+          </div>
+        ) : filtered.map(client => (
+          <div key={client.id} className="px-3 py-3 space-y-2">
+            <div className="flex items-center justify-between">
+              <span className="font-medium text-slate-200 text-sm">{client.name}</span>
+              <span className={`text-[10px] font-medium px-2 py-0.5 rounded-full ${
+                client.status === 'active' ? 'bg-green-500/15 text-green-400' : 'bg-slate-700 text-slate-400'
+              }`}>{client.status || 'active'}</span>
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-[11px] text-slate-400">
+                {client.billing_type === 'pay_per_show' ? 'Per Show' :
+                 client.billing_type === 'pay_per_set' ? 'Per Set' :
+                 client.billing_type === 'retainer' ? 'Retainer' : '—'}
+              </span>
+              <div className="flex items-center gap-1">
+                <button onClick={() => handleCopy(client.id)} className="p-1 rounded hover:bg-slate-700 transition-colors" title="Copy ID">
+                  {copiedId === client.id ? <Check className="w-3.5 h-3.5 text-green-400" /> : <Copy className="w-3.5 h-3.5 text-slate-500" />}
+                </button>
+              </div>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <button onClick={() => onEditClient(client)} className="flex-1 inline-flex items-center justify-center gap-1 px-2 py-1.5 text-xs font-medium border rounded-md text-slate-300 border-slate-600 hover:bg-slate-700">
+                <Pencil className="w-3 h-3" /> Edit
+              </button>
+              <button onClick={() => onInviteUser(client)} className="flex-1 inline-flex items-center justify-center gap-1 px-2 py-1.5 text-xs font-medium border rounded-md text-[#D6FF03] border-[#D6FF03]/30 hover:bg-[#D6FF03]/10">
+                <UserPlus className="w-3 h-3" /> Invite
+              </button>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Desktop table view */}
+      <div className="hidden sm:block overflow-auto max-h-[calc(100vh-240px)]">
         <table className="w-full text-sm">
           <thead className="bg-slate-900/50 sticky top-0 z-10">
             <tr>

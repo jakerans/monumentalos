@@ -145,8 +145,50 @@ export default function ExpenseManager({ startDate, endDate, onAddExpense }) {
 
       <AIExpenseSettingsModal open={aiSettingsOpen} onOpenChange={setAiSettingsOpen} />
 
-      {/* Table */}
-      <div className="bg-slate-800/50 rounded-lg border border-slate-700/50 overflow-hidden">
+      {/* Mobile card view */}
+      <div className="sm:hidden space-y-2">
+        {expenses.length === 0 ? (
+          <div className="bg-slate-800/50 rounded-lg border border-slate-700/50 px-4 py-8 text-center text-slate-500 text-xs">No expenses match your filters</div>
+        ) : expenses.map(e => {
+          const hasPendingAI = !e.ai_approved && e.suggested_category;
+          return (
+            <div key={e.id} className={`bg-slate-800/50 rounded-lg border border-slate-700/50 px-3 py-3 space-y-2 ${hasPendingAI ? 'border-l-2 border-l-yellow-500/50' : ''}`}>
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-medium text-white truncate flex-1">{e.description || '—'}</span>
+                <span className="text-sm font-bold text-red-400 ml-2">${(e.amount || 0).toLocaleString()}</span>
+              </div>
+              <div className="flex items-center gap-1.5 flex-wrap">
+                <span className={`px-1.5 py-0.5 text-[10px] font-medium rounded border ${CATEGORY_COLORS[hasPendingAI ? e.suggested_category : e.category] || CATEGORY_COLORS.other}`}>
+                  {CATEGORY_LABELS[hasPendingAI ? e.suggested_category : e.category] || (hasPendingAI ? e.suggested_category : e.category)}
+                </span>
+                <span className={`px-1.5 py-0.5 text-[10px] font-medium rounded border ${TYPE_COLORS[hasPendingAI ? e.suggested_type : e.expense_type] || TYPE_COLORS.overhead}`}>
+                  {TYPE_LABELS[hasPendingAI ? e.suggested_type : e.expense_type] || 'OH'}
+                </span>
+                {hasPendingAI && <span className="px-1 py-0.5 text-[8px] font-bold bg-yellow-500/20 text-yellow-400 border border-yellow-500/30 rounded">AI</span>}
+              </div>
+              <div className="flex items-center justify-between text-[11px]">
+                <span className="text-slate-500">{dayjs(e.date).format('MMM D, YYYY')}{e.vendor ? ` · ${e.vendor}` : ''}</span>
+                <div className="flex items-center gap-1">
+                  {hasPendingAI && <button onClick={() => handleApproveAI(e)} className="p-1 text-yellow-500 hover:text-green-400"><CheckCircle className="w-3.5 h-3.5" /></button>}
+                  <button onClick={() => handleDelete(e.id)} className="p-1 text-slate-600 hover:text-red-400"><Trash2 className="w-3 h-3" /></button>
+                </div>
+              </div>
+            </div>
+          );
+        })}
+        {totalPages > 1 && (
+          <div className="flex items-center justify-between px-1 py-2">
+            <span className="text-[10px] text-slate-500">Page {page + 1} of {totalPages}</span>
+            <div className="flex gap-1">
+              <button onClick={() => setPage(p => Math.max(0, p - 1))} disabled={page === 0} className="p-1 text-slate-400 hover:text-white disabled:opacity-30"><ChevronLeft className="w-4 h-4" /></button>
+              <button onClick={() => setPage(p => Math.min(totalPages - 1, p + 1))} disabled={page >= totalPages - 1} className="p-1 text-slate-400 hover:text-white disabled:opacity-30"><ChevronRight className="w-4 h-4" /></button>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Desktop table */}
+      <div className="hidden sm:block bg-slate-800/50 rounded-lg border border-slate-700/50 overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-xs" style={{ tableLayout: 'fixed' }}>
             <colgroup>
@@ -197,6 +239,7 @@ export default function ExpenseManager({ startDate, endDate, onAddExpense }) {
         )}
       </div>
     </div>
+  
   );
 }
 
