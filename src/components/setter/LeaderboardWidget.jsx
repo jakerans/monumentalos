@@ -153,7 +153,7 @@ export default function LeaderboardWidget({ user, spiffs, leads, leaderboardProf
       {/* Tab on the left edge */}
       <motion.button
         onClick={() => setOpen(true)}
-        className={`fixed left-0 bottom-3 sm:bottom-auto sm:top-[38%] sm:-translate-y-1/2 z-30 flex flex-col sm:flex-row items-center gap-0.5 sm:gap-3 px-1.5 sm:pl-4 sm:pr-5 py-1.5 sm:py-4 rounded-r-lg sm:rounded-r-2xl border border-l-0 overflow-hidden bg-slate-800 ${rankConfig.border} ${!isTop3 ? 'hover:bg-slate-700' : ''}`}
+        className={`fixed left-0 bottom-3 lg:bottom-auto lg:top-[38%] lg:-translate-y-1/2 z-30 flex flex-col lg:flex-row items-center gap-0.5 lg:gap-3 px-1.5 lg:pl-4 lg:pr-5 py-1.5 lg:py-4 rounded-r-lg lg:rounded-r-2xl border border-l-0 overflow-hidden bg-slate-800 ${rankConfig.border} ${!isTop3 ? 'hover:bg-slate-700' : ''}`}
         style={{ boxShadow: rankConfig.tabShadow }}
         animate={isFirst ? { boxShadow: ['0 0 25px rgba(255,215,0,0.4), 0 0 50px rgba(255,165,0,0.2)', '0 0 35px rgba(255,215,0,0.6), 0 0 60px rgba(255,165,0,0.3)', '0 0 25px rgba(255,215,0,0.4), 0 0 50px rgba(255,165,0,0.2)'] } : {}}
         transition={isFirst ? { duration: 2, repeat: Infinity, ease: 'easeInOut' } : {}}
@@ -195,9 +195,9 @@ export default function LeaderboardWidget({ user, spiffs, leads, leaderboardProf
           </div>
         )}
 
-        <Trophy className={`w-3.5 h-3.5 sm:w-6 sm:h-6 relative z-10 ${rankConfig.trophy}`} />
-        <span className="text-[10px] sm:text-lg font-black leading-none relative z-10" style={{ color: rankConfig.text }}>#{displayRank || '—'}</span>
-        <span className={`hidden sm:block text-[10px] font-medium relative z-10 ${rankConfig.sub}`}>Leaderboard</span>
+        <Trophy className={`w-3.5 h-3.5 lg:w-6 lg:h-6 relative z-10 ${rankConfig.trophy}`} />
+        <span className="text-[10px] lg:text-lg font-black leading-none relative z-10" style={{ color: rankConfig.text }}>#{displayRank || '—'}</span>
+        <span className={`hidden lg:block text-[10px] font-medium relative z-10 ${rankConfig.sub}`}>Leaderboard</span>
       </motion.button>
 
       {/* Overlay */}
