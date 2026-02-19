@@ -32,7 +32,7 @@ function buildMonthBuckets(refDate, count) {
   return months;
 }
 
-function computeMonthlyPL(months, clients, leads, payments, expenses) {
+function computeMonthlyPL(months, clients, leads, payments, expenses, billingRecords) {
   const activeClients = clients.filter(c => c.status === 'active');
   return months.map(m => {
     const ir = (d) => inMonth(d, m.start, m.end);
@@ -44,7 +44,9 @@ function computeMonthlyPL(months, clients, leads, payments, expenses) {
       else if (bt === 'pay_per_set') grossRevenue += cLeads.filter(l => l.date_appointment_set && ir(l.date_appointment_set)).length * (client.price_per_set_appointment || 0);
       else if (bt === 'retainer') grossRevenue += (client.retainer_amount || 0);
     });
-    const collected = payments.filter(p => ir(p.date)).reduce((s, p) => s + (p.amount || 0), 0);
+    const payCollected = payments.filter(p => ir(p.date)).reduce((s, p) => s + (p.amount || 0), 0);
+    const billCollected = billingRecords.filter(b => ir(b.paid_date)).reduce((s, b) => s + (b.paid_amount || b.calculated_amount || 0), 0);
+    const collected = payCollected + billCollected;
     const mExp = expenses.filter(e => ir(e.date) && e.expense_type !== 'distribution' && e.category !== 'distribution');
     const cogs = mExp.filter(e => e.expense_type === 'cogs').reduce((s, e) => s + (e.amount || 0), 0);
     const overhead = mExp.filter(e => e.expense_type !== 'cogs').reduce((s, e) => s + (e.amount || 0), 0);
@@ -71,7 +73,7 @@ function computeCashFlow(months, payments, expenses, billingRecords) {
   });
 }
 
-function computePeriodKPIs(clients, leads, payments, expenses, startDate, endDate) {
+function computePeriodKPIs(clients, leads, payments, expenses, startDate, endDate, billingRecords) {
   const start = new Date(startDate); start.setHours(0,0,0,0);
   const end = new Date(endDate); end.setHours(23,59,59,999);
   const ir = (d) => { if (!d) return false; const dt = new Date(d); return dt >= start && dt <= end; };
@@ -83,7 +85,9 @@ function computePeriodKPIs(clients, leads, payments, expenses, startDate, endDat
     else if (bt === 'pay_per_set') grossRevenue += cLeads.filter(l => l.date_appointment_set && ir(l.date_appointment_set)).length * (client.price_per_set_appointment || 0);
     else if (bt === 'retainer') grossRevenue += (client.retainer_amount || 0);
   });
-  const collected = payments.filter(p => ir(p.date)).reduce((s, p) => s + (p.amount || 0), 0);
+  const payCollected = payments.filter(p => ir(p.date)).reduce((s, p) => s + (p.amount || 0), 0);
+  const billCollected = (billingRecords || []).filter(b => ir(b.paid_date)).reduce((s, b) => s + (b.paid_amount || b.calculated_amount || 0), 0);
+  const collected = payCollected + billCollected;
   const re = expenses.filter(e => ir(e.date) && e.expense_type !== 'distribution' && e.category !== 'distribution');
   const cogs = re.filter(e => e.expense_type === 'cogs').reduce((s, e) => s + (e.amount || 0), 0);
   const overhead = re.filter(e => e.expense_type !== 'cogs').reduce((s, e) => s + (e.amount || 0), 0);
@@ -113,7 +117,7 @@ Deno.serve(async (req) => {
     // Pre-compute heavy aggregations server-side
     const now = new Date();
     const months = buildMonthBuckets(now, 6);
-    const monthlyPL = computeMonthlyPL(months, clients, leads, payments, expenses);
+    const monthlyPL = computeMonthlyPL(months, clients, leads, payments, expenses, billingRecords);
     const cashFlowData = computeCashFlow(months, payments, expenses, billingRecords);
 
     // KPIs for current + prior period
@@ -124,22 +128,26 @@ Deno.serve(async (req) => {
       const rangeDays = Math.round((ed - sd) / (24*60*60*1000)) + 1;
       const priorEnd = new Date(sd); priorEnd.setDate(priorEnd.getDate() - 1);
       const priorStart = new Date(sd); priorStart.setDate(priorStart.getDate() - rangeDays);
-      const cur = computePeriodKPIs(clients, leads, payments, expenses, startDate, endDate);
-      const pri = computePeriodKPIs(clients, leads, payments, expenses, priorStart.toISOString().split('T')[0], priorEnd.toISOString().split('T')[0]);
+      const cur = computePeriodKPIs(clients, leads, payments, expenses, startDate, endDate, billingRecords);
+      const pri = computePeriodKPIs(clients, leads, payments, expenses, priorStart.toISOString().split('T')[0], priorEnd.toISOString().split('T')[0], billingRecords);
       kpis = { current: cur, prior: pri };
     }
 
     // Client revenue table (lightweight summary)
+    // LTV = Payment entity amounts + paid MonthlyBilling amounts for this client
     const clientSummary = clients.filter(c => c.status === 'active').map(c => {
       const bt = c.billing_type || 'pay_per_show';
       const cLeads = leads.filter(l => l.client_id === c.id);
       const cPayments = payments.filter(p => p.client_id === c.id);
-      const ltv = cPayments.reduce((s, p) => s + (p.amount || 0), 0);
+      const cBilling = billingRecords.filter(b => b.client_id === c.id);
+      const payLtv = cPayments.reduce((s, p) => s + (p.amount || 0), 0);
+      const billLtv = cBilling.reduce((s, b) => s + (b.paid_amount || b.calculated_amount || 0), 0);
+      const ltv = payLtv + billLtv;
       let allTimeBilled = 0;
       if (bt === 'pay_per_show') allTimeBilled = cLeads.filter(l => l.disposition === 'showed').length * (c.price_per_shown_appointment || 0);
       else if (bt === 'pay_per_set') allTimeBilled = cLeads.filter(l => l.date_appointment_set).length * (c.price_per_set_appointment || 0);
       else if (bt === 'retainer') {
-        const dates = [...cPayments.map(p => p.date), ...cLeads.map(l => l.created_date)].filter(Boolean).sort();
+        const dates = [...cPayments.map(p => p.date), ...cBilling.map(b => b.paid_date), ...cLeads.map(l => l.created_date)].filter(Boolean).sort();
         if (dates.length > 0) { const mths = Math.max(1, Math.ceil((now - new Date(dates[0])) / (30*24*60*60*1000))); allTimeBilled = (c.retainer_amount || 0) * mths; }
       }
       return { id: c.id, name: c.name, billing_type: bt, ltv, outstanding: Math.max(0, allTimeBilled - ltv) };

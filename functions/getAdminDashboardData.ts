@@ -350,7 +350,22 @@ Deno.serve(async (req) => {
     const lmExpenses = expenses.filter(e => inLM(e.date) && e.expense_type !== 'distribution').reduce((s, e) => s + (e.amount || 0), 0);
     const cogsTotal = expenses.filter(e => inMTD(e.date) && e.expense_type === 'cogs').reduce((s, e) => s + (e.amount || 0), 0);
     const overheadTotal = mtdExpenses - cogsTotal;
-    const chartData14 = build14DayChart(payments, expenses.filter(e => e.expense_type !== 'distribution'));
+    // Build 14-day chart: income = Payment records + paid MonthlyBilling by paid_date
+    const chartData14 = (() => {
+      const now2 = new Date();
+      const data = [];
+      for (let i = 13; i >= 0; i--) {
+        const d = new Date(now2);
+        d.setDate(d.getDate() - i);
+        const dayStr = d.toISOString().split('T')[0];
+        const dayLabel = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+        const dayPaymentIncome = payments.filter(p => (p.date || '').startsWith(dayStr)).reduce((s, p) => s + (p.amount || 0), 0);
+        const dayBillingIncome = paidBillingRecords.filter(b => (b.paid_date || '').startsWith(dayStr)).reduce((s, b) => s + (b.paid_amount || b.calculated_amount || 0), 0);
+        const dayExpense = expenses.filter(e => (e.date || '').startsWith(dayStr) && e.expense_type !== 'distribution').reduce((s, e) => s + (e.amount || 0), 0);
+        data.push({ label: dayLabel, income: dayPaymentIncome + dayBillingIncome, expenses: dayExpense });
+      }
+      return data;
+    })();
 
     const statCompare = {
       mtdIncome,
