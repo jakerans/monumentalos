@@ -209,7 +209,14 @@ Deno.serve(async (req) => {
           updatedToSheet++;
         }
       } else if (!appId) {
-        // ── New bank transaction — queue for bulk import ──
+        // ── New bank transaction — check for existing duplicate first ──
+        const dedupKey = `${date}|${expenseAmount}|${rawDesc || ''}`;
+        if (dedupIndex.has(dedupKey)) {
+          skippedPositive++;
+          continue;
+        }
+        dedupIndex.add(dedupKey);
+
         const newExpense = {
           category: (sheetCategory && VALID_CATEGORIES.includes(sheetCategory)) ? sheetCategory : 'other',
           expense_type: (sheetExpType && VALID_TYPES.includes(sheetExpType)) ? sheetExpType : 'overhead',
