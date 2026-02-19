@@ -207,7 +207,7 @@ export default function LeaderboardWidget({ user, spiffs, leads, leaderboardProf
 
       {/* Slide-out panel */}
       <div
-        className={`fixed left-0 top-0 h-full w-96 sm:w-[28rem] bg-slate-900 border-r z-50 transform transition-all duration-300 ${open ? 'translate-x-0' : '-translate-x-full'} flex flex-col ${rankConfig.border} overflow-hidden`}
+        className={`fixed left-0 top-0 h-full w-[85vw] max-w-96 sm:max-w-[28rem] bg-slate-900 border-r z-50 transform transition-all duration-300 ${open ? 'translate-x-0' : '-translate-x-full'} flex flex-col ${rankConfig.border} overflow-hidden`}
         style={{ boxShadow: open ? rankConfig.panelShadow : 'none' }}
       >
         {isTop3 && (
