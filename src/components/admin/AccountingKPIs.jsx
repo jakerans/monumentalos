@@ -37,7 +37,7 @@ function calcPeriod(clients, leads, payments, expenses, rangeFn) {
     }
   });
   const collected = payments.filter(p => rangeFn(p.date)).reduce((s, p) => s + (p.amount || 0), 0);
-  const re = expenses.filter(e => rangeFn(e.date) && e.expense_type !== 'distribution');
+  const re = expenses.filter(e => rangeFn(e.date) && e.expense_type !== 'distribution' && e.category !== 'distribution');
   const cogs = re.filter(e => e.expense_type === 'cogs').reduce((s, e) => s + (e.amount || 0), 0);
   const overhead = re.filter(e => e.expense_type === 'overhead').reduce((s, e) => s + (e.amount || 0), 0);
   const grossProfit = grossRevenue - cogs;
