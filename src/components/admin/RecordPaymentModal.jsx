@@ -13,7 +13,6 @@ export default function RecordPaymentModal({ open, onOpenChange, clients, billin
   const [notes, setNotes] = useState('');
   const [saving, setSaving] = useState(false);
 
-  // Unpaid billing records for the selected client
   const unpaidRecords = useMemo(() => {
     if (!clientId) return [];
     return billingRecords.filter(b => b.client_id === clientId && b.status !== 'paid');
@@ -34,7 +33,6 @@ export default function RecordPaymentModal({ open, onOpenChange, clients, billin
     setSaving(true);
 
     if (billingId && selectedRecord) {
-      // Mark existing billing record as paid
       await base44.entities.MonthlyBilling.update(billingId, {
         status: 'paid',
         paid_amount: Number(amount),
@@ -43,7 +41,6 @@ export default function RecordPaymentModal({ open, onOpenChange, clients, billin
         notes: notes || selectedRecord.notes || undefined,
       });
     } else {
-      // Create a new ad-hoc billing record as paid
       const client = clients.find(c => c.id === clientId);
       const monthStr = dayjs(date).format('YYYY-MM');
       await base44.entities.MonthlyBilling.create({
