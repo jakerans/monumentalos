@@ -167,7 +167,12 @@ export default function ExpenseManager({ startDate, endDate, onAddExpense }) {
       </div>
 
       {/* Mobile card view */}
-      <div className="sm:hidden space-y-2">
+      <div className={`sm:hidden space-y-2 relative ${pageSwitching ? 'opacity-60' : ''}`}>
+        {pageSwitching && (
+          <div className="absolute inset-0 z-10 flex items-center justify-center bg-slate-900/30 rounded-lg">
+            <div className="w-5 h-5 border-2 border-[#D6FF03]/40 border-t-[#D6FF03] rounded-full animate-spin" />
+          </div>
+        )}
         {expenses.length === 0 ? (
           <div className="bg-slate-800/50 rounded-lg border border-slate-700/50 px-4 py-8 text-center text-slate-500 text-xs">No expenses match your filters</div>
         ) : expenses.map(e => {
