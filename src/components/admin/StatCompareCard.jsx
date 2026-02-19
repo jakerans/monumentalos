@@ -2,6 +2,7 @@ import React, { useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { AreaChart, Area, ResponsiveContainer, Tooltip } from 'recharts';
 import { DollarSign, TrendingUp, TrendingDown, ArrowRight } from 'lucide-react';
+import InfoTooltip from '../shared/InfoTooltip';
 
 function useAnimatedNumber(target, duration = 800) {
   const [display, setDisplay] = React.useState(0);
@@ -77,6 +78,7 @@ export default function StatCompareCard({ data }) {
             <DollarSign className="w-4 h-4 text-indigo-400" />
           </motion.div>
           <h3 className="text-sm font-bold text-white">Income vs Expenses</h3>
+          <InfoTooltip text="Compares month-to-date income (cash collected) against total expenses (COGS + overhead). The chart shows a 14-day rolling trend. Net = Income minus Expenses." />
         </div>
         <motion.span initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ delay: 0.6, type: 'spring', stiffness: 300, damping: 20 }} className="text-[10px] font-medium text-slate-500 bg-slate-700/30 px-2 py-0.5 rounded-full">MTD</motion.span>
       </div>

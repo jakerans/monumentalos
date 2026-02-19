@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { LineChart, Line, ResponsiveContainer } from 'recharts';
 import { motion, AnimatePresence } from 'framer-motion';
 import { TrendingUp, TrendingDown, Minus } from 'lucide-react';
+import InfoTooltip from './InfoTooltip';
 
 function useAnimatedNumber(target, duration = 600) {
   const [display, setDisplay] = useState(target);
@@ -38,6 +39,7 @@ export default function SparklineCard({
   comparison = null,   // { prior: string|number, change: number, invertColor?: boolean }
   index = 0,
   className = '',
+  tooltip = null,
 }) {
   const hasSparkline = sparkData.length >= 2;
 
@@ -92,7 +94,10 @@ export default function SparklineCard({
 
       <div className="relative z-10">
         <div className="flex items-center justify-between mb-1">
-          <p className="text-[10px] font-medium text-slate-400 uppercase tracking-wider leading-tight">{label}</p>
+          <div className="flex items-center gap-1">
+            <p className="text-[10px] font-medium text-slate-400 uppercase tracking-wider leading-tight">{label}</p>
+            {tooltip && <InfoTooltip text={tooltip} />}
+          </div>
           {Icon && (
             <div className={`p-1 rounded-md ${iconBg}`}>
               <Icon className={`w-3.5 h-3.5 ${iconColor}`} />

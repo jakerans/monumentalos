@@ -1,6 +1,7 @@
 import React from 'react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
 import { DollarSign } from 'lucide-react';
+import InfoTooltip from '../shared/InfoTooltip';
 import { motion } from 'framer-motion';
 
 const BILLING_CONFIG = [
@@ -39,6 +40,7 @@ export default function RevenueBreakdownChart({ data }) {
       <div className="flex items-center gap-2 mb-3">
         <DollarSign className="w-4 h-4 text-emerald-400" />
         <h3 className="text-sm font-bold text-white">Revenue by Billing Type (MTD)</h3>
+        <InfoTooltip text="Breaks down month-to-date revenue by billing model: Pay Per Show, Pay Per Set, and Retainer. Helps see which billing type drives the most revenue." />
       </div>
 
       {totalRevenue === 0 ? (

@@ -1,5 +1,6 @@
 import React from 'react';
 import { Target, CheckCircle2 } from 'lucide-react';
+import InfoTooltip from '../shared/InfoTooltip';
 import { motion } from 'framer-motion';
 import { PieChart, Pie, Cell, ResponsiveContainer } from 'recharts';
 
@@ -85,6 +86,7 @@ export default function MTDGoalProgress({ currentGoal, mtdData }) {
       <div className="flex items-center gap-2 mb-3">
         <Target className="w-4 h-4" style={{color:'#D6FF03'}} />
         <h3 className="text-sm font-bold text-white">Monthly Goal Progress</h3>
+        <InfoTooltip text="Tracks progress toward your monthly company goals. The ring shows average completion across all targets. Set goals via 'Manage Goals' to see progress here." />
       </div>
 
       <div className="flex items-center gap-4 mb-3">

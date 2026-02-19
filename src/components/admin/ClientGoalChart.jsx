@@ -1,6 +1,7 @@
 import React from 'react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
 import { Target } from 'lucide-react';
+import InfoTooltip from '../shared/InfoTooltip';
 import { motion } from 'framer-motion';
 
 const GOAL_STATUSES = [
@@ -44,6 +45,7 @@ export default function ClientGoalChart({ data }) {
       <div className="flex items-center gap-2 mb-3">
         <Target className="w-4 h-4" style={{color:'#D6FF03'}} />
         <h3 className="text-sm font-bold text-white">Client Goal Health</h3>
+        <InfoTooltip text="Distribution of client goal statuses. 'Healthy' includes clients that are on track or have met their goal. Set goals per client to track their progress." />
       </div>
 
       <div className="flex items-center gap-4 flex-1 min-h-0">

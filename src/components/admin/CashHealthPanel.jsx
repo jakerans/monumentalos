@@ -1,8 +1,9 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { DollarSign, TrendingUp, Shield, AlertCircle, Percent, Banknote, ArrowRightLeft } from 'lucide-react';
+import InfoTooltip from '../shared/InfoTooltip';
 
-function Stat({ label, value, sub, icon: Icon, iconColor, iconBg, index = 0 }) {
+function Stat({ label, value, sub, icon: Icon, iconColor, iconBg, index = 0, tooltip }) {
   return (
     <motion.div
       initial={{ opacity: 0, y: 12 }}
@@ -11,7 +12,10 @@ function Stat({ label, value, sub, icon: Icon, iconColor, iconBg, index = 0 }) {
       className="bg-slate-900/50 rounded-lg p-3"
     >
       <div className="flex items-center justify-between mb-1">
-        <p className="text-[10px] font-medium text-slate-400 uppercase tracking-wider">{label}</p>
+        <div className="flex items-center gap-1">
+          <p className="text-[10px] font-medium text-slate-400 uppercase tracking-wider">{label}</p>
+          {tooltip && <InfoTooltip text={tooltip} />}
+        </div>
         {Icon && (
           <div className={`p-1 rounded-md ${iconBg}`}>
             <Icon className={`w-3.5 h-3.5 ${iconColor}`} />
@@ -64,6 +68,7 @@ export default function CashHealthPanel({ data }) {
       <div className="flex items-center gap-2 mb-3">
         <Banknote className="w-4 h-4 text-emerald-400" />
         <h3 className="text-sm font-bold text-white">Cash Health (MTD)</h3>
+        <InfoTooltip text="Real-time snapshot of your cash position this month. Tracks projected vs realized revenue, unbilled amounts, accrued expenses, and accounts receivable health." />
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-2">
         <Stat
@@ -74,6 +79,7 @@ export default function CashHealthPanel({ data }) {
           icon={TrendingUp}
           iconColor="text-blue-400"
           iconBg="bg-blue-500/10"
+          tooltip="Total expected revenue: outstanding invoices (AR) plus live accruals from performance billing not yet invoiced."
         />
         <Stat
           index={1}
@@ -92,6 +98,7 @@ export default function CashHealthPanel({ data }) {
           icon={ArrowRightLeft}
           iconColor="text-amber-400"
           iconBg="bg-amber-500/10"
+          tooltip="Revenue that's projected but not yet collected. Includes unpaid invoices and accrued performance billing."
         />
         <Stat
           index={3}
@@ -101,6 +108,7 @@ export default function CashHealthPanel({ data }) {
           icon={AlertCircle}
           iconColor="text-orange-400"
           iconBg="bg-orange-500/10"
+          tooltip="Pro-rated payroll & contractor costs based on how far into the month we are. Gives a real-time expense estimate before payroll runs."
         />
         <Stat
           index={4}
@@ -110,6 +118,7 @@ export default function CashHealthPanel({ data }) {
           icon={Percent}
           iconColor="text-indigo-400"
           iconBg="bg-indigo-500/10"
+          tooltip="Gross margin calculated using projected revenue minus accrued COGS expenses. Updates daily as the month progresses."
         />
         <Stat
           index={5}
@@ -119,6 +128,7 @@ export default function CashHealthPanel({ data }) {
           icon={Shield}
           iconColor="text-cyan-400"
           iconBg="bg-cyan-500/10"
+          tooltip="How much of your fixed overhead (payroll + contractors) is covered by retainer revenue alone. 100%+ means retainers cover all fixed costs."
         />
         <ARLight status={d.arHealth} />
       </div>
