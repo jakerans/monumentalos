@@ -100,6 +100,9 @@ export default function ExpenseManager({ startDate, endDate, onAddExpense }) {
         <SummaryCard label="Overhead" value={kpis.overheadTotal} color="text-slate-300" />
       </div>
 
+      {/* Duplicate finder */}
+      <DuplicateExpenseFinder onCleanupDone={refetch} />
+
       {/* Category breakdown */}
       <div className="bg-slate-800/50 rounded-lg border border-slate-700/50 p-4">
         <h3 className="text-xs font-bold text-slate-400 uppercase mb-3">By Category</h3>
