@@ -31,6 +31,16 @@ export default function RevenueDashboard() {
   const [expenseOpen, setExpenseOpen] = useState(false);
   const [payrollOpen, setPayrollOpen] = useState(false);
   const [activeTab, setActiveTab] = useState('pl');
+  const [syncing, setSyncing] = useState(false);
+
+  const handleSyncExpenses = async () => {
+    setSyncing(true);
+    const res = await base44.functions.invoke('syncExpensesSheet');
+    setSyncing(false);
+    const s = res.data?.stats || {};
+    toast({ title: 'Expense Sync Complete', description: `Imported: ${s.imported || 0}, Updated from sheet: ${s.updatedFromSheet || 0}, Pushed to sheet: ${s.updatedToSheet || 0}`, variant: 'success' });
+    refetchDash();
+  };
 
   useEffect(() => {
     const checkAuth = async () => {
