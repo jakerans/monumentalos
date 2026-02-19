@@ -17,7 +17,7 @@ const CATEGORY_COLORS = {
   contractor: 'bg-indigo-100 text-indigo-700', travel: 'bg-teal-100 text-teal-700',
   distribution: 'bg-emerald-100 text-emerald-700', other: 'bg-gray-100 text-gray-700',
 };
-const TYPE_COLORS = { cogs: 'bg-orange-100 text-orange-700', overhead: 'bg-gray-100 text-gray-700' };
+const TYPE_COLORS = { cogs: 'bg-orange-100 text-orange-700', overhead: 'bg-gray-100 text-gray-700', distribution: 'bg-emerald-100 text-emerald-700' };
 
 export default function ExpenseBreakdown({ expenses, clients, startDate, endDate, onRefresh }) {
   const start = dayjs(startDate).startOf('day');
@@ -71,7 +71,7 @@ export default function ExpenseBreakdown({ expenses, clients, startDate, endDate
             <div key={e.id} className="px-4 py-2 flex items-center justify-between hover:bg-slate-700/20">
               <div className="flex items-center gap-3 min-w-0">
                 <span className={`px-1.5 py-0.5 text-[10px] font-medium rounded flex-shrink-0 ${TYPE_COLORS[e.expense_type] || TYPE_COLORS.overhead}`}>
-                  {e.expense_type === 'cogs' ? 'COGS' : 'OH'}
+                  {e.expense_type === 'cogs' ? 'COGS' : e.expense_type === 'distribution' ? 'DIST' : 'OH'}
                 </span>
                 <span className={`px-1.5 py-0.5 text-[10px] font-medium rounded flex-shrink-0 ${CATEGORY_COLORS[e.category] || 'bg-gray-100 text-gray-600'}`}>
                   {CATEGORY_LABELS[e.category] || e.category}

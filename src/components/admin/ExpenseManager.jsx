@@ -21,10 +21,11 @@ const CATEGORY_COLORS = {
   distribution: 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30',
   other: 'bg-slate-500/15 text-slate-400 border-slate-500/30',
 };
-const TYPE_LABELS = { cogs: 'COGS', overhead: 'Overhead' };
+const TYPE_LABELS = { cogs: 'COGS', overhead: 'Overhead', distribution: 'Distribution' };
 const TYPE_COLORS = {
   cogs: 'bg-orange-500/15 text-orange-400 border-orange-500/30',
   overhead: 'bg-slate-500/15 text-slate-400 border-slate-500/30',
+  distribution: 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30',
 };
 
 const PAGE_SIZE = 50;
@@ -143,6 +144,7 @@ export default function ExpenseManager({ startDate, endDate, onAddExpense }) {
           <option value="all">All Types</option>
           <option value="cogs">COGS</option>
           <option value="overhead">Overhead</option>
+          <option value="distribution">Distribution</option>
         </select>
         <div className="flex-1" />
         <span className="text-xs text-slate-500">{totalFiltered} expense{totalFiltered !== 1 ? 's' : ''}</span>
@@ -251,6 +253,7 @@ function EditRow({ editData, setEditData, clients, onSave, onCancel, saving }) {
         <select value={editData.expense_type} onChange={ev => setEditData({ ...editData, expense_type: ev.target.value })} className="px-1.5 py-1 text-xs bg-slate-900 border border-slate-600 rounded text-white">
           <option value="cogs">COGS</option>
           <option value="overhead">Overhead</option>
+          <option value="distribution">Distribution</option>
         </select>
       </td>
       <td className="px-3 py-2">

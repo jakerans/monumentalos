@@ -57,8 +57,8 @@ Deno.serve(async (req) => {
     // Compute KPIs on ALL range expenses (before category/type filters)
     const total = rangeExpenses.reduce((s, e) => s + (e.amount || 0), 0);
     const cogsTotal = rangeExpenses.filter(e => e.expense_type === 'cogs').reduce((s, e) => s + (e.amount || 0), 0);
-    const overheadTotal = rangeExpenses.filter(e => e.expense_type !== 'cogs' && e.category !== 'distribution').reduce((s, e) => s + (e.amount || 0), 0);
-    const distTotal = rangeExpenses.filter(e => e.category === 'distribution').reduce((s, e) => s + (e.amount || 0), 0);
+    const overheadTotal = rangeExpenses.filter(e => e.expense_type === 'overhead').reduce((s, e) => s + (e.amount || 0), 0);
+    const distTotal = rangeExpenses.filter(e => e.expense_type === 'distribution').reduce((s, e) => s + (e.amount || 0), 0);
 
     // Category breakdown (on all range expenses)
     const byCategoryMap = {};
