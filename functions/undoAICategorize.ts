@@ -15,11 +15,9 @@ async function fetchAllFiltered(entity, filter, sort) {
 
 const sleep = (ms) => new Promise(r => setTimeout(r, ms));
 
-async function runInBatches(items, batchSize, fn) {
-  for (let i = 0; i < items.length; i += batchSize) {
-    const chunk = items.slice(i, i + batchSize);
-    await Promise.all(chunk.map(fn));
-    if (i + batchSize < items.length) await sleep(500);
+async function runSequential(items, fn) {
+  for (const item of items) {
+    await fn(item);
   }
 }
 
@@ -42,8 +40,8 @@ Deno.serve(async (req) => {
       return Response.json({ message: 'No AI suggestions to undo', reverted: 0 });
     }
 
-    // Clear suggestions in controlled batches of 5 to avoid rate limits
-    await runInBatches(withSuggestions, 5, (e) =>
+    // Clear suggestions sequentially to avoid rate limits
+    await runSequential(withSuggestions, (e) =>
       base44.asServiceRole.entities.Expense.update(e.id, {
         suggested_category: '',
         suggested_type: '',
