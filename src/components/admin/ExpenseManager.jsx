@@ -86,11 +86,28 @@ export default function ExpenseManager({ startDate, endDate, onAddExpense }) {
       return next;
     });
   };
+  const [selectAllMode, setSelectAllMode] = useState(null); // null | 'page' | 'all'
+
   const toggleSelectAll = () => {
-    if (selected.size === expenses.length) setSelected(new Set());
-    else setSelected(new Set(expenses.map(e => e.id)));
+    if (selected.size === expenses.length) {
+      setSelected(new Set());
+      setSelectAllMode(null);
+    } else {
+      setSelected(new Set(expenses.map(e => e.id)));
+      setSelectAllMode('page');
+    }
   };
   const allSelected = expenses.length > 0 && selected.size === expenses.length;
+
+  const handleSelectAllFiltered = async () => {
+    // Fetch all IDs across all pages for current filters
+    const res = await base44.functions.invoke('getExpensesTableData', {
+      startDate, endDate, filterCat, filterType, skip: 0, limit: 999999, sortField, sortDir,
+    });
+    const allIds = (res.data?.expenses || []).map(e => e.id);
+    setSelected(new Set(allIds));
+    setSelectAllMode('all');
+  };
 
   const handleBulkDelete = async () => {
     if (selected.size === 0) return;
