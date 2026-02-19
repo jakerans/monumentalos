@@ -66,11 +66,12 @@ You are STRICTLY FORBIDDEN from inventing new categories or types. Only use the 
 ${customInstructions ? `ADDITIONAL ADMIN INSTRUCTIONS:\n${customInstructions}\n` : ''}
 
 For each expense below, determine the best matching category and type based on the description, vendor, and amount.
+Also, if the vendor field is empty, try to deduce the vendor/payee name from the description. If you can identify one, include it as "suggested_vendor". If you cannot determine a vendor, omit the field or set it to null.
 
 Expenses to categorize:
 ${JSON.stringify(expenseList, null, 2)}
 
-Return a JSON object with a "results" array. Each item must have: expense_id, suggested_category, suggested_type.`;
+Return a JSON object with a "results" array. Each item must have: expense_id, suggested_category, suggested_type. Optionally include suggested_vendor (string) if the vendor was empty and you could deduce one.`;
 
     const aiResponse = await base44.asServiceRole.integrations.Core.InvokeLLM({
       prompt: systemPrompt,
