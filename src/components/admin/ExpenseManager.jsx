@@ -5,6 +5,7 @@ import { useQuery } from '@tanstack/react-query';
 import { toast } from '@/components/ui/use-toast';
 import { Trash2, Plus, Filter, ChevronLeft, ChevronRight, Check, X, Sparkles, CheckCircle } from 'lucide-react';
 import ExpenseTabSkeleton from './ExpenseTabSkeleton';
+import DuplicateExpenseFinder from './DuplicateExpenseFinder';
 
 const CATEGORY_LABELS = {
   ad_spend: 'Ad Spend', payroll: 'Payroll', software: 'Software',
