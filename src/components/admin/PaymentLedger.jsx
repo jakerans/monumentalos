@@ -29,7 +29,7 @@ export default function PaymentLedger({ payments, clients, startDate, endDate, o
         <h2 className="text-sm font-bold text-white">Payment Ledger</h2>
         <span className="text-sm font-bold text-emerald-600">Total: ${total.toLocaleString()}</span>
       </div>
-      <div className="max-h-[300px] overflow-y-auto">
+      <ScrollArea className="h-[300px]">
         {filtered.length === 0 ? (
           <div className="px-4 py-6 text-xs text-slate-500 text-center">No payments in this period</div>
         ) : (
@@ -39,7 +39,7 @@ export default function PaymentLedger({ payments, clients, startDate, endDate, o
             ))}
           </FlipMove>
         )}
-      </div>
+      </ScrollArea>
     </div>
   );
 }
