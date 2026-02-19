@@ -65,7 +65,7 @@ export default function CashHealthPanel({ data }) {
         <Banknote className="w-4 h-4 text-emerald-400" />
         <h3 className="text-sm font-bold text-white">Cash Health (MTD)</h3>
       </div>
-      <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-2">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-2">
         <Stat
           index={0}
           label="Projected Revenue"

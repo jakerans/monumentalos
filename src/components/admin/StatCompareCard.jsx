@@ -120,7 +120,7 @@ export default function StatCompareCard({ data }) {
         <BarSegment label="Overhead" value={overheadTotal} max={barMax} color="#f87171" delay={0.8} />
       </div>
 
-      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1, duration: 0.5 }} className="mt-4 pt-3 border-t border-slate-700/40 flex items-center justify-between relative z-10">
+      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1, duration: 0.5 }} className="mt-4 pt-3 border-t border-slate-700/40 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 sm:gap-0 relative z-10">
         <div className="flex items-center gap-3">
           <div className="text-center"><p className="text-[10px] text-slate-500">LM Income</p><p className="text-xs font-bold text-slate-400">${lmIncome.toLocaleString()}</p></div>
           <ArrowRight className="w-3 h-3 text-slate-600" />

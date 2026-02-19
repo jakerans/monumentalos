@@ -12,7 +12,7 @@ export default function BusinessHealthKPIs({ data }) {
   const d = data;
 
   return (
-    <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-3">
+    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-8 gap-2 sm:gap-3">
       <SparklineCard index={0} label="Active Clients" value={d.activeClients} subtitle={`${d.newClientsThisMonth} new this month`} icon={Users} iconBg="bg-blue-500/10" iconColor="text-blue-400" sparkColor="#60a5fa" />
       <SparklineCard index={1} label="Alerts" value={d.alertClients} subtitle="Clients needing attention" icon={AlertTriangle} iconBg="bg-red-500/10" iconColor="text-red-400" sparkColor="#f87171" />
       <SparklineCard index={2} label="Churn Rate (90d)" value={`${d.churnRate}%`} subtitle={`${d.churnedCount} churned`} icon={UserMinus} iconBg="bg-orange-500/10" iconColor="text-orange-400" sparkColor="#fb923c" />

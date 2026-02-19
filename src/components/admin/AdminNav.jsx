@@ -29,25 +29,26 @@ export default function AdminNav({ user, currentPage, clients = [] }) {
     >
       <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-14">
-          <div className="flex items-center gap-6">
+          <div className="flex items-center gap-3 sm:gap-6 min-w-0 flex-1">
             <motion.h1
-              className="text-lg font-bold text-white tracking-tight"
+              className="text-lg font-bold text-white tracking-tight shrink-0"
               whileHover={{ scale: 1.03 }}
               transition={{ type: 'spring', stiffness: 400, damping: 25 }}
             >
               Monumental<span style={{color:'#D6FF03'}}>OS</span>
             </motion.h1>
-            <div className="flex gap-1">
+            <div className="flex gap-1 overflow-x-auto scrollbar-hide min-w-0">
               {navItems.map((item, i) => (
                 <motion.div
                   key={item.key}
                   initial={{ opacity: 0, y: -8 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.1 + i * 0.04, duration: 0.3 }}
+                  className="shrink-0"
                 >
                   <Link
                     to={createPageUrl(item.key)}
-                    className={`nav-link-animated px-3 py-1.5 rounded-md text-sm font-medium transition-all duration-200 ${
+                    className={`nav-link-animated px-2 sm:px-3 py-1.5 rounded-md text-xs sm:text-sm font-medium transition-all duration-200 whitespace-nowrap ${
                       currentPage === item.key
                         ? 'bg-white/10 text-white font-semibold active'
                         : 'text-slate-400 hover:text-white hover:bg-white/5'
@@ -59,7 +60,7 @@ export default function AdminNav({ user, currentPage, clients = [] }) {
               ))}
             </div>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 sm:gap-3 shrink-0">
             <select
               onChange={(e) => {
                 const val = e.target.value;

@@ -50,12 +50,12 @@ export default function AdminDashboardSkeleton() {
 
       <main className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-5">
         {/* Header */}
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
           <div className="space-y-1.5">
             <Pulse className="h-7 w-52 rounded" />
             <Pulse className="h-4 w-36 rounded" />
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap">
             <Pulse className="h-9 w-28 rounded-lg" />
             <Pulse className="h-9 w-32 rounded-lg" />
             <Pulse className="h-9 w-32 rounded-lg" />
@@ -63,7 +63,7 @@ export default function AdminDashboardSkeleton() {
         </div>
 
         {/* KPI row — 8 cards */}
-        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-3">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-8 gap-2 sm:gap-3">
           {[...Array(8)].map((_, i) => (
             <KPICardSkeleton key={i} delay={i * 60} />
           ))}
@@ -127,7 +127,7 @@ export default function AdminDashboardSkeleton() {
         {/* P&L Snapshot */}
         <div className="bg-slate-800/50 rounded-lg border border-slate-700/50 p-4">
           <Pulse className="h-4 w-56 rounded mb-4" />
-          <div className="grid grid-cols-3 md:grid-cols-6 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-2 sm:gap-3">
             {[...Array(6)].map((_, i) => (
               <div key={i} className="space-y-1.5">
                 <Pulse className="h-2.5 w-16 rounded" />
