@@ -37,16 +37,18 @@ export default function ExpenseManager({ startDate, endDate, onAddExpense }) {
   const [page, setPage] = useState(0);
   const [sortField, setSortField] = useState('date');
   const [sortDir, setSortDir] = useState('desc');
-  const { data, isLoading, refetch } = useQuery({
-    queryKey: ['expense-tab-data', startDate, endDate, filterCat, filterType, page],
+  const { data, isLoading, isFetching, refetch } = useQuery({
+    queryKey: ['expenses-table', startDate, endDate, filterCat, filterType, page, sortField, sortDir],
     queryFn: async () => {
-      const res = await base44.functions.invoke('getExpenseTabData', {
+      const res = await base44.functions.invoke('getExpensesTableData', {
         startDate,
         endDate,
         filterCat,
         filterType,
         skip: page * PAGE_SIZE,
         limit: PAGE_SIZE,
+        sortField,
+        sortDir,
       });
       return res.data;
     },
@@ -56,42 +58,11 @@ export default function ExpenseManager({ startDate, endDate, onAddExpense }) {
 
   const kpis = data?.kpis || { total: 0, cogsTotal: 0, overheadTotal: 0 };
   const byCategory = data?.byCategory || [];
-  const rawExpenses = data?.expenses || [];
+  const expenses = data?.expenses || [];
   const totalFiltered = data?.totalFiltered || 0;
+  const filteredTotal = data?.filteredTotal || 0;
   const clients = data?.clients || [];
   const totalPages = Math.max(1, Math.ceil(totalFiltered / PAGE_SIZE));
-
-  // Client lookup for sorting by client name
-  const clientMap = React.useMemo(() => {
-    const m = {};
-    clients.forEach(c => { m[c.id] = c.name; });
-    return m;
-  }, [clients]);
-
-  // Sort: pending AI actions always on top, then user-chosen sort
-  const expenses = React.useMemo(() => {
-    const sorted = [...rawExpenses];
-    sorted.sort((a, b) => {
-      const aPending = !a.ai_approved && a.suggested_category ? 1 : 0;
-      const bPending = !b.ai_approved && b.suggested_category ? 1 : 0;
-      if (aPending !== bPending) return bPending - aPending;
-
-      let aVal, bVal;
-      switch (sortField) {
-        case 'date': aVal = a.date || ''; bVal = b.date || ''; break;
-        case 'amount': aVal = a.amount || 0; bVal = b.amount || 0; break;
-        case 'category': aVal = (a.category || '').toLowerCase(); bVal = (b.category || '').toLowerCase(); break;
-        case 'expense_type': aVal = (a.expense_type || '').toLowerCase(); bVal = (b.expense_type || '').toLowerCase(); break;
-        case 'vendor': aVal = (a.vendor || '').toLowerCase(); bVal = (b.vendor || '').toLowerCase(); break;
-        case 'client_id': aVal = (clientMap[a.client_id] || '').toLowerCase(); bVal = (clientMap[b.client_id] || '').toLowerCase(); break;
-        default: aVal = a.date || ''; bVal = b.date || '';
-      }
-      if (aVal < bVal) return sortDir === 'asc' ? -1 : 1;
-      if (aVal > bVal) return sortDir === 'asc' ? 1 : -1;
-      return 0;
-    });
-    return sorted;
-  }, [rawExpenses, sortField, sortDir, clientMap]);
 
   const handleSort = (field) => {
     if (sortField === field) {
@@ -100,6 +71,7 @@ export default function ExpenseManager({ startDate, endDate, onAddExpense }) {
       setSortField(field);
       setSortDir(field === 'amount' ? 'desc' : 'asc');
     }
+    setPage(0);
   };
 
   const handleFilterChange = useCallback((setter, value) => {
