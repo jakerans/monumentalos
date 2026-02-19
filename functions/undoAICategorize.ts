@@ -15,14 +15,17 @@ async function fetchAllFiltered(entity, filter, sort) {
 
 const sleep = (ms) => new Promise(r => setTimeout(r, ms));
 
-async function updateWithRetry(entity, id, data, maxRetries = 3) {
+async function updateWithRetry(entity, id, data, maxRetries = 5) {
   for (let attempt = 0; attempt <= maxRetries; attempt++) {
     try {
       await entity.update(id, data);
       return true;
     } catch (err) {
-      if (err.message?.includes('Rate limit') && attempt < maxRetries) {
-        await sleep(1000 * (attempt + 1));
+      const isRateLimit = err.message?.includes('Rate limit') || err.message?.includes('429');
+      if (isRateLimit && attempt < maxRetries) {
+        const backoff = 2000 * Math.pow(2, attempt); // 2s, 4s, 8s, 16s, 32s
+        console.log(`[undoAICategorize] Rate limited on ${id}, retry ${attempt + 1} after ${backoff}ms`);
+        await sleep(backoff);
         continue;
       }
       throw err;
@@ -52,12 +55,11 @@ Deno.serve(async (req) => {
     const clearData = { suggested_category: '', suggested_type: '', ai_approved: false };
     let reverted = 0;
 
-    // Process sequentially with delay between each to avoid rate limits
+    // Process one at a time with 500ms gaps to stay under rate limits
     for (const e of withSuggestions) {
       await updateWithRetry(base44.asServiceRole.entities.Expense, e.id, clearData);
       reverted++;
-      // Small delay between updates
-      if (reverted % 3 === 0) await sleep(300);
+      await sleep(500);
     }
 
     return Response.json({ success: true, reverted });
