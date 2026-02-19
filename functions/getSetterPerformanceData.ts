@@ -45,13 +45,9 @@ Deno.serve(async (req) => {
 
     const sr = base44.asServiceRole.entities;
 
-    const leadFilter = {
-      created_date: { $gte: startDate + 'T00:00:00.000Z', $lte: endDate + 'T23:59:59.999Z' }
-    };
-
     const [clients, leads, users] = await Promise.all([
       fetchAll(sr.Client, '-created_date'),
-      fetchAllFiltered(sr.Lead, leadFilter, '-created_date'),
+      fetchAll(sr.Lead, '-created_date'),
       sr.User.list(),
     ]);
 
