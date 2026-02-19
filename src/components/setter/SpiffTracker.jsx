@@ -36,21 +36,27 @@ export default function SpiffTracker({ spiffs, leads, user }) {
     return 0;
   };
 
-  // Filter to active, non-expired/missed spiffs only for main page
+  // Filter to relevant spiffs for this setter — active only (expired/completed hidden from rotation)
   const mySpiffs = spiffs.filter(sp => {
     if (sp.status !== 'active') return false;
     if (sp.scope === 'individual') return sp.assigned_setter_id === user?.id;
     return true;
   }).filter(sp => {
-    // Hide missed/expired spiffs (past due and not met)
     if (!sp.due_date) return true;
     const dueDate = new Date(sp.due_date + 'T23:59:59');
     if (dueDate < now) {
       const progress = getProgress(sp);
       const isSTL = sp.qualifier === 'stl';
       const met = isSTL ? (progress != null && progress <= sp.goal_value) : (progress >= sp.goal_value);
-      return met; // Keep only if goal was met
+      return met;
     }
+    return true;
+  });
+
+  // Expired/completed spiffs for history display
+  const pastSpiffs = spiffs.filter(sp => {
+    if (sp.status === 'active') return false;
+    if (sp.scope === 'individual') return sp.assigned_setter_id === user?.id;
     return true;
   });
 
