@@ -9,12 +9,13 @@ export default function MarkPaidModal({ record, clientName, open, onOpenChange, 
 
   const [paidAmount, setPaidAmount] = useState(String(defaultAmount));
   const [paidDate, setPaidDate] = useState(new Date().toISOString().split('T')[0]);
+  const [method, setMethod] = useState('ach');
   const [notes, setNotes] = useState(record.notes || '');
   const [saving, setSaving] = useState(false);
 
   const handleConfirm = async () => {
     setSaving(true);
-    await onConfirm(record, Number(paidAmount), paidDate, notes);
+    await onConfirm(record, Number(paidAmount), paidDate, method, notes);
     setSaving(false);
     toast({ title: 'Payment Confirmed', description: `$${Number(paidAmount).toLocaleString()} from ${clientName}`, variant: 'success' });
     onOpenChange(false);
@@ -51,6 +52,17 @@ export default function MarkPaidModal({ record, clientName, open, onOpenChange, 
               onChange={e => setPaidDate(e.target.value)}
               className="w-full mt-1 px-3 py-2 text-sm border border-gray-300 rounded-md"
             />
+          </div>
+          <div>
+            <label className="text-xs font-medium text-gray-700">Payment Method</label>
+            <select value={method} onChange={e => setMethod(e.target.value)} className="w-full mt-1 px-3 py-2 text-sm border border-gray-300 rounded-md">
+              <option value="ach">ACH</option>
+              <option value="check">Check</option>
+              <option value="wire">Wire</option>
+              <option value="credit_card">Credit Card</option>
+              <option value="cash">Cash</option>
+              <option value="other">Other</option>
+            </select>
           </div>
           <div>
             <label className="text-xs font-medium text-gray-700">Notes (optional)</label>

@@ -18,11 +18,12 @@ export default function BillingTable({ rows, kpis, pagination, onRefresh, onPage
   const [markPaidRecord, setMarkPaidRecord] = useState(null);
   const [editRecord, setEditRecord] = useState(null);
 
-  const handleMarkPaid = async (record, paidAmount, paidDate, notes) => {
+  const handleMarkPaid = async (record, paidAmount, paidDate, method, notes) => {
     await base44.entities.MonthlyBilling.update(record.id, {
       status: 'paid',
       paid_amount: paidAmount,
       paid_date: paidDate,
+      payment_method: method || 'ach',
       notes: notes || record.notes,
     });
     onRefresh();
