@@ -129,7 +129,7 @@ export default function RevenueDashboard() {
 
         {/* Expenses Tab */}
         {activeTab === 'expenses' && (
-          <ExpenseManager expenses={expenses} clients={clients} startDate={startDate} endDate={endDate} onRefresh={refetchExpenses} onAddExpense={() => setExpenseOpen(true)} />
+          <ExpenseManager startDate={startDate} endDate={endDate} onAddExpense={() => setExpenseOpen(true)} />
         )}
 
         {/* Cash Flow Tab */}
