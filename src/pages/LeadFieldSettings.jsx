@@ -9,18 +9,22 @@ import PageErrorBoundary from '../components/shared/PageErrorBoundary';
 import PageLoader from '../components/shared/PageLoader';
 import LeadFieldOptionsTab from '../components/admin/LeadFieldOptionsTab';
 import LeadFieldAITab from '../components/admin/LeadFieldAITab';
-import { Settings, List, Sparkles } from 'lucide-react';
+import AICoachSettingsTab from '../components/admin/AICoachSettingsTab';
+import AIExpenseSettingsTab from '../components/admin/AIExpenseSettingsTab';
+import { Settings, List, Sparkles, MessageSquare, Receipt } from 'lucide-react';
 
 const TABS = [
-  { id: 'options', label: 'Field Options', icon: List },
-  { id: 'ai', label: 'AI Auto-Classify', icon: Sparkles },
+  { id: 'lead_options', label: 'Lead Field Options', icon: List },
+  { id: 'ai_leads', label: 'AI Lead Classify', icon: Sparkles },
+  { id: 'ai_coach', label: 'AI Setter Coach', icon: MessageSquare },
+  { id: 'ai_expense', label: 'AI Expenses', icon: Receipt },
 ];
 
 export default function LeadFieldSettings() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [user, setUser] = useState(null);
-  const [tab, setTab] = useState('options');
+  const [tab, setTab] = useState('lead_options');
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -33,7 +37,7 @@ export default function LeadFieldSettings() {
     checkAuth();
   }, [navigate]);
 
-  const { data: settings, isLoading } = useQuery({
+  const { data: leadSettings, isLoading } = useQuery({
     queryKey: ['lead-field-settings'],
     queryFn: async () => {
       const results = await base44.entities.CompanySettings.filter({ key: 'lead_options' });
@@ -48,9 +52,9 @@ export default function LeadFieldSettings() {
     enabled: !!user,
   });
 
-  const saveSettings = async (data) => {
-    if (settings?.id) {
-      await base44.entities.CompanySettings.update(settings.id, data);
+  const saveLeadSettings = async (data) => {
+    if (leadSettings?.id) {
+      await base44.entities.CompanySettings.update(leadSettings.id, data);
     } else {
       await base44.entities.CompanySettings.create({ key: 'lead_options', ...data });
     }
@@ -69,11 +73,11 @@ export default function LeadFieldSettings() {
         <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-5">
           <div className="flex items-center gap-2">
             <Settings className="w-5 h-5 text-slate-400" />
-            <h1 className="text-xl font-bold text-white">Lead Field Settings</h1>
+            <h1 className="text-xl font-bold text-white">Settings</h1>
           </div>
 
           {/* Tabs */}
-          <div className="flex gap-1 bg-slate-800/50 rounded-lg p-1 w-fit">
+          <div className="flex gap-1 bg-slate-800/50 rounded-lg p-1 w-fit flex-wrap">
             {TABS.map(t => {
               const Icon = t.icon;
               return (
@@ -91,11 +95,17 @@ export default function LeadFieldSettings() {
             })}
           </div>
 
-          {tab === 'options' && (
-            <LeadFieldOptionsTab settings={settings} onSave={saveSettings} />
+          {tab === 'lead_options' && (
+            <LeadFieldOptionsTab settings={leadSettings} onSave={saveLeadSettings} />
           )}
-          {tab === 'ai' && (
-            <LeadFieldAITab settings={settings} onSave={saveSettings} />
+          {tab === 'ai_leads' && (
+            <LeadFieldAITab settings={leadSettings} onSave={saveLeadSettings} />
+          )}
+          {tab === 'ai_coach' && (
+            <AICoachSettingsTab />
+          )}
+          {tab === 'ai_expense' && (
+            <AIExpenseSettingsTab />
           )}
         </main>
       </div>
