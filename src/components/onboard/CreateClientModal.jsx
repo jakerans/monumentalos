@@ -19,6 +19,10 @@ export default function CreateClientModal({ open, onOpenChange, onCreated }) {
   const [serviceRadius, setServiceRadius] = useState('');
   const [startDate, setStartDate] = useState(new Date().toISOString().split('T')[0]);
   const [contacts, setContacts] = useState([{ name: '', email: '', role: 'Owner' }]);
+  const [setupFee, setSetupFee] = useState(false);
+  const [setupFeeAmount, setSetupFeeAmount] = useState('');
+  const [setupFeePaid, setSetupFeePaid] = useState(false);
+  const [setupFeeInvoiceId, setSetupFeeInvoiceId] = useState('');
   const [saving, setSaving] = useState(false);
   const [invitingIdx, setInvitingIdx] = useState(null);
 
@@ -63,6 +67,32 @@ export default function CreateClientModal({ open, onOpenChange, onCreated }) {
       data.retainer_due_day = parseInt(retainerDueDay) || 1;
     }
     const client = await base44.entities.Client.create(data);
+
+    // Auto-generate setup fee billing record
+    if (setupFee && parseFloat(setupFeeAmount) > 0) {
+      const now = new Date();
+      const billingMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+      const billingData = {
+        client_id: client.id,
+        billing_month: billingMonth,
+        billing_type: billingType,
+        calculated_amount: parseFloat(setupFeeAmount),
+        manual_amount: parseFloat(setupFeeAmount),
+        quantity: 1,
+        rate: parseFloat(setupFeeAmount),
+        notes: 'Setup fee',
+        status: setupFeePaid ? 'paid' : 'pending',
+      };
+      if (setupFeePaid) {
+        billingData.paid_amount = parseFloat(setupFeeAmount);
+        billingData.paid_date = now.toISOString().split('T')[0];
+      }
+      if (setupFeeInvoiceId.trim()) {
+        billingData.invoice_id = setupFeeInvoiceId.trim();
+      }
+      await base44.entities.MonthlyBilling.create(billingData);
+    }
+
     setSaving(false);
     toast({ title: 'Client Created', description: `${name.trim()} has been added.`, variant: 'success' });
     onCreated(client);
@@ -102,6 +132,10 @@ export default function CreateClientModal({ open, onOpenChange, onCreated }) {
     setServiceRadius('');
     setStartDate(new Date().toISOString().split('T')[0]);
     setContacts([{ name: '', email: '', role: 'Owner' }]);
+    setSetupFee(false);
+    setSetupFeeAmount('');
+    setSetupFeePaid(false);
+    setSetupFeeInvoiceId('');
   };
 
   return (
@@ -180,6 +214,32 @@ export default function CreateClientModal({ open, onOpenChange, onCreated }) {
               <label className="text-xs font-medium text-gray-700">Service Radius</label>
               <input value={serviceRadius} onChange={e => setServiceRadius(e.target.value)} className="w-full mt-1 px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="e.g. 25 miles" />
             </div>
+          </div>
+
+          {/* Setup Fee */}
+          <div className="border border-gray-200 rounded-md p-3 space-y-2">
+            <label className="flex items-center gap-2 cursor-pointer">
+              <input type="checkbox" checked={setupFee} onChange={e => setSetupFee(e.target.checked)} className="w-4 h-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500" />
+              <span className="text-xs font-medium text-gray-700">Setup Fee?</span>
+            </label>
+            {setupFee && (
+              <div className="space-y-2 pt-1">
+                <div>
+                  <label className="text-xs font-medium text-gray-700">Amount *</label>
+                  <input type="number" value={setupFeeAmount} onChange={e => setSetupFeeAmount(e.target.value)} className="w-full mt-1 px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="e.g. 500" />
+                </div>
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input type="checkbox" checked={setupFeePaid} onChange={e => setSetupFeePaid(e.target.checked)} className="w-4 h-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500" />
+                  <span className="text-xs font-medium text-gray-700">Already Paid</span>
+                </label>
+                {setupFeePaid && (
+                  <div>
+                    <label className="text-xs font-medium text-gray-700">Invoice ID</label>
+                    <input value={setupFeeInvoiceId} onChange={e => setSetupFeeInvoiceId(e.target.value)} className="w-full mt-1 px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="e.g. INV-2026-02-001" />
+                  </div>
+                )}
+              </div>
+            )}
           </div>
 
           {/* Contacts */}
