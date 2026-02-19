@@ -140,6 +140,12 @@ Deno.serve(async (req) => {
       const sheetClientId = getCell(row, APP_CLIENT_ID_COL);
       const sheetVendor = getCell(row, APP_VENDOR_COL);
 
+      // Skip rows marked as "transaction" in the category column
+      if (SKIP_CATEGORIES.includes(sheetCategory)) {
+        skippedPositive++;
+        continue;
+      }
+
       if (appId && expenseById[appId]) {
         // ── Already synced — 2-way merge ──
         const existing = expenseById[appId];
