@@ -85,7 +85,15 @@ export default function AdminMobileNav({ currentPage, clients = [] }) {
               </div>
             </nav>
 
-            <div className="border-t border-slate-700/50 pt-3">
+            <div className="border-t border-slate-700/50 pt-3 space-y-1">
+              <Link
+                to={createPageUrl('LeadFieldSettings')}
+                onClick={() => setOpen(false)}
+                className="flex items-center gap-3 px-3 py-2 rounded-lg text-slate-300 hover:bg-white/5 w-full text-left"
+              >
+                <UserCog className="w-4 h-4" />
+                <span className="text-sm">Settings</span>
+              </Link>
               <button
                 onClick={() => base44.auth.logout()}
                 className="flex items-center gap-3 px-3 py-2 rounded-lg text-red-400 hover:bg-red-500/10 w-full text-left"
