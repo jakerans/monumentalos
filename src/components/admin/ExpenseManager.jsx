@@ -114,7 +114,11 @@ export default function ExpenseManager({ startDate, endDate, onAddExpense }) {
     if (!window.confirm(`Delete ${selected.size} expense${selected.size > 1 ? 's' : ''}? This cannot be undone.`)) return;
     setBulkDeleting(true);
     const ids = [...selected];
-    await base44.functions.invoke('bulkDeleteExpenses', { ids });
+    const CHUNK = 10;
+    for (let i = 0; i < ids.length; i += CHUNK) {
+      const chunk = ids.slice(i, i + CHUNK);
+      await base44.functions.invoke('bulkDeleteExpenses', { ids: chunk });
+    }
     toast({ title: `${ids.length} Expense${ids.length > 1 ? 's' : ''} Deleted`, variant: 'success' });
     setSelected(new Set());
     setSelectAllMode(null);
