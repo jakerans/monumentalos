@@ -396,7 +396,7 @@ function SortableHeader({ field, label, current, dir, onClick, align = 'left' })
   );
 }
 
-function ExpenseRow({ expense: e, clients, onUpdate, onDelete, onApproveAI }) {
+function ExpenseRow({ expense: e, clients, onUpdate, onDelete, onApproveAI, selected, onToggleSelect }) {
   const categoryOptions = Object.entries(CATEGORY_LABELS).map(([k, v]) => ({ value: k, label: v }));
   const typeOptions = [{ value: 'cogs', label: 'COGS' }, { value: 'overhead', label: 'Overhead' }];
   const clientOptions = [{ value: '', label: 'None' }, ...clients.map(c => ({ value: c.id, label: c.name }))];
@@ -404,7 +404,12 @@ function ExpenseRow({ expense: e, clients, onUpdate, onDelete, onApproveAI }) {
   const hasPendingAI = !e.ai_approved && e.suggested_category;
 
   return (
-    <tr className={`hover:bg-slate-700/20 transition-colors group ${hasPendingAI ? 'bg-yellow-500/8 border-l-2 border-l-yellow-500/50' : ''}`}>
+    <tr className={`hover:bg-slate-700/20 transition-colors group ${hasPendingAI ? 'bg-yellow-500/8 border-l-2 border-l-yellow-500/50' : ''} ${selected ? 'bg-red-500/5' : ''}`}>
+      <td className="px-2 py-2 text-center">
+        <button onClick={onToggleSelect}>
+          {selected ? <CheckSquare className="w-3.5 h-3.5 text-red-400" /> : <Square className="w-3.5 h-3.5 text-slate-600 group-hover:text-slate-400" />}
+        </button>
+      </td>
       <td className="px-3 py-2 text-slate-300">
         <InlineEditCell value={e.date || ''} displayValue={dayjs(e.date).format('MMM D, YYYY')} field="date" expenseId={e.id} onUpdate={onUpdate} type="date" />
       </td>
