@@ -206,7 +206,12 @@ export default function ExpenseManager({ startDate, endDate, onAddExpense }) {
       </div>
 
       {/* Desktop table */}
-      <div className="hidden sm:block bg-slate-800/50 rounded-lg border border-slate-700/50 overflow-hidden">
+      <div className={`hidden sm:block bg-slate-800/50 rounded-lg border border-slate-700/50 overflow-hidden relative ${pageSwitching ? 'opacity-60' : ''}`}>
+        {pageSwitching && (
+          <div className="absolute inset-0 z-10 flex items-center justify-center bg-slate-900/30">
+            <div className="w-5 h-5 border-2 border-[#D6FF03]/40 border-t-[#D6FF03] rounded-full animate-spin" />
+          </div>
+        )}
         <div className="overflow-x-auto">
           <table className="w-full text-xs" style={{ tableLayout: 'fixed' }}>
             <colgroup>
