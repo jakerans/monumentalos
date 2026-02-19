@@ -7,6 +7,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import IndustryPicker from '../shared/IndustryPicker';
+import { ProjectSizeSelect, ProjectTypeSelect } from '../shared/LeadFieldSelects';
 
 const SOURCE_OPTIONS = [
   { value: 'form', label: 'Form' },
