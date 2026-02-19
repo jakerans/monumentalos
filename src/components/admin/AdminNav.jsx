@@ -72,9 +72,9 @@ export default function AdminNav({ user, currentPage, clients = [] }) {
                   navigate(createPageUrl('ClientPortal'));
                 }
               }}
-              className="px-1.5 py-0.5 text-[10px] sm:text-xs bg-slate-800/80 border border-slate-700/50 text-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#D6FF03] transition-all hover:border-slate-600 max-w-[100px] sm:max-w-none"
+              className="px-1 py-0.5 text-[9px] sm:text-[11px] bg-slate-800/80 border border-slate-700/50 text-slate-300 rounded focus:outline-none focus:ring-1 focus:ring-[#D6FF03] transition-all hover:border-slate-600 max-w-[70px] sm:max-w-[110px]"
             >
-              <option value="">Switch</option>
+              <option value="">View</option>
               <option value="mm">Marketing Manager</option>
               <option value="onboard">Onboard Admin</option>
               <option value="setter">Setter</option>
