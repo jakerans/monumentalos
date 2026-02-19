@@ -65,19 +65,19 @@ export default function UserManagement() {
       <AdminNav user={user} currentPage="UserManagement" clients={clients} />
 
       <main className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-5">
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div className="flex items-center gap-3">
-            <Users className="w-6 h-6 text-slate-300" />
+            <Users className="w-5 h-5 sm:w-6 sm:h-6 text-slate-300" />
             <div>
-              <h1 className="text-2xl font-bold text-white">User Management</h1>
-              <p className="text-sm text-slate-400">{users.length} total users</p>
+              <h1 className="text-xl sm:text-2xl font-bold text-white">User Management</h1>
+              <p className="text-xs sm:text-sm text-slate-400">{users.length} total users</p>
             </div>
           </div>
           <button
             onClick={() => setInviteOpen(true)}
-            className="px-4 py-2 text-sm font-bold text-black rounded-lg hover:opacity-90 flex items-center gap-2" style={{backgroundColor:'#D6FF03'}}
+            className="px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm font-bold text-black rounded-lg hover:opacity-90 flex items-center gap-1.5 sm:gap-2 self-start sm:self-auto" style={{backgroundColor:'#D6FF03'}}
           >
-            <UserPlus className="w-4 h-4" /> Invite User
+            <UserPlus className="w-3.5 h-3.5 sm:w-4 sm:h-4" /> Invite User
           </button>
         </div>
 

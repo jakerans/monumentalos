@@ -284,21 +284,23 @@ export default function SetterDashboard() {
               className="w-full pl-9 pr-3 py-2 text-sm border border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#D6FF03] bg-slate-800 text-white placeholder-slate-500"
             />
           </div>
-          <div className="flex items-center gap-2">
-            <Filter className="w-4 h-4 text-slate-500" />
-            <select
-              value={clientFilter}
-              onChange={(e) => setClientFilter(e.target.value)}
-              className="px-3 py-2 text-sm border border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#D6FF03] bg-slate-800 text-white"
-            >
-              <option value="all">All Clients</option>
-              {clients.map(c => (
-                <option key={c.id} value={c.id}>{c.name}</option>
-              ))}
-            </select>
+          <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
+            <div className="flex items-center gap-1.5">
+              <Filter className="w-4 h-4 text-slate-500 hidden sm:block" />
+              <select
+                value={clientFilter}
+                onChange={(e) => setClientFilter(e.target.value)}
+                className="px-2 sm:px-3 py-2 text-xs sm:text-sm border border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#D6FF03] bg-slate-800 text-white max-w-[120px] sm:max-w-none"
+              >
+                <option value="all">All Clients</option>
+                {clients.map(c => (
+                  <option key={c.id} value={c.id}>{c.name}</option>
+                ))}
+              </select>
+            </div>
             <button
               onClick={() => setShowDQ(!showDQ)}
-              className={`px-3 py-2 text-sm border rounded-lg font-medium transition-colors ${
+              className={`px-2 sm:px-3 py-2 text-xs sm:text-sm border rounded-lg font-medium transition-colors ${
                 showDQ ? 'bg-red-500/10 border-red-500/30 text-red-400' : 'border-slate-700 text-slate-400 hover:bg-slate-800'
               }`}
             >
@@ -306,9 +308,9 @@ export default function SetterDashboard() {
             </button>
             <button
               onClick={() => setAddOpen(true)}
-              className="px-3 py-2 text-sm text-black rounded-lg font-bold transition-colors hover:opacity-90" style={{backgroundColor:'#D6FF03'}}
+              className="px-2 sm:px-3 py-2 text-xs sm:text-sm text-black rounded-lg font-bold transition-colors hover:opacity-90" style={{backgroundColor:'#D6FF03'}}
             >
-              <Plus className="w-4 h-4 inline mr-1" />Add Lead
+              <Plus className="w-3.5 h-3.5 sm:w-4 sm:h-4 inline mr-1" />Add
             </button>
           </div>
         </div>

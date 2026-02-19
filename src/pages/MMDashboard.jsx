@@ -261,7 +261,7 @@ export default function MMDashboard() {
           animate={{ opacity: 1 }}
           transition={{ delay: 0.15, duration: 0.4 }}
           className="flex-1 flex gap-3 min-h-0"
-          style={{ height: showChart ? 'calc(100vh - 180px)' : 'calc(100vh - 180px)' }}
+          style={{ height: 'auto', minHeight: 'min(calc(100vh - 180px), 500px)' }}
         >
           {/* Main table — always visible */}
           <div className="flex-1 min-w-0">

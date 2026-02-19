@@ -43,23 +43,23 @@ export default function LeadDetails() {
     <div className="min-h-screen bg-[#0B0F1A]">
       <nav className="bg-slate-900 shadow-lg border-b border-slate-800">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between h-16">
+          <div className="flex justify-between h-14 sm:h-16">
             <div className="flex items-center">
-              <h1 className="text-xl font-bold text-white">Lead Details</h1>
+              <h1 className="text-lg sm:text-xl font-bold text-white">Lead Details</h1>
             </div>
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2 sm:gap-4">
               {user.app_role === 'admin' && (
                 <button
                   onClick={() => navigate(createPageUrl('AdminDashboard'))}
-                  className="px-3 py-1.5 text-sm border border-slate-700 text-slate-300 rounded-md hover:bg-white/5"
+                  className="px-2 sm:px-3 py-1 sm:py-1.5 text-xs sm:text-sm border border-slate-700 text-slate-300 rounded-md hover:bg-white/5"
                 >
-                  Back to Admin
+                  Admin
                 </button>
               )}
-              <span className="text-sm text-slate-400">{user.full_name}</span>
+              <span className="text-xs sm:text-sm text-slate-400 hidden sm:inline">{user.full_name}</span>
               <button
                 onClick={() => base44.auth.logout()}
-                className="text-sm text-slate-500 hover:text-white"
+                className="text-xs sm:text-sm text-slate-500 hover:text-white"
               >
                 Logout
               </button>
@@ -68,7 +68,7 @@ export default function LeadDetails() {
         </div>
       </nav>
 
-      <main className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <main className="max-w-5xl mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-8">
         <Link
           to={createPageUrl(returnTo)}
           className="inline-flex items-center gap-1 text-sm text-blue-600 hover:text-blue-700 mb-6"

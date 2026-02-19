@@ -63,11 +63,11 @@ export default function HealthMonitor() {
       <AdminNav user={user} currentPage="HealthMonitor" clients={[]} />
 
       <main className="max-w-3xl mx-auto px-4 sm:px-6 py-8">
-        <div className="flex items-center justify-between mb-6">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
           <div className="flex items-center gap-3">
-            <Activity className="w-6 h-6 text-[#D6FF03]" />
+            <Activity className="w-5 h-5 sm:w-6 sm:h-6 text-[#D6FF03]" />
             <div>
-              <h1 className="text-xl font-bold text-white">Health Monitor</h1>
+              <h1 className="text-lg sm:text-xl font-bold text-white">Health Monitor</h1>
               {lastRun && (
                 <p className="text-xs text-slate-400">
                   Last check: {lastRun.toLocaleTimeString()}
@@ -78,7 +78,7 @@ export default function HealthMonitor() {
           <button
             onClick={runChecks}
             disabled={running}
-            className="flex items-center gap-2 px-4 py-2 text-xs font-bold rounded-lg text-black disabled:opacity-50"
+            className="flex items-center gap-2 px-3 sm:px-4 py-1.5 sm:py-2 text-xs font-bold rounded-lg text-black disabled:opacity-50 self-start sm:self-auto"
             style={{ backgroundColor: '#D6FF03' }}
           >
             <RefreshCw className={`w-3.5 h-3.5 ${running ? 'animate-spin' : ''}`} />

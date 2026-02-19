@@ -111,8 +111,8 @@ export default function OnboardDashboard() {
           <>
             <OnboardKPIs projects={projects} tasks={tasks} precomputed={kpis} />
 
-            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
-              <div className="flex gap-1.5">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+              <div className="flex gap-1 sm:gap-1.5 flex-wrap">
                 {['in_progress', 'on_hold', 'completed', 'all'].map(s => (
                   <button
                     key={s}
@@ -125,7 +125,7 @@ export default function OnboardDashboard() {
                   </button>
                 ))}
               </div>
-              <div className="flex gap-2">
+              <div className="flex gap-1.5 sm:gap-2 flex-wrap">
                 <button
                   onClick={async () => {
                     setSyncing(true);

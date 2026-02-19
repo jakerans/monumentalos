@@ -18,16 +18,17 @@ export default function MMNav({ user, clients, pendingOnboardCount = 0 }) {
       className="bg-slate-900/80 glass shadow-lg shadow-black/20 sticky top-0 z-30 border-b border-slate-700/50"
     >
       <div className="max-w-[1600px] mx-auto px-4 sm:px-6">
-        <div className="flex items-center justify-between h-14">
-          <div className="flex items-center gap-3">
+        <div className="flex items-center justify-between h-14 gap-2">
+          <div className="flex items-center gap-2 sm:gap-3 min-w-0">
             <motion.div
               whileHover={{ rotate: 15, scale: 1.1 }}
               transition={{ type: 'spring', stiffness: 400, damping: 15 }}
+              className="shrink-0"
             >
               <LayoutDashboard className="w-5 h-5" style={{color:'#D6FF03'}} />
             </motion.div>
             <motion.h1
-              className="text-base font-bold text-white tracking-tight"
+              className="text-sm sm:text-base font-bold text-white tracking-tight shrink-0"
               whileHover={{ scale: 1.03 }}
               transition={{ type: 'spring', stiffness: 400, damping: 25 }}
             >
@@ -37,7 +38,7 @@ export default function MMNav({ user, clients, pendingOnboardCount = 0 }) {
               initial={{ scale: 0.8, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               transition={{ delay: 0.3 }}
-              className="text-xs bg-white/10 px-2 py-0.5 rounded-full font-medium" 
+              className="text-[10px] sm:text-xs bg-white/10 px-1.5 sm:px-2 py-0.5 rounded-full font-medium hidden sm:inline" 
               style={{color:'#D6FF03'}}
             >
               {clients?.length || 0} clients
@@ -45,14 +46,16 @@ export default function MMNav({ user, clients, pendingOnboardCount = 0 }) {
             <motion.div
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
+              className="shrink-0"
             >
               <Link
                 to={createPageUrl('MMOnboard')}
-                className="relative inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-md text-black hover:opacity-90 transition-colors shadow-sm glow-pulse"
+                className="relative inline-flex items-center gap-1 sm:gap-1.5 px-2 sm:px-3 py-1 sm:py-1.5 text-[10px] sm:text-xs font-semibold rounded-md text-black hover:opacity-90 transition-colors shadow-sm glow-pulse"
                 style={{backgroundColor:'#D6FF03'}}
               >
-                <ClipboardCheck className="w-3.5 h-3.5" />
-                Onboarding
+                <ClipboardCheck className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
+                <span className="hidden sm:inline">Onboarding</span>
+                <span className="sm:hidden">Onboard</span>
                 {pendingOnboardCount > 0 && (
                   <span className="absolute -top-1.5 -right-1.5 min-w-[18px] h-[18px] flex items-center justify-center text-[10px] font-bold bg-red-500 text-white rounded-full px-1 animate-pulse">
                     {pendingOnboardCount}
@@ -61,7 +64,7 @@ export default function MMNav({ user, clients, pendingOnboardCount = 0 }) {
               </Link>
             </motion.div>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-1.5 sm:gap-3 shrink-0">
             {user?.app_role === 'admin' && (
               <select
                 onChange={(e) => {
@@ -69,9 +72,9 @@ export default function MMNav({ user, clients, pendingOnboardCount = 0 }) {
                   else if (e.target.value === 'setter') navigate(createPageUrl('SetterDashboard'));
                 }}
                 defaultValue="mm"
-                className="px-2 py-1 text-xs bg-slate-800/80 border border-slate-700/50 text-slate-300 rounded-md transition-all hover:border-slate-600"
+                className="px-1.5 sm:px-2 py-1 text-[10px] sm:text-xs bg-slate-800/80 border border-slate-700/50 text-slate-300 rounded-md transition-all hover:border-slate-600 max-w-[80px] sm:max-w-none"
               >
-                <option value="mm">Marketing Manager</option>
+                <option value="mm">MM</option>
                 <option value="admin">Admin</option>
                 <option value="setter">Setter</option>
               </select>
@@ -85,7 +88,7 @@ export default function MMNav({ user, clients, pendingOnboardCount = 0 }) {
             >
               {effectsOn ? <Zap className="w-3.5 h-3.5" /> : <ZapOff className="w-3.5 h-3.5" />}
             </button>
-            <span className="text-xs text-slate-400">{user?.full_name}</span>
+            <span className="text-xs text-slate-400 hidden sm:inline">{user?.full_name}</span>
             <motion.button
               whileHover={{ scale: 1.1, rotate: -5 }}
               whileTap={{ scale: 0.9 }}

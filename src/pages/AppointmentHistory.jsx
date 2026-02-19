@@ -130,9 +130,9 @@ export default function AppointmentHistory() {
         </Link>
 
         <div className="bg-slate-800/50 rounded-lg shadow border border-slate-700/50 mb-6">
-          <div className="px-6 py-4">
+          <div className="px-4 sm:px-6 py-4">
             <h3 className="text-sm font-medium text-slate-300 mb-3">Filters</h3>
-            <div className="flex gap-4">
+            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
               <div>
                 <label className="block text-xs text-slate-400 mb-1">Disposition</label>
                 <select
