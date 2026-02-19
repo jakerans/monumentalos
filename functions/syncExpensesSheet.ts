@@ -224,7 +224,24 @@ Deno.serve(async (req) => {
       }
     }
 
-    // ─── STEP 6: Batch write sheet updates (groups of 100) ───
+    // ─── STEP 6: Delete DB expenses whose sheet_row_id no longer exists in sheet ───
+    // Build set of all sheet_row_ids still present in the sheet
+    const sheetRowIdsInSheet = new Set();
+    for (let i = 1; i < rows.length; i++) {
+      const rid = cell(rows[i], BANK_ID_COL);
+      if (rid) sheetRowIdsInSheet.add(rid);
+    }
+
+    let deleted = 0;
+    for (const e of dbExpenses) {
+      if (e.sheet_row_id && !sheetRowIdsInSheet.has(e.sheet_row_id)) {
+        await base44.asServiceRole.entities.Expense.delete(e.id);
+        deleted++;
+      }
+    }
+    if (deleted > 0) console.log(`[syncExpenses] Deleted ${deleted} expenses whose sheet_row_id was removed from sheet`);
+
+    // ─── STEP 7: Batch write sheet updates (groups of 100) ───
     for (let b = 0; b < sheetUpdates.length; b += 100) {
       await fetch(`${SHEETS_API}/${SPREADSHEET_ID}/values:batchUpdate`, {
         method: 'POST',
@@ -238,6 +255,7 @@ Deno.serve(async (req) => {
       added,
       skipped,
       updated,
+      deleted,
       totalProcessed: rows.length - 1,
     });
   } catch (error) {
