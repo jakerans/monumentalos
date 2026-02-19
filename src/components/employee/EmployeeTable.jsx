@@ -14,11 +14,11 @@ const ROLE_LABELS = {
   onboard_admin: 'Onboard', client: 'Client',
 };
 
-export default function EmployeeTable({ employees, payrollSettings, onSelect }) {
+export default function EmployeeTable({ employees, payrollSettings, onSelect, lastMonthCollected = 0 }) {
   const totalMonthly = employees.reduce((sum, emp) => sum + getMonthlyBasePay(emp, payrollSettings), 0);
   const totalAnnual = totalMonthly * 12;
-  const cogsMonthly = employees.filter(e => e.cost_type === 'cogs').reduce((sum, emp) => sum + getMonthlyBasePay(emp, payrollSettings), 0);
-  const overheadMonthly = employees.filter(e => e.cost_type !== 'cogs').reduce((sum, emp) => sum + getMonthlyBasePay(emp, payrollSettings), 0);
+  const activeCount = employees.filter(e => e.status !== 'dismissed').length;
+  const revenuePerFTE = activeCount > 0 ? Math.round(lastMonthCollected / activeCount) : 0;
 
   return (
     <div className="space-y-3">
