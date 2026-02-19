@@ -23,16 +23,24 @@ export default function SetterPerformanceTable({ users, leads, clients, startDat
     const avgSTL = stlValues.length ? Math.round(stlValues.reduce((a, b) => a + b, 0) / stlValues.length) : null;
     const bookingRate = firstCalls.length > 0 ? ((booked.length / firstCalls.length) * 100).toFixed(1) : 0;
     const showRate = booked.length > 0 ? ((showed.length / booked.length) * 100).toFixed(1) : 0;
-    let revenue = 0;
+    // Set revenue: appointments SET in range for pay_per_set clients
+    let setRevenue = 0;
     booked.forEach(l => {
       const client = clients.find(c => c.id === l.client_id);
-      if (!client) return;
-      if (client.billing_type === 'pay_per_set' && client.price_per_set_appointment) {
-        revenue += client.price_per_set_appointment;
-      } else if (client.billing_type === 'pay_per_show' && l.disposition === 'showed' && client.price_per_shown_appointment) {
-        revenue += client.price_per_shown_appointment;
+      if (client?.billing_type === 'pay_per_set' && client.price_per_set_appointment) {
+        setRevenue += client.price_per_set_appointment;
       }
     });
+    // Show revenue: appointments with appointment_date in range that showed, for pay_per_show clients
+    const showLeads = leads.filter(l => l.booked_by_setter_id === setter.id && l.disposition === 'showed' && l.appointment_date && inRange(l.appointment_date));
+    let showRevenue = 0;
+    showLeads.forEach(l => {
+      const client = clients.find(c => c.id === l.client_id);
+      if (client?.billing_type === 'pay_per_show' && client.price_per_shown_appointment) {
+        showRevenue += client.price_per_shown_appointment;
+      }
+    });
+    const revenue = setRevenue + showRevenue;
     return { id: setter.id, name: setter.full_name, firstCalls: firstCalls.length, booked: booked.length, showed: showed.length, dq: dq.length, avgSTL, bookingRate: parseFloat(bookingRate), showRate: parseFloat(showRate), revenue };
   }).sort((a, b) => b.booked - a.booked), [setters, leads, startDate, endDate]);
 
