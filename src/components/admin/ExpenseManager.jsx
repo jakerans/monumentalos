@@ -176,6 +176,22 @@ export default function ExpenseManager({ startDate, endDate, onAddExpense }) {
         </div>
       </div>
 
+      {/* Bulk action bar */}
+      {selected.size > 0 && (
+        <div className="flex items-center gap-3 bg-red-500/10 border border-red-500/30 rounded-lg px-4 py-2.5">
+          <span className="text-xs font-medium text-red-400">{selected.size} selected</span>
+          <button
+            onClick={handleBulkDelete}
+            disabled={bulkDeleting}
+            className="px-3 py-1.5 text-xs font-medium bg-red-600 text-white rounded-md hover:bg-red-700 disabled:opacity-50 flex items-center gap-1"
+          >
+            {bulkDeleting ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Trash2 className="w-3.5 h-3.5" />}
+            {bulkDeleting ? 'Deleting...' : 'Delete Selected'}
+          </button>
+          <button onClick={() => setSelected(new Set())} className="text-xs text-slate-400 hover:text-white ml-auto">Clear</button>
+        </div>
+      )}
+
       {/* Filters + Add */}
       <div className="flex flex-wrap items-center gap-2">
         <Filter className="w-3.5 h-3.5 text-slate-500" />
