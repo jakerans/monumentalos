@@ -195,17 +195,32 @@ export default function ExpenseManager({ startDate, endDate, onAddExpense }) {
 
       {/* Bulk action bar */}
       {selected.size > 0 && (
-        <div className="flex items-center gap-3 bg-red-500/10 border border-red-500/30 rounded-lg px-4 py-2.5">
-          <span className="text-xs font-medium text-red-400">{selected.size} selected</span>
-          <button
-            onClick={handleBulkDelete}
-            disabled={bulkDeleting}
-            className="px-3 py-1.5 text-xs font-medium bg-red-600 text-white rounded-md hover:bg-red-700 disabled:opacity-50 flex items-center gap-1"
-          >
-            {bulkDeleting ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Trash2 className="w-3.5 h-3.5" />}
-            {bulkDeleting ? 'Deleting...' : 'Delete Selected'}
-          </button>
-          <button onClick={() => setSelected(new Set())} className="text-xs text-slate-400 hover:text-white ml-auto">Clear</button>
+        <div className="bg-red-500/10 border border-red-500/30 rounded-lg px-4 py-2.5 space-y-2">
+          <div className="flex items-center gap-3">
+            <span className="text-xs font-medium text-red-400">{selected.size} selected</span>
+            <button
+              onClick={handleBulkDelete}
+              disabled={bulkDeleting}
+              className="px-3 py-1.5 text-xs font-medium bg-red-600 text-white rounded-md hover:bg-red-700 disabled:opacity-50 flex items-center gap-1"
+            >
+              {bulkDeleting ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Trash2 className="w-3.5 h-3.5" />}
+              {bulkDeleting ? 'Deleting...' : 'Delete Selected'}
+            </button>
+            <button onClick={() => { setSelected(new Set()); setSelectAllMode(null); }} className="text-xs text-slate-400 hover:text-white ml-auto">Clear</button>
+          </div>
+          {selectAllMode === 'page' && totalFiltered > expenses.length && (
+            <div className="text-xs text-slate-400">
+              All {expenses.length} on this page selected.{' '}
+              <button onClick={handleSelectAllFiltered} className="text-[#D6FF03] hover:underline font-medium">
+                Select all {totalFiltered} expenses matching filters
+              </button>
+            </div>
+          )}
+          {selectAllMode === 'all' && (
+            <div className="text-xs text-[#D6FF03]">
+              All {selected.size} expenses matching filters are selected.
+            </div>
+          )}
         </div>
       )}
 
