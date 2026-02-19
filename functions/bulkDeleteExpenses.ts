@@ -14,11 +14,21 @@ Deno.serve(async (req) => {
     }
 
     let deleted = 0;
-    const BATCH = 10;
-    for (let i = 0; i < ids.length; i += BATCH) {
-      const batch = ids.slice(i, i + BATCH);
-      await Promise.all(batch.map(id => base44.asServiceRole.entities.Expense.delete(id)));
-      deleted += batch.length;
+    const delay = (ms) => new Promise(r => setTimeout(r, ms));
+    for (let i = 0; i < ids.length; i++) {
+      try {
+        await base44.asServiceRole.entities.Expense.delete(ids[i]);
+        deleted++;
+      } catch (e) {
+        if (e.message?.includes('Rate limit')) {
+          await delay(2000);
+          await base44.asServiceRole.entities.Expense.delete(ids[i]);
+          deleted++;
+        } else if (!e.message?.includes('not found')) {
+          throw e;
+        }
+      }
+      if ((i + 1) % 3 === 0) await delay(500);
     }
 
     return Response.json({ success: true, deleted });
