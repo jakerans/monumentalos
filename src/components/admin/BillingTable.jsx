@@ -153,6 +153,9 @@ export default function BillingTable({ rows, kpis, pagination, onRefresh, onPage
           <table className="w-full text-sm">
             <thead className="bg-slate-900/50 text-xs text-slate-400 uppercase">
               <tr>
+                <th className="px-3 py-2.5 text-center w-10">
+                  <input type="checkbox" checked={rows.length > 0 && selectedIds.size === rows.length} onChange={toggleAll} className="rounded border-slate-600 bg-slate-700 text-blue-500 w-3.5 h-3.5 cursor-pointer" />
+                </th>
                 <th className="px-4 py-2.5 text-left">Client</th>
                 <th className="px-3 py-2.5 text-left">Type</th>
                 <th className="px-3 py-2.5 text-center">Due Day</th>
