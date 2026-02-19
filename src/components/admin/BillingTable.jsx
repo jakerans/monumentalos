@@ -1,6 +1,6 @@
 import React, { useState, forwardRef } from 'react';
 import { base44 } from '@/api/base44Client';
-import { Check, Clock, AlertTriangle, DollarSign, Pencil, Trash2 } from 'lucide-react';
+import { Check, Clock, AlertTriangle, DollarSign, Pencil } from 'lucide-react';
 import FlipMove from 'react-flip-move';
 import MarkPaidModal from './MarkPaidModal';
 import EditInvoiceModal from './EditInvoiceModal';
@@ -14,11 +14,9 @@ const STATUS_CONFIG = {
   overdue: { label: 'Overdue', icon: AlertTriangle, color: 'text-red-600', bg: 'bg-red-50 border-red-200' },
 };
 
-export default function BillingTable({ billingRecords, clients, onRefresh, isOverdueMonth }) {
+export default function BillingTable({ rows, kpis, pagination, onRefresh, onPageChange }) {
   const [markPaidRecord, setMarkPaidRecord] = useState(null);
   const [editRecord, setEditRecord] = useState(null);
-
-  const getClient = (id) => clients.find(c => c.id === id);
 
   const handleMarkPaid = async (record, paidAmount, paidDate, notes) => {
     await base44.entities.MonthlyBilling.update(record.id, {
@@ -30,25 +28,12 @@ export default function BillingTable({ billingRecords, clients, onRefresh, isOve
     onRefresh();
   };
 
-  const rows = billingRecords.map(record => {
-    const client = getClient(record.client_id);
-    const amount = record.billing_type === 'retainer'
-      ? (record.manual_amount || record.calculated_amount || 0)
-      : (record.calculated_amount || 0);
-
-    // If it's overdue month and still pending, mark as overdue display
-    const displayStatus = (isOverdueMonth && record.status === 'pending') ? 'overdue' : record.status;
-
-    return { ...record, client, amount, displayStatus };
-  });
-
-  const totalAmount = rows.reduce((s, r) => s + r.amount, 0);
-  const totalPaid = rows.filter(r => r.status === 'paid').reduce((s, r) => s + (r.paid_amount || r.amount), 0);
-  const totalPending = totalAmount - totalPaid;
+  const { totalAmount = 0, totalPaid = 0, totalPending = 0 } = kpis || {};
+  const { page = 0, totalPages = 1, totalCount = 0 } = pagination || {};
 
   return (
     <>
-      {/* Summary cards */}
+      {/* Summary cards — pre-computed from backend */}
       <div className="grid grid-cols-3 gap-3 mb-4">
         <div className="bg-slate-800/50 rounded-lg border border-slate-700/50 p-4">
           <p className="text-[10px] font-medium text-slate-400 uppercase">Total To Bill</p>
@@ -89,12 +74,36 @@ export default function BillingTable({ billingRecords, clients, onRefresh, isOve
             </FlipMove>
           </table>
         </div>
+
+        {/* Pagination controls */}
+        {totalPages > 1 && (
+          <div className="px-4 py-3 border-t border-slate-700/50 flex items-center justify-between">
+            <span className="text-xs text-slate-400">{totalCount} record{totalCount !== 1 ? 's' : ''}</span>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => onPageChange(page - 1)}
+                disabled={page === 0}
+                className="px-2.5 py-1 text-xs font-medium text-slate-300 bg-slate-700 rounded hover:bg-slate-600 disabled:opacity-40 disabled:cursor-not-allowed"
+              >
+                Prev
+              </button>
+              <span className="text-xs text-slate-400">Page {page + 1} of {totalPages}</span>
+              <button
+                onClick={() => onPageChange(page + 1)}
+                disabled={page >= totalPages - 1}
+                className="px-2.5 py-1 text-xs font-medium text-slate-300 bg-slate-700 rounded hover:bg-slate-600 disabled:opacity-40 disabled:cursor-not-allowed"
+              >
+                Next
+              </button>
+            </div>
+          </div>
+        )}
       </div>
 
       {markPaidRecord && (
         <MarkPaidModal
           record={markPaidRecord}
-          clientName={markPaidRecord.client?.name}
+          clientName={markPaidRecord.clientName}
           open={!!markPaidRecord}
           onOpenChange={(v) => { if (!v) setMarkPaidRecord(null); }}
           onConfirm={handleMarkPaid}
@@ -104,7 +113,7 @@ export default function BillingTable({ billingRecords, clients, onRefresh, isOve
       {editRecord && (
         <EditInvoiceModal
           record={editRecord}
-          clientName={editRecord.client?.name}
+          clientName={editRecord.clientName}
           open={!!editRecord}
           onOpenChange={(v) => { if (!v) setEditRecord(null); }}
           onUpdated={onRefresh}
@@ -116,15 +125,18 @@ export default function BillingTable({ billingRecords, clients, onRefresh, isOve
 
 const BillingRow = forwardRef(({ r, STATUS_CONFIG, BILLING_LABELS, BILLING_COLORS, setMarkPaidRecord, setEditRecord }, ref) => {
   const sc = STATUS_CONFIG[r.displayStatus] || STATUS_CONFIG.pending;
+  const dueDay = r.retainerDueDay;
+  const dueDaySuffix = dueDay === 1 ? 'st' : dueDay === 2 ? 'nd' : dueDay === 3 ? 'rd' : 'th';
+
   return (
     <tr ref={ref} className="hover:bg-slate-700/20">
-      <td className="px-4 py-3"><span className="font-medium text-white">{r.client?.name || '—'}</span></td>
+      <td className="px-4 py-3"><span className="font-medium text-white">{r.clientName}</span></td>
       <td className="px-3 py-3">
         <span className={`px-1.5 py-0.5 text-[10px] font-medium rounded ${BILLING_COLORS[r.billing_type]}`}>{BILLING_LABELS[r.billing_type]}</span>
       </td>
       <td className="px-3 py-3 text-center text-slate-300 text-xs">
-        {r.billing_type === 'retainer' && r.client?.retainer_due_day
-          ? `${r.client.retainer_due_day}${r.client.retainer_due_day === 1 ? 'st' : r.client.retainer_due_day === 2 ? 'nd' : r.client.retainer_due_day === 3 ? 'rd' : 'th'}`
+        {r.billing_type === 'retainer' && dueDay
+          ? `${dueDay}${dueDaySuffix}`
           : r.billing_type === 'retainer' ? '1st' : '—'}
       </td>
       <td className="px-3 py-3 text-right text-slate-300">{r.billing_type === 'retainer' ? '—' : (r.quantity || 0)}</td>
