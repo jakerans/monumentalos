@@ -277,19 +277,43 @@ export default function SpiffManager({ leads, users }) {
         {pastSpiffs.length > 0 && (
           <div className="px-4 py-2">
             <p className="text-[10px] text-slate-500 uppercase tracking-wider mb-1">Past Spiffs</p>
-            {pastSpiffs.slice(0, 5).map(sp => (
-              <div key={sp.id} className="flex items-center justify-between py-1.5">
-                <div className="flex items-center gap-2">
-                  <span className="text-[10px] text-slate-500">{sp.title}</span>
-                  <span className={`text-[9px] px-1 py-0.5 rounded ${sp.status === 'completed' ? 'bg-green-500/10 text-green-400' : 'bg-slate-700 text-slate-500'}`}>
-                    {sp.status}
-                  </span>
+            {pastSpiffs.slice(0, 10).map(sp => {
+              const isExpired = sp.status === 'expired';
+              const ScopeIcon = SCOPE_ICONS[sp.scope] || Users;
+              return (
+                <div key={sp.id} className={`relative overflow-hidden rounded-lg my-1.5 ${isExpired ? 'opacity-50' : ''}`}>
+                  <div className="px-3 py-2.5 bg-slate-700/30 border border-slate-700/40 rounded-lg">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2 flex-1 min-w-0">
+                        <span className="text-[11px] font-medium text-slate-400 truncate">{sp.title}</span>
+                        <span className="flex items-center gap-0.5 text-[9px] text-slate-600 bg-slate-700/50 px-1 py-0.5 rounded shrink-0">
+                          <ScopeIcon className="w-2.5 h-2.5" />
+                          {SCOPE_LABELS[sp.scope]}
+                        </span>
+                        <span className={`text-[9px] px-1 py-0.5 rounded font-medium shrink-0 ${sp.status === 'completed' ? 'bg-green-500/10 text-green-400' : 'bg-slate-700 text-slate-500'}`}>
+                          {sp.status === 'completed' ? '✓ Completed' : sp.status}
+                        </span>
+                      </div>
+                      <button onClick={() => deleteMutation.mutate(sp.id)} className="text-slate-600 hover:text-red-400 p-1 shrink-0">
+                        <Trash2 className="w-3 h-3" />
+                      </button>
+                    </div>
+                    <div className="flex items-center gap-3 mt-0.5 text-[10px] text-slate-600">
+                      {sp.reward && <span>{sp.reward}</span>}
+                      {sp.due_date && <span>Due {new Date(sp.due_date + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</span>}
+                      <span>Goal: {sp.qualifier === 'stl' ? `≤${sp.goal_value}m` : sp.goal_value}</span>
+                    </div>
+                  </div>
+                  {isExpired && (
+                    <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                      <span className="text-red-500/30 text-2xl font-black uppercase tracking-[0.2em] -rotate-12 select-none" style={{ textShadow: '0 0 2px rgba(239,68,68,0.2)' }}>
+                        EXPIRED
+                      </span>
+                    </div>
+                  )}
                 </div>
-                <button onClick={() => deleteMutation.mutate(sp.id)} className="text-slate-600 hover:text-red-400 p-1">
-                  <Trash2 className="w-3 h-3" />
-                </button>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </div>
