@@ -3,8 +3,9 @@ import dayjs from 'dayjs';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import { toast } from '@/components/ui/use-toast';
-import { Trash2, Plus, Filter, ChevronLeft, ChevronRight, Check, X } from 'lucide-react';
+import { Trash2, Plus, Filter, ChevronLeft, ChevronRight, Check, X, Settings, Sparkles, CheckCircle } from 'lucide-react';
 import ExpenseTabSkeleton from './ExpenseTabSkeleton';
+import AIExpenseSettingsModal from './AIExpenseSettingsModal';
 
 const CATEGORY_LABELS = {
   ad_spend: 'Ad Spend', payroll: 'Payroll', software: 'Software',
@@ -32,6 +33,7 @@ export default function ExpenseManager({ startDate, endDate, onAddExpense }) {
   const [filterCat, setFilterCat] = useState('all');
   const [filterType, setFilterType] = useState('all');
   const [page, setPage] = useState(0);
+  const [aiSettingsOpen, setAiSettingsOpen] = useState(false);
 
   const { data, isLoading, refetch } = useQuery({
     queryKey: ['expense-tab-data', startDate, endDate, filterCat, filterType, page],
@@ -73,6 +75,18 @@ export default function ExpenseManager({ startDate, endDate, onAddExpense }) {
     if (field === 'client_id' && !value) update.client_id = undefined;
     await base44.entities.Expense.update(id, update);
     toast({ title: 'Updated', variant: 'success' });
+    refetch();
+  };
+
+  const handleApproveAI = async (expense) => {
+    await base44.entities.Expense.update(expense.id, {
+      category: expense.suggested_category,
+      expense_type: expense.suggested_type,
+      ai_approved: true,
+      suggested_category: expense.suggested_category,
+      suggested_type: expense.suggested_type,
+    });
+    toast({ title: 'AI suggestion approved', variant: 'success' });
     refetch();
   };
 
@@ -121,10 +135,15 @@ export default function ExpenseManager({ startDate, endDate, onAddExpense }) {
         </select>
         <div className="flex-1" />
         <span className="text-xs text-slate-500">{totalFiltered} expense{totalFiltered !== 1 ? 's' : ''}</span>
+        <button onClick={() => setAiSettingsOpen(true)} className="px-3 py-1.5 text-xs font-medium bg-slate-700 text-slate-300 rounded-md hover:bg-slate-600 flex items-center gap-1" title="AI Settings">
+          <Settings className="w-3.5 h-3.5" /> AI Settings
+        </button>
         <button onClick={onAddExpense} className="px-3 py-1.5 text-xs font-medium bg-red-600 text-white rounded-md hover:bg-red-700 flex items-center gap-1">
           <Plus className="w-3.5 h-3.5" /> Add Expense
         </button>
       </div>
+
+      <AIExpenseSettingsModal open={aiSettingsOpen} onOpenChange={setAiSettingsOpen} />
 
       {/* Table */}
       <div className="bg-slate-800/50 rounded-lg border border-slate-700/50 overflow-hidden">
@@ -156,7 +175,7 @@ export default function ExpenseManager({ startDate, endDate, onAddExpense }) {
               {expenses.length === 0 ? (
                 <tr><td colSpan={8} className="text-center py-8 text-slate-500">No expenses match your filters</td></tr>
               ) : expenses.map(e => (
-                <ExpenseRow key={e.id} expense={e} clients={clients} onUpdate={handleInlineUpdate} onDelete={() => handleDelete(e.id)} />
+                <ExpenseRow key={e.id} expense={e} clients={clients} onUpdate={handleInlineUpdate} onDelete={() => handleDelete(e.id)} onApproveAI={handleApproveAI} />
               ))}
             </tbody>
           </table>
@@ -229,21 +248,41 @@ function InlineEditCell({ value, displayValue, field, expenseId, onUpdate, type 
   );
 }
 
-function ExpenseRow({ expense: e, clients, onUpdate, onDelete }) {
+function ExpenseRow({ expense: e, clients, onUpdate, onDelete, onApproveAI }) {
   const categoryOptions = Object.entries(CATEGORY_LABELS).map(([k, v]) => ({ value: k, label: v }));
   const typeOptions = [{ value: 'cogs', label: 'COGS' }, { value: 'overhead', label: 'Overhead' }];
   const clientOptions = [{ value: '', label: 'None' }, ...clients.map(c => ({ value: c.id, label: c.name }))];
 
+  const hasPendingAI = !e.ai_approved && e.suggested_category;
+
   return (
-    <tr className="hover:bg-slate-700/20 transition-colors group">
+    <tr className={`hover:bg-slate-700/20 transition-colors group ${hasPendingAI ? 'bg-yellow-500/8 border-l-2 border-l-yellow-500/50' : ''}`}>
       <td className="px-3 py-2 text-slate-300">
         <InlineEditCell value={e.date || ''} displayValue={dayjs(e.date).format('MMM D, YYYY')} field="date" expenseId={e.id} onUpdate={onUpdate} type="date" />
       </td>
       <td className="px-3 py-2">
-        <InlineEditCell value={e.category || 'other'} displayValue={<span className={`px-1.5 py-0.5 text-[10px] font-medium rounded border ${CATEGORY_COLORS[e.category] || CATEGORY_COLORS.other}`}>{CATEGORY_LABELS[e.category] || e.category}</span>} field="category" expenseId={e.id} onUpdate={onUpdate} options={categoryOptions} />
+        {hasPendingAI ? (
+          <div className="flex items-center gap-1">
+            <span className={`px-1.5 py-0.5 text-[10px] font-medium rounded border italic ${CATEGORY_COLORS[e.suggested_category] || CATEGORY_COLORS.other}`}>
+              {CATEGORY_LABELS[e.suggested_category] || e.suggested_category}
+            </span>
+            <span className="px-1 py-0.5 text-[8px] font-bold bg-yellow-500/20 text-yellow-400 border border-yellow-500/30 rounded">AI</span>
+          </div>
+        ) : (
+          <InlineEditCell value={e.category || 'other'} displayValue={<span className={`px-1.5 py-0.5 text-[10px] font-medium rounded border ${CATEGORY_COLORS[e.category] || CATEGORY_COLORS.other}`}>{CATEGORY_LABELS[e.category] || e.category}</span>} field="category" expenseId={e.id} onUpdate={onUpdate} options={categoryOptions} />
+        )}
       </td>
       <td className="px-3 py-2">
-        <InlineEditCell value={e.expense_type || 'overhead'} displayValue={<span className={`px-1.5 py-0.5 text-[10px] font-medium rounded border ${TYPE_COLORS[e.expense_type] || TYPE_COLORS.overhead}`}>{TYPE_LABELS[e.expense_type] || 'OH'}</span>} field="expense_type" expenseId={e.id} onUpdate={onUpdate} options={typeOptions} />
+        {hasPendingAI ? (
+          <div className="flex items-center gap-1">
+            <span className={`px-1.5 py-0.5 text-[10px] font-medium rounded border italic ${TYPE_COLORS[e.suggested_type] || TYPE_COLORS.overhead}`}>
+              {TYPE_LABELS[e.suggested_type] || e.suggested_type}
+            </span>
+            <span className="px-1 py-0.5 text-[8px] font-bold bg-yellow-500/20 text-yellow-400 border border-yellow-500/30 rounded">AI</span>
+          </div>
+        ) : (
+          <InlineEditCell value={e.expense_type || 'overhead'} displayValue={<span className={`px-1.5 py-0.5 text-[10px] font-medium rounded border ${TYPE_COLORS[e.expense_type] || TYPE_COLORS.overhead}`}>{TYPE_LABELS[e.expense_type] || 'OH'}</span>} field="expense_type" expenseId={e.id} onUpdate={onUpdate} options={typeOptions} />
+        )}
       </td>
       <td className="px-3 py-2 text-white">
         <InlineEditCell value={e.description || ''} displayValue={<span className="truncate block">{e.description || '—'}</span>} field="description" expenseId={e.id} onUpdate={onUpdate} />
@@ -258,7 +297,14 @@ function ExpenseRow({ expense: e, clients, onUpdate, onDelete }) {
         <InlineEditCell value={e.amount || 0} displayValue={`$${(e.amount || 0).toLocaleString()}`} field="amount" expenseId={e.id} onUpdate={onUpdate} type="number" className="text-right" />
       </td>
       <td className="px-3 py-2 text-center">
-        <button onClick={onDelete} className="p-1 text-slate-600 opacity-0 group-hover:opacity-100 hover:text-red-400 transition-all"><Trash2 className="w-3 h-3" /></button>
+        <div className="flex items-center justify-center gap-1">
+          {hasPendingAI && (
+            <button onClick={() => onApproveAI(e)} title="Approve AI suggestion" className="p-1 text-yellow-500 hover:text-green-400 transition-all">
+              <CheckCircle className="w-3.5 h-3.5" />
+            </button>
+          )}
+          <button onClick={onDelete} className="p-1 text-slate-600 opacity-0 group-hover:opacity-100 hover:text-red-400 transition-all"><Trash2 className="w-3 h-3" /></button>
+        </div>
       </td>
     </tr>
   );
