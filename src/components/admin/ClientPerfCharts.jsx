@@ -13,8 +13,11 @@ export default function ClientPerfCharts({ clients, leads, spend }) {
       const showed = leads.filter(l => l.client_id === client.id && (l.disposition === 'showed' || l.outcome === 'sold' || l.outcome === 'lost') && l.appointment_date && new Date(l.appointment_date) >= mtdStart).length;
       const adSpend = spend.filter(s => s.client_id === client.id && new Date(s.date) >= mtdStart).reduce((s, r) => s + (r.amount || 0), 0);
       return { name: client.name?.substring(0, 12) || '?', leads: cLeads.length, booked, showed, adSpend: Math.round(adSpend) };
-    }).sort((a, b) => b.booked - a.booked);
+    }).filter(c => c.booked > 0 || c.showed > 0 || c.adSpend > 0)
+      .sort((a, b) => b.booked - a.booked);
   }, [active, leads, spend]);
+
+  const chartHeight = Math.max(180, Math.min(250, clientBars.length * 35));
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
