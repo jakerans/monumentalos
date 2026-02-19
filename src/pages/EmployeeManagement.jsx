@@ -59,6 +59,7 @@ export default function EmployeeManagement() {
   const payrollSettings = dashData?.payrollSettings || null;
   const users = dashData?.users || [];
   const lastMonthCollected = dashData?.lastMonthCollected || 0;
+  const perfRecords = dashData?.perfRecords || [];
 
   const refetch = refetchAll;
   const refetchPlans = refetchAll;
@@ -198,6 +199,7 @@ export default function EmployeeManagement() {
           perfPlans={perfPlans}
           payrollSettings={payrollSettings}
           onSelectPlan={handleSelectPlan}
+          perfRecords={perfRecords}
         />
       </main>
 
