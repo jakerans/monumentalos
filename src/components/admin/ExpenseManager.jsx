@@ -107,6 +107,8 @@ export default function ExpenseManager({ startDate, endDate, onAddExpense }) {
 
   if (isLoading && !data) return <ExpenseTabSkeleton />;
 
+  const pageSwitching = isFetching && !!data;
+
   return (
     <div className="space-y-4">
       {/* Sync + AI buttons */}
