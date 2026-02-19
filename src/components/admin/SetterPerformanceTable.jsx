@@ -1,20 +1,15 @@
 import React, { useMemo } from 'react';
 import dayjs from 'dayjs';
 import isBetween from 'dayjs/plugin/isBetween';
-import { Timer, Calendar, Target, TrendingUp, Award, DollarSign } from 'lucide-react';
+import { Timer, Calendar, Target, TrendingUp, Award, DollarSign, ArrowUpDown } from 'lucide-react';
 import SparklineCard from '../shared/SparklineCard';
 import AnimatedTable from '../shared/AnimatedTable';
+import RevenueTooltip from './RevenueTooltip';
 
 dayjs.extend(isBetween);
 
-export default function SetterPerformanceTable({ users, leads, clients, startDate, endDate }) {
-  const start = dayjs(startDate).startOf('day');
-  const end = dayjs(endDate).endOf('day');
-  const inRange = (d) => d ? dayjs(d).isBetween(start, end, null, '[]') : false;
-  const setters = users.filter(u => u.app_role === 'setter');
-  const getClientName = (id) => clients.find(c => c.id === id)?.name || '—';
-
-  const stats = useMemo(() => setters.map(setter => {
+function calcSetterStats(setters, leads, clients, inRange) {
+  return setters.map(setter => {
     const firstCalls = leads.filter(l => l.setter_id === setter.id && l.first_call_made_date && inRange(l.first_call_made_date));
     const booked = leads.filter(l => l.booked_by_setter_id === setter.id && l.date_appointment_set && inRange(l.date_appointment_set));
     const showed = booked.filter(l => l.disposition === 'showed');
@@ -23,40 +18,96 @@ export default function SetterPerformanceTable({ users, leads, clients, startDat
     const avgSTL = stlValues.length ? Math.round(stlValues.reduce((a, b) => a + b, 0) / stlValues.length) : null;
     const bookingRate = firstCalls.length > 0 ? ((booked.length / firstCalls.length) * 100).toFixed(1) : 0;
     const showRate = booked.length > 0 ? ((showed.length / booked.length) * 100).toFixed(1) : 0;
-    // Set revenue: appointments SET in range for pay_per_set clients
     let setRevenue = 0;
     booked.forEach(l => {
       const client = clients.find(c => c.id === l.client_id);
-      if (client?.billing_type === 'pay_per_set' && client.price_per_set_appointment) {
-        setRevenue += client.price_per_set_appointment;
-      }
+      if (client?.billing_type === 'pay_per_set' && client.price_per_set_appointment) setRevenue += client.price_per_set_appointment;
     });
-    // Show revenue: appointments with appointment_date in range that showed, for pay_per_show clients
     const showLeads = leads.filter(l => l.booked_by_setter_id === setter.id && l.disposition === 'showed' && l.appointment_date && inRange(l.appointment_date));
     let showRevenue = 0;
     showLeads.forEach(l => {
       const client = clients.find(c => c.id === l.client_id);
-      if (client?.billing_type === 'pay_per_show' && client.price_per_shown_appointment) {
-        showRevenue += client.price_per_shown_appointment;
-      }
+      if (client?.billing_type === 'pay_per_show' && client.price_per_shown_appointment) showRevenue += client.price_per_shown_appointment;
     });
     const revenue = setRevenue + showRevenue;
-    return { id: setter.id, name: setter.full_name, firstCalls: firstCalls.length, booked: booked.length, showed: showed.length, dq: dq.length, avgSTL, bookingRate: parseFloat(bookingRate), showRate: parseFloat(showRate), revenue };
-  }).sort((a, b) => b.booked - a.booked), [setters, leads, startDate, endDate]);
+    return { id: setter.id, name: setter.full_name, firstCalls: firstCalls.length, booked: booked.length, showed: showed.length, dq: dq.length, avgSTL, bookingRate: parseFloat(bookingRate), showRate: parseFloat(showRate), revenue, setRevenue, showRevenue };
+  }).sort((a, b) => b.booked - a.booked);
+}
+
+function pctChange(curr, prior) {
+  if (prior === 0 && curr === 0) return 0;
+  if (prior === 0) return 100;
+  return Math.round(((curr - prior) / prior) * 100);
+}
+
+function buildDailySparkline(leads, dateField, filterFn, startDate, endDate) {
+  const start = dayjs(startDate);
+  const end = dayjs(endDate);
+  const days = end.diff(start, 'day') + 1;
+  const buckets = {};
+  for (let i = 0; i < days; i++) buckets[start.add(i, 'day').format('YYYY-MM-DD')] = 0;
+  leads.forEach(l => {
+    const d = l[dateField];
+    if (!d || !filterFn(l)) return;
+    const key = dayjs(d).format('YYYY-MM-DD');
+    if (buckets[key] !== undefined) buckets[key]++;
+  });
+  return Object.values(buckets).map(v => ({ v }));
+}
+
+export default function SetterPerformanceTable({ users, leads, clients, startDate, endDate, priorStart, priorEnd }) {
+  const start = dayjs(startDate).startOf('day');
+  const end = dayjs(endDate).endOf('day');
+  const inRange = (d) => d ? dayjs(d).isBetween(start, end, null, '[]') : false;
+
+  // Prior period range
+  const hasPrior = !!priorStart && !!priorEnd;
+  const priorStartD = hasPrior ? dayjs(priorStart).startOf('day') : null;
+  const priorEndD = hasPrior ? dayjs(priorEnd).endOf('day') : null;
+  const inPriorRange = (d) => hasPrior && d ? dayjs(d).isBetween(priorStartD, priorEndD, null, '[]') : false;
+
+  const setters = users.filter(u => u.app_role === 'setter');
+
+  const stats = useMemo(() => calcSetterStats(setters, leads, clients, inRange), [setters, leads, clients, startDate, endDate]);
+  const priorStats = useMemo(() => hasPrior ? calcSetterStats(setters, leads, clients, inPriorRange) : [], [setters, leads, clients, priorStart, priorEnd, hasPrior]);
 
   const totalBooked = stats.reduce((s, r) => s + r.booked, 0);
   const totalShowed = stats.reduce((s, r) => s + r.showed, 0);
   const totalCalls = stats.reduce((s, r) => s + r.firstCalls, 0);
+  const totalRevenue = stats.reduce((s, r) => s + r.revenue, 0);
+  const totalSetRevenue = stats.reduce((s, r) => s + r.setRevenue, 0);
+  const totalShowRevenue = stats.reduce((s, r) => s + r.showRevenue, 0);
   const allSTLValues = stats.filter(r => r.avgSTL != null).map(r => r.avgSTL);
   const overallAvgSTL = allSTLValues.length ? Math.round(allSTLValues.reduce((a, b) => a + b, 0) / allSTLValues.length) : null;
 
+  const pBooked = priorStats.reduce((s, r) => s + r.booked, 0);
+  const pShowed = priorStats.reduce((s, r) => s + r.showed, 0);
+  const pCalls = priorStats.reduce((s, r) => s + r.firstCalls, 0);
+  const pRevenue = priorStats.reduce((s, r) => s + r.revenue, 0);
+  const pSetRevenue = priorStats.reduce((s, r) => s + r.setRevenue, 0);
+  const pShowRevenue = priorStats.reduce((s, r) => s + r.showRevenue, 0);
+  const pSTLValues = priorStats.filter(r => r.avgSTL != null).map(r => r.avgSTL);
+  const pAvgSTL = pSTLValues.length ? Math.round(pSTLValues.reduce((a, b) => a + b, 0) / pSTLValues.length) : null;
+  const pBookingRate = pCalls > 0 ? ((pBooked / pCalls) * 100).toFixed(1) : 0;
+  const currBookingRate = totalCalls > 0 ? ((totalBooked / totalCalls) * 100).toFixed(1) : 0;
+
+  // Sparklines
+  const sparkBooked = useMemo(() => buildDailySparkline(leads, 'date_appointment_set', l => setters.some(s => s.id === l.booked_by_setter_id), startDate, endDate), [leads, setters, startDate, endDate]);
+  const sparkCalls = useMemo(() => buildDailySparkline(leads, 'first_call_made_date', l => setters.some(s => s.id === l.setter_id), startDate, endDate), [leads, setters, startDate, endDate]);
+
+  const setRevPct = totalRevenue > 0 ? ((totalSetRevenue / totalRevenue) * 100).toFixed(0) : 0;
+  const showRevPct = totalRevenue > 0 ? ((totalShowRevenue / totalRevenue) * 100).toFixed(0) : 0;
+
   const summaryCards = [
     { label: 'Total Setters', value: setters.length, icon: Award, color: 'text-indigo-400', bg: 'bg-indigo-500/10', spark: '#818cf8' },
-    { label: 'Avg Speed to Lead', value: overallAvgSTL != null ? `${overallAvgSTL}m` : '—', icon: Timer, color: overallAvgSTL != null && overallAvgSTL <= 5 ? 'text-green-400' : overallAvgSTL != null && overallAvgSTL <= 15 ? 'text-amber-400' : 'text-blue-400', bg: overallAvgSTL != null && overallAvgSTL <= 5 ? 'bg-green-500/10' : overallAvgSTL != null && overallAvgSTL <= 15 ? 'bg-amber-500/10' : 'bg-blue-500/10', spark: '#60a5fa' },
-    { label: 'Total Booked', value: totalBooked, icon: Calendar, color: 'text-purple-400', bg: 'bg-purple-500/10', spark: '#c084fc' },
-    { label: 'Total Showed', value: totalShowed, icon: Target, color: 'text-green-400', bg: 'bg-green-500/10', spark: '#34d399' },
-    { label: 'Avg Booking Rate', value: totalCalls > 0 ? `${((totalBooked / totalCalls) * 100).toFixed(1)}%` : '—', icon: TrendingUp, color: 'text-amber-400', bg: 'bg-amber-500/10', spark: '#fbbf24' },
-    { label: 'Total Revenue', value: `$${stats.reduce((s, r) => s + r.revenue, 0).toLocaleString()}`, icon: DollarSign, color: 'text-emerald-400', bg: 'bg-emerald-500/10', spark: '#34d399' },
+    { label: 'Avg Speed to Lead', value: overallAvgSTL != null ? `${overallAvgSTL}m` : '—', icon: Timer, color: overallAvgSTL != null && overallAvgSTL <= 5 ? 'text-green-400' : overallAvgSTL != null && overallAvgSTL <= 15 ? 'text-amber-400' : 'text-blue-400', bg: overallAvgSTL != null && overallAvgSTL <= 5 ? 'bg-green-500/10' : overallAvgSTL != null && overallAvgSTL <= 15 ? 'bg-amber-500/10' : 'bg-blue-500/10', spark: '#60a5fa', comparison: hasPrior && pAvgSTL != null && overallAvgSTL != null ? { prior: `${pAvgSTL}m`, change: pctChange(overallAvgSTL, pAvgSTL), invertColor: true } : null },
+    { label: 'Total First Calls', value: totalCalls, icon: TrendingUp, color: 'text-amber-400', bg: 'bg-amber-500/10', spark: '#fbbf24', sparkData: sparkCalls, comparison: hasPrior ? { prior: pCalls, change: pctChange(totalCalls, pCalls) } : null },
+    { label: 'Total Booked', value: totalBooked, icon: Calendar, color: 'text-purple-400', bg: 'bg-purple-500/10', spark: '#c084fc', sparkData: sparkBooked, comparison: hasPrior ? { prior: pBooked, change: pctChange(totalBooked, pBooked) } : null },
+    { label: 'Total Showed', value: totalShowed, icon: Target, color: 'text-green-400', bg: 'bg-green-500/10', spark: '#34d399', comparison: hasPrior ? { prior: pShowed, change: pctChange(totalShowed, pShowed) } : null },
+    { label: 'Booking Rate', value: totalCalls > 0 ? `${currBookingRate}%` : '—', icon: TrendingUp, color: 'text-cyan-400', bg: 'bg-cyan-500/10', spark: '#22d3ee', comparison: hasPrior && pCalls > 0 ? { prior: `${pBookingRate}%`, change: pctChange(parseFloat(currBookingRate), parseFloat(pBookingRate)) } : null },
+    { label: 'Total Revenue', value: `$${totalRevenue.toLocaleString()}`, icon: DollarSign, color: 'text-emerald-400', bg: 'bg-emerald-500/10', spark: '#34d399', comparison: hasPrior ? { prior: `$${pRevenue.toLocaleString()}`, change: pctChange(totalRevenue, pRevenue) } : null },
+    { label: 'Set Revenue', value: `$${totalSetRevenue.toLocaleString()}`, subtitle: `${setRevPct}% of total`, icon: ArrowUpDown, color: 'text-blue-400', bg: 'bg-blue-500/10', spark: '#60a5fa', comparison: hasPrior ? { prior: `$${pSetRevenue.toLocaleString()}`, change: pctChange(totalSetRevenue, pSetRevenue) } : null },
+    { label: 'Show Revenue', value: `$${totalShowRevenue.toLocaleString()}`, subtitle: `${showRevPct}% of total`, icon: Target, color: 'text-green-400', bg: 'bg-green-500/10', spark: '#34d399', comparison: hasPrior ? { prior: `$${pShowRevenue.toLocaleString()}`, change: pctChange(totalShowRevenue, pShowRevenue) } : null },
   ];
 
   const columns = [
