@@ -11,13 +11,14 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Forbidden' }, { status: 403 });
     }
 
-    const [employees, perfPlans, clients, companySettings, users, billingRecords] = await Promise.all([
+    const [employees, perfPlans, clients, companySettings, users, billingRecords, perfRecords] = await Promise.all([
       base44.asServiceRole.entities.Employee.list(),
       base44.asServiceRole.entities.PerformancePay.list(),
       base44.asServiceRole.entities.Client.list(),
       base44.asServiceRole.entities.CompanySettings.filter({ key: 'payroll' }),
       base44.asServiceRole.entities.User.list(),
       base44.asServiceRole.entities.MonthlyBilling.list('-billing_month', 5000),
+      base44.asServiceRole.entities.PerformancePayRecord.list('-period', 5000),
     ]);
 
     // Calculate last month's collected revenue for Revenue per FTE
@@ -35,6 +36,7 @@ Deno.serve(async (req) => {
       payrollSettings: companySettings[0] || null,
       users,
       lastMonthCollected,
+      perfRecords,
     });
   } catch (error) {
     console.error('getEmployeeManagementData error:', error);

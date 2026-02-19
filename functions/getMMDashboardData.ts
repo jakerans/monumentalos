@@ -49,10 +49,18 @@ Deno.serve(async (req) => {
 
     // Performance pay plans
     let perfPlans = [];
+    let perfRecords = [];
     if (employees.length > 0) {
       perfPlans = await base44.asServiceRole.entities.PerformancePay.filter({
         employee_id: employees[0].id,
         status: 'active',
+      });
+      // Fetch last month's record for hover summary
+      const lm = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+      const lastPeriod = `${lm.getFullYear()}-${String(lm.getMonth() + 1).padStart(2, '0')}`;
+      perfRecords = await base44.asServiceRole.entities.PerformancePayRecord.filter({
+        employee_id: employees[0].id,
+        period: lastPeriod,
       });
     }
 
@@ -101,6 +109,7 @@ Deno.serve(async (req) => {
       allSpend,
       pendingOnboardCount,
       livePerfPlans,
+      lastMonthPerfRecords: perfRecords,
     });
   } catch (error) {
     return Response.json({ error: error.message }, { status: 500 });
