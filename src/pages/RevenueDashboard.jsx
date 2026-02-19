@@ -15,7 +15,7 @@ import ExpenseBreakdown from '../components/admin/ExpenseBreakdown';
 import PaymentLedger from '../components/admin/PaymentLedger';
 import CashFlowAnalysis from '../components/admin/CashFlowAnalysis';
 import ExpenseManager from '../components/admin/ExpenseManager';
-import AddPaymentModal from '../components/admin/AddPaymentModal';
+import RecordPaymentModal from '../components/admin/RecordPaymentModal';
 import AddExpenseModal from '../components/admin/AddExpenseModal';
 import PageErrorBoundary from '../components/shared/PageErrorBoundary';
 import RevenueDashboardSkeleton from '../components/admin/RevenueDashboardSkeleton';
@@ -57,31 +57,28 @@ export default function RevenueDashboard() {
   });
 
   const clients = dashData?.clients || [];
-  const rawPayments = dashData?.payments || [];
-  const expenses = dashData?.expenses || [];
   const billingRecords = dashData?.billingRecords || [];
+  const expenses = dashData?.expenses || [];
   const monthlyPL = dashData?.monthlyPL || [];
   const cashFlowData = dashData?.cashFlowData || [];
   const kpis = dashData?.kpis || null;
   const clientSummary = dashData?.clientSummary || [];
 
-  // Merge Payment entity records + paid MonthlyBilling into a unified "payments" list for ledger & sparklines
+  // Build unified payments list from paid billing records for ledger & sparklines
   const payments = React.useMemo(() => {
-    const fromPayments = rawPayments.map(p => ({ ...p, _source: 'payment' }));
-    const fromBilling = billingRecords.map(b => ({
+    return billingRecords.filter(b => b.status === 'paid').map(b => ({
       id: b.id,
       client_id: b.client_id,
       amount: b.paid_amount || b.calculated_amount || 0,
       date: b.paid_date,
-      method: 'invoice',
+      method: b.payment_method || 'invoice',
       notes: `Invoice ${b.invoice_id || ''} (${b.billing_month})`,
-      _source: 'billing',
+      invoice_id: b.invoice_id,
+      billing_month: b.billing_month,
     }));
-    return [...fromPayments, ...fromBilling];
-  }, [rawPayments, billingRecords]);
+  }, [billingRecords]);
 
-  const refetchPayments = refetchDash;
-  const refetchExpenses = refetchDash;
+  const refetchAll = refetchDash;
 
   if (!user) return null;
   if (isLoading) return <RevenueDashboardSkeleton />;
@@ -141,8 +138,8 @@ export default function RevenueDashboard() {
             <AccountingKPIs kpis={kpis} payments={payments} expenses={expenses} />
             <MonthlyPLChart data={monthlyPL} />
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <PaymentLedger payments={payments} clients={clients} startDate={startDate} endDate={endDate} onRefresh={refetchPayments} />
-              <ExpenseBreakdown expenses={expenses} clients={clients} startDate={startDate} endDate={endDate} onRefresh={refetchExpenses} />
+              <PaymentLedger payments={payments} clients={clients} startDate={startDate} endDate={endDate} onRefresh={refetchAll} />
+              <ExpenseBreakdown expenses={expenses} clients={clients} startDate={startDate} endDate={endDate} onRefresh={refetchAll} />
             </div>
           </div>
         )}
@@ -163,8 +160,8 @@ export default function RevenueDashboard() {
         )}
       </main>
 
-      <AddPaymentModal open={paymentOpen} onOpenChange={setPaymentOpen} clients={clients} onCreated={refetchPayments} />
-      <AddExpenseModal open={expenseOpen} onOpenChange={setExpenseOpen} clients={clients} onCreated={refetchExpenses} />
+      <RecordPaymentModal open={paymentOpen} onOpenChange={setPaymentOpen} clients={clients} billingRecords={billingRecords} onCreated={refetchAll} />
+      <AddExpenseModal open={expenseOpen} onOpenChange={setExpenseOpen} clients={clients} onCreated={refetchAll} />
       <AdminMobileNav currentPage="RevenueDashboard" clients={clients} />
     </div>
     </PageErrorBoundary>
