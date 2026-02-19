@@ -76,6 +76,36 @@ export default function ExpenseManager({ startDate, endDate, onAddExpense }) {
     setPage(0);
   };
 
+  // Clear selection when page/filters change
+  useEffect(() => { setSelected(new Set()); }, [page, filterCat, filterType, startDate, endDate]);
+
+  const toggleSelect = (id) => {
+    setSelected(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id); else next.add(id);
+      return next;
+    });
+  };
+  const toggleSelectAll = () => {
+    if (selected.size === expenses.length) setSelected(new Set());
+    else setSelected(new Set(expenses.map(e => e.id)));
+  };
+  const allSelected = expenses.length > 0 && selected.size === expenses.length;
+
+  const handleBulkDelete = async () => {
+    if (selected.size === 0) return;
+    if (!window.confirm(`Delete ${selected.size} expense${selected.size > 1 ? 's' : ''}? This cannot be undone.`)) return;
+    setBulkDeleting(true);
+    const ids = [...selected];
+    for (const id of ids) {
+      await base44.entities.Expense.delete(id);
+    }
+    toast({ title: `${ids.length} Expense${ids.length > 1 ? 's' : ''} Deleted`, variant: 'success' });
+    setSelected(new Set());
+    setBulkDeleting(false);
+    refetch();
+  };
+
   const handleFilterChange = useCallback((setter, value) => {
     setter(value);
     setPage(0);
