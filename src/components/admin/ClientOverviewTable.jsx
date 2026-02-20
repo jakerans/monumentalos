@@ -19,8 +19,13 @@ const BILLING_COLORS = {
 
 function getBillingRate(client) {
   const t = client.billing_type || 'pay_per_show';
-  if (t === 'pay_per_set') return client.price_per_set_appointment ? `$${client.price_per_set_appointment}` : '—';
   if (t === 'retainer') return client.retainer_amount ? `$${client.retainer_amount}/mo` : '—';
+  const pricing = client.industry_pricing || [];
+  if (pricing.length > 0) {
+    const field = t === 'pay_per_set' ? 'price_per_set' : 'price_per_show';
+    return pricing.map(p => `$${p[field] || 0}`).join(' / ');
+  }
+  if (t === 'pay_per_set') return client.price_per_set_appointment ? `$${client.price_per_set_appointment}` : '—';
   return client.price_per_shown_appointment ? `$${client.price_per_shown_appointment}` : '—';
 }
 
@@ -37,10 +42,21 @@ export default function ClientOverviewTable({ clients, leads, spend, payments, o
     const mtdSpend = spend.filter(s => s.client_id === client.id && new Date(s.date) >= thisMonthStart).reduce((s, r) => s + (r.amount || 0), 0);
 
     const billingType = client.billing_type || 'pay_per_show';
+    const pricing = client.industry_pricing || [];
+    function getLeadPrice(lead, field) {
+      const ind = (lead.industries && lead.industries[0]) || null;
+      const match = ind ? pricing.find(p => p.industry === ind) : null;
+      if (match) return match[field] || 0;
+      return field === 'price_per_show' ? (client.price_per_shown_appointment || 0) : (client.price_per_set_appointment || 0);
+    }
     let mtdBilled = 0;
-    if (billingType === 'pay_per_show') mtdBilled = mtdShowed * (client.price_per_shown_appointment || 0);
-    else if (billingType === 'pay_per_set') mtdBilled = mtdBooked * (client.price_per_set_appointment || 0);
-    else if (billingType === 'retainer') mtdBilled = client.retainer_amount || 0;
+    if (billingType === 'pay_per_show') {
+      cLeads.filter(l => l.disposition === 'showed' && l.appointment_date && new Date(l.appointment_date) >= thisMonthStart).forEach(l => { mtdBilled += getLeadPrice(l, 'price_per_show'); });
+    } else if (billingType === 'pay_per_set') {
+      cLeads.filter(l => l.date_appointment_set && new Date(l.date_appointment_set) >= thisMonthStart).forEach(l => { mtdBilled += getLeadPrice(l, 'price_per_set'); });
+    } else if (billingType === 'retainer') {
+      mtdBilled = client.retainer_amount || 0;
+    }
 
     const mtdPaid = payments.filter(p => p.client_id === client.id && new Date(p.date) >= thisMonthStart).reduce((s, p) => s + (p.amount || 0), 0);
 

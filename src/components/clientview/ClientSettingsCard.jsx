@@ -107,11 +107,22 @@ export default function ClientSettingsCard({ client, userRole, onUpdated }) {
           <DollarSign className="w-3.5 h-3.5 text-green-500 mt-0.5 flex-shrink-0" />
           <div>
             <p className="text-slate-500">Billing</p>
-            <p className="font-semibold text-white">
-              {client.billing_type === 'pay_per_set' ? `$${client.price_per_set_appointment || 0} / appt set` :
-               client.billing_type === 'retainer' ? `$${client.retainer_amount || 0}/mo retainer` :
-               `$${client.price_per_shown_appointment || 0} / shown appt`}
-            </p>
+            {client.billing_type === 'retainer' ? (
+              <p className="font-semibold text-white">${client.retainer_amount || 0}/mo retainer</p>
+            ) : (client.industry_pricing && client.industry_pricing.length > 0) ? (
+              <div className="space-y-0.5">
+                {client.industry_pricing.map((p, i) => (
+                  <p key={i} className="font-semibold text-white text-[11px]">
+                    {INDUSTRY_LABELS[p.industry] || p.industry}: ${client.billing_type === 'pay_per_set' ? (p.price_per_set || 0) : (p.price_per_show || 0)} / {client.billing_type === 'pay_per_set' ? 'appt set' : 'shown appt'}
+                  </p>
+                ))}
+              </div>
+            ) : (
+              <p className="font-semibold text-white">
+                {client.billing_type === 'pay_per_set' ? `$${client.price_per_set_appointment || 0} / appt set` :
+                 `$${client.price_per_shown_appointment || 0} / shown appt`}
+              </p>
+            )}
           </div>
         </div>
 
