@@ -161,41 +161,20 @@ Deno.serve(async (req) => {
     const skip = page * pageSize;
     const pageRows = allBillingForMonth.slice(skip, skip + pageSize);
 
-    // Enrich each row with client name, computed amount, pricing, and display status
+    // Enrich each row with client name, computed amount, and display status
     const rows = pageRows.map(record => {
       const client = clientMap[record.client_id];
       const amount = record.billing_type === 'retainer'
         ? (record.manual_amount || record.calculated_amount || 0)
         : (record.calculated_amount || 0);
       const displayStatus = (isOverdueMonth && record.status === 'pending') ? 'overdue' : record.status;
-      const outstanding = record.status !== 'paid' ? amount : 0;
-
-      // Build pricing summary for this client
-      let pricingSummary = '';
-      if (client) {
-        const bt = client.billing_type || 'pay_per_show';
-        const pricing = client.industry_pricing || [];
-        if (bt === 'retainer') {
-          pricingSummary = `$${(client.retainer_amount || 0).toLocaleString()}/mo`;
-        } else if (pricing.length > 0) {
-          pricingSummary = pricing.map(p => {
-            const rate = bt === 'pay_per_show' ? p.price_per_show : p.price_per_set;
-            return `${p.industry}: $${rate || 0}`;
-          }).join(', ');
-        } else {
-          const legacy = bt === 'pay_per_show' ? client.price_per_shown_appointment : client.price_per_set_appointment;
-          if (legacy) pricingSummary = `$${legacy}/ea`;
-        }
-      }
 
       return {
         ...record,
         clientName: client?.name || '—',
         retainerDueDay: client?.retainer_due_day || null,
         amount,
-        outstanding,
         displayStatus,
-        pricingSummary,
       };
     });
 

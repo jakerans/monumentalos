@@ -48,10 +48,6 @@
  * The mainPage value must match a key in the PAGES object exactly.
  */
 import AccountPending from './pages/AccountPending';
-import AccountingCashFlow from './pages/AccountingCashFlow';
-import AccountingClients from './pages/AccountingClients';
-import AccountingExpenses from './pages/AccountingExpenses';
-import AccountingPL from './pages/AccountingPL';
 import AdminDashboard from './pages/AdminDashboard';
 import AppointmentHistory from './pages/AppointmentHistory';
 import ClientManagement from './pages/ClientManagement';
@@ -71,17 +67,17 @@ import OnboardDashboard from './pages/OnboardDashboard';
 import RevenueDashboard from './pages/RevenueDashboard';
 import SetterDashboard from './pages/SetterDashboard';
 import SetterPerformance from './pages/SetterPerformance';
-import SetterStats from './pages/SetterStats';
 import UserManagement from './pages/UserManagement';
+import SetterStats from './pages/SetterStats';
+import AccountingPL from './pages/AccountingPL';
+import AccountingExpenses from './pages/AccountingExpenses';
+import AccountingCashFlow from './pages/AccountingCashFlow';
+import AccountingClients from './pages/AccountingClients';
 import __Layout from './Layout.jsx';
 
 
 export const PAGES = {
     "AccountPending": AccountPending,
-    "AccountingCashFlow": AccountingCashFlow,
-    "AccountingClients": AccountingClients,
-    "AccountingExpenses": AccountingExpenses,
-    "AccountingPL": AccountingPL,
     "AdminDashboard": AdminDashboard,
     "AppointmentHistory": AppointmentHistory,
     "ClientManagement": ClientManagement,
@@ -101,8 +97,12 @@ export const PAGES = {
     "RevenueDashboard": RevenueDashboard,
     "SetterDashboard": SetterDashboard,
     "SetterPerformance": SetterPerformance,
-    "SetterStats": SetterStats,
     "UserManagement": UserManagement,
+    "SetterStats": SetterStats,
+    "AccountingPL": AccountingPL,
+    "AccountingExpenses": AccountingExpenses,
+    "AccountingCashFlow": AccountingCashFlow,
+    "AccountingClients": AccountingClients,
 }
 
 export const pagesConfig = {
