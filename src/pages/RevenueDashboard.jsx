@@ -6,7 +6,7 @@ import { createPageUrl } from '@/utils';
 import dayjs from 'dayjs';
 import { DollarSign, Receipt, BarChart3, TrendingUp, Users, Wallet, Banknote, RefreshCw } from 'lucide-react';
 import { toast } from '@/components/ui/use-toast';
-import AdminNav from '../components/admin/AdminNav';
+import AdminSidebar from '../components/admin/AdminSidebar';
 import AdminMobileNav from '../components/admin/AdminMobileNav';
 import DateRangePicker from '../components/admin/DateRangePicker';
 import AccountingKPIs from '../components/admin/AccountingKPIs';

@@ -4,7 +4,7 @@ import { useQuery } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import { UserPlus, Users } from 'lucide-react';
-import AdminNav from '../components/admin/AdminNav';
+import AdminSidebar from '../components/admin/AdminSidebar';
 import AdminMobileNav from '../components/admin/AdminMobileNav';
 import UserTable from '../components/admin/UserTable';
 import InviteUserModal from '../components/admin/InviteUserModal';
@@ -61,10 +61,10 @@ export default function UserManagement() {
 
   return (
     <PageErrorBoundary>
-    <div className="min-h-screen bg-[#0B0F1A]">
-      <AdminNav user={user} currentPage="UserManagement" clients={clients} />
+    <div className="min-h-screen bg-[#0B0F1A] flex">
+      <AdminSidebar user={user} currentPage="UserManagement" clients={clients} />
 
-      <main className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-5">
+      <main className="flex-1 min-w-0 max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-5">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div className="flex items-center gap-3">
             <Users className="w-5 h-5 sm:w-6 sm:h-6 text-slate-300" />

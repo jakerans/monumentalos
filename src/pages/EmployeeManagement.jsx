@@ -4,7 +4,7 @@ import { useQuery } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import { Users, UserPlus, RefreshCw, Settings, DollarSign } from 'lucide-react';
-import AdminNav from '../components/admin/AdminNav';
+import AdminSidebar from '../components/admin/AdminSidebar';
 import AdminMobileNav from '../components/admin/AdminMobileNav';
 import EmployeeTable from '../components/employee/EmployeeTable';
 import EmployeeDetailPanel from '../components/employee/EmployeeDetailPanel';
