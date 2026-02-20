@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import { base44 } from '@/api/base44Client';
 import { motion } from 'framer-motion';
-import { Zap, ZapOff, LayoutDashboard, Users, Receipt, Calculator, Headset, UserCog, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Zap, ZapOff, LayoutDashboard, Users, Receipt, Calculator, Headset, UserCog, ChevronLeft, ChevronRight, ChevronDown, BarChart3 } from 'lucide-react';
 import { useEffectsToggle } from '../shared/useEffectsToggle';
 import AdminUserMenu from './AdminUserMenu';
 
@@ -12,7 +12,13 @@ const navItems = [
   { key: 'ClientPerformance', label: 'Client Overview', icon: Users },
   { key: 'MonthlyBilling', label: 'Billing', icon: Receipt },
   { key: 'RevenueDashboard', label: 'Accounting', icon: Calculator },
-  { key: 'SetterPerformance', label: 'Setters', icon: Headset },
+  {
+    key: 'SetterPerformance', label: 'Setters', icon: Headset,
+    children: [
+      { key: 'SetterPerformance', label: 'Management' },
+      { key: 'SetterStats', label: 'Reporting', icon: BarChart3 },
+    ],
+  },
   { key: 'EmployeeManagement', label: 'Employees', icon: UserCog },
   { key: 'UserManagement', label: 'Users', icon: Users },
 ];
