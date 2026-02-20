@@ -60,12 +60,35 @@ export default function RunPayrollModal({ open, onOpenChange, onComplete }) {
     }
   };
 
+  const handleUndoPayroll = async () => {
+    setUndoLoading(true);
+    const res = await base44.functions.invoke('runPayroll', {
+      mode: 'undo',
+      payrollDate: undoDate,
+    });
+    setUndoLoading(false);
+    setShowUndoConfirm(false);
+    if (res.data?.success) {
+      const count = res.data.deletedCount || 0;
+      const reverted = res.data.perfRecordsReverted || 0;
+      if (count === 0) {
+        toast({ title: 'Nothing to Undo', description: `No payroll expenses found for ${undoDate}.` });
+      } else {
+        toast({ title: 'Payroll Undone', description: `Deleted ${count} expense(s)${reverted > 0 ? `, reverted ${reverted} perf pay record(s)` : ''}.` });
+        if (onComplete) onComplete();
+      }
+    } else {
+      toast({ title: 'Error', description: res.data?.error || 'Failed to undo payroll', variant: 'destructive' });
+    }
+  };
+
   const handleClose = (v) => {
     if (!v) {
       setStep(STEPS.CONFIG);
       setLineItems([]);
       setResult(null);
       setIncludePrevPerfPay(false);
+      setShowUndoConfirm(false);
     }
     onOpenChange(v);
   };
