@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import { base44 } from '@/api/base44Client';
-import { Settings, LogOut, ChevronDown, RefreshCw, ChevronRight } from 'lucide-react';
+import { Settings, LogOut, ChevronDown, RefreshCw, ChevronRight, Eye } from 'lucide-react';
 import { toast } from '@/components/ui/use-toast';
 
 const SYNC_OPTIONS = [
@@ -123,6 +123,14 @@ export default function AdminUserMenu({ user }) {
           </div>
 
           <div className="border-t border-slate-700/50" />
+          <Link
+            to={createPageUrl('PreviewEffects')}
+            onClick={() => setOpen(false)}
+            className="flex items-center gap-2.5 px-3 py-2.5 text-sm text-slate-300 hover:bg-white/5 hover:text-white transition-colors"
+          >
+            <Eye className="w-4 h-4 text-slate-400" />
+            Preview Effects
+          </Link>
           <Link
             to={createPageUrl('LeadFieldSettings')}
             onClick={() => setOpen(false)}
