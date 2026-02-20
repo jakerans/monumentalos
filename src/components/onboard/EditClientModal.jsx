@@ -35,6 +35,7 @@ export default function EditClientModal({ open, onOpenChange, client, onSaved })
       setBillingType(client.billing_type || 'pay_per_show');
       setPricePerShow(client.price_per_shown_appointment ?? '');
       setPricePerSet(client.price_per_set_appointment ?? '');
+      setIndustryPricing(client.industry_pricing || {});
       setRetainerAmount(client.retainer_amount ?? '');
       setRetainerDueDay(String(client.retainer_due_day || 1));
       setAdAccountId(client.ad_account_id || '');
