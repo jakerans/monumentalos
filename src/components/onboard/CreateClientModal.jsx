@@ -4,6 +4,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { toast } from '@/components/ui/use-toast';
 import { Plus, Trash2, Send } from 'lucide-react';
 import IndustryPicker from '../shared/IndustryPicker';
+import IndustryPricingEditor from '../shared/IndustryPricingEditor';
 
 export default function CreateClientModal({ open, onOpenChange, onCreated }) {
   const [name, setName] = useState('');
@@ -11,6 +12,7 @@ export default function CreateClientModal({ open, onOpenChange, onCreated }) {
   const [billingType, setBillingType] = useState('pay_per_show');
   const [price, setPrice] = useState('');
   const [pricePerSet, setPricePerSet] = useState('');
+  const [industryPricing, setIndustryPricing] = useState({});
   const [retainerAmount, setRetainerAmount] = useState('');
   const [retainerDueDay, setRetainerDueDay] = useState('1');
   const [adAccountId, setAdAccountId] = useState('');
