@@ -12,6 +12,10 @@ export default function ClientManagement() {
   const [pricePerSet, setPricePerSet] = useState('');
   const [retainerAmount, setRetainerAmount] = useState('');
   const [retainerDueDay, setRetainerDueDay] = useState('1');
+  const [hybridBaseRetainer, setHybridBaseRetainer] = useState('');
+  const [hybridRetainerDueDay, setHybridRetainerDueDay] = useState('1');
+  const [hybridPerformanceType, setHybridPerformanceType] = useState('pay_per_set');
+  const [hybridPerformancePricing, setHybridPerformancePricing] = useState([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = async (e) => {
@@ -27,6 +31,16 @@ export default function ClientManagement() {
     if (billingType === 'retainer') {
       data.retainer_amount = Number(retainerAmount);
       data.retainer_due_day = Number(retainerDueDay);
+    }
+    if (billingType === 'hybrid') {
+      data.hybrid_base_retainer = Number(hybridBaseRetainer);
+      data.hybrid_retainer_due_day = Number(hybridRetainerDueDay);
+      data.hybrid_performance_type = hybridPerformanceType;
+      data.hybrid_performance_pricing = hybridPerformancePricing.map(row => ({
+        industry: row.industry,
+        price_per_show: row.price_per_show ? Number(row.price_per_show) : null,
+        price_per_set: row.price_per_set ? Number(row.price_per_set) : null,
+      }));
     }
 
     await base44.entities.Client.create(data);
@@ -79,6 +93,7 @@ export default function ClientManagement() {
                 <option value="pay_per_show">Pay Per Show</option>
                 <option value="pay_per_set">Pay Per Set</option>
                 <option value="retainer">Retainer (Flat Monthly)</option>
+                <option value="hybrid">Hybrid (Retainer + Performance)</option>
               </select>
             </div>
 
@@ -128,6 +143,78 @@ export default function ClientManagement() {
                       <option key={d} value={d}>{d}{d === 1 ? 'st' : d === 2 ? 'nd' : d === 3 ? 'rd' : 'th'}</option>
                     ))}
                   </select>
+                </div>
+              </>
+            )}
+
+            {billingType === 'hybrid' && (
+              <>
+                <div>
+                  <label className="block text-sm font-medium text-slate-300 mb-2">Base Retainer Amount ($)</label>
+                  <input
+                    type="number" value={hybridBaseRetainer} onChange={(e) => setHybridBaseRetainer(e.target.value)}
+                    required min="0" step="0.01"
+                    className="w-full px-4 py-2 border border-slate-700 rounded-md focus:outline-none focus:ring-2 focus:ring-[#D6FF03] bg-slate-900 text-white placeholder-slate-500"
+                    placeholder="1500.00"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-slate-300 mb-2">Retainer Due Day (of month)</label>
+                  <select
+                    value={hybridRetainerDueDay}
+                    onChange={(e) => setHybridRetainerDueDay(e.target.value)}
+                    className="w-full px-4 py-2 border border-slate-700 rounded-md focus:outline-none focus:ring-2 focus:ring-[#D6FF03] bg-slate-900 text-white"
+                  >
+                    {Array.from({ length: 28 }, (_, i) => i + 1).map(d => (
+                      <option key={d} value={d}>{d}{d === 1 ? 'st' : d === 2 ? 'nd' : d === 3 ? 'rd' : 'th'}</option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-slate-300 mb-2">Performance Component Type</label>
+                  <select
+                    value={hybridPerformanceType}
+                    onChange={(e) => setHybridPerformanceType(e.target.value)}
+                    className="w-full px-4 py-2 border border-slate-700 rounded-md focus:outline-none focus:ring-2 focus:ring-[#D6FF03] bg-slate-900 text-white"
+                  >
+                    <option value="pay_per_set">Pay Per Set</option>
+                    <option value="pay_per_show">Pay Per Show</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-slate-300 mb-2">Performance Pricing by Industry</label>
+                  <div className="space-y-2">
+                    {['painting', 'epoxy', 'kitchen_bath', 'reno'].map(industry => (
+                      <div key={industry} className="flex gap-2 items-center">
+                        <span className="w-24 text-slate-400 text-sm capitalize">{industry.replace(/_/g, ' ')}</span>
+                        <input
+                          type="number"
+                          placeholder={hybridPerformanceType === 'pay_per_set' ? 'Price per set' : 'Price per show'}
+                          min="0"
+                          step="0.01"
+                          onChange={(e) => {
+                            const price = e.target.value;
+                            const existingRow = hybridPerformancePricing.find(r => r.industry === industry);
+                            if (existingRow) {
+                              setHybridPerformancePricing(hybridPerformancePricing.map(r =>
+                                r.industry === industry ? {
+                                  ...r,
+                                  [hybridPerformanceType === 'pay_per_set' ? 'price_per_set' : 'price_per_show']: price || null
+                                } : r
+                              ));
+                            } else {
+                              setHybridPerformancePricing([...hybridPerformancePricing, {
+                                industry,
+                                [hybridPerformanceType === 'pay_per_set' ? 'price_per_set' : 'price_per_show']: price || null
+                              }]);
+                            }
+                          }}
+                          value={hybridPerformancePricing.find(r => r.industry === industry)?.[hybridPerformanceType === 'pay_per_set' ? 'price_per_set' : 'price_per_show'] || ''}
+                          className="flex-1 px-3 py-2 border border-slate-700 rounded-md focus:outline-none focus:ring-2 focus:ring-[#D6FF03] bg-slate-900 text-white placeholder-slate-500"
+                        />
+                      </div>
+                    ))}
+                  </div>
                 </div>
               </>
             )}
