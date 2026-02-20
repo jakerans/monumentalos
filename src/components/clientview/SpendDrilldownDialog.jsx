@@ -42,10 +42,6 @@ function SpendEditRow({ record, expanded, onToggle, onSave }) {
   const [form, setForm] = useState({
     date: record.date || '',
     amount: record.amount || '',
-    campaign_name: record.campaign_name || '',
-    impressions: record.impressions || '',
-    clicks: record.clicks || '',
-    leads_count: record.leads_count || '',
   });
 
   const set = (key, val) => setForm(prev => ({ ...prev, [key]: val }));
