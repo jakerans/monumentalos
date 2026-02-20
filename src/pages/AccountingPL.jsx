@@ -7,10 +7,9 @@ import dayjs from 'dayjs';
 import AdminSidebar from '../components/admin/AdminSidebar';
 import AdminMobileNav from '../components/admin/AdminMobileNav';
 import DateRangePicker from '../components/admin/DateRangePicker';
-import AccountingKPIs from '../components/admin/AccountingKPIs';
+import PLSummaryCards from '../components/admin/PLSummaryCards';
+import PLStatement from '../components/admin/PLStatement';
 import MonthlyPLChart from '../components/admin/MonthlyPLChart';
-import ExpenseBreakdown from '../components/admin/ExpenseBreakdown';
-import PaymentLedger from '../components/admin/PaymentLedger';
 import PageErrorBoundary from '../components/shared/PageErrorBoundary';
 import RevenueDashboardSkeleton from '../components/admin/RevenueDashboardSkeleton';
 
@@ -19,7 +18,6 @@ export default function AccountingPL() {
   const [user, setUser] = useState(null);
   const [startDate, setStartDate] = useState(dayjs().startOf('month').format('YYYY-MM-DD'));
   const [endDate, setEndDate] = useState(dayjs().format('YYYY-MM-DD'));
-
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -37,7 +35,7 @@ export default function AccountingPL() {
 
   const revFetchStart = dayjs(startDate).subtract(6, 'month').format('YYYY-MM-DD');
 
-  const { data: dashData, isLoading, refetch: refetchAll } = useQuery({
+  const { data: dashData, isLoading } = useQuery({
     queryKey: ['revenue-dashboard-data', revFetchStart, startDate, endDate],
     queryFn: async () => {
       const res = await base44.functions.invoke('getRevenueDashboardData', { revFetchStart, startDate, endDate });
@@ -54,19 +52,6 @@ export default function AccountingPL() {
   const monthlyPL = dashData?.monthlyPL || [];
   const kpis = dashData?.kpis || null;
 
-  const payments = React.useMemo(() => {
-    return billingRecords.filter(b => b.status === 'paid').map(b => ({
-      id: b.id,
-      client_id: b.client_id,
-      amount: b.paid_amount || b.calculated_amount || 0,
-      date: b.paid_date,
-      method: b.payment_method || 'invoice',
-      notes: `Invoice ${b.invoice_id || ''} (${b.billing_month})`,
-      invoice_id: b.invoice_id,
-      billing_month: b.billing_month,
-    }));
-  }, [billingRecords]);
-
   if (!user) return null;
   if (isLoading) return <RevenueDashboardSkeleton />;
 
@@ -77,22 +62,30 @@ export default function AccountingPL() {
         <main className="flex-1 min-w-0 max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-5">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div>
-              <h1 className="text-2xl font-bold text-white">P&L</h1>
-              <p className="text-sm text-slate-400">Profit & loss overview, payments & expense breakdown</p>
+              <h1 className="text-2xl font-bold text-white">Profit & Loss</h1>
+              <p className="text-sm text-slate-400">Income, expenses & profitability breakdown</p>
             </div>
-            <div className="flex items-center gap-2">
-              <DateRangePicker startDate={startDate} endDate={endDate} onStartChange={setStartDate} onEndChange={setEndDate} />
-            </div>
+            <DateRangePicker startDate={startDate} endDate={endDate} onStartChange={setStartDate} onEndChange={setEndDate} />
           </div>
 
-          <AccountingKPIs kpis={kpis} payments={payments} expenses={expenses} />
-          <MonthlyPLChart data={monthlyPL} />
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <PaymentLedger payments={payments} clients={clients} startDate={startDate} endDate={endDate} onRefresh={refetchAll} />
-            <ExpenseBreakdown expenses={expenses} clients={clients} startDate={startDate} endDate={endDate} onRefresh={refetchAll} />
+          <PLSummaryCards kpis={kpis} />
+
+          <div className="grid grid-cols-1 xl:grid-cols-5 gap-5">
+            <div className="xl:col-span-2">
+              <PLStatement
+                kpis={kpis}
+                expenses={expenses}
+                billingRecords={billingRecords}
+                clients={clients}
+                startDate={startDate}
+                endDate={endDate}
+              />
+            </div>
+            <div className="xl:col-span-3">
+              <MonthlyPLChart data={monthlyPL} />
+            </div>
           </div>
         </main>
-
         <AdminMobileNav currentPage="AccountingPL" clients={clients} />
       </div>
     </PageErrorBoundary>
