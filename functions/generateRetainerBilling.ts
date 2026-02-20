@@ -35,13 +35,18 @@ Deno.serve(async (req) => {
       fetchAllFiltered(sr.MonthlyBilling, { billing_month: currentMonthStr }, '-billing_month'),
     ]);
 
-    const existingClientIds = new Set(existingRecords.map(r => r.client_id));
+    const existingRetainerClientIds = new Set(
+      existingRecords.filter(r => r.billing_type === 'retainer').map(r => r.client_id)
+    );
+    const existingHybridRetainerClientIds = new Set(
+      existingRecords.filter(r => r.billing_type === 'hybrid_retainer').map(r => r.client_id)
+    );
 
     // Find active retainer clients whose due day is today and don't already have a record
     const dueToday = clients.filter(c => {
       if (c.status !== 'active') return false;
       if ((c.billing_type || 'pay_per_show') !== 'retainer') return false;
-      if (existingClientIds.has(c.id)) return false;
+      if (existingRetainerClientIds.has(c.id)) return false;
       const dueDay = c.retainer_due_day || 1;
       return dueDay === todayDay;
     });
@@ -63,8 +68,34 @@ Deno.serve(async (req) => {
       created = records.length;
     }
 
-    console.log(`generateRetainerBilling: Day ${todayDay}, created ${created} retainer records for ${currentMonthStr}`);
-    return Response.json({ success: true, currentMonth: currentMonthStr, todayDay, created });
+    // --- Hybrid retainer billing ---
+    const hybridDueToday = clients.filter(c => {
+      if (c.status !== 'active') return false;
+      if (c.billing_type !== 'hybrid') return false;
+      if (existingHybridRetainerClientIds.has(c.id)) return false;
+      const dueDay = c.hybrid_retainer_due_day || 1;
+      return dueDay === todayDay;
+    });
+
+    const hybridRecords = hybridDueToday.map(client => ({
+      client_id: client.id,
+      billing_month: currentMonthStr,
+      billing_type: 'hybrid_retainer',
+      calculated_amount: client.hybrid_base_retainer || 0,
+      manual_amount: client.hybrid_base_retainer || 0,
+      quantity: 0,
+      rate: client.hybrid_base_retainer || 0,
+      status: 'pending',
+    }));
+
+    let hybridCreated = 0;
+    if (hybridRecords.length > 0) {
+      await sr.MonthlyBilling.bulkCreate(hybridRecords);
+      hybridCreated = hybridRecords.length;
+    }
+
+    console.log(`generateRetainerBilling: Day ${todayDay}, created ${created} retainer + ${hybridCreated} hybrid_retainer records for ${currentMonthStr}`);
+    return Response.json({ success: true, currentMonth: currentMonthStr, todayDay, created, hybridCreated });
   } catch (error) {
     console.error('generateRetainerBilling error:', error);
     return Response.json({ error: error.message }, { status: 500 });
