@@ -257,12 +257,36 @@ Deno.serve(async (req) => {
       });
     }
 
+    // ─── STEP 8: Delete skipped rows from sheet (positive amounts, transfers) ───
+    let sheetRowsDeleted = 0;
+    if (deleteRowIndices.length > 0) {
+      // Sort descending so deleting from bottom up doesn't shift indices
+      deleteRowIndices.sort((a, b) => b - a);
+      // Batch into groups of 100 requests per batchUpdate call
+      for (let b = 0; b < deleteRowIndices.length; b += 100) {
+        const batch = deleteRowIndices.slice(b, b + 100);
+        const requests = batch.map(rowIdx => ({
+          deleteDimension: {
+            range: { sheetId, dimension: 'ROWS', startIndex: rowIdx, endIndex: rowIdx + 1 }
+          }
+        }));
+        await fetch(`${SHEETS_API}/${SPREADSHEET_ID}:batchUpdate`, {
+          method: 'POST',
+          headers: gHeaders,
+          body: JSON.stringify({ requests }),
+        });
+        sheetRowsDeleted += batch.length;
+      }
+      console.log(`[syncExpenses] Deleted ${sheetRowsDeleted} rows from sheet (positive amounts / transfers)`);
+    }
+
     return Response.json({
       success: true,
       added,
       skipped,
       updated,
       deleted,
+      sheetRowsDeleted,
       totalProcessed: rows.length - 1,
     });
   } catch (error) {
