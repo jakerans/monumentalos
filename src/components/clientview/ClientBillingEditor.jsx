@@ -3,12 +3,14 @@ import { base44 } from '@/api/base44Client';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { toast } from '@/components/ui/use-toast';
 import IndustryPicker from '../shared/IndustryPicker';
+import IndustryPricingEditor from '../shared/IndustryPricingEditor';
 
 export default function ClientBillingEditor({ client, open, onOpenChange, onUpdated }) {
   const [industries, setIndustries] = useState([]);
   const [billingType, setBillingType] = useState('pay_per_show');
   const [pricePerShow, setPricePerShow] = useState('');
   const [pricePerSet, setPricePerSet] = useState('');
+  const [industryPricing, setIndustryPricing] = useState({});
   const [retainerAmount, setRetainerAmount] = useState('');
   const [retainerDueDay, setRetainerDueDay] = useState('1');
   const [clientStatus, setClientStatus] = useState('active');
@@ -20,6 +22,7 @@ export default function ClientBillingEditor({ client, open, onOpenChange, onUpda
       setBillingType(client.billing_type || 'pay_per_show');
       setPricePerShow(String(client.price_per_shown_appointment || ''));
       setPricePerSet(String(client.price_per_set_appointment || ''));
+      setIndustryPricing(client.industry_pricing || {});
       setRetainerAmount(String(client.retainer_amount || ''));
       setRetainerDueDay(String(client.retainer_due_day || 1));
       setClientStatus(client.status || 'active');
@@ -41,6 +44,12 @@ export default function ClientBillingEditor({ client, open, onOpenChange, onUpda
       updates.retainer_amount = Number(retainerAmount) || 0;
       updates.retainer_due_day = Number(retainerDueDay) || 1;
     }
+    // Clean industry pricing: remove empty/zero entries and non-client industries
+    const cleanPricing = {};
+    for (const [k, v] of Object.entries(industryPricing)) {
+      if (industries.includes(k) && v !== '' && v > 0) cleanPricing[k] = v;
+    }
+    updates.industry_pricing = cleanPricing;
     await base44.entities.Client.update(client.id, updates);
     setSaving(false);
     toast({ title: 'Billing Updated', description: `${client.name} settings saved.`, variant: 'success' });
