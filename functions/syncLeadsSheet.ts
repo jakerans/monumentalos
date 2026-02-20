@@ -83,13 +83,12 @@ Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
 
-    // Allow both admin manual trigger and scheduled (service role) calls
     try {
       const user = await base44.auth.me();
       if (user && user.role !== 'admin' && user.app_role !== 'admin') {
         return Response.json({ error: 'Forbidden: Admin access required' }, { status: 403 });
       }
-    } catch (_) { /* scheduled automation — no user context */ }
+    } catch (_) { /* scheduled automation */ }
 
     const accessToken = await base44.asServiceRole.connectors.getAccessToken('googlesheets');
     const gHeaders = { 'Authorization': `Bearer ${accessToken}`, 'Content-Type': 'application/json' };
@@ -143,6 +142,7 @@ Deno.serve(async (req) => {
     // Parse headers
     const sheetHeaders = rows[0];
     const appIdCol = sheetHeaders.indexOf('App ID');
+    const isDeletedCol = sheetHeaders.indexOf('is_deleted');
     const colIndices = {};
     for (const [header, field] of Object.entries(COLUMN_MAP)) {
       const idx = sheetHeaders.indexOf(header);
@@ -155,12 +155,16 @@ Deno.serve(async (req) => {
     // 2. Process each sheet row -> two-way sync with DB
     for (let i = 1; i < rows.length; i++) {
       const row = rows[i];
+
+      // Skip rows marked as deleted
+      if (isDeletedCol !== -1 && (row[isDeletedCol] || '').trim().toUpperCase() === 'TRUE') continue;
+
       const appId = appIdCol !== -1 ? (row[appIdCol] || '').trim() : '';
       const sheetName = colIndices['name'] !== undefined ? (row[colIndices['name']] || '').trim() : '';
 
       if (!appId && !sheetName) continue;
 
-      // Skip rows with an App ID that no longer exists in DB (leave row in sheet, just don't process)
+      // Skip rows with an App ID that no longer exists in DB
       if (appId && !leadById[appId]) continue;
 
       if (appId && leadById[appId]) {

@@ -125,7 +125,6 @@ Deno.serve(async (req) => {
         headers: gHeaders,
         body: JSON.stringify({ values: [sheetHeaders] }),
       });
-      // Re-read rows so indices are correct
       const reResp = await fetch(`${SHEETS_API}/${SPREADSHEET_ID}/values/${encodeURIComponent(SHEET_NAME)}`, { headers: gHeaders });
       const reData = await reResp.json();
       rows.length = 0;
@@ -133,6 +132,7 @@ Deno.serve(async (req) => {
     }
 
     const appIdCol = sheetHeaders.indexOf('App ID');
+    const isDeletedCol = sheetHeaders.indexOf('is_deleted');
     const colIndices = {};
     for (const [header, field] of Object.entries(COLUMN_MAP)) {
       const idx = sheetHeaders.indexOf(header);
@@ -145,12 +145,16 @@ Deno.serve(async (req) => {
     // 2. Process each sheet row -> two-way sync with DB
     for (let i = 1; i < rows.length; i++) {
       const row = rows[i];
+
+      // Skip rows marked as deleted
+      if (isDeletedCol !== -1 && (row[isDeletedCol] || '').trim().toUpperCase() === 'TRUE') continue;
+
       const appId = appIdCol !== -1 ? (row[appIdCol] || '').trim() : '';
       const sheetName = colIndices['name'] !== undefined ? (row[colIndices['name']] || '').trim() : '';
 
       if (!appId && !sheetName) continue;
 
-      // Skip rows with an App ID that no longer exists in DB (leave row in sheet, just don't process)
+      // Skip rows with an App ID that no longer exists in DB
       if (appId && !clientById[appId]) continue;
 
       if (appId && clientById[appId]) {
@@ -216,6 +220,8 @@ Deno.serve(async (req) => {
     for (const client of clients) {
       if (seenClientIds.has(client.id)) continue;
       const alreadyInSheet = rows.slice(1).some(r => {
+        // Also skip deleted rows from this check
+        if (isDeletedCol !== -1 && (r[isDeletedCol] || '').trim().toUpperCase() === 'TRUE') return false;
         const nameIdx = colIndices['name'];
         return nameIdx !== undefined && (r[nameIdx] || '').trim().toLowerCase() === (client.name || '').toLowerCase();
       });

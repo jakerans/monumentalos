@@ -67,13 +67,12 @@ Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
 
-    // Auth — allow admin + scheduled automations
     try {
       const user = await base44.auth.me();
       if (user && user.role !== 'admin' && user.app_role !== 'admin') {
         return Response.json({ error: 'Forbidden: Admin access required' }, { status: 403 });
       }
-    } catch (_) { /* scheduled automation — no user */ }
+    } catch (_) { /* scheduled automation */ }
 
     const accessToken = await base44.asServiceRole.connectors.getAccessToken('googlesheets');
     const gHeaders = { 'Authorization': `Bearer ${accessToken}`, 'Content-Type': 'application/json' };
@@ -92,6 +91,10 @@ Deno.serve(async (req) => {
     if (rows.length < 2) {
       return Response.json({ success: true, added: 0, skipped: 0, updated: 0, totalProcessed: 0 });
     }
+
+    // Detect is_deleted column from headers
+    const sheetHeaders = rows[0];
+    const isDeletedCol = sheetHeaders.indexOf('is_deleted');
 
     // 2. Build O(1) lookup Sets from DB
     const existingSheetIds = new Set();
@@ -112,6 +115,10 @@ Deno.serve(async (req) => {
 
     for (let i = 1; i < rows.length; i++) {
       const row = rows[i];
+
+      // Skip rows marked as deleted
+      if (isDeletedCol !== -1 && (row[isDeletedCol] || '').trim().toUpperCase() === 'TRUE') { skipped++; continue; }
+
       const amount = parseAmount(cell(row, BANK_AMOUNT_COL));
       if (amount === null || amount >= 0) { skipped++; continue; }
 
@@ -123,13 +130,9 @@ Deno.serve(async (req) => {
       const expenseAmount = Math.abs(amount);
       const sheetCategory = cell(row, APP_CATEGORY_COL).toLowerCase();
 
-      // Skip transfer/transaction category rows
       if (SKIP_CATEGORIES.some(kw => sheetCategory.includes(kw))) { skipped++; continue; }
-
-      // Skip known payroll/transfer descriptions
       if (SKIP_DESCRIPTIONS.some(kw => rawDesc.toUpperCase().includes(kw.toUpperCase()))) { skipped++; continue; }
 
-      // Check if already synced
       const appId = cell(row, APP_ID_COL);
       const matchedBySheetId = sheetRowId && existingSheetIds.has(sheetRowId);
       const existingRecord = appId ? expenseById[appId] : (matchedBySheetId ? dbExpenses.find(e => e.sheet_row_id === sheetRowId) : null);
@@ -139,7 +142,6 @@ Deno.serve(async (req) => {
         continue;
       }
 
-      // New row — dedup check
       if (sheetRowId) {
         if (seenSheetIds.has(sheetRowId)) { skipped++; continue; }
         seenSheetIds.add(sheetRowId);
@@ -202,7 +204,6 @@ Deno.serve(async (req) => {
       const rawDesc = cell(row, BANK_DESC_COL);
       const isDistroExisting = sheetCategory === 'distribution' || rawDesc.toLowerCase().includes('distro');
 
-      // Sheet → DB updates
       const dbUpdates = {};
       if (sheetRowId && !existing.sheet_row_id) dbUpdates.sheet_row_id = sheetRowId;
       if (isDistroExisting) {
@@ -220,7 +221,6 @@ Deno.serve(async (req) => {
         updated++;
       }
 
-      // DB → Sheet (fill empty sheet cells)
       const desired = [existing.id, existing.category || '', existing.expense_type || '', existing.client_id || '', existing.vendor || '', 'Yes'];
       const current = [cell(row, APP_ID_COL), cell(row, APP_CATEGORY_COL), cell(row, APP_EXP_TYPE_COL), cell(row, APP_CLIENT_ID_COL), cell(row, APP_VENDOR_COL), cell(row, APP_SYNCED_COL)];
       let changed = false;
