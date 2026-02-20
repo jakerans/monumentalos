@@ -33,9 +33,10 @@ Deno.serve(async (req) => {
     const clientMap = {};
     clients.forEach(c => { clientMap[c.id] = c.name; });
 
-    // Date filter + exclude distributions
+    // Date filter + optionally exclude distributions
     const rangeExpenses = allExpenses.filter(e => {
-      if (!e.date || e.expense_type === 'distribution') return false;
+      if (!e.date) return false;
+      if (!showDistributions && e.expense_type === 'distribution') return false;
       return e.date >= startDate && e.date <= endDate;
     });
 
