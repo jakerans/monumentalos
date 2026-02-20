@@ -27,6 +27,7 @@ export default function EmployeeManagement() {
   const [planDetailOpen, setPlanDetailOpen] = useState(false);
   const [showDismissed, setShowDismissed] = useState(false);
   const [payrollOpen, setPayrollOpen] = useState(false);
+  const [runPayrollOpen, setRunPayrollOpen] = useState(false);
 
   useEffect(() => {
     const checkAuth = async () => {
