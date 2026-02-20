@@ -38,15 +38,21 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Forbidden: Admin access required' }, { status: 403 });
     }
 
-    // 1. Server-side filter: only fetch expenses without AI suggestions and not yet approved
-    const uncategorized = await fetchAllFiltered(
+    // 1. Fetch all expenses then filter to only truly uncategorized ones
+    const allExpenses = await fetchAllFiltered(
       base44.entities.Expense,
-      { ai_approved: false, suggested_category: '' },
+      {},
       '-date'
     );
 
+    const uncategorized = allExpenses.filter(e => {
+      const catUncategorized = !e.category || e.category === 'uncategorized';
+      const typeUncategorized = !e.expense_type || e.expense_type === 'uncategorized';
+      return catUncategorized || typeUncategorized;
+    });
+
     if (uncategorized.length === 0) {
-      return Response.json({ message: 'All expenses already have AI suggestions.', processed: 0, updated: 0, skipped_invalid: 0 });
+      return Response.json({ message: 'No uncategorized expenses found.', processed: 0, updated: 0, skipped_invalid: 0 });
     }
 
     // 2. Fetch AI expense settings
