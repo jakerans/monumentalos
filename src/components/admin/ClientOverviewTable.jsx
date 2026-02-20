@@ -24,7 +24,8 @@ function getBillingRate(client) {
   return client.price_per_shown_appointment ? `$${client.price_per_shown_appointment}` : '—';
 }
 
-export default function ClientOverviewTable({ clients, leads, spend, payments }) {
+export default function ClientOverviewTable({ clients, leads, spend, payments, onRefresh }) {
+  const [deleteClient, setDeleteClient] = useState(null);
   const now = new Date();
   const thisMonthStart = new Date(now.getFullYear(), now.getMonth(), 1);
 
