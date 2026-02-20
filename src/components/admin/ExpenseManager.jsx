@@ -180,8 +180,19 @@ export default function ExpenseManager({ startDate, endDate, onAddExpense }) {
 
   return (
     <div className="space-y-4">
-      {/* Sync + AI buttons */}
-      <ExpenseToolbar onRefresh={refetch} />
+      {/* Sync + AI buttons + distributions toggle */}
+      <div className="flex items-center justify-between gap-4 flex-wrap">
+        <ExpenseToolbar onRefresh={refetch} />
+        <label className="flex items-center gap-2 cursor-pointer select-none">
+          <span className="text-xs text-slate-400">Show Distributions</span>
+          <button
+            onClick={() => { setShowDistributions(v => !v); setPage(0); }}
+            className={`relative w-9 h-5 rounded-full transition-colors ${showDistributions ? 'bg-emerald-600' : 'bg-slate-600'}`}
+          >
+            <span className={`absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white transition-transform ${showDistributions ? 'translate-x-4' : ''}`} />
+          </button>
+        </label>
+      </div>
 
       {/* Summary cards */}
       <div className="grid grid-cols-3 gap-3">
