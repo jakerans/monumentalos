@@ -9,11 +9,13 @@ import DuplicateExpenseFinder from './DuplicateExpenseFinder';
 import ExpenseToolbar from './ExpenseToolbar';
 
 const CATEGORY_LABELS = {
+  uncategorized: 'Uncategorized',
   ad_spend: 'Ad Spend', payroll: 'Payroll', software: 'Software',
   office: 'Office', contractor: 'Contractor', travel: 'Travel',
   distribution: 'Distribution', processing_fee: 'Processing Fee', other: 'Other',
 };
 const CATEGORY_COLORS = {
+  uncategorized: 'bg-yellow-500/15 text-yellow-400 border-yellow-500/30',
   ad_spend: 'bg-red-500/15 text-red-400 border-red-500/30',
   payroll: 'bg-blue-500/15 text-blue-400 border-blue-500/30',
   software: 'bg-purple-500/15 text-purple-400 border-purple-500/30',
@@ -24,8 +26,9 @@ const CATEGORY_COLORS = {
   processing_fee: 'bg-pink-500/15 text-pink-400 border-pink-500/30',
   other: 'bg-slate-500/15 text-slate-400 border-slate-500/30',
 };
-const TYPE_LABELS = { cogs: 'COGS', overhead: 'Overhead', distribution: 'Distribution' };
+const TYPE_LABELS = { uncategorized: 'Uncategorized', cogs: 'COGS', overhead: 'Overhead', distribution: 'Distribution' };
 const TYPE_COLORS = {
+  uncategorized: 'bg-yellow-500/15 text-yellow-400 border-yellow-500/30',
   cogs: 'bg-orange-500/15 text-orange-400 border-orange-500/30',
   overhead: 'bg-slate-500/15 text-slate-400 border-slate-500/30',
   distribution: 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30',
@@ -264,6 +267,7 @@ export default function ExpenseManager({ startDate, endDate, onAddExpense }) {
           </select>
           <select value={filterType} onChange={e => handleFilterChange(setFilterType, e.target.value)} className="px-2 py-1.5 text-xs bg-slate-800 border border-slate-700 rounded-md text-slate-300 focus:outline-none focus:ring-1 focus:ring-[#D6FF03]/50">
             <option value="all">All Types</option>
+            <option value="uncategorized">⚠ Uncategorized</option>
             <option value="cogs">COGS</option>
             <option value="overhead">Overhead</option>
             <option value="distribution">Distribution</option>
@@ -463,7 +467,7 @@ function SortableHeader({ field, label, current, dir, onClick, align = 'left' })
 
 function ExpenseRow({ expense: e, clients, onUpdate, onDelete, onApproveAI, selected, onToggleSelect }) {
   const categoryOptions = Object.entries(CATEGORY_LABELS).map(([k, v]) => ({ value: k, label: v }));
-  const typeOptions = [{ value: 'cogs', label: 'COGS' }, { value: 'overhead', label: 'Overhead' }, { value: 'distribution', label: 'Distribution' }];
+  const typeOptions = [{ value: 'uncategorized', label: 'Uncategorized' }, { value: 'cogs', label: 'COGS' }, { value: 'overhead', label: 'Overhead' }, { value: 'distribution', label: 'Distribution' }];
   const clientOptions = [{ value: '', label: 'None' }, ...clients.map(c => ({ value: c.id, label: c.name }))];
 
   const hasPendingAI = !e.ai_approved && e.suggested_category;
