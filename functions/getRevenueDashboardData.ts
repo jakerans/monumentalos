@@ -93,8 +93,8 @@ function computePeriodKPIs(clients, leads, billingRecords, expenses, startDate, 
   clients.filter(c => c.status === 'active').forEach(client => {
     const bt = client.billing_type || 'pay_per_show';
     const cLeads = leads.filter(l => l.client_id === client.id);
-    if (bt === 'pay_per_show') grossRevenue += cLeads.filter(l => l.disposition === 'showed' && ir(l.appointment_date)).length * (client.price_per_shown_appointment || 0);
-    else if (bt === 'pay_per_set') grossRevenue += cLeads.filter(l => l.date_appointment_set && ir(l.date_appointment_set)).length * (client.price_per_set_appointment || 0);
+    if (bt === 'pay_per_show') grossRevenue += computeLeadRevenue(client, cLeads.filter(l => l.disposition === 'showed' && ir(l.appointment_date)));
+    else if (bt === 'pay_per_set') grossRevenue += computeLeadRevenue(client, cLeads.filter(l => l.date_appointment_set && ir(l.date_appointment_set)));
     else if (bt === 'retainer') grossRevenue += (client.retainer_amount || 0);
   });
   const collected = billingRecords.filter(b => b.status === 'paid' && ir(b.paid_date)).reduce((s, b) => s + (b.paid_amount || b.calculated_amount || 0), 0);
