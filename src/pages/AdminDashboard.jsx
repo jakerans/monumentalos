@@ -13,7 +13,7 @@ import MTDGoalProgress from '../components/admin/MTDGoalProgress';
 import GoalManagementModal from '../components/admin/GoalManagementModal';
 import PLComparisonRow from '../components/admin/PLComparisonRow.jsx';
 import StatCompareCard from '../components/admin/StatCompareCard.jsx';
-import { Settings, Trophy, Eye, RefreshCw } from 'lucide-react';
+import { Settings, Trophy, Eye } from 'lucide-react';
 import InfoTooltip from '../components/shared/InfoTooltip';
 import PageErrorBoundary from '../components/shared/PageErrorBoundary';
 import PageLoader from '../components/shared/PageLoader';
