@@ -217,14 +217,6 @@ export default function ClientPortal() {
                   onSelect={(id) => { setSelectedLeadId(id); setDrawerOpen(true); }}
                   needsOutcome={lead._needsOutcome}
                 />
-                {isRetainer && (
-                  <button
-                    onClick={() => handleDisqualify(lead.id)}
-                    className="mt-1 w-full flex items-center justify-center gap-1 px-2 py-1.5 text-xs font-medium text-red-400 border border-red-500/30 rounded-md hover:bg-red-500/10"
-                  >
-                    <Ban className="w-3 h-3" /> Disqualify
-                  </button>
-                )}
               </div>
             ))
           )}
@@ -246,27 +238,26 @@ export default function ClientPortal() {
                   <th className="px-6 py-3 text-left text-xs font-medium text-slate-400 uppercase">Disposition</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-slate-400 uppercase">Outcome</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-slate-400 uppercase">Revenue</th>
-                  {isRetainer && <th className="px-6 py-3 text-right text-xs font-medium text-slate-400 uppercase">Actions</th>}
+
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-700/30">
                 {activeLeads.length === 0 ? (
                   <tr>
-                    <td colSpan={isRetainer ? 8 : 6} className="px-6 py-8 text-center text-slate-500">No active leads</td>
+                    <td colSpan={isRetainer ? 7 : 6} className="px-6 py-8 text-center text-slate-500">No active leads</td>
                   </tr>
                 ) : (
                   activeLeads.map((lead) => {
                     const isNeedsOutcome = lead._needsOutcome;
                     return (
-                    <tr key={lead.id} className={`${isNeedsOutcome ? 'bg-red-500/10 hover:bg-red-500/15' : 'hover:bg-slate-700/20'}`}>
+                    <tr key={lead.id} onClick={() => { setSelectedLeadId(lead.id); setDrawerOpen(true); }} className={`cursor-pointer ${isNeedsOutcome ? 'bg-red-500/10 hover:bg-red-500/15' : 'hover:bg-slate-700/20'}`}>
                       <td className="px-6 py-4">
-                        <button
-                          onClick={() => { setSelectedLeadId(lead.id); setDrawerOpen(true); }}
-                          className={`font-medium hover:underline text-left ${isNeedsOutcome ? 'text-red-400 hover:text-red-300' : 'text-blue-600 hover:text-blue-700'}`}
+                        <span
+                          className={`font-medium ${isNeedsOutcome ? 'text-red-400' : 'text-blue-600'}`}
                         >
                           {lead.name}
                           {isNeedsOutcome && <span className="ml-1.5 text-[10px] font-bold text-red-400 bg-red-500/15 px-1.5 py-0.5 rounded-full">NEEDS OUTCOME</span>}
-                        </button>
+                        </span>
                       </td>
                       <td className="px-6 py-4 text-sm text-slate-400">
                         <div>{lead.email}</div>
@@ -318,16 +309,7 @@ export default function ClientPortal() {
                           <span className="text-sm text-gray-400">—</span>
                         )}
                       </td>
-                      {isRetainer && (
-                        <td className="px-6 py-4 text-right">
-                          <button
-                            onClick={(e) => { e.stopPropagation(); handleDisqualify(lead.id); }}
-                            className="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium text-red-400 border border-red-500/30 rounded-md hover:bg-red-500/10 transition-colors"
-                          >
-                            <Ban className="w-3 h-3" /> DQ
-                          </button>
-                        </td>
-                      )}
+
                     </tr>
                     );
                   })
