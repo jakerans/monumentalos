@@ -27,6 +27,13 @@ export default function AdminSidebar({ user, currentPage, clients = [] }) {
   const { effectsOn, toggle: toggleEffects } = useEffectsToggle();
   const navigate = useNavigate();
   const [collapsed, setCollapsed] = useState(false);
+  const [expandedGroup, setExpandedGroup] = useState(() => {
+    // Auto-expand if current page is a child
+    for (const item of navItems) {
+      if (item.children?.some(c => c.key === currentPage)) return item.key;
+    }
+    return null;
+  });
 
   const w = collapsed ? 'w-16' : 'w-52';
 
@@ -60,7 +67,11 @@ export default function AdminSidebar({ user, currentPage, clients = [] }) {
       <nav className="flex-1 py-3 px-2 space-y-0.5 overflow-y-auto scrollbar-hide">
         {navItems.map((item, i) => {
           const Icon = item.icon;
-          const active = currentPage === item.key;
+          const hasChildren = item.children && item.children.length > 0;
+          const isGroupActive = hasChildren && item.children.some(c => c.key === currentPage);
+          const active = !hasChildren && currentPage === item.key;
+          const isExpanded = expandedGroup === item.key;
+
           return (
             <motion.div
               key={item.key}
@@ -68,21 +79,75 @@ export default function AdminSidebar({ user, currentPage, clients = [] }) {
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.1 + i * 0.04, duration: 0.3 }}
             >
-              <Link
-                to={createPageUrl(item.key)}
-                title={collapsed ? item.label : undefined}
-                className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
-                  active
-                    ? 'bg-white/10 text-white'
-                    : 'text-slate-400 hover:text-white hover:bg-white/5'
-                } ${collapsed ? 'justify-center' : ''}`}
-              >
-                <Icon className="w-4 h-4 shrink-0" />
-                {!collapsed && <span>{item.label}</span>}
-                {active && !collapsed && (
-                  <div className="ml-auto w-1.5 h-1.5 rounded-full" style={{ backgroundColor: '#D6FF03' }} />
-                )}
-              </Link>
+              {hasChildren ? (
+                <>
+                  <button
+                    onClick={() => {
+                      if (collapsed) {
+                        navigate(createPageUrl(item.children[0].key));
+                      } else {
+                        setExpandedGroup(isExpanded ? null : item.key);
+                      }
+                    }}
+                    title={collapsed ? item.label : undefined}
+                    className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+                      isGroupActive
+                        ? 'bg-white/10 text-white'
+                        : 'text-slate-400 hover:text-white hover:bg-white/5'
+                    } ${collapsed ? 'justify-center' : ''}`}
+                  >
+                    <Icon className="w-4 h-4 shrink-0" />
+                    {!collapsed && (
+                      <>
+                        <span className="flex-1 text-left">{item.label}</span>
+                        <ChevronDown className={`w-3 h-3 transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`} />
+                      </>
+                    )}
+                  </button>
+                  {!collapsed && isExpanded && (
+                    <div className="ml-4 pl-3 border-l border-slate-700/40 mt-0.5 space-y-0.5">
+                      {item.children.map(child => {
+                        const ChildIcon = child.icon;
+                        const childActive = currentPage === child.key;
+                        return (
+                          <Link
+                            key={child.key}
+                            to={createPageUrl(child.key)}
+                            className={`flex items-center gap-2.5 px-2.5 py-1.5 rounded-md text-xs font-medium transition-all duration-200 ${
+                              childActive
+                                ? 'bg-white/10 text-white'
+                                : 'text-slate-500 hover:text-white hover:bg-white/5'
+                            }`}
+                          >
+                            {ChildIcon && <ChildIcon className="w-3.5 h-3.5 shrink-0" />}
+                            {!ChildIcon && <Headset className="w-3.5 h-3.5 shrink-0" />}
+                            <span>{child.label}</span>
+                            {childActive && (
+                              <div className="ml-auto w-1.5 h-1.5 rounded-full" style={{ backgroundColor: '#D6FF03' }} />
+                            )}
+                          </Link>
+                        );
+                      })}
+                    </div>
+                  )}
+                </>
+              ) : (
+                <Link
+                  to={createPageUrl(item.key)}
+                  title={collapsed ? item.label : undefined}
+                  className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+                    active
+                      ? 'bg-white/10 text-white'
+                      : 'text-slate-400 hover:text-white hover:bg-white/5'
+                  } ${collapsed ? 'justify-center' : ''}`}
+                >
+                  <Icon className="w-4 h-4 shrink-0" />
+                  {!collapsed && <span>{item.label}</span>}
+                  {active && !collapsed && (
+                    <div className="ml-auto w-1.5 h-1.5 rounded-full" style={{ backgroundColor: '#D6FF03' }} />
+                  )}
+                </Link>
+              )}
             </motion.div>
           );
         })}
