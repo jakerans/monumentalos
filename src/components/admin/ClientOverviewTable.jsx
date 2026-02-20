@@ -74,6 +74,18 @@ export default function ClientOverviewTable({ clients, leads, spend, payments, o
     { key: 'mtdSpend', label: 'Ad Spend', align: 'right', sortable: true, render: (r) => <span className="text-slate-300">${r.mtdSpend.toLocaleString()}</span> },
     { key: 'mtdBilled', label: 'To Be Billed', align: 'right', sortable: true, render: (r) => <span className="font-medium text-green-400">${r.mtdBilled.toLocaleString()}</span> },
     { key: 'mtdPaid', label: 'Collected', align: 'right', sortable: true, render: (r) => <span className="font-medium text-emerald-400">${r.mtdPaid.toLocaleString()}</span> },
+    {
+      key: 'actions', label: '', align: 'center', sortable: false,
+      render: (r) => (
+        <button
+          onClick={(e) => { e.stopPropagation(); setDeleteClient(r); }}
+          className="p-1 rounded hover:bg-red-500/20 text-slate-500 hover:text-red-400 transition-colors"
+          title="Delete client"
+        >
+          <Trash2 className="w-3.5 h-3.5" />
+        </button>
+      ),
+    },
   ];
 
   const mobileCard = (r) => (
