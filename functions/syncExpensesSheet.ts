@@ -104,16 +104,23 @@ Deno.serve(async (req) => {
       existingFingerprints.add(`${e.date}|${e.amount}|${e.description || ''}`);
     }
 
+    // ─── Get Sheet ID for row deletion ───
+    const metaResp = await fetch(`${SHEETS_API}/${SPREADSHEET_ID}?fields=sheets(properties(sheetId,title))`, { headers: gHeaders });
+    const metaData = await metaResp.json();
+    const sheetMeta = (metaData.sheets || []).find(s => s.properties.title === SHEET_NAME);
+    const sheetId = sheetMeta ? sheetMeta.properties.sheetId : 0;
+
     // ─── STEP 3: Single pass over sheet rows — classify each row ───
     const newRows = [];       // { rowIndex, data }
     const updateRows = [];    // { existing, row, rowIndex, sheetRowId }
     let skipped = 0;
+    const deleteRowIndices = [];  // sheet row indices to delete (positive amounts, transfers, etc.)
     const seenSheetIds = new Set(); // prevent intra-sync duplicates
 
     for (let i = 1; i < rows.length; i++) {
       const row = rows[i];
       const amount = parseAmount(cell(row, BANK_AMOUNT_COL));
-      if (amount === null || amount >= 0) { skipped++; continue; }
+      if (amount === null || amount >= 0) { deleteRowIndices.push(i); skipped++; continue; }
 
       const date = parseDate(cell(row, BANK_DATE_COL));
       if (!date) { skipped++; continue; }
@@ -123,8 +130,8 @@ Deno.serve(async (req) => {
       const expenseAmount = Math.abs(amount);
       const sheetCategory = cell(row, APP_CATEGORY_COL).toLowerCase();
 
-      // Skip transfer/transaction categories
-      if (SKIP_CATEGORIES.some(kw => sheetCategory.includes(kw))) { skipped++; continue; }
+      // Delete transfer/transaction category rows from sheet
+      if (SKIP_CATEGORIES.some(kw => sheetCategory.includes(kw))) { deleteRowIndices.push(i); skipped++; continue; }
 
       // ── Check if already synced ──
       const appId = cell(row, APP_ID_COL);
