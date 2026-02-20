@@ -237,26 +237,43 @@ export default function ExpenseManager({ startDate, endDate, onAddExpense }) {
         </div>
       )}
 
-      {/* Filters + Add */}
-      <div className="flex flex-wrap items-center gap-2">
-        <Filter className="w-3.5 h-3.5 text-slate-500" />
-        <select value={filterCat} onChange={e => handleFilterChange(setFilterCat, e.target.value)} className="px-2 py-1.5 text-xs bg-slate-800 border border-slate-700 rounded-md text-slate-300 focus:outline-none focus:ring-1 focus:ring-[#D6FF03]/50">
-          <option value="all">All Categories</option>
-          {Object.entries(CATEGORY_LABELS).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
-        </select>
-        <select value={filterType} onChange={e => handleFilterChange(setFilterType, e.target.value)} className="px-2 py-1.5 text-xs bg-slate-800 border border-slate-700 rounded-md text-slate-300 focus:outline-none focus:ring-1 focus:ring-[#D6FF03]/50">
-          <option value="all">All Types</option>
-          <option value="cogs">COGS</option>
-          <option value="overhead">Overhead</option>
-        </select>
-        <div className="flex-1" />
-        <span className="text-xs text-slate-500">
-          {totalFiltered} expense{totalFiltered !== 1 ? 's' : ''}
-          {filterCat !== 'all' || filterType !== 'all' ? ` · $${filteredTotal.toLocaleString()}` : ''}
-        </span>
-        <button onClick={onAddExpense} className="px-3 py-1.5 text-xs font-medium bg-red-600 text-white rounded-md hover:bg-red-700 flex items-center gap-1">
-          <Plus className="w-3.5 h-3.5" /> Add Expense
-        </button>
+      {/* Search + Filters + Add */}
+      <div className="space-y-2">
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-500" />
+          <input
+            type="text"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Search description, vendor, or client..."
+            className="w-full pl-9 pr-3 py-2 text-xs bg-slate-800 border border-slate-700 rounded-lg text-slate-200 placeholder:text-slate-500 focus:outline-none focus:ring-1 focus:ring-[#D6FF03]/50"
+          />
+          {search && (
+            <button onClick={() => setSearch('')} className="absolute right-2.5 top-1/2 -translate-y-1/2">
+              <X className="w-3.5 h-3.5 text-slate-500 hover:text-slate-300" />
+            </button>
+          )}
+        </div>
+        <div className="flex flex-wrap items-center gap-2">
+          <Filter className="w-3.5 h-3.5 text-slate-500" />
+          <select value={filterCat} onChange={e => handleFilterChange(setFilterCat, e.target.value)} className="px-2 py-1.5 text-xs bg-slate-800 border border-slate-700 rounded-md text-slate-300 focus:outline-none focus:ring-1 focus:ring-[#D6FF03]/50">
+            <option value="all">All Categories</option>
+            {Object.entries(CATEGORY_LABELS).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
+          </select>
+          <select value={filterType} onChange={e => handleFilterChange(setFilterType, e.target.value)} className="px-2 py-1.5 text-xs bg-slate-800 border border-slate-700 rounded-md text-slate-300 focus:outline-none focus:ring-1 focus:ring-[#D6FF03]/50">
+            <option value="all">All Types</option>
+            <option value="cogs">COGS</option>
+            <option value="overhead">Overhead</option>
+          </select>
+          <div className="flex-1" />
+          <span className="text-xs text-slate-500">
+            {totalFiltered} expense{totalFiltered !== 1 ? 's' : ''}
+            {filterCat !== 'all' || filterType !== 'all' || debouncedSearch ? ` · $${filteredTotal.toLocaleString()}` : ''}
+          </span>
+          <button onClick={onAddExpense} className="px-3 py-1.5 text-xs font-medium bg-red-600 text-white rounded-md hover:bg-red-700 flex items-center gap-1">
+            <Plus className="w-3.5 h-3.5" /> Add Expense
+          </button>
+        </div>
       </div>
 
       {/* Mobile card view */}
