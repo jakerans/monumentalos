@@ -59,7 +59,7 @@ export default function ClientPerformance() {
 
         <ClientPerfKPIs clients={clients} leads={leads} spend={spend} />
         <ClientPerfCharts clients={clients} leads={leads} spend={spend} />
-        <ClientOverviewTable clients={clients} leads={leads} spend={spend} payments={payments} />
+        <ClientOverviewTable clients={clients} leads={leads} spend={spend} payments={payments} onRefresh={refetch} />
       </main>
       <AdminMobileNav currentPage="ClientPerformance" clients={clients} />
     </div>
