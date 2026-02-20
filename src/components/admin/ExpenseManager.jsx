@@ -11,7 +11,7 @@ import ExpenseToolbar from './ExpenseToolbar';
 const CATEGORY_LABELS = {
   ad_spend: 'Ad Spend', payroll: 'Payroll', software: 'Software',
   office: 'Office', contractor: 'Contractor', travel: 'Travel',
-  processing_fee: 'Processing Fee', other: 'Other',
+  distribution: 'Distribution', processing_fee: 'Processing Fee', other: 'Other',
 };
 const CATEGORY_COLORS = {
   ad_spend: 'bg-red-500/15 text-red-400 border-red-500/30',
@@ -20,13 +20,15 @@ const CATEGORY_COLORS = {
   office: 'bg-amber-500/15 text-amber-400 border-amber-500/30',
   contractor: 'bg-indigo-500/15 text-indigo-400 border-indigo-500/30',
   travel: 'bg-teal-500/15 text-teal-400 border-teal-500/30',
+  distribution: 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30',
   processing_fee: 'bg-pink-500/15 text-pink-400 border-pink-500/30',
   other: 'bg-slate-500/15 text-slate-400 border-slate-500/30',
 };
-const TYPE_LABELS = { cogs: 'COGS', overhead: 'Overhead' };
+const TYPE_LABELS = { cogs: 'COGS', overhead: 'Overhead', distribution: 'Distribution' };
 const TYPE_COLORS = {
   cogs: 'bg-orange-500/15 text-orange-400 border-orange-500/30',
   overhead: 'bg-slate-500/15 text-slate-400 border-slate-500/30',
+  distribution: 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30',
 };
 
 const PAGE_SIZE = 50;
@@ -264,6 +266,7 @@ export default function ExpenseManager({ startDate, endDate, onAddExpense }) {
             <option value="all">All Types</option>
             <option value="cogs">COGS</option>
             <option value="overhead">Overhead</option>
+            <option value="distribution">Distribution</option>
           </select>
           <div className="flex-1" />
           <span className="text-xs text-slate-500">
@@ -460,7 +463,7 @@ function SortableHeader({ field, label, current, dir, onClick, align = 'left' })
 
 function ExpenseRow({ expense: e, clients, onUpdate, onDelete, onApproveAI, selected, onToggleSelect }) {
   const categoryOptions = Object.entries(CATEGORY_LABELS).map(([k, v]) => ({ value: k, label: v }));
-  const typeOptions = [{ value: 'cogs', label: 'COGS' }, { value: 'overhead', label: 'Overhead' }];
+  const typeOptions = [{ value: 'cogs', label: 'COGS' }, { value: 'overhead', label: 'Overhead' }, { value: 'distribution', label: 'Distribution' }];
   const clientOptions = [{ value: '', label: 'None' }, ...clients.map(c => ({ value: c.id, label: c.name }))];
 
   const hasPendingAI = !e.ai_approved && e.suggested_category;
