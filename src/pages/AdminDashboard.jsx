@@ -13,16 +13,12 @@ import MTDGoalProgress from '../components/admin/MTDGoalProgress';
 import GoalManagementModal from '../components/admin/GoalManagementModal';
 import PLComparisonRow from '../components/admin/PLComparisonRow.jsx';
 import StatCompareCard from '../components/admin/StatCompareCard.jsx';
-import { Settings, Trophy, Eye } from 'lucide-react';
+import { Settings, Trophy } from 'lucide-react';
 import InfoTooltip from '../components/shared/InfoTooltip';
 import PageErrorBoundary from '../components/shared/PageErrorBoundary';
 import PageLoader from '../components/shared/PageLoader';
 import AdminDashboardSkeleton from '../components/admin/AdminDashboardSkeleton';
 import { toast } from '@/components/ui/use-toast';
-import MMPerformanceGoal from '../components/mm/MMPerformanceGoal';
-import RankPreviewTester from '../components/mm/RankPreviewTester';
-import SpiffPreviewTester from '../components/admin/SpiffPreviewTester';
-import STLPreviewTester from '../components/admin/STLPreviewTester';
 import { motion } from 'framer-motion';
 import { useAutoAnimate } from '@formkit/auto-animate/react';
 import { getEffectsEnabled } from '../components/shared/useEffectsToggle';
@@ -102,18 +98,6 @@ export default function AdminDashboard() {
             </p>
           </div>
           <div className="flex items-center gap-2 flex-wrap">
-            <motion.button
-              whileHover={effectsOn ? { scale: 1.05 } : {}}
-              whileTap={effectsOn ? { scale: 0.95 } : {}}
-              onClick={() => setShowPerfTester(!showPerfTester)}
-              className={`px-3 py-2 text-xs font-bold rounded-lg flex items-center gap-1.5 transition-all border ${
-                showPerfTester
-                  ? 'bg-amber-500/15 border-amber-500/40 text-amber-300'
-                  : 'bg-slate-800 border-slate-700 text-slate-400 hover:text-white'
-              }`}
-            >
-              <Eye className="w-3.5 h-3.5" /> Preview Effects
-            </motion.button>
             <motion.button
               whileHover={effectsOn ? { scale: 1.05 } : {}}
               whileTap={effectsOn ? { scale: 0.95 } : {}}
@@ -202,32 +186,6 @@ export default function AdminDashboard() {
             </div>
           </div>
         </motion.div>
-
-        {/* Preview Effects */}
-        {showPerfTester && (
-          <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: 'auto' }}
-            exit={{ opacity: 0, height: 0 }}
-            className="space-y-4"
-          >
-            {/* Performance Goal Tester + Rank Tester */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-              <MMPerformanceGoal plans={[]} showTester={true} />
-              <RankPreviewTester />
-            </div>
-
-            {/* Spiff Widget Tester + STL Widget Tester */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-              <div className="bg-slate-800/50 rounded-lg border border-slate-700/50 p-4">
-                <SpiffPreviewTester />
-              </div>
-              <div className="bg-slate-800/50 rounded-lg border border-slate-700/50 p-4">
-                <STLPreviewTester />
-              </div>
-            </div>
-          </motion.div>
-        )}
 
         {/* No goal prompt */}
         {!currentGoal && (
