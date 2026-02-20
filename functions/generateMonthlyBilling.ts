@@ -65,12 +65,20 @@ Deno.serve(async (req) => {
       return (bt === 'pay_per_show' || bt === 'pay_per_set') && !existingClientIds.has(c.id);
     });
 
+    function getLeadPrice(client, lead) {
+      const bt = client.billing_type || 'pay_per_show';
+      const ip = client.industry_pricing || {};
+      const defaultPrice = bt === 'pay_per_set' ? (client.price_per_set_appointment || 0) : (client.price_per_shown_appointment || 0);
+      const li = lead.industries || [];
+      if (li.length > 0 && Object.keys(ip).length > 0 && li[0] in ip && ip[li[0]] > 0) return ip[li[0]];
+      return defaultPrice;
+    }
+
     const records = eligibleClients.map(client => {
       const bt = client.billing_type || 'pay_per_show';
       const cLeads = leads.filter(l => l.client_id === client.id);
 
       let quantity = 0;
-      let rate = 0;
       let calculatedAmount = 0;
 
       if (bt === 'pay_per_show') {
@@ -79,17 +87,17 @@ Deno.serve(async (req) => {
           new Date(l.appointment_date) >= monthStart && new Date(l.appointment_date) <= monthEnd
         );
         quantity = showed.length;
-        rate = client.price_per_shown_appointment || 0;
-        calculatedAmount = quantity * rate;
+        calculatedAmount = showed.reduce((s, l) => s + getLeadPrice(client, l), 0);
       } else if (bt === 'pay_per_set') {
         const booked = cLeads.filter(l =>
           l.date_appointment_set &&
           new Date(l.date_appointment_set) >= monthStart && new Date(l.date_appointment_set) <= monthEnd
         );
         quantity = booked.length;
-        rate = client.price_per_set_appointment || 0;
-        calculatedAmount = quantity * rate;
+        calculatedAmount = booked.reduce((s, l) => s + getLeadPrice(client, l), 0);
       }
+
+      const rate = quantity > 0 ? Math.round(calculatedAmount / quantity * 100) / 100 : 0;
 
       return {
         client_id: client.id,
