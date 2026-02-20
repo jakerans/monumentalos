@@ -162,9 +162,14 @@ Deno.serve(async (req) => {
       const sheetClientId = cell(row, APP_CLIENT_ID_COL);
       const sheetVendor = cell(row, APP_VENDOR_COL);
 
+      // Auto-detect distribution: if category is "distribution" or description contains "distro"
+      const isDistribution = sheetCategory === 'distribution' || rawDesc.toLowerCase().includes('distro');
+      const resolvedCategory = isDistribution ? 'distribution' : ((sheetCategory && VALID_CATEGORIES.includes(sheetCategory)) ? sheetCategory : 'other');
+      const resolvedExpType = isDistribution ? 'distribution' : ((sheetExpType && VALID_TYPES.includes(sheetExpType)) ? sheetExpType : 'overhead');
+
       const newExpense = {
-        category: (sheetCategory && VALID_CATEGORIES.includes(sheetCategory)) ? sheetCategory : 'other',
-        expense_type: (sheetExpType && VALID_TYPES.includes(sheetExpType)) ? sheetExpType : 'overhead',
+        category: resolvedCategory,
+        expense_type: resolvedExpType,
         description: rawDesc || 'Bank transaction',
         amount: expenseAmount,
         date,
