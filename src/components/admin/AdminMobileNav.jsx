@@ -6,7 +6,7 @@ import { LayoutDashboard, Users, Receipt, Calculator, Headset, UserCog, Menu, X,
 
 const allNavItems = [
   { key: 'AdminDashboard', label: 'Dashboard', icon: LayoutDashboard },
-  { key: 'ClientPerformance', label: 'Clients', icon: Users },
+  { key: 'ClientPerformance', label: 'Client Overview', icon: Users },
   { key: 'MonthlyBilling', label: 'Billing', icon: Receipt },
   { key: 'RevenueDashboard', label: 'Accounting', icon: Calculator },
   { key: 'SetterPerformance', label: 'Setters', icon: Headset },

@@ -57,7 +57,7 @@ export default function ClientPerformance() {
           animate={effectsOn ? { opacity: 1, y: 0 } : false}
           transition={effectsOn ? { duration: 0.4 } : { duration: 0 }}
         >
-          <h1 className="text-2xl font-bold text-white">Client Workspace</h1>
+          <h1 className="text-2xl font-bold text-white">Client Overview</h1>
           <p className="text-sm text-slate-400">High-level overview of all clients, goals, and industries</p>
         </motion.div>
 

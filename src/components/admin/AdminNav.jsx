@@ -13,7 +13,7 @@ export default function AdminNav({ user, currentPage, clients = [] }) {
 
   const navItems = [
     { key: 'AdminDashboard', label: 'Dashboard' },
-    { key: 'ClientPerformance', label: 'Clients' },
+    { key: 'ClientPerformance', label: 'Client Overview' },
     { key: 'MonthlyBilling', label: 'Billing' },
     { key: 'RevenueDashboard', label: 'Accounting' },
     { key: 'SetterPerformance', label: 'Setters' },
