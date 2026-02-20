@@ -105,19 +105,23 @@ function InlineEditRow({ client, clientSummary, onSaved }) {
         </div>
       ) : (
         <div className="space-y-2">
-          {/* Legacy pricing */}
-          <div className="flex items-center gap-4 flex-wrap">
-            <div className="flex items-center gap-1.5">
-              <label className="text-[10px] text-slate-400">Default $/Show</label>
-              <input type="number" value={legacyShow} onChange={e => setLegacyShow(e.target.value)}
-                className="bg-slate-700 text-white text-xs rounded px-2 py-1 w-20 border border-slate-600" />
+          {/* Legacy pricing - read only, only show if values exist */}
+          {(Number(legacyShow) > 0 || Number(legacySet) > 0) && (
+            <div className="flex items-center gap-4 flex-wrap">
+              {Number(legacyShow) > 0 && (
+                <div className="flex items-center gap-1.5">
+                  <label className="text-[10px] text-slate-500">Default $/Show</label>
+                  <span className="text-xs text-slate-400 bg-slate-800/50 px-2 py-1 rounded border border-slate-700">${legacyShow}</span>
+                </div>
+              )}
+              {Number(legacySet) > 0 && (
+                <div className="flex items-center gap-1.5">
+                  <label className="text-[10px] text-slate-500">Default $/Set</label>
+                  <span className="text-xs text-slate-400 bg-slate-800/50 px-2 py-1 rounded border border-slate-700">${legacySet}</span>
+                </div>
+              )}
             </div>
-            <div className="flex items-center gap-1.5">
-              <label className="text-[10px] text-slate-400">Default $/Set</label>
-              <input type="number" value={legacySet} onChange={e => setLegacySet(e.target.value)}
-                className="bg-slate-700 text-white text-xs rounded px-2 py-1 w-20 border border-slate-600" />
-            </div>
-          </div>
+          )}
           {/* Industry pricing */}
           {industryPricing.length > 0 && (
             <div className="space-y-1">
