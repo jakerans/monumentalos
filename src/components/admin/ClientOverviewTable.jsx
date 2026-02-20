@@ -92,9 +92,14 @@ export default function ClientOverviewTable({ clients, leads, spend, payments, o
     <div className="px-4 py-3 space-y-2">
       <div className="flex items-center justify-between">
         <Link to={createPageUrl('ClientView') + `?clientId=${r.id}`} className="font-medium text-blue-400 text-sm">{r.name}</Link>
-        <span className={`px-1.5 py-0.5 text-[10px] font-medium rounded ${BILLING_COLORS[r.billingType] || 'bg-slate-700 text-slate-300'}`}>
-          {BILLING_LABELS[r.billingType] || r.billingType}
-        </span>
+        <div className="flex items-center gap-2">
+          <span className={`px-1.5 py-0.5 text-[10px] font-medium rounded ${BILLING_COLORS[r.billingType] || 'bg-slate-700 text-slate-300'}`}>
+            {BILLING_LABELS[r.billingType] || r.billingType}
+          </span>
+          <button onClick={(e) => { e.stopPropagation(); setDeleteClient(r); }} className="p-1 rounded hover:bg-red-500/20 text-slate-500 hover:text-red-400">
+            <Trash2 className="w-3.5 h-3.5" />
+          </button>
+        </div>
       </div>
       <div className="grid grid-cols-3 gap-2 text-[11px]">
         <div><span className="text-slate-500">Leads</span><p className="text-slate-300 font-medium">{r.mtdLeads}</p></div>
