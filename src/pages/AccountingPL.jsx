@@ -4,7 +4,6 @@ import { useQuery } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import dayjs from 'dayjs';
-import { DollarSign, Receipt } from 'lucide-react';
 import AdminSidebar from '../components/admin/AdminSidebar';
 import AdminMobileNav from '../components/admin/AdminMobileNav';
 import DateRangePicker from '../components/admin/DateRangePicker';
@@ -12,8 +11,6 @@ import AccountingKPIs from '../components/admin/AccountingKPIs';
 import MonthlyPLChart from '../components/admin/MonthlyPLChart';
 import ExpenseBreakdown from '../components/admin/ExpenseBreakdown';
 import PaymentLedger from '../components/admin/PaymentLedger';
-import RecordPaymentModal from '../components/admin/RecordPaymentModal';
-import AddExpenseModal from '../components/admin/AddExpenseModal';
 import PageErrorBoundary from '../components/shared/PageErrorBoundary';
 import RevenueDashboardSkeleton from '../components/admin/RevenueDashboardSkeleton';
 
