@@ -62,6 +62,15 @@ Deno.serve(async (req) => {
     if (filterType && filterType !== 'all') {
       filtered = filtered.filter(e => e.expense_type === filterType);
     }
+    if (search && search.trim()) {
+      const q = search.trim().toLowerCase();
+      filtered = filtered.filter(e => {
+        const desc = (e.description || '').toLowerCase();
+        const vendor = (e.vendor || '').toLowerCase();
+        const clientName = (e.client_id ? (clientMap[e.client_id] || '') : '').toLowerCase();
+        return desc.includes(q) || vendor.includes(q) || clientName.includes(q);
+      });
+    }
 
     // ── Server-side sort ──
     filtered.sort((a, b) => {
