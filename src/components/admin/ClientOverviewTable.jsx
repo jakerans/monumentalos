@@ -95,13 +95,22 @@ export default function ClientOverviewTable({ clients, leads, spend, payments, o
     {
       key: 'actions', label: '', align: 'center', sortable: false,
       render: (r) => (
-        <button
-          onClick={(e) => { e.stopPropagation(); setDeleteClient(r); }}
-          className="p-1 rounded hover:bg-red-500/20 text-slate-500 hover:text-red-400 transition-colors"
-          title="Delete client"
-        >
-          <Trash2 className="w-3.5 h-3.5" />
-        </button>
+        <div className="flex items-center gap-1">
+          <button
+            onClick={(e) => { e.stopPropagation(); setEditClient(r); }}
+            className="p-1 rounded hover:bg-blue-500/20 text-slate-500 hover:text-blue-400 transition-colors"
+            title="Edit client"
+          >
+            <Pencil className="w-3.5 h-3.5" />
+          </button>
+          <button
+            onClick={(e) => { e.stopPropagation(); setDeleteClient(r); }}
+            className="p-1 rounded hover:bg-red-500/20 text-slate-500 hover:text-red-400 transition-colors"
+            title="Delete client"
+          >
+            <Trash2 className="w-3.5 h-3.5" />
+          </button>
+        </div>
       ),
     },
   ];
