@@ -27,7 +27,7 @@ export default function AdminUserMenu({ user }) {
       </button>
 
       {open && (
-        <div className="absolute right-0 top-full mt-1 w-48 bg-slate-800 border border-slate-700 rounded-lg shadow-xl z-50 py-1 overflow-hidden">
+        <div className="absolute right-0 bottom-full mb-1 w-48 bg-slate-800 border border-slate-700 rounded-lg shadow-xl z-50 py-1 overflow-hidden">
           <Link
             to={createPageUrl('LeadFieldSettings')}
             onClick={() => setOpen(false)}
