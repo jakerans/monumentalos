@@ -5,15 +5,17 @@ import { useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import AdminNav from '../components/admin/AdminNav';
 import AdminMobileNav from '../components/admin/AdminMobileNav';
-import ClientOverviewTable from '../components/admin/ClientOverviewTable';
-import ClientPerfKPIs from '../components/admin/ClientPerfKPIs';
-import ClientPerfCharts from '../components/admin/ClientPerfCharts';
+import ClientWorkspaceKPIs from '../components/admin/ClientWorkspaceKPIs';
+import ClientGrid from '../components/admin/ClientGrid';
 import PageErrorBoundary from '../components/shared/PageErrorBoundary';
 import PageLoader from '../components/shared/PageLoader';
+import { motion } from 'framer-motion';
+import { getEffectsEnabled } from '../components/shared/useEffectsToggle';
 
 export default function ClientPerformance() {
   const navigate = useNavigate();
   const [user, setUser] = useState(null);
+  const effectsOn = getEffectsEnabled();
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -41,25 +43,40 @@ export default function ClientPerformance() {
 
   const clients = dashData?.clients || [];
   const leads = dashData?.leads || [];
-  const spend = dashData?.spend || [];
-  const payments = dashData?.payments || [];
 
   if (!user) return null;
-  if (isLoading) return <PageLoader message="Loading client performance..." />;
+  if (isLoading) return <PageLoader message="Loading client workspace..." />;
 
   return (
     <PageErrorBoundary>
     <div className="min-h-screen bg-[#0B0F1A]">
       <AdminNav user={user} currentPage="ClientPerformance" clients={clients} />
-      <main className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
-        <div>
-          <h1 className="text-2xl font-bold text-white">Client Performance</h1>
-          <p className="text-sm text-slate-400">Detailed client metrics and trends</p>
-        </div>
+      <main className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-5">
+        <motion.div
+          initial={effectsOn ? { opacity: 0, y: 16 } : false}
+          animate={effectsOn ? { opacity: 1, y: 0 } : false}
+          transition={effectsOn ? { duration: 0.4 } : { duration: 0 }}
+        >
+          <h1 className="text-2xl font-bold text-white">Client Workspace</h1>
+          <p className="text-sm text-slate-400">High-level overview of all clients, goals, and industries</p>
+        </motion.div>
 
-        <ClientPerfKPIs clients={clients} leads={leads} spend={spend} />
-        <ClientPerfCharts clients={clients} leads={leads} spend={spend} />
-        <ClientOverviewTable clients={clients} leads={leads} spend={spend} payments={payments} onRefresh={refetch} />
+        <motion.div
+          initial={effectsOn ? { opacity: 0, y: 20 } : false}
+          animate={effectsOn ? { opacity: 1, y: 0 } : false}
+          transition={effectsOn ? { delay: 0.1, duration: 0.4 } : { duration: 0 }}
+        >
+          <ClientWorkspaceKPIs clients={clients} />
+        </motion.div>
+
+        <motion.div
+          initial={effectsOn ? { opacity: 0, y: 20 } : false}
+          animate={effectsOn ? { opacity: 1, y: 0 } : false}
+          transition={effectsOn ? { delay: 0.2, duration: 0.4 } : { duration: 0 }}
+          className="space-y-4"
+        >
+          <ClientGrid clients={clients} leads={leads} onRefresh={refetch} />
+        </motion.div>
       </main>
       <AdminMobileNav currentPage="ClientPerformance" clients={clients} />
     </div>
