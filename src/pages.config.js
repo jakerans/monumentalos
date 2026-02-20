@@ -69,6 +69,10 @@ import SetterDashboard from './pages/SetterDashboard';
 import SetterPerformance from './pages/SetterPerformance';
 import UserManagement from './pages/UserManagement';
 import SetterStats from './pages/SetterStats';
+import AccountingPL from './pages/AccountingPL';
+import AccountingExpenses from './pages/AccountingExpenses';
+import AccountingCashFlow from './pages/AccountingCashFlow';
+import AccountingClients from './pages/AccountingClients';
 import __Layout from './Layout.jsx';
 
 
@@ -95,6 +99,10 @@ export const PAGES = {
     "SetterPerformance": SetterPerformance,
     "UserManagement": UserManagement,
     "SetterStats": SetterStats,
+    "AccountingPL": AccountingPL,
+    "AccountingExpenses": AccountingExpenses,
+    "AccountingCashFlow": AccountingCashFlow,
+    "AccountingClients": AccountingClients,
 }
 
 export const pagesConfig = {
