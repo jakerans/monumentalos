@@ -1,0 +1,170 @@
+import React, { useState, useEffect, useMemo } from 'react';
+import { base44 } from '@/api/base44Client';
+import { useQuery } from '@tanstack/react-query';
+import { useNavigate } from 'react-router-dom';
+import { createPageUrl } from '@/utils';
+import dayjs from 'dayjs';
+import isBetween from 'dayjs/plugin/isBetween';
+import AdminSidebar from '../components/admin/AdminSidebar';
+import AdminMobileNav from '../components/admin/AdminMobileNav';
+import DateRangePicker from '../components/admin/DateRangePicker';
+import SetterStatsKPIs from '../components/admin/SetterStatsKPIs';
+import SetterStatsTable from '../components/admin/SetterStatsTable';
+import SetterStatsDQChart from '../components/admin/SetterStatsDQChart';
+import SetterStatsSTLChart from '../components/admin/SetterStatsSTLChart';
+import SetterStatsTrendChart from '../components/admin/SetterStatsTrendChart';
+import PageErrorBoundary from '../components/shared/PageErrorBoundary';
+import PageLoader from '../components/shared/PageLoader';
+
+dayjs.extend(isBetween);
+
+const DQ_REASONS = ['looking_for_work', 'not_interested', 'wrong_invalid_number', 'project_size', 'oosa', 'client_availability'];
+
+function calcStats(setters, leads, inRange) {
+  return setters.map(setter => {
+    const firstCalls = leads.filter(l => l.setter_id === setter.id && l.first_call_made_date && inRange(l.first_call_made_date));
+    const booked = leads.filter(l => l.booked_by_setter_id === setter.id && l.date_appointment_set && inRange(l.date_appointment_set));
+    const showed = booked.filter(l => l.disposition === 'showed');
+    // DQ by this setter (using disqualified_by_setter_id)
+    const dqBySetter = leads.filter(l => l.disqualified_by_setter_id === setter.id && l.status === 'disqualified' && l.disqualified_date && inRange(l.disqualified_date));
+    // Fallback: also count old-style DQs attributed via setter_id where disqualified_by_setter_id is not set
+    const dqLegacy = leads.filter(l => !l.disqualified_by_setter_id && l.setter_id === setter.id && l.status === 'disqualified' && l.first_call_made_date && inRange(l.first_call_made_date));
+    const dqAll = [...dqBySetter, ...dqLegacy];
+
+    const stlValues = firstCalls.filter(l => l.speed_to_lead_minutes != null).map(l => l.speed_to_lead_minutes);
+    const avgSTL = stlValues.length ? Math.round(stlValues.reduce((a, b) => a + b, 0) / stlValues.length) : null;
+    const bookingRate = firstCalls.length > 0 ? parseFloat(((booked.length / firstCalls.length) * 100).toFixed(1)) : null;
+    const showRate = booked.length > 0 ? parseFloat(((showed.length / booked.length) * 100).toFixed(1)) : null;
+    const totalTouched = firstCalls.length;
+    const dqRate = totalTouched > 0 ? parseFloat(((dqAll.length / totalTouched) * 100).toFixed(1)) : null;
+
+    const dqReasons = {};
+    DQ_REASONS.forEach(r => { dqReasons[r] = 0; });
+    dqAll.forEach(l => { if (l.dq_reason && dqReasons[l.dq_reason] !== undefined) dqReasons[l.dq_reason]++; });
+
+    const stlUnder5 = stlValues.filter(v => v <= 5).length;
+    const stl5to15 = stlValues.filter(v => v > 5 && v <= 15).length;
+    const stlOver15 = stlValues.filter(v => v > 15).length;
+
+    return {
+      id: setter.id,
+      name: setter.full_name,
+      firstCalls: firstCalls.length,
+      booked: booked.length,
+      showed: showed.length,
+      dq: dqAll.length,
+      avgSTL,
+      bookingRate,
+      showRate,
+      dqRate,
+      dqReasons,
+      stlUnder5,
+      stl5to15,
+      stlOver15,
+    };
+  }).sort((a, b) => b.booked - a.booked);
+}
+
+export default function SetterStats() {
+  const navigate = useNavigate();
+  const [user, setUser] = useState(null);
+  const [startDate, setStartDate] = useState(dayjs().startOf('month').format('YYYY-MM-DD'));
+  const [endDate, setEndDate] = useState(dayjs().format('YYYY-MM-DD'));
+
+  useEffect(() => {
+    const checkAuth = async () => {
+      try {
+        const currentUser = await base44.auth.me();
+        setUser(currentUser);
+        if (currentUser.app_role !== 'admin') {
+          if (currentUser.app_role === 'marketing_manager') navigate(createPageUrl('MMDashboard'));
+          else navigate(createPageUrl('SetterDashboard'));
+        }
+      } catch { base44.auth.redirectToLogin(); }
+    };
+    checkAuth();
+  }, [navigate]);
+
+  const { data: rawData, isLoading } = useQuery({
+    queryKey: ['setter-stats-data', startDate, endDate],
+    queryFn: async () => {
+      const res = await base44.functions.invoke('getSetterStatsData', { startDate, endDate });
+      return res.data;
+    },
+    enabled: !!user,
+    staleTime: 2 * 60 * 1000,
+  });
+
+  const clients = rawData?.clients || [];
+  const leads = rawData?.leads || [];
+  const users = rawData?.users || [];
+
+  const setters = useMemo(() => users.filter(u => u.app_role === 'setter'), [users]);
+
+  const start = dayjs(startDate).startOf('day');
+  const end = dayjs(endDate).endOf('day');
+  const inRange = (d) => d ? dayjs(d).isBetween(start, end, null, '[]') : false;
+
+  const stats = useMemo(() => calcStats(setters, leads, inRange), [setters, leads, startDate, endDate]);
+
+  const totalBooked = stats.reduce((s, r) => s + r.booked, 0);
+  const totalShowed = stats.reduce((s, r) => s + r.showed, 0);
+  const totalDQ = stats.reduce((s, r) => s + r.dq, 0);
+  const totalCalls = stats.reduce((s, r) => s + r.firstCalls, 0);
+  const allSTL = stats.filter(r => r.avgSTL != null).map(r => r.avgSTL);
+  const avgSTL = allSTL.length ? Math.round(allSTL.reduce((a, b) => a + b, 0) / allSTL.length) : null;
+  const bookingRate = totalCalls > 0 ? parseFloat(((totalBooked / totalCalls) * 100).toFixed(1)) : null;
+  const showRate = totalBooked > 0 ? parseFloat(((totalShowed / totalBooked) * 100).toFixed(1)) : null;
+  const dqRate = totalCalls > 0 ? parseFloat(((totalDQ / totalCalls) * 100).toFixed(1)) : null;
+
+  const overallDQReasons = useMemo(() => {
+    const totals = {};
+    DQ_REASONS.forEach(r => { totals[r] = 0; });
+    stats.forEach(s => { DQ_REASONS.forEach(r => { totals[r] += s.dqReasons[r] || 0; }); });
+    return totals;
+  }, [stats]);
+
+  if (!user) return null;
+  if (isLoading) return <PageLoader message="Loading setter stats..." />;
+
+  return (
+    <PageErrorBoundary>
+      <div className="min-h-screen bg-[#0B0F1A] flex">
+        <AdminSidebar user={user} currentPage="SetterStats" clients={clients} />
+
+        <main className="flex-1 min-w-0 max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div>
+              <h1 className="text-2xl font-bold text-white">Setter Reporting</h1>
+              <p className="text-sm text-slate-400">KPIs, DQ analysis, speed-to-lead, and booking trends</p>
+            </div>
+            <DateRangePicker startDate={startDate} endDate={endDate} onStartChange={setStartDate} onEndChange={setEndDate} />
+          </div>
+
+          <SetterStatsKPIs
+            setterCount={setters.length}
+            totalBooked={totalBooked}
+            totalShowed={totalShowed}
+            totalDQ={totalDQ}
+            avgSTL={avgSTL}
+            bookingRate={bookingRate}
+            showRate={showRate}
+            dqRate={dqRate}
+          />
+
+          <SetterStatsTrendChart leads={leads} setters={setters} startDate={startDate} endDate={endDate} />
+
+          <SetterStatsTable stats={stats} />
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            <SetterStatsSTLChart stats={stats} />
+            <div /> {/* Keep grid balanced */}
+          </div>
+
+          <SetterStatsDQChart stats={stats} overallDQReasons={overallDQReasons} />
+        </main>
+        <AdminMobileNav currentPage="SetterStats" clients={clients} />
+      </div>
+    </PageErrorBoundary>
+  );
+}

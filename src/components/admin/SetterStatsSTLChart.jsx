@@ -1,5 +1,5 @@
 import React from 'react';
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, ReferenceLine } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, ReferenceLine, Cell } from 'recharts';
 
 function CustomTooltip({ active, payload }) {
   if (!active || !payload?.length) return null;
@@ -58,5 +58,3 @@ export default function SetterStatsSTLChart({ stats }) {
     </div>
   );
 }
-
-import { Cell } from 'recharts';
