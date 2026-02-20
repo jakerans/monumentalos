@@ -88,7 +88,7 @@ export default function SetterStats() {
   const { data: rawData, isLoading } = useQuery({
     queryKey: ['setter-stats-data', startDate, endDate],
     queryFn: async () => {
-      const res = await base44.functions.invoke('getSetterStatsData', { startDate, endDate });
+      const res = await base44.functions.invoke('getSetterPerformanceData', { startDate, endDate });
       return res.data;
     },
     enabled: !!user,
