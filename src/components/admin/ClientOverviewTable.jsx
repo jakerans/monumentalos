@@ -32,6 +32,7 @@ function getBillingRate(client) {
 
 export default function ClientOverviewTable({ clients, leads, spend, payments, onRefresh }) {
   const [deleteClient, setDeleteClient] = useState(null);
+  const [editClient, setEditClient] = useState(null);
   const now = new Date();
   const thisMonthStart = new Date(now.getFullYear(), now.getMonth(), 1);
 
