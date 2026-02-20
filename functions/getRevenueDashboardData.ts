@@ -32,6 +32,22 @@ function buildMonthBuckets(refDate, count) {
   return months;
 }
 
+function getLeadPrice(client, lead) {
+  const bt = client.billing_type || 'pay_per_show';
+  if (bt === 'retainer') return 0;
+  const ip = client.industry_pricing || {};
+  const defaultPrice = bt === 'pay_per_set' ? (client.price_per_set_appointment || 0) : (client.price_per_shown_appointment || 0);
+  const li = lead.industries || [];
+  if (li.length > 0 && Object.keys(ip).length > 0) {
+    if (li[0] in ip && ip[li[0]] > 0) return ip[li[0]];
+  }
+  return defaultPrice;
+}
+
+function computeLeadRevenue(client, qualifiedLeads) {
+  return qualifiedLeads.reduce((sum, lead) => sum + getLeadPrice(client, lead), 0);
+}
+
 function computeMonthlyPL(months, clients, leads, billingRecords, expenses) {
   const activeClients = clients.filter(c => c.status === 'active');
   return months.map(m => {
@@ -40,8 +56,8 @@ function computeMonthlyPL(months, clients, leads, billingRecords, expenses) {
     activeClients.forEach(client => {
       const bt = client.billing_type || 'pay_per_show';
       const cLeads = leads.filter(l => l.client_id === client.id);
-      if (bt === 'pay_per_show') grossRevenue += cLeads.filter(l => l.disposition === 'showed' && ir(l.appointment_date)).length * (client.price_per_shown_appointment || 0);
-      else if (bt === 'pay_per_set') grossRevenue += cLeads.filter(l => l.date_appointment_set && ir(l.date_appointment_set)).length * (client.price_per_set_appointment || 0);
+      if (bt === 'pay_per_show') grossRevenue += computeLeadRevenue(client, cLeads.filter(l => l.disposition === 'showed' && ir(l.appointment_date)));
+      else if (bt === 'pay_per_set') grossRevenue += computeLeadRevenue(client, cLeads.filter(l => l.date_appointment_set && ir(l.date_appointment_set)));
       else if (bt === 'retainer') grossRevenue += (client.retainer_amount || 0);
     });
     const collected = billingRecords.filter(b => b.status === 'paid' && ir(b.paid_date)).reduce((s, b) => s + (b.paid_amount || b.calculated_amount || 0), 0);
