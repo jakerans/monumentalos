@@ -4,13 +4,13 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { toast } from '@/components/ui/use-toast';
 import { Plus, Trash2, Send } from 'lucide-react';
 import IndustryPicker from '../shared/IndustryPicker';
+import IndustryPricingEditor from '../shared/IndustryPricingEditor';
 
 export default function CreateClientModal({ open, onOpenChange, onCreated }) {
   const [name, setName] = useState('');
   const [industries, setIndustries] = useState([]);
   const [billingType, setBillingType] = useState('pay_per_show');
-  const [price, setPrice] = useState('');
-  const [pricePerSet, setPricePerSet] = useState('');
+  const [industryPricing, setIndustryPricing] = useState([]);
   const [retainerAmount, setRetainerAmount] = useState('');
   const [retainerDueDay, setRetainerDueDay] = useState('1');
   const [adAccountId, setAdAccountId] = useState('');
@@ -39,11 +39,10 @@ export default function CreateClientModal({ open, onOpenChange, onCreated }) {
   const handleCreate = async () => {
     if (!name.trim()) return;
     const hasPricing = 
-      (billingType === 'pay_per_show' && price) ||
-      (billingType === 'pay_per_set' && pricePerSet) ||
+      ((billingType === 'pay_per_show' || billingType === 'pay_per_set') && industryPricing.length > 0) ||
       (billingType === 'retainer' && retainerAmount);
     if (!hasPricing) {
-      toast({ title: 'Missing Price', description: 'Please enter the billing amount.', variant: 'destructive' });
+      toast({ title: 'Missing Price', description: 'Please add at least one industry with pricing.', variant: 'destructive' });
       return;
     }
     setSaving(true);
@@ -60,8 +59,13 @@ export default function CreateClientModal({ open, onOpenChange, onCreated }) {
       start_date: startDate || undefined,
       contacts: validContacts,
     };
-    if (billingType === 'pay_per_show') data.price_per_shown_appointment = parseFloat(price) || 0;
-    if (billingType === 'pay_per_set') data.price_per_set_appointment = parseFloat(pricePerSet) || 0;
+    if (billingType === 'pay_per_show' || billingType === 'pay_per_set') {
+      data.industry_pricing = industryPricing.map(row => ({
+        industry: row.industry,
+        price_per_show: row.price_per_show ? parseFloat(row.price_per_show) : null,
+        price_per_set: row.price_per_set ? parseFloat(row.price_per_set) : null,
+      }));
+    }
     if (billingType === 'retainer') {
       data.retainer_amount = parseFloat(retainerAmount) || 0;
       data.retainer_due_day = parseInt(retainerDueDay) || 1;
@@ -122,8 +126,7 @@ export default function CreateClientModal({ open, onOpenChange, onCreated }) {
     setName('');
     setIndustries([]);
     setBillingType('pay_per_show');
-    setPrice('');
-    setPricePerSet('');
+    setIndustryPricing([]);
     setRetainerAmount('');
     setRetainerDueDay('1');
     setAdAccountId('');
@@ -163,17 +166,8 @@ export default function CreateClientModal({ open, onOpenChange, onCreated }) {
               <option value="retainer">Retainer (Flat Monthly)</option>
             </select>
           </div>
-          {billingType === 'pay_per_show' && (
-            <div>
-              <label className="text-xs font-medium text-gray-700">Price Per Shown Appointment *</label>
-              <input type="number" value={price} onChange={e => setPrice(e.target.value)} className="w-full mt-1 px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="e.g. 250" />
-            </div>
-          )}
-          {billingType === 'pay_per_set' && (
-            <div>
-              <label className="text-xs font-medium text-gray-700">Price Per Appointment Set *</label>
-              <input type="number" value={pricePerSet} onChange={e => setPricePerSet(e.target.value)} className="w-full mt-1 px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="e.g. 100" />
-            </div>
+          {(billingType === 'pay_per_show' || billingType === 'pay_per_set') && (
+            <IndustryPricingEditor pricing={industryPricing} onChange={setIndustryPricing} billingType={billingType} />
           )}
           {billingType === 'retainer' && (
             <>

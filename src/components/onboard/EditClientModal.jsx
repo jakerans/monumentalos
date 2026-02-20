@@ -4,13 +4,13 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { toast } from '@/components/ui/use-toast';
 import { Plus, Trash2 } from 'lucide-react';
 import IndustryPicker from '../shared/IndustryPicker';
+import IndustryPricingEditor from '../shared/IndustryPricingEditor';
 
 export default function EditClientModal({ open, onOpenChange, client, onSaved }) {
   const [name, setName] = useState('');
   const [industries, setIndustries] = useState([]);
   const [billingType, setBillingType] = useState('pay_per_show');
-  const [pricePerShow, setPricePerShow] = useState('');
-  const [pricePerSet, setPricePerSet] = useState('');
+  const [industryPricing, setIndustryPricing] = useState([]);
   const [retainerAmount, setRetainerAmount] = useState('');
   const [retainerDueDay, setRetainerDueDay] = useState('1');
   const [adAccountId, setAdAccountId] = useState('');
@@ -31,8 +31,7 @@ export default function EditClientModal({ open, onOpenChange, client, onSaved })
       setName(client.name || '');
       setIndustries(client.industries || []);
       setBillingType(client.billing_type || 'pay_per_show');
-      setPricePerShow(client.price_per_shown_appointment ?? '');
-      setPricePerSet(client.price_per_set_appointment ?? '');
+      setIndustryPricing(client.industry_pricing || []);
       setRetainerAmount(client.retainer_amount ?? '');
       setRetainerDueDay(String(client.retainer_due_day || 1));
       setAdAccountId(client.ad_account_id || '');
@@ -79,11 +78,12 @@ export default function EditClientModal({ open, onOpenChange, client, onSaved })
       goal_value: goalValue ? parseFloat(goalValue) : undefined,
     };
 
-    if (billingType === 'pay_per_show') {
-      data.price_per_shown_appointment = parseFloat(pricePerShow) || 0;
-    }
-    if (billingType === 'pay_per_set') {
-      data.price_per_set_appointment = parseFloat(pricePerSet) || 0;
+    if (billingType === 'pay_per_show' || billingType === 'pay_per_set') {
+      data.industry_pricing = industryPricing.map(row => ({
+        industry: row.industry,
+        price_per_show: row.price_per_show ? parseFloat(row.price_per_show) : null,
+        price_per_set: row.price_per_set ? parseFloat(row.price_per_set) : null,
+      }));
     }
     if (billingType === 'retainer') {
       data.retainer_amount = parseFloat(retainerAmount) || 0;
@@ -144,17 +144,8 @@ export default function EditClientModal({ open, onOpenChange, client, onSaved })
               <option value="retainer">Retainer (Flat Monthly)</option>
             </select>
           </div>
-          {billingType === 'pay_per_show' && (
-            <div>
-              <label className={labelClass}>Price Per Shown Appointment</label>
-              <input type="number" value={pricePerShow} onChange={e => setPricePerShow(e.target.value)} className={inputClass} placeholder="e.g. 250" />
-            </div>
-          )}
-          {billingType === 'pay_per_set' && (
-            <div>
-              <label className={labelClass}>Price Per Appointment Set</label>
-              <input type="number" value={pricePerSet} onChange={e => setPricePerSet(e.target.value)} className={inputClass} placeholder="e.g. 100" />
-            </div>
+          {(billingType === 'pay_per_show' || billingType === 'pay_per_set') && (
+            <IndustryPricingEditor pricing={industryPricing} onChange={setIndustryPricing} billingType={billingType} />
           )}
           {billingType === 'retainer' && (
             <div className="grid grid-cols-2 gap-2">
