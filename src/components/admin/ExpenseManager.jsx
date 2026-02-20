@@ -37,16 +37,26 @@ export default function ExpenseManager({ startDate, endDate, onAddExpense }) {
   const [page, setPage] = useState(0);
   const [sortField, setSortField] = useState('date');
   const [sortDir, setSortDir] = useState('desc');
+  const [search, setSearch] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
   const [selected, setSelected] = useState(new Set());
   const [bulkDeleting, setBulkDeleting] = useState(false);
+
+  // Debounce search input
+  useEffect(() => {
+    const t = setTimeout(() => { setDebouncedSearch(search); setPage(0); }, 400);
+    return () => clearTimeout(t);
+  }, [search]);
+
   const { data, isLoading, isFetching, refetch } = useQuery({
-    queryKey: ['expenses-table', startDate, endDate, filterCat, filterType, page, sortField, sortDir],
+    queryKey: ['expenses-table', startDate, endDate, filterCat, filterType, page, sortField, sortDir, debouncedSearch],
     queryFn: async () => {
       const res = await base44.functions.invoke('getExpensesTableData', {
         startDate,
         endDate,
         filterCat,
         filterType,
+        search: debouncedSearch,
         skip: page * PAGE_SIZE,
         limit: PAGE_SIZE,
         sortField,
