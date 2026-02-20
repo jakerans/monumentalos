@@ -15,6 +15,9 @@ export default function RunPayrollModal({ open, onOpenChange, onComplete }) {
   const [loading, setLoading] = useState(false);
   const [lineItems, setLineItems] = useState([]);
   const [result, setResult] = useState(null);
+  const [undoDate, setUndoDate] = useState(dayjs().format('YYYY-MM-DD'));
+  const [undoLoading, setUndoLoading] = useState(false);
+  const [showUndoConfirm, setShowUndoConfirm] = useState(false);
 
   const prevMonthLabel = dayjs(payrollDate).subtract(1, 'month').format('MMMM YYYY');
 
