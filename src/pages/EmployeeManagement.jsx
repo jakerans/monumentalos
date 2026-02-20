@@ -237,6 +237,11 @@ export default function EmployeeManagement() {
         settings={payrollSettings}
         onSaved={refetchSettings}
       />
+      <RunPayrollModal
+        open={runPayrollOpen}
+        onOpenChange={setRunPayrollOpen}
+        onComplete={refetch}
+      />
       <AdminMobileNav currentPage="EmployeeManagement" clients={clients} />
     </div>
     </PageErrorBoundary>
