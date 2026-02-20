@@ -11,6 +11,7 @@ const COLUMN_MAP = {
   'Billing Type': 'billing_type',
   'Price Per Show': 'price_per_shown_appointment',
   'Price Per Set': 'price_per_set_appointment',
+  'Industry Pricing': 'industry_pricing',
   'Retainer Amount': 'retainer_amount',
   'Retainer Due Day': 'retainer_due_day',
   'Status': 'status',
@@ -28,6 +29,9 @@ const HEADERS = ['App ID', ...Object.keys(COLUMN_MAP)];
 function toSheetValue(field, value) {
   if (value === null || value === undefined) return '';
   if (field === 'industries' && Array.isArray(value)) return value.join(', ');
+  if (field === 'industry_pricing' && Array.isArray(value)) {
+    return value.map(p => `${p.industry}:show=${p.price_per_show||0},set=${p.price_per_set||0}`).join('; ');
+  }
   return String(value);
 }
 

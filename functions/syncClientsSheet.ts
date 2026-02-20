@@ -12,6 +12,7 @@ const COLUMN_MAP = {
   'Billing Type': 'billing_type',
   'Price Per Show': 'price_per_shown_appointment',
   'Price Per Set': 'price_per_set_appointment',
+  'Industry Pricing': 'industry_pricing',
   'Retainer Amount': 'retainer_amount',
   'Retainer Due Day': 'retainer_due_day',
   'Status': 'status',
@@ -37,6 +38,18 @@ function parseSheetValue(field, value) {
   if (field === 'industries') {
     return value.split(',').map(s => s.trim()).filter(Boolean);
   }
+  if (field === 'industry_pricing') {
+    // Parse format: "painting:show=150,set=100; epoxy:show=200,set=0"
+    return value.split(';').map(s => s.trim()).filter(Boolean).map(entry => {
+      const [ind, rest] = entry.split(':');
+      const pricing = { industry: ind.trim() };
+      (rest || '').split(',').forEach(pair => {
+        const [k, v] = pair.split('=');
+        if (k && v) pricing[`price_per_${k.trim()}`] = parseFloat(v) || 0;
+      });
+      return pricing;
+    });
+  }
   if (['price_per_shown_appointment', 'price_per_set_appointment', 'retainer_amount', 'retainer_due_day', 'goal_value'].includes(field)) {
     const num = parseFloat(value);
     return isNaN(num) ? undefined : num;
@@ -47,6 +60,9 @@ function parseSheetValue(field, value) {
 function toSheetValue(field, value) {
   if (value === null || value === undefined) return '';
   if (field === 'industries' && Array.isArray(value)) return value.join(', ');
+  if (field === 'industry_pricing' && Array.isArray(value)) {
+    return value.map(p => `${p.industry}:show=${p.price_per_show||0},set=${p.price_per_set||0}`).join('; ');
+  }
   return String(value);
 }
 
