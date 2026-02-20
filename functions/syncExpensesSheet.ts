@@ -212,11 +212,20 @@ Deno.serve(async (req) => {
       const sheetClientId = cell(row, APP_CLIENT_ID_COL);
       const sheetVendor = cell(row, APP_VENDOR_COL);
 
+      // Auto-detect distribution on existing rows too
+      const rawDesc = cell(row, BANK_DESC_COL);
+      const isDistroExisting = sheetCategory === 'distribution' || rawDesc.toLowerCase().includes('distro');
+
       // Sheet → DB updates
       const dbUpdates = {};
       if (sheetRowId && !existing.sheet_row_id) dbUpdates.sheet_row_id = sheetRowId;
-      if (sheetCategory && VALID_CATEGORIES.includes(sheetCategory) && sheetCategory !== existing.category) dbUpdates.category = sheetCategory;
-      if (sheetExpType && VALID_TYPES.includes(sheetExpType) && sheetExpType !== existing.expense_type) dbUpdates.expense_type = sheetExpType;
+      if (isDistroExisting) {
+        if (existing.category !== 'distribution') dbUpdates.category = 'distribution';
+        if (existing.expense_type !== 'distribution') dbUpdates.expense_type = 'distribution';
+      } else {
+        if (sheetCategory && VALID_CATEGORIES.includes(sheetCategory) && sheetCategory !== existing.category) dbUpdates.category = sheetCategory;
+        if (sheetExpType && VALID_TYPES.includes(sheetExpType) && sheetExpType !== existing.expense_type) dbUpdates.expense_type = sheetExpType;
+      }
       if (sheetClientId && sheetClientId !== (existing.client_id || '')) dbUpdates.client_id = sheetClientId;
       if (sheetVendor && sheetVendor !== (existing.vendor || '')) dbUpdates.vendor = sheetVendor;
 
