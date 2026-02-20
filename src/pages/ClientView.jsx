@@ -160,9 +160,14 @@ export default function ClientView() {
           <div>
             <h1 className="text-xl sm:text-2xl font-bold text-white">{client?.name || 'Loading...'}</h1>
             <p className="text-xs text-slate-400 mt-0.5">
-              {client?.billing_type === 'pay_per_set' ? `$${client?.price_per_set_appointment || 0} / appt set` :
-               client?.billing_type === 'retainer' ? `$${client?.retainer_amount || 0}/mo retainer` :
-               `$${client?.price_per_shown_appointment || 0} / shown appt`} · {client?.status || 'active'}
+              {client?.billing_type === 'retainer'
+                ? `$${client?.retainer_amount || 0}/mo retainer`
+                : (client?.industry_pricing && client.industry_pricing.length > 0)
+                  ? client.industry_pricing.map(p => `${p.industry}: $${client?.billing_type === 'pay_per_set' ? (p.price_per_set || 0) : (p.price_per_show || 0)}`).join(' · ')
+                  : client?.billing_type === 'pay_per_set'
+                    ? `$${client?.price_per_set_appointment || 0} / appt set`
+                    : `$${client?.price_per_shown_appointment || 0} / shown appt`
+              } · {client?.status || 'active'}
             </p>
           </div>
           <DateRangePicker
