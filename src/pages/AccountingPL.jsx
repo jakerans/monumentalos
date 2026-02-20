@@ -93,8 +93,6 @@ export default function AccountingPL() {
           </div>
         </main>
 
-        <RecordPaymentModal open={paymentOpen} onOpenChange={setPaymentOpen} clients={clients} billingRecords={billingRecords} onCreated={refetchAll} />
-        <AddExpenseModal open={expenseOpen} onOpenChange={setExpenseOpen} clients={clients} onCreated={refetchAll} />
         <AdminMobileNav currentPage="AccountingPL" clients={clients} />
       </div>
     </PageErrorBoundary>
