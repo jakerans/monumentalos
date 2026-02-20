@@ -131,6 +131,8 @@ export default function SetterDashboard() {
     await base44.entities.Lead.update(leadId, {
       status: 'disqualified',
       dq_reason: dqReason,
+      disqualified_by_setter_id: user.id,
+      disqualified_date: new Date().toISOString(),
     });
     refetch();
     toast({ title: 'Lead Disqualified', description: `${lead?.name || 'Lead'} marked as DQ.`, variant: 'warning' });
@@ -176,6 +178,8 @@ export default function SetterDashboard() {
         ...baseUpdates,
         status: 'disqualified',
         dq_reason: dqReason,
+        disqualified_by_setter_id: user.id,
+        disqualified_date: new Date().toISOString(),
       });
       refetch();
       toast({ title: 'Lead Disqualified', description: `${leadName} marked as DQ.`, variant: 'warning' });
