@@ -116,14 +116,24 @@ Deno.serve(async (req) => {
       .filter(b => b.billing_month === lastMonthStr && b.status !== 'paid')
       .reduce((s, b) => s + (b.paid_amount || b.calculated_amount || b.manual_amount || 0), 0);
 
+    function getLeadPrice(client, lead) {
+      const bt = client.billing_type || 'pay_per_show';
+      if (bt === 'retainer') return 0;
+      const ip = client.industry_pricing || {};
+      const defaultPrice = bt === 'pay_per_set' ? (client.price_per_set_appointment || 0) : (client.price_per_shown_appointment || 0);
+      const li = lead.industries || [];
+      if (li.length > 0 && Object.keys(ip).length > 0 && li[0] in ip && ip[li[0]] > 0) return ip[li[0]];
+      return defaultPrice;
+    }
+
     let liveAccruals = 0;
     activeClients.forEach(client => {
       const bt = client.billing_type || 'pay_per_show';
       const cLeads = leads.filter(l => l.client_id === client.id);
       if (bt === 'pay_per_show') {
-        liveAccruals += cLeads.filter(l => l.disposition === 'showed' && inMTD(l.appointment_date)).length * (client.price_per_shown_appointment || 0);
+        liveAccruals += cLeads.filter(l => l.disposition === 'showed' && inMTD(l.appointment_date)).reduce((s, l) => s + getLeadPrice(client, l), 0);
       } else if (bt === 'pay_per_set') {
-        liveAccruals += cLeads.filter(l => l.date_appointment_set && inMTD(l.date_appointment_set)).length * (client.price_per_set_appointment || 0);
+        liveAccruals += cLeads.filter(l => l.date_appointment_set && inMTD(l.date_appointment_set)).reduce((s, l) => s + getLeadPrice(client, l), 0);
       } else if (bt === 'retainer') {
         liveAccruals += (client.retainer_amount || 0);
       }
