@@ -44,17 +44,9 @@ const ENUM_FIELDS = {
 
 function parseSheetValue(field, value) {
   if (value === '' || value === undefined || value === null) return undefined;
-  if (ARRAY_FIELDS.includes(field)) {
-    return value.split(',').map(s => s.trim()).filter(Boolean);
-  }
-  if (NUMERIC_FIELDS.includes(field)) {
-    const num = parseFloat(value);
-    return isNaN(num) ? undefined : num;
-  }
-  if (ENUM_FIELDS[field]) {
-    const v = value.trim().toLowerCase();
-    return ENUM_FIELDS[field].includes(v) ? v : undefined;
-  }
+  if (ARRAY_FIELDS.includes(field)) return value.split(',').map(s => s.trim()).filter(Boolean);
+  if (NUMERIC_FIELDS.includes(field)) { const num = parseFloat(value); return isNaN(num) ? undefined : num; }
+  if (ENUM_FIELDS[field]) { const v = value.trim().toLowerCase(); return ENUM_FIELDS[field].includes(v) ? v : undefined; }
   return value.trim();
 }
 
@@ -92,38 +84,36 @@ Deno.serve(async (req) => {
     const base44 = createClientFromRequest(req);
 
     // Allow both admin manual trigger and scheduled (service role) calls
-    let isAdmin = false;
     try {
       const user = await base44.auth.me();
-      isAdmin = user && (user.role === 'admin' || user.app_role === 'admin');
-    } catch (_) {
-      // scheduled automation — no user context, that's fine
-    }
+      if (user && user.role !== 'admin' && user.app_role !== 'admin') {
+        return Response.json({ error: 'Forbidden: Admin access required' }, { status: 403 });
+      }
+    } catch (_) { /* scheduled automation — no user context */ }
 
     const accessToken = await base44.asServiceRole.connectors.getAccessToken('googlesheets');
-    const headers = { 'Authorization': `Bearer ${accessToken}`, 'Content-Type': 'application/json' };
+    const gHeaders = { 'Authorization': `Bearer ${accessToken}`, 'Content-Type': 'application/json' };
 
     // Ensure the "Leads" sheet tab exists
-    const metaResp = await fetch(`${SHEETS_API}/${SPREADSHEET_ID}?fields=sheets.properties.title`, { headers });
+    const metaResp = await fetch(`${SHEETS_API}/${SPREADSHEET_ID}?fields=sheets.properties.title`, { headers: gHeaders });
     const metaData = await metaResp.json();
     const sheetTitles = (metaData.sheets || []).map(s => s.properties.title);
     if (!sheetTitles.includes(SHEET_NAME)) {
       await fetch(`${SHEETS_API}/${SPREADSHEET_ID}:batchUpdate`, {
         method: 'POST',
-        headers,
-        body: JSON.stringify({
-          requests: [{ addSheet: { properties: { title: SHEET_NAME } } }],
-        }),
+        headers: gHeaders,
+        body: JSON.stringify({ requests: [{ addSheet: { properties: { title: SHEET_NAME } } }] }),
       });
     }
 
-    // 1. Read current sheet data
-    const rangeResp = await fetch(`${SHEETS_API}/${SPREADSHEET_ID}/values/${encodeURIComponent(SHEET_NAME)}`, { headers });
+    // 1. Read sheet + DB in parallel
+    const [rangeResp, leads] = await Promise.all([
+      fetch(`${SHEETS_API}/${SPREADSHEET_ID}/values/${encodeURIComponent(SHEET_NAME)}`, { headers: gHeaders }),
+      fetchAllEntities(base44, 'Lead'),
+    ]);
     const rangeData = await rangeResp.json();
     const rows = rangeData.values || [];
 
-    // 2. Get all leads from DB
-    const leads = await fetchAllEntities(base44, 'Lead');
     const leadById = {};
     leads.forEach(l => { leadById[l.id] = l; });
 
@@ -144,13 +134,13 @@ Deno.serve(async (req) => {
       );
       await fetch(`${SHEETS_API}/${SPREADSHEET_ID}/values/${encodeURIComponent(SHEET_NAME)}!A1:append?valueInputOption=USER_ENTERED&insertDataOption=INSERT_ROWS`, {
         method: 'POST',
-        headers,
+        headers: gHeaders,
         body: JSON.stringify({ values: [HEADERS, ...dataRows] }),
       });
       return Response.json({ success: true, message: 'Sheet initialized', sheetCreated: leads.length, sheetUpdated: 0, dbCreated: 0, dbUpdated: 0 });
     }
 
-    // Parse headers from first row
+    // Parse headers
     const sheetHeaders = rows[0];
     const appIdCol = sheetHeaders.indexOf('App ID');
     const colIndices = {};
@@ -161,9 +151,8 @@ Deno.serve(async (req) => {
 
     const seenLeadIds = new Set();
     const sheetUpdates = [];
-    const rowsToDelete = []; // sheet row indices for leads that no longer exist in DB
 
-    // 3. Process each sheet row -> sync to DB
+    // 2. Process each sheet row -> two-way sync with DB
     for (let i = 1; i < rows.length; i++) {
       const row = rows[i];
       const appId = appIdCol !== -1 ? (row[appIdCol] || '').trim() : '';
@@ -171,14 +160,10 @@ Deno.serve(async (req) => {
 
       if (!appId && !sheetName) continue;
 
-      // If the row has an App ID but that lead no longer exists in DB, mark for deletion
-      if (appId && !leadById[appId]) {
-        rowsToDelete.push(i);
-        continue;
-      }
+      // Skip rows with an App ID that no longer exists in DB (leave row in sheet, just don't process)
+      if (appId && !leadById[appId]) continue;
 
       if (appId && leadById[appId]) {
-        // Existing lead — two-way merge (sheet wins for non-empty differing values)
         seenLeadIds.add(appId);
         const lead = leadById[appId];
         const dbUpdatesObj = {};
@@ -217,7 +202,6 @@ Deno.serve(async (req) => {
           sheetUpdated++;
         }
       } else if (!appId && sheetName) {
-        // New row in sheet without App ID — create in DB
         const newLead = {};
         for (const [field, colIdx] of Object.entries(colIndices)) {
           const parsed = parseSheetValue(field, (row[colIdx] || '').trim());
@@ -237,58 +221,33 @@ Deno.serve(async (req) => {
       }
     }
 
-    // 4. Push DB leads not in sheet -> append new rows
+    // 3. Push DB leads not in sheet -> append new rows
     const newRows = [];
     for (const lead of leads) {
       if (seenLeadIds.has(lead.id)) continue;
-      const newRow = HEADERS.map(h => {
+      newRows.push(HEADERS.map(h => {
         if (h === 'App ID') return lead.id;
         return toSheetValue(COLUMN_MAP[h], lead[COLUMN_MAP[h]]);
-      });
-      newRows.push(newRow);
+      }));
       sheetCreated++;
     }
 
-    // 5. Delete rows for leads that no longer exist in DB
-    let sheetDeleted = 0;
-    if (rowsToDelete.length > 0) {
-      // Get the numeric sheetId for the Leads tab
-      const tabMetaResp = await fetch(`${SHEETS_API}/${SPREADSHEET_ID}?fields=sheets.properties`, { headers });
-      const tabMetaData = await tabMetaResp.json();
-      const sheetMeta = (tabMetaData.sheets || []).find(s => s.properties.title === SHEET_NAME);
-      const sheetId = sheetMeta ? sheetMeta.properties.sheetId : 0;
-
-      // Delete from bottom to top so indices don't shift
-      const deleteRequests = rowsToDelete
-        .sort((a, b) => b - a)
-        .map(rowIdx => ({
-          deleteDimension: {
-            range: { sheetId, dimension: 'ROWS', startIndex: rowIdx, endIndex: rowIdx + 1 }
-          }
-        }));
-
-      await fetch(`${SHEETS_API}/${SPREADSHEET_ID}:batchUpdate`, {
-        method: 'POST',
-        headers,
-        body: JSON.stringify({ requests: deleteRequests }),
-      });
-      sheetDeleted = rowsToDelete.length;
-    }
-
-    // 6. Batch update existing rows
+    // 4. Batch update existing rows
     if (sheetUpdates.length > 0) {
-      await fetch(`${SHEETS_API}/${SPREADSHEET_ID}/values:batchUpdate`, {
-        method: 'POST',
-        headers,
-        body: JSON.stringify({ valueInputOption: 'USER_ENTERED', data: sheetUpdates }),
-      });
+      for (let b = 0; b < sheetUpdates.length; b += 100) {
+        await fetch(`${SHEETS_API}/${SPREADSHEET_ID}/values:batchUpdate`, {
+          method: 'POST',
+          headers: gHeaders,
+          body: JSON.stringify({ valueInputOption: 'USER_ENTERED', data: sheetUpdates.slice(b, b + 100) }),
+        });
+      }
     }
 
-    // 7. Append new rows
+    // 5. Append new rows
     if (newRows.length > 0) {
       await fetch(`${SHEETS_API}/${SPREADSHEET_ID}/values/${encodeURIComponent(SHEET_NAME)}!A1:append?valueInputOption=USER_ENTERED&insertDataOption=INSERT_ROWS`, {
         method: 'POST',
-        headers,
+        headers: gHeaders,
         body: JSON.stringify({ values: newRows }),
       });
     }
@@ -297,7 +256,6 @@ Deno.serve(async (req) => {
       success: true,
       sheetCreated,
       sheetUpdated,
-      sheetDeleted,
       dbCreated,
       dbUpdated,
       totalLeadsInDB: leads.length,

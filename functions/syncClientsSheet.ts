@@ -4,7 +4,6 @@ const SPREADSHEET_ID = '1qn4-rYBgi5ruOm7tB6obbA3yBvSyOU313yNI3b41STM';
 const SHEET_NAME = 'Company Data';
 const SHEETS_API = 'https://sheets.googleapis.com/v4/spreadsheets';
 
-// Column mapping: sheet header -> Client entity field
 const COLUMN_MAP = {
   'Company Name': 'name',
   'Industries': 'industries',
@@ -27,10 +26,14 @@ const COLUMN_MAP = {
 
 const HEADERS = ['App ID', ...Object.keys(COLUMN_MAP)];
 
-// Reverse map: entity field -> header
-const FIELD_TO_HEADER = {};
-for (const [header, field] of Object.entries(COLUMN_MAP)) {
-  FIELD_TO_HEADER[field] = header;
+function colLetter(index) {
+  let result = '';
+  let n = index;
+  while (n >= 0) {
+    result = String.fromCharCode(65 + (n % 26)) + result;
+    n = Math.floor(n / 26) - 1;
+  }
+  return result;
 }
 
 function parseSheetValue(field, value) {
@@ -39,7 +42,6 @@ function parseSheetValue(field, value) {
     return value.split(',').map(s => s.trim()).filter(Boolean);
   }
   if (field === 'industry_pricing') {
-    // Parse format: "painting:show=150,set=100; epoxy:show=200,set=0"
     return value.split(';').map(s => s.trim()).filter(Boolean).map(entry => {
       const [ind, rest] = entry.split(':');
       const pricing = { industry: ind.trim() };
@@ -76,15 +78,16 @@ Deno.serve(async (req) => {
     }
 
     const accessToken = await base44.asServiceRole.connectors.getAccessToken('googlesheets');
-    const headers = { 'Authorization': `Bearer ${accessToken}`, 'Content-Type': 'application/json' };
+    const gHeaders = { 'Authorization': `Bearer ${accessToken}`, 'Content-Type': 'application/json' };
 
-    // 1. Read current sheet data
-    const rangeResp = await fetch(`${SHEETS_API}/${SPREADSHEET_ID}/values/${encodeURIComponent(SHEET_NAME)}`, { headers });
+    // 1. Read sheet + DB in parallel
+    const [rangeResp, clients] = await Promise.all([
+      fetch(`${SHEETS_API}/${SPREADSHEET_ID}/values/${encodeURIComponent(SHEET_NAME)}`, { headers: gHeaders }),
+      base44.asServiceRole.entities.Client.list(),
+    ]);
     const rangeData = await rangeResp.json();
     const rows = rangeData.values || [];
 
-    // 2. Get all clients from DB
-    const clients = await base44.asServiceRole.entities.Client.list();
     const clientById = {};
     clients.forEach(c => { clientById[c.id] = c; });
 
@@ -93,41 +96,37 @@ Deno.serve(async (req) => {
     let dbCreated = 0;
     let dbUpdated = 0;
 
-    // If sheet is empty or has no headers, initialize it
-    if (rows.length === 0) {
-      // Write headers + all clients
-      const headerRow = HEADERS;
-      const dataRows = clients.map(c => {
-        return HEADERS.map(h => {
-          if (h === 'App ID') return c.id;
-          const field = COLUMN_MAP[h];
-          return toSheetValue(field, c[field]);
-        });
-      });
+    const lastCol = colLetter(HEADERS.length - 1);
 
+    // If sheet is empty, initialize with headers + all clients
+    if (rows.length === 0) {
+      const dataRows = clients.map(c =>
+        HEADERS.map(h => {
+          if (h === 'App ID') return c.id;
+          return toSheetValue(COLUMN_MAP[h], c[COLUMN_MAP[h]]);
+        })
+      );
       await fetch(`${SHEETS_API}/${SPREADSHEET_ID}/values/${encodeURIComponent(SHEET_NAME)}!A1:append?valueInputOption=USER_ENTERED&insertDataOption=INSERT_ROWS`, {
         method: 'POST',
-        headers,
-        body: JSON.stringify({ values: [headerRow, ...dataRows] }),
+        headers: gHeaders,
+        body: JSON.stringify({ values: [HEADERS, ...dataRows] }),
       });
-
       return Response.json({ success: true, message: 'Sheet initialized', sheetCreated: clients.length, sheetUpdated: 0, dbCreated: 0, dbUpdated: 0 });
     }
 
-    // Parse headers from first row and add any missing columns
+    // Parse headers and add any missing columns
     let sheetHeaders = [...rows[0]];
     const missingHeaders = HEADERS.filter(h => !sheetHeaders.includes(h));
     if (missingHeaders.length > 0) {
       sheetHeaders = [...sheetHeaders, ...missingHeaders];
-      // Write updated header row back to sheet
-      const headerRange = `${SHEET_NAME}!A1:${String.fromCharCode(64 + Math.min(sheetHeaders.length, 26))}1`;
+      const headerRange = `${SHEET_NAME}!A1:${colLetter(sheetHeaders.length - 1)}1`;
       await fetch(`${SHEETS_API}/${SPREADSHEET_ID}/values/${encodeURIComponent(headerRange)}?valueInputOption=USER_ENTERED`, {
         method: 'PUT',
-        headers,
+        headers: gHeaders,
         body: JSON.stringify({ values: [sheetHeaders] }),
       });
       // Re-read rows so indices are correct
-      const reResp = await fetch(`${SHEETS_API}/${SPREADSHEET_ID}/values/${encodeURIComponent(SHEET_NAME)}`, { headers });
+      const reResp = await fetch(`${SHEETS_API}/${SPREADSHEET_ID}/values/${encodeURIComponent(SHEET_NAME)}`, { headers: gHeaders });
       const reData = await reResp.json();
       rows.length = 0;
       (reData.values || []).forEach(r => rows.push(r));
@@ -140,27 +139,21 @@ Deno.serve(async (req) => {
       if (idx !== -1) colIndices[field] = idx;
     }
 
-    // Track which DB clients appear in sheet
     const seenClientIds = new Set();
-    const sheetUpdates = []; // {range, values}
-    const rowsToDelete = []; // sheet row indices (0-based) for rows whose App ID no longer exists in DB
+    const sheetUpdates = [];
 
-    // 3. Process each sheet row -> sync to DB
+    // 2. Process each sheet row -> two-way sync with DB
     for (let i = 1; i < rows.length; i++) {
       const row = rows[i];
       const appId = appIdCol !== -1 ? (row[appIdCol] || '').trim() : '';
       const sheetName = colIndices['name'] !== undefined ? (row[colIndices['name']] || '').trim() : '';
 
-      if (!appId && !sheetName) continue; // skip empty rows
+      if (!appId && !sheetName) continue;
 
-      // If the row has an App ID but that client no longer exists in DB, mark for deletion
-      if (appId && !clientById[appId]) {
-        rowsToDelete.push(i); // i is 1-based data row, which equals 0-based sheet row index (since headers are row 0)
-        continue;
-      }
+      // Skip rows with an App ID that no longer exists in DB (leave row in sheet, just don't process)
+      if (appId && !clientById[appId]) continue;
 
       if (appId && clientById[appId]) {
-        // Existing client — two-way merge (sheet wins for non-empty values, push DB values for empty sheet cells)
         seenClientIds.add(appId);
         const client = clientById[appId];
         const dbUpdates = {};
@@ -172,17 +165,14 @@ Deno.serve(async (req) => {
           const dbVal = toSheetValue(field, client[field]);
 
           if (sheetVal && sheetVal !== dbVal) {
-            // Sheet has a value that differs — sheet wins, update DB
             const parsed = parseSheetValue(field, sheetVal);
             if (parsed !== undefined) dbUpdates[field] = parsed;
           } else if (!sheetVal && dbVal) {
-            // Sheet is empty but DB has value — push DB to sheet
             rowUpdate[colIdx] = dbVal;
             rowChanged = true;
           }
         }
 
-        // Ensure App ID is in the row
         if (appIdCol !== -1 && !(row[appIdCol] || '').trim()) {
           rowUpdate[appIdCol] = appId;
           rowChanged = true;
@@ -194,16 +184,14 @@ Deno.serve(async (req) => {
         }
 
         if (rowChanged) {
-          // Pad row to match header length
           while (rowUpdate.length < sheetHeaders.length) rowUpdate.push('');
           sheetUpdates.push({
-            range: `${SHEET_NAME}!A${i + 1}:${String.fromCharCode(64 + sheetHeaders.length)}${i + 1}`,
+            range: `${SHEET_NAME}!A${i + 1}:${lastCol}${i + 1}`,
             values: [rowUpdate],
           });
           sheetUpdated++;
         }
       } else if (!appId && sheetName) {
-        // New row in sheet without App ID — create in DB
         const newClient = {};
         for (const [field, colIdx] of Object.entries(colIndices)) {
           const parsed = parseSheetValue(field, (row[colIdx] || '').trim());
@@ -212,93 +200,53 @@ Deno.serve(async (req) => {
         if (newClient.name) {
           const created = await base44.asServiceRole.entities.Client.create(newClient);
           dbCreated++;
-          // Write back App ID to sheet
           const rowUpdate = [...row];
           while (rowUpdate.length < sheetHeaders.length) rowUpdate.push('');
           if (appIdCol !== -1) rowUpdate[appIdCol] = created.id;
           sheetUpdates.push({
-            range: `${SHEET_NAME}!A${i + 1}:${String.fromCharCode(64 + sheetHeaders.length)}${i + 1}`,
+            range: `${SHEET_NAME}!A${i + 1}:${lastCol}${i + 1}`,
             values: [rowUpdate],
           });
         }
       }
     }
 
-    // 4. Push DB clients not in sheet -> append new rows
+    // 3. Push DB clients not in sheet -> append new rows
     const newRows = [];
     for (const client of clients) {
       if (seenClientIds.has(client.id)) continue;
-      // Check if already matched by name
       const alreadyInSheet = rows.slice(1).some(r => {
         const nameIdx = colIndices['name'];
         return nameIdx !== undefined && (r[nameIdx] || '').trim().toLowerCase() === (client.name || '').toLowerCase();
       });
       if (alreadyInSheet) continue;
 
-      const newRow = HEADERS.map(h => {
+      newRows.push(HEADERS.map(h => {
         if (h === 'App ID') return client.id;
-        const field = COLUMN_MAP[h];
-        return toSheetValue(field, client[field]);
-      });
-      newRows.push(newRow);
+        return toSheetValue(COLUMN_MAP[h], client[COLUMN_MAP[h]]);
+      }));
       sheetCreated++;
     }
 
-    // 5. Delete rows for clients that no longer exist in DB
-    let sheetDeleted = 0;
-    if (rowsToDelete.length > 0) {
-      // Get the numeric sheetId for the tab
-      const metaResp = await fetch(`${SHEETS_API}/${SPREADSHEET_ID}?fields=sheets.properties`, { headers });
-      const metaData = await metaResp.json();
-      const sheetMeta = (metaData.sheets || []).find(s => s.properties.title === SHEET_NAME);
-      const sheetId = sheetMeta ? sheetMeta.properties.sheetId : 0;
-
-      // Delete from bottom to top so indices don't shift
-      const deleteRequests = rowsToDelete
-        .sort((a, b) => b - a)
-        .map(rowIdx => ({
-          deleteDimension: {
-            range: { sheetId, dimension: 'ROWS', startIndex: rowIdx, endIndex: rowIdx + 1 }
-          }
-        }));
-
-      await fetch(`${SHEETS_API}/${SPREADSHEET_ID}:batchUpdate`, {
-        method: 'POST',
-        headers,
-        body: JSON.stringify({ requests: deleteRequests }),
-      });
-      sheetDeleted = rowsToDelete.length;
-    }
-
-    // 6. Batch update existing rows
+    // 4. Batch update existing rows
     if (sheetUpdates.length > 0) {
       await fetch(`${SHEETS_API}/${SPREADSHEET_ID}/values:batchUpdate`, {
         method: 'POST',
-        headers,
-        body: JSON.stringify({
-          valueInputOption: 'USER_ENTERED',
-          data: sheetUpdates,
-        }),
+        headers: gHeaders,
+        body: JSON.stringify({ valueInputOption: 'USER_ENTERED', data: sheetUpdates }),
       });
     }
 
-    // 7. Append new rows
+    // 5. Append new rows
     if (newRows.length > 0) {
       await fetch(`${SHEETS_API}/${SPREADSHEET_ID}/values/${encodeURIComponent(SHEET_NAME)}!A1:append?valueInputOption=USER_ENTERED&insertDataOption=INSERT_ROWS`, {
         method: 'POST',
-        headers,
+        headers: gHeaders,
         body: JSON.stringify({ values: newRows }),
       });
     }
 
-    return Response.json({
-      success: true,
-      sheetCreated,
-      sheetUpdated,
-      sheetDeleted,
-      dbCreated,
-      dbUpdated,
-    });
+    return Response.json({ success: true, sheetCreated, sheetUpdated, dbCreated, dbUpdated });
   } catch (error) {
     return Response.json({ error: error.message }, { status: 500 });
   }

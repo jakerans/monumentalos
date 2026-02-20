@@ -50,7 +50,6 @@ function cell(row, idx) {
   return idx < row.length ? (row[idx] || '').trim() : '';
 }
 
-// Paginated fetch of ALL expenses from DB
 async function fetchAllExpenses(base44) {
   const all = [];
   let skip = 0;
@@ -79,7 +78,7 @@ Deno.serve(async (req) => {
     const accessToken = await base44.asServiceRole.connectors.getAccessToken('googlesheets');
     const gHeaders = { 'Authorization': `Bearer ${accessToken}`, 'Content-Type': 'application/json' };
 
-    // ─── STEP 1: Read sheet + DB in parallel ───
+    // 1. Read sheet + DB in parallel
     const [sheetResp, dbExpenses] = await Promise.all([
       fetch(`${SHEETS_API}/${SPREADSHEET_ID}/values/${encodeURIComponent(SHEET_NAME)}`, { headers: gHeaders }),
       fetchAllExpenses(base44),
@@ -94,9 +93,9 @@ Deno.serve(async (req) => {
       return Response.json({ success: true, added: 0, skipped: 0, updated: 0, totalProcessed: 0 });
     }
 
-    // ─── STEP 2: Build O(1) lookup Sets from DB ───
-    const existingSheetIds = new Set();   // primary dedup key
-    const existingFingerprints = new Set(); // fallback dedup: date|amount|desc
+    // 2. Build O(1) lookup Sets from DB
+    const existingSheetIds = new Set();
+    const existingFingerprints = new Set();
     const expenseById = {};
 
     for (const e of dbExpenses) {
@@ -105,24 +104,16 @@ Deno.serve(async (req) => {
       existingFingerprints.add(`${e.date}|${e.amount}|${e.description || ''}`);
     }
 
-    // ─── Get Sheet ID for row deletion ───
-    const metaResp = await fetch(`${SHEETS_API}/${SPREADSHEET_ID}?fields=sheets(properties(sheetId,title))`, { headers: gHeaders });
-    const metaData = await metaResp.json();
-    const sheetMeta = (metaData.sheets || []).find(s => s.properties.title === SHEET_NAME);
-    const sheetId = sheetMeta ? sheetMeta.properties.sheetId : 0;
-
-    // ─── STEP 3: Single pass over sheet rows — classify each row ───
-    const newRows = [];       // { rowIndex, data }
-    const updateRows = [];    // { existing, row, rowIndex, sheetRowId }
+    // 3. Single pass over sheet rows — classify each row
+    const newRows = [];
+    const updateRows = [];
     let skipped = 0;
-    const deleteRowIndices = [];  // sheet row indices to delete (positive amounts, transfers, etc.)
-    const seenSheetIds = new Set(); // prevent intra-sync duplicates
+    const seenSheetIds = new Set();
 
     for (let i = 1; i < rows.length; i++) {
       const row = rows[i];
       const amount = parseAmount(cell(row, BANK_AMOUNT_COL));
-      if (amount === null) { skipped++; continue; }
-      if (amount >= 0) { deleteRowIndices.push(i); skipped++; continue; }
+      if (amount === null || amount >= 0) { skipped++; continue; }
 
       const date = parseDate(cell(row, BANK_DATE_COL));
       if (!date) { skipped++; continue; }
@@ -132,24 +123,23 @@ Deno.serve(async (req) => {
       const expenseAmount = Math.abs(amount);
       const sheetCategory = cell(row, APP_CATEGORY_COL).toLowerCase();
 
-      // Delete transfer/transaction category rows from sheet
-      if (SKIP_CATEGORIES.some(kw => sheetCategory.includes(kw))) { deleteRowIndices.push(i); skipped++; continue; }
+      // Skip transfer/transaction category rows
+      if (SKIP_CATEGORIES.some(kw => sheetCategory.includes(kw))) { skipped++; continue; }
 
-      // Delete rows matching known payroll/transfer descriptions
-      if (SKIP_DESCRIPTIONS.some(kw => rawDesc.toUpperCase().includes(kw.toUpperCase()))) { deleteRowIndices.push(i); skipped++; continue; }
+      // Skip known payroll/transfer descriptions
+      if (SKIP_DESCRIPTIONS.some(kw => rawDesc.toUpperCase().includes(kw.toUpperCase()))) { skipped++; continue; }
 
-      // ── Check if already synced ──
+      // Check if already synced
       const appId = cell(row, APP_ID_COL);
       const matchedBySheetId = sheetRowId && existingSheetIds.has(sheetRowId);
       const existingRecord = appId ? expenseById[appId] : (matchedBySheetId ? dbExpenses.find(e => e.sheet_row_id === sheetRowId) : null);
 
       if (existingRecord) {
-        // Already in DB — queue for 2-way merge
         updateRows.push({ existing: existingRecord, row, rowIndex: i, sheetRowId });
         continue;
       }
 
-      // ── New row — dedup check ──
+      // New row — dedup check
       if (sheetRowId) {
         if (seenSheetIds.has(sheetRowId)) { skipped++; continue; }
         seenSheetIds.add(sheetRowId);
@@ -162,7 +152,6 @@ Deno.serve(async (req) => {
       const sheetClientId = cell(row, APP_CLIENT_ID_COL);
       const sheetVendor = cell(row, APP_VENDOR_COL);
 
-      // Auto-detect distribution: if category is "distribution" or description contains "distro"
       const isDistribution = sheetCategory === 'distribution' || rawDesc.toLowerCase().includes('distro');
       const resolvedCategory = isDistribution ? 'distribution' : ((sheetCategory && VALID_CATEGORIES.includes(sheetCategory)) ? sheetCategory : 'uncategorized');
       const resolvedExpType = isDistribution ? 'distribution' : ((sheetExpType && VALID_TYPES.includes(sheetExpType)) ? sheetExpType : 'uncategorized');
@@ -181,9 +170,8 @@ Deno.serve(async (req) => {
       newRows.push({ rowIndex: i, data: newExpense });
     }
 
-    // ─── STEP 4: Bulk create new expenses (batches of 50) ───
-    console.log(`[syncExpenses] ${existingSheetIds.size} existing sheet_row_ids in DB Set`);
-    console.log(`[syncExpenses] ${newRows.length} new rows to create · ${skipped} skipped (positive/empty/transfer) · ${updateRows.length} existing to merge`);
+    // 4. Bulk create new expenses (batches of 50)
+    console.log(`[syncExpenses] ${newRows.length} new · ${skipped} skipped · ${updateRows.length} existing to merge`);
 
     let added = 0;
     const sheetUpdates = [];
@@ -193,7 +181,6 @@ Deno.serve(async (req) => {
       const created = await base44.asServiceRole.entities.Expense.bulkCreate(batch.map(r => r.data));
       added += created.length;
 
-      // Write App ID + columns back to sheet
       for (let j = 0; j < created.length; j++) {
         const rec = created[j];
         const exp = batch[j].data;
@@ -204,7 +191,7 @@ Deno.serve(async (req) => {
       }
     }
 
-    // ─── STEP 5: 2-way merge for existing rows ───
+    // 5. 2-way merge for existing rows
     let updated = 0;
     for (const { existing, row, rowIndex, sheetRowId } of updateRows) {
       const sheetCategory = cell(row, APP_CATEGORY_COL).toLowerCase();
@@ -212,7 +199,6 @@ Deno.serve(async (req) => {
       const sheetClientId = cell(row, APP_CLIENT_ID_COL);
       const sheetVendor = cell(row, APP_VENDOR_COL);
 
-      // Auto-detect distribution on existing rows too
       const rawDesc = cell(row, BANK_DESC_COL);
       const isDistroExisting = sheetCategory === 'distribution' || rawDesc.toLowerCase().includes('distro');
 
@@ -250,24 +236,7 @@ Deno.serve(async (req) => {
       }
     }
 
-    // ─── STEP 6: Delete DB expenses whose sheet_row_id no longer exists in sheet ───
-    // Build set of all sheet_row_ids still present in the sheet
-    const sheetRowIdsInSheet = new Set();
-    for (let i = 1; i < rows.length; i++) {
-      const rid = cell(rows[i], BANK_ID_COL);
-      if (rid) sheetRowIdsInSheet.add(rid);
-    }
-
-    let deleted = 0;
-    for (const e of dbExpenses) {
-      if (e.sheet_row_id && !sheetRowIdsInSheet.has(e.sheet_row_id)) {
-        await base44.asServiceRole.entities.Expense.delete(e.id);
-        deleted++;
-      }
-    }
-    if (deleted > 0) console.log(`[syncExpenses] Deleted ${deleted} expenses whose sheet_row_id was removed from sheet`);
-
-    // ─── STEP 7: Batch write sheet updates (groups of 100) ───
+    // 6. Batch write sheet updates (groups of 100)
     for (let b = 0; b < sheetUpdates.length; b += 100) {
       await fetch(`${SHEETS_API}/${SPREADSHEET_ID}/values:batchUpdate`, {
         method: 'POST',
@@ -276,36 +245,11 @@ Deno.serve(async (req) => {
       });
     }
 
-    // ─── STEP 8: Delete skipped rows from sheet (positive amounts, transfers) ───
-    let sheetRowsDeleted = 0;
-    if (deleteRowIndices.length > 0) {
-      // Sort descending so deleting from bottom up doesn't shift indices
-      deleteRowIndices.sort((a, b) => b - a);
-      // Batch into groups of 100 requests per batchUpdate call
-      for (let b = 0; b < deleteRowIndices.length; b += 100) {
-        const batch = deleteRowIndices.slice(b, b + 100);
-        const requests = batch.map(rowIdx => ({
-          deleteDimension: {
-            range: { sheetId, dimension: 'ROWS', startIndex: rowIdx, endIndex: rowIdx + 1 }
-          }
-        }));
-        await fetch(`${SHEETS_API}/${SPREADSHEET_ID}:batchUpdate`, {
-          method: 'POST',
-          headers: gHeaders,
-          body: JSON.stringify({ requests }),
-        });
-        sheetRowsDeleted += batch.length;
-      }
-      console.log(`[syncExpenses] Deleted ${sheetRowsDeleted} rows from sheet (positive amounts / transfers)`);
-    }
-
     return Response.json({
       success: true,
       added,
       skipped,
       updated,
-      deleted,
-      sheetRowsDeleted,
       totalProcessed: rows.length - 1,
     });
   } catch (error) {
