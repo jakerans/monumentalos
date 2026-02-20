@@ -20,6 +20,7 @@ const BANK_AMOUNT_COL = 6;
 
 const VALID_CATEGORIES = ['ad_spend', 'payroll', 'software', 'office', 'contractor', 'travel', 'distribution', 'processing_fee', 'other'];
 const SKIP_CATEGORIES = ['transaction', 'transfer'];
+const SKIP_DESCRIPTIONS = ['GUSTO - TAX', 'GUSTO - NET', 'GUSTO - CND', 'Wise Inc'];
 const VALID_TYPES = ['cogs', 'overhead', 'distribution'];
 
 function colLetter(index) {
