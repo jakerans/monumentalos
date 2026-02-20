@@ -110,6 +110,7 @@ Deno.serve(async (req) => {
     // Track which DB clients appear in sheet
     const seenClientIds = new Set();
     const sheetUpdates = []; // {range, values}
+    const rowsToDelete = []; // sheet row indices (0-based) for rows whose App ID no longer exists in DB
 
     // 3. Process each sheet row -> sync to DB
     for (let i = 1; i < rows.length; i++) {
@@ -118,6 +119,12 @@ Deno.serve(async (req) => {
       const sheetName = colIndices['name'] !== undefined ? (row[colIndices['name']] || '').trim() : '';
 
       if (!appId && !sheetName) continue; // skip empty rows
+
+      // If the row has an App ID but that client no longer exists in DB, mark for deletion
+      if (appId && !clientById[appId]) {
+        rowsToDelete.push(i); // i is 1-based data row, which equals 0-based sheet row index (since headers are row 0)
+        continue;
+      }
 
       if (appId && clientById[appId]) {
         // Existing client — two-way merge (sheet wins for non-empty values, push DB values for empty sheet cells)
