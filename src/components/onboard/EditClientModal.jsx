@@ -154,16 +154,26 @@ export default function EditClientModal({ open, onOpenChange, client, onSaved })
             </select>
           </div>
           {billingType === 'pay_per_show' && (
-            <div>
-              <label className={labelClass}>Price Per Shown Appointment</label>
-              <input type="number" value={pricePerShow} onChange={e => setPricePerShow(e.target.value)} className={inputClass} placeholder="e.g. 250" />
-            </div>
+            <>
+              <div>
+                <label className={labelClass}>Default Price Per Shown Appointment</label>
+                <input type="number" value={pricePerShow} onChange={e => setPricePerShow(e.target.value)} className={inputClass} placeholder="e.g. 250" />
+              </div>
+              {industries.length > 1 && (
+                <IndustryPricingEditor industries={industries} pricing={industryPricing} onChange={setIndustryPricing} billingType={billingType} />
+              )}
+            </>
           )}
           {billingType === 'pay_per_set' && (
-            <div>
-              <label className={labelClass}>Price Per Appointment Set</label>
-              <input type="number" value={pricePerSet} onChange={e => setPricePerSet(e.target.value)} className={inputClass} placeholder="e.g. 100" />
-            </div>
+            <>
+              <div>
+                <label className={labelClass}>Default Price Per Appointment Set</label>
+                <input type="number" value={pricePerSet} onChange={e => setPricePerSet(e.target.value)} className={inputClass} placeholder="e.g. 100" />
+              </div>
+              {industries.length > 1 && (
+                <IndustryPricingEditor industries={industries} pricing={industryPricing} onChange={setIndustryPricing} billingType={billingType} />
+              )}
+            </>
           )}
           {billingType === 'retainer' && (
             <div className="grid grid-cols-2 gap-2">
