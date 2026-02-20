@@ -18,10 +18,10 @@ const BANK_DATE_COL = 1;
 const BANK_DESC_COL = 3;
 const BANK_AMOUNT_COL = 6;
 
-const VALID_CATEGORIES = ['ad_spend', 'payroll', 'software', 'office', 'contractor', 'travel', 'distribution', 'processing_fee', 'other'];
+const VALID_CATEGORIES = ['ad_spend', 'payroll', 'software', 'office', 'contractor', 'travel', 'distribution', 'processing_fee', 'other', 'uncategorized'];
 const SKIP_CATEGORIES = ['transaction', 'transfer'];
 const SKIP_DESCRIPTIONS = ['GUSTO - TAX', 'GUSTO - NET', 'GUSTO - CND', 'Wise Inc'];
-const VALID_TYPES = ['cogs', 'overhead', 'distribution'];
+const VALID_TYPES = ['cogs', 'overhead', 'distribution', 'uncategorized'];
 
 function colLetter(index) {
   let result = '';
@@ -164,8 +164,8 @@ Deno.serve(async (req) => {
 
       // Auto-detect distribution: if category is "distribution" or description contains "distro"
       const isDistribution = sheetCategory === 'distribution' || rawDesc.toLowerCase().includes('distro');
-      const resolvedCategory = isDistribution ? 'distribution' : ((sheetCategory && VALID_CATEGORIES.includes(sheetCategory)) ? sheetCategory : 'other');
-      const resolvedExpType = isDistribution ? 'distribution' : ((sheetExpType && VALID_TYPES.includes(sheetExpType)) ? sheetExpType : 'overhead');
+      const resolvedCategory = isDistribution ? 'distribution' : ((sheetCategory && VALID_CATEGORIES.includes(sheetCategory)) ? sheetCategory : 'uncategorized');
+      const resolvedExpType = isDistribution ? 'distribution' : ((sheetExpType && VALID_TYPES.includes(sheetExpType)) ? sheetExpType : 'uncategorized');
 
       const newExpense = {
         category: resolvedCategory,
