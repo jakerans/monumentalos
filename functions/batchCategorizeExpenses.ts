@@ -38,18 +38,22 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Forbidden: Admin access required' }, { status: 403 });
     }
 
-    // 1. Fetch all expenses then filter to only truly uncategorized ones
-    const allExpenses = await fetchAllFiltered(
-      base44.entities.Expense,
-      {},
-      '-date'
-    );
+    // 1. Server-side filter: fetch only expenses with category = 'uncategorized'
+    //    Also fetch those with expense_type = 'uncategorized' in a second query, then merge
+    const [byCat, byType] = await Promise.all([
+      fetchAllFiltered(base44.entities.Expense, { category: 'uncategorized' }, '-date'),
+      fetchAllFiltered(base44.entities.Expense, { expense_type: 'uncategorized' }, '-date'),
+    ]);
 
-    const uncategorized = allExpenses.filter(e => {
-      const catUncategorized = !e.category || e.category === 'uncategorized';
-      const typeUncategorized = !e.expense_type || e.expense_type === 'uncategorized';
-      return catUncategorized || typeUncategorized;
-    });
+    // Merge and deduplicate by ID
+    const seen = new Set();
+    const uncategorized = [];
+    for (const e of [...byCat, ...byType]) {
+      if (!seen.has(e.id)) {
+        seen.add(e.id);
+        uncategorized.push(e);
+      }
+    }
 
     if (uncategorized.length === 0) {
       return Response.json({ message: 'No uncategorized expenses found.', processed: 0, updated: 0, skipped_invalid: 0 });
