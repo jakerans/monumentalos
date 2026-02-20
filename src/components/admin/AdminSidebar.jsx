@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import { base44 } from '@/api/base44Client';
 import { motion } from 'framer-motion';
-import { Zap, ZapOff, LayoutDashboard, Users, Receipt, Calculator, Headset, UserCog, ChevronLeft, ChevronRight, ChevronDown, BarChart3 } from 'lucide-react';
+import { Zap, ZapOff, LayoutDashboard, Users, Receipt, Calculator, Headset, UserCog, ChevronLeft, ChevronRight, ChevronDown, BarChart3, Wallet, TrendingUp } from 'lucide-react';
 import { useEffectsToggle } from '../shared/useEffectsToggle';
 import AdminUserMenu from './AdminUserMenu';
 
