@@ -132,6 +132,7 @@ export default function CreateClientModal({ open, onOpenChange, onCreated }) {
     setBillingType('pay_per_show');
     setPrice('');
     setPricePerSet('');
+    setIndustryPricing({});
     setRetainerAmount('');
     setRetainerDueDay('1');
     setAdAccountId('');
