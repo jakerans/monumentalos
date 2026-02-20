@@ -9,7 +9,8 @@ const allNavItems = [
   { key: 'ClientPerformance', label: 'Client Overview', icon: Users },
   { key: 'MonthlyBilling', label: 'Billing', icon: Receipt },
   { key: 'RevenueDashboard', label: 'Accounting', icon: Calculator },
-  { key: 'SetterPerformance', label: 'Setters', icon: Headset },
+  { key: 'SetterPerformance', label: 'Setter Mgmt', icon: Headset },
+  { key: 'SetterStats', label: 'Setter Reporting', icon: Headset },
   { key: 'EmployeeManagement', label: 'Employees', icon: UserCog },
   { key: 'UserManagement', label: 'Users', icon: Users },
 ];
