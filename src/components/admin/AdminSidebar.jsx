@@ -11,7 +11,15 @@ const navItems = [
   { key: 'AdminDashboard', label: 'Dashboard', icon: LayoutDashboard },
   { key: 'ClientPerformance', label: 'Client Overview', icon: Users },
   { key: 'MonthlyBilling', label: 'Billing', icon: Receipt },
-  { key: 'RevenueDashboard', label: 'Accounting', icon: Calculator },
+  {
+    key: 'AccountingPL', label: 'Accounting', icon: Calculator,
+    children: [
+      { key: 'AccountingPL', label: 'P&L', icon: BarChart3 },
+      { key: 'AccountingExpenses', label: 'Expenses', icon: Wallet },
+      { key: 'AccountingCashFlow', label: 'Cash Flow', icon: TrendingUp },
+      { key: 'AccountingClients', label: 'Clients', icon: Users },
+    ],
+  },
   {
     key: 'SetterPerformance', label: 'Setters', icon: Headset,
     children: [
