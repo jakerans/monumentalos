@@ -21,7 +21,7 @@ Deno.serve(async (req) => {
     }
 
     const body = await req.json();
-    const { startDate, endDate, filterCat, filterType, search, skip = 0, limit = 50, sortField = 'date', sortDir = 'desc' } = body;
+    const { startDate, endDate, filterCat, filterType, search, skip = 0, limit = 50, sortField = 'date', sortDir = 'desc', showDistributions = false } = body;
 
     // Fetch all expenses in range + active clients in parallel
     const [allExpenses, clients] = await Promise.all([
