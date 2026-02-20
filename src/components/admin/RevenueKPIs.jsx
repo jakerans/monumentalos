@@ -7,14 +7,22 @@ export default function RevenueKPIs({ clients, leads, payments, expenses, startD
   const end = new Date(endDate + 'T23:59:59');
   const inRange = (dateStr) => { if (!dateStr) return false; const d = new Date(dateStr); return d >= start && d <= end; };
 
+  function getLeadPrice(client, lead, field) {
+    const pricing = client.industry_pricing || [];
+    const ind = (lead.industries && lead.industries[0]) || null;
+    const match = ind ? pricing.find(p => p.industry === ind) : null;
+    if (match) return match[field] || 0;
+    return field === 'price_per_show' ? (client.price_per_shown_appointment || 0) : (client.price_per_set_appointment || 0);
+  }
+
   let totalBilled = 0;
   clients.filter(c => c.status === 'active').forEach(client => {
     const bt = client.billing_type || 'pay_per_show';
     const cLeads = leads.filter(l => l.client_id === client.id);
     if (bt === 'pay_per_show') {
-      totalBilled += cLeads.filter(l => l.disposition === 'showed' && inRange(l.appointment_date)).length * (client.price_per_shown_appointment || 0);
+      cLeads.filter(l => l.disposition === 'showed' && inRange(l.appointment_date)).forEach(l => { totalBilled += getLeadPrice(client, l, 'price_per_show'); });
     } else if (bt === 'pay_per_set') {
-      totalBilled += cLeads.filter(l => l.date_appointment_set && inRange(l.date_appointment_set)).length * (client.price_per_set_appointment || 0);
+      cLeads.filter(l => l.date_appointment_set && inRange(l.date_appointment_set)).forEach(l => { totalBilled += getLeadPrice(client, l, 'price_per_set'); });
     } else if (bt === 'retainer') {
       const monthsInRange = Math.max(1, Math.ceil((end - start) / (30 * 24 * 60 * 60 * 1000)));
       totalBilled += (client.retainer_amount || 0) * monthsInRange;
