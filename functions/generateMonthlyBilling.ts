@@ -116,8 +116,68 @@ Deno.serve(async (req) => {
       created = records.length;
     }
 
-    console.log(`generateMonthlyBilling: Created ${created} records for ${billingMonthStr}`);
-    return Response.json({ success: true, billingMonth: billingMonthStr, created });
+    // --- Hybrid performance billing ---
+    const existingHybridPerfClientIds = new Set(
+      existingRecords.filter(r => r.billing_type === 'hybrid_performance').map(r => r.client_id)
+    );
+
+    const hybridClients = activeClients.filter(c =>
+      c.billing_type === 'hybrid' && !existingHybridPerfClientIds.has(c.id)
+    );
+
+    const hybridRecords = hybridClients.map(client => {
+      const perfType = client.hybrid_performance_type || 'pay_per_set';
+      const pricing = client.hybrid_performance_pricing || [];
+      const cLeads = leads.filter(l => l.client_id === client.id);
+
+      let quantity = 0;
+      let calculatedAmount = 0;
+
+      if (perfType === 'pay_per_show') {
+        const showed = cLeads.filter(l =>
+          l.disposition === 'showed' && l.appointment_date &&
+          new Date(l.appointment_date) >= monthStart && new Date(l.appointment_date) <= monthEnd
+        );
+        quantity = showed.length;
+        showed.forEach(lead => {
+          const ind = (lead.industries && lead.industries[0]) || null;
+          const match = ind ? pricing.find(p => p.industry === ind) : null;
+          calculatedAmount += (match ? (match.price_per_show || 0) : 0);
+        });
+      } else if (perfType === 'pay_per_set') {
+        const booked = cLeads.filter(l =>
+          l.date_appointment_set &&
+          new Date(l.date_appointment_set) >= monthStart && new Date(l.date_appointment_set) <= monthEnd
+        );
+        quantity = booked.length;
+        booked.forEach(lead => {
+          const ind = (lead.industries && lead.industries[0]) || null;
+          const match = ind ? pricing.find(p => p.industry === ind) : null;
+          calculatedAmount += (match ? (match.price_per_set || 0) : 0);
+        });
+      }
+
+      const rate = quantity > 0 ? Math.round((calculatedAmount / quantity) * 100) / 100 : 0;
+
+      return {
+        client_id: client.id,
+        billing_month: billingMonthStr,
+        billing_type: 'hybrid_performance',
+        calculated_amount: calculatedAmount,
+        quantity,
+        rate,
+        status: 'pending',
+      };
+    }).filter(r => r.quantity > 0);
+
+    let hybridCreated = 0;
+    if (hybridRecords.length > 0) {
+      await sr.MonthlyBilling.bulkCreate(hybridRecords);
+      hybridCreated = hybridRecords.length;
+    }
+
+    console.log(`generateMonthlyBilling: Created ${created} performance + ${hybridCreated} hybrid_performance records for ${billingMonthStr}`);
+    return Response.json({ success: true, billingMonth: billingMonthStr, created, hybridCreated });
   } catch (error) {
     console.error('generateMonthlyBilling error:', error);
     return Response.json({ error: error.message }, { status: 500 });
