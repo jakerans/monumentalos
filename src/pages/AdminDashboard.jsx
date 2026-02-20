@@ -3,7 +3,7 @@ import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
-import AdminNav from '../components/admin/AdminNav';
+import AdminSidebar from '../components/admin/AdminSidebar';
 import AdminMobileNav from '../components/admin/AdminMobileNav';
 import BusinessHealthKPIs from '../components/admin/BusinessHealthKPIs';
 import CashHealthPanel from '../components/admin/CashHealthPanel';
