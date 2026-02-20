@@ -145,7 +145,28 @@ export default function EditClientModal({ open, onOpenChange, client, onSaved })
             </select>
           </div>
           {(billingType === 'pay_per_show' || billingType === 'pay_per_set') && (
-            <IndustryPricingEditor pricing={industryPricing} onChange={setIndustryPricing} billingType={billingType} />
+            <>
+              <IndustryPricingEditor pricing={industryPricing} onChange={setIndustryPricing} billingType={billingType} />
+              {(client?.price_per_shown_appointment || client?.price_per_set_appointment) && (
+                <div className="p-3 bg-amber-50 border border-amber-200 rounded-md">
+                  <p className="text-[10px] uppercase tracking-wider font-semibold text-amber-700 mb-1.5">Legacy Pricing (read-only)</p>
+                  <div className="grid grid-cols-2 gap-2 text-sm">
+                    {client.price_per_shown_appointment != null && (
+                      <div>
+                        <span className="text-xs text-amber-600">Per Show:</span>
+                        <span className="ml-1 font-medium text-amber-900">${client.price_per_shown_appointment}</span>
+                      </div>
+                    )}
+                    {client.price_per_set_appointment != null && (
+                      <div>
+                        <span className="text-xs text-amber-600">Per Set:</span>
+                        <span className="ml-1 font-medium text-amber-900">${client.price_per_set_appointment}</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+            </>
           )}
           {billingType === 'retainer' && (
             <div className="grid grid-cols-2 gap-2">
