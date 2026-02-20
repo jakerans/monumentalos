@@ -203,9 +203,11 @@ export default function ClientView() {
               <p className="text-xs text-slate-400 mb-3">
                 {client?.billing_type === 'retainer'
                   ? `Retainer: $${client?.retainer_amount || 0}/mo · Due on the ${client?.retainer_due_day || 1}${client?.retainer_due_day === 1 ? 'st' : client?.retainer_due_day === 2 ? 'nd' : client?.retainer_due_day === 3 ? 'rd' : 'th'}`
-                  : client?.billing_type === 'pay_per_set'
-                  ? `Pay Per Set: $${client?.price_per_set_appointment || 0}/appt`
-                  : `Pay Per Show: $${client?.price_per_shown_appointment || 0}/show`}
+                  : (client?.industry_pricing && client.industry_pricing.length > 0)
+                    ? client.industry_pricing.map(p => `${p.industry}: $${client?.billing_type === 'pay_per_set' ? (p.price_per_set || 0) : (p.price_per_show || 0)}`).join(' · ')
+                    : client?.billing_type === 'pay_per_set'
+                    ? `Pay Per Set: $${client?.price_per_set_appointment || 0}/appt`
+                    : `Pay Per Show: $${client?.price_per_shown_appointment || 0}/show`}
               </p>
               <button
                 onClick={() => setBillingEditorOpen(true)}
