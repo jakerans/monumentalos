@@ -211,7 +211,33 @@ Deno.serve(async (req) => {
       sheetCreated++;
     }
 
-    // 5. Batch update existing rows
+    // 5. Delete rows for clients that no longer exist in DB
+    let sheetDeleted = 0;
+    if (rowsToDelete.length > 0) {
+      // Get the numeric sheetId for the tab
+      const metaResp = await fetch(`${SHEETS_API}/${SPREADSHEET_ID}?fields=sheets.properties`, { headers });
+      const metaData = await metaResp.json();
+      const sheetMeta = (metaData.sheets || []).find(s => s.properties.title === SHEET_NAME);
+      const sheetId = sheetMeta ? sheetMeta.properties.sheetId : 0;
+
+      // Delete from bottom to top so indices don't shift
+      const deleteRequests = rowsToDelete
+        .sort((a, b) => b - a)
+        .map(rowIdx => ({
+          deleteDimension: {
+            range: { sheetId, dimension: 'ROWS', startIndex: rowIdx, endIndex: rowIdx + 1 }
+          }
+        }));
+
+      await fetch(`${SHEETS_API}/${SPREADSHEET_ID}:batchUpdate`, {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({ requests: deleteRequests }),
+      });
+      sheetDeleted = rowsToDelete.length;
+    }
+
+    // 6. Batch update existing rows
     if (sheetUpdates.length > 0) {
       await fetch(`${SHEETS_API}/${SPREADSHEET_ID}/values:batchUpdate`, {
         method: 'POST',
@@ -223,7 +249,7 @@ Deno.serve(async (req) => {
       });
     }
 
-    // 6. Append new rows
+    // 7. Append new rows
     if (newRows.length > 0) {
       await fetch(`${SHEETS_API}/${SPREADSHEET_ID}/values/${encodeURIComponent(SHEET_NAME)}!A1:append?valueInputOption=USER_ENTERED&insertDataOption=INSERT_ROWS`, {
         method: 'POST',
@@ -236,6 +262,7 @@ Deno.serve(async (req) => {
       success: true,
       sheetCreated,
       sheetUpdated,
+      sheetDeleted,
       dbCreated,
       dbUpdated,
     });
