@@ -25,6 +25,10 @@ export default function CreateClientModal({ open, onOpenChange, onCreated }) {
   const [setupFeeInvoiceId, setSetupFeeInvoiceId] = useState('');
   const [saving, setSaving] = useState(false);
   const [invitingIdx, setInvitingIdx] = useState(null);
+  const [hybridBaseRetainer, setHybridBaseRetainer] = useState('');
+  const [hybridRetainerDueDay, setHybridRetainerDueDay] = useState('1');
+  const [hybridPerformanceType, setHybridPerformanceType] = useState('pay_per_set');
+  const [hybridPerformancePricing, setHybridPerformancePricing] = useState([]);
 
   const addContact = () => setContacts([...contacts, { name: '', email: '', role: '' }]);
 
@@ -40,7 +44,8 @@ export default function CreateClientModal({ open, onOpenChange, onCreated }) {
     if (!name.trim()) return;
     const hasPricing = 
       ((billingType === 'pay_per_show' || billingType === 'pay_per_set') && industryPricing.length > 0) ||
-      (billingType === 'retainer' && retainerAmount);
+      (billingType === 'retainer' && retainerAmount) ||
+      (billingType === 'hybrid' && hybridBaseRetainer && hybridPerformancePricing.length > 0);
     if (!hasPricing) {
       toast({ title: 'Missing Price', description: 'Please add at least one industry with pricing.', variant: 'destructive' });
       return;
@@ -69,6 +74,16 @@ export default function CreateClientModal({ open, onOpenChange, onCreated }) {
     if (billingType === 'retainer') {
       data.retainer_amount = parseFloat(retainerAmount) || 0;
       data.retainer_due_day = parseInt(retainerDueDay) || 1;
+    }
+    if (billingType === 'hybrid') {
+      data.hybrid_base_retainer = parseFloat(hybridBaseRetainer) || 0;
+      data.hybrid_retainer_due_day = parseInt(hybridRetainerDueDay) || 1;
+      data.hybrid_performance_type = hybridPerformanceType;
+      data.hybrid_performance_pricing = hybridPerformancePricing.map(row => ({
+        industry: row.industry,
+        price_per_show: row.price_per_show ? parseFloat(row.price_per_show) : null,
+        price_per_set: row.price_per_set ? parseFloat(row.price_per_set) : null,
+      }));
     }
     const client = await base44.entities.Client.create(data);
 
@@ -139,6 +154,10 @@ export default function CreateClientModal({ open, onOpenChange, onCreated }) {
     setSetupFeeAmount('');
     setSetupFeePaid(false);
     setSetupFeeInvoiceId('');
+    setHybridBaseRetainer('');
+    setHybridRetainerDueDay('1');
+    setHybridPerformanceType('pay_per_set');
+    setHybridPerformancePricing([]);
   };
 
   return (
@@ -164,6 +183,7 @@ export default function CreateClientModal({ open, onOpenChange, onCreated }) {
               <option value="pay_per_show">Pay Per Show</option>
               <option value="pay_per_set">Pay Per Set</option>
               <option value="retainer">Retainer (Flat Monthly)</option>
+              <option value="hybrid">Hybrid (Retainer + Performance)</option>
             </select>
           </div>
           {(billingType === 'pay_per_show' || billingType === 'pay_per_set') && (
@@ -183,6 +203,30 @@ export default function CreateClientModal({ open, onOpenChange, onCreated }) {
                   ))}
                 </select>
               </div>
+            </>
+          )}
+          {billingType === 'hybrid' && (
+            <>
+              <div>
+                <label className="text-xs font-medium text-gray-700">Base Retainer Amount ($) *</label>
+                <input type="number" value={hybridBaseRetainer} onChange={e => setHybridBaseRetainer(e.target.value)} className="w-full mt-1 px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="e.g. 1500" />
+              </div>
+              <div>
+                <label className="text-xs font-medium text-gray-700">Retainer Due Day</label>
+                <select value={hybridRetainerDueDay} onChange={e => setHybridRetainerDueDay(e.target.value)} className="w-full mt-1 px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                  {Array.from({ length: 28 }, (_, i) => i + 1).map(d => (
+                    <option key={d} value={d}>{d}{d === 1 ? 'st' : d === 2 ? 'nd' : d === 3 ? 'rd' : 'th'}</option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="text-xs font-medium text-gray-700">Performance Component Type</label>
+                <select value={hybridPerformanceType} onChange={e => setHybridPerformanceType(e.target.value)} className="w-full mt-1 px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                  <option value="pay_per_set">Pay Per Set</option>
+                  <option value="pay_per_show">Pay Per Show</option>
+                </select>
+              </div>
+              <IndustryPricingEditor pricing={hybridPerformancePricing} onChange={setHybridPerformancePricing} billingType={hybridPerformanceType} />
             </>
           )}
           <div>
