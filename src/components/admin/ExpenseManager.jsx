@@ -55,7 +55,7 @@ export default function ExpenseManager({ startDate, endDate, onAddExpense }) {
   }, [search]);
 
   const { data, isLoading, isFetching, refetch } = useQuery({
-    queryKey: ['expenses-table', startDate, endDate, filterCat, filterType, page, sortField, sortDir, debouncedSearch],
+    queryKey: ['expenses-table', startDate, endDate, filterCat, filterType, page, sortField, sortDir, debouncedSearch, showDistributions],
     queryFn: async () => {
       const res = await base44.functions.invoke('getExpensesTableData', {
         startDate,
@@ -67,6 +67,7 @@ export default function ExpenseManager({ startDate, endDate, onAddExpense }) {
         limit: PAGE_SIZE,
         sortField,
         sortDir,
+        showDistributions,
       });
       return res.data;
     },
