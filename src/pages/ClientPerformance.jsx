@@ -28,7 +28,7 @@ export default function ClientPerformance() {
     checkAuth();
   }, [navigate]);
 
-  const { data: dashData, isLoading } = useQuery({
+  const { data: dashData, isLoading, refetch } = useQuery({
     queryKey: ['client-performance-data'],
     queryFn: async () => {
       const res = await base44.functions.invoke('getClientPerformanceData');
