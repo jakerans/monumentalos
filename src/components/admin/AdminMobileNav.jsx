@@ -2,13 +2,16 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import { base44 } from '@/api/base44Client';
-import { LayoutDashboard, Users, Receipt, Calculator, Headset, UserCog, Menu, X, LogOut, ArrowRightLeft, Settings } from 'lucide-react';
+import { LayoutDashboard, Users, Receipt, Calculator, Headset, UserCog, Menu, X, LogOut, ArrowRightLeft, Settings, BarChart3, Wallet, TrendingUp } from 'lucide-react';
 
 const allNavItems = [
   { key: 'AdminDashboard', label: 'Dashboard', icon: LayoutDashboard },
   { key: 'ClientPerformance', label: 'Client Overview', icon: Users },
   { key: 'MonthlyBilling', label: 'Billing', icon: Receipt },
-  { key: 'RevenueDashboard', label: 'Accounting', icon: Calculator },
+  { key: 'AccountingPL', label: 'P&L', icon: BarChart3 },
+  { key: 'AccountingExpenses', label: 'Expenses', icon: Wallet },
+  { key: 'AccountingCashFlow', label: 'Cash Flow', icon: TrendingUp },
+  { key: 'AccountingClients', label: 'Client Revenue', icon: Calculator },
   { key: 'SetterPerformance', label: 'Setter Mgmt', icon: Headset },
   { key: 'SetterStats', label: 'Setter Reporting', icon: Headset },
   { key: 'EmployeeManagement', label: 'Employees', icon: UserCog },
