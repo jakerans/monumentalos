@@ -3,6 +3,7 @@ import { base44 } from '@/api/base44Client';
 import { toast } from '@/components/ui/use-toast';
 import { MapPin, DollarSign, Link as LinkIcon, Tag, Pencil, Save, X, Power } from 'lucide-react';
 import { INDUSTRY_LABELS, INDUSTRY_COLORS } from '../shared/IndustryPicker';
+import { getLeadPrice } from '../shared/pricingUtils';
 import IndustryPicker from '../shared/IndustryPicker';
 import {
   AlertDialog,
