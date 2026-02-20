@@ -59,10 +59,11 @@ Deno.serve(async (req) => {
       const records = missingClients.map(client => {
         const bt = client.billing_type || 'pay_per_show';
         const cLeads = leads.filter(l => l.client_id === client.id);
+        const pricing = client.industry_pricing || [];
 
         let quantity = 0;
-        let rate = 0;
         let calculatedAmount = 0;
+        let rate = 0;
 
         if (bt === 'pay_per_show') {
           const showed = cLeads.filter(l =>
@@ -70,16 +71,24 @@ Deno.serve(async (req) => {
             new Date(l.appointment_date) >= monthStartDate && new Date(l.appointment_date) <= monthEndDate
           );
           quantity = showed.length;
-          rate = client.price_per_shown_appointment || 0;
-          calculatedAmount = quantity * rate;
+          showed.forEach(lead => {
+            const ind = (lead.industries && lead.industries[0]) || null;
+            const match = ind ? pricing.find(p => p.industry === ind) : null;
+            calculatedAmount += (match ? (match.price_per_show || 0) : (client.price_per_shown_appointment || 0));
+          });
+          rate = quantity > 0 ? Math.round((calculatedAmount / quantity) * 100) / 100 : 0;
         } else if (bt === 'pay_per_set') {
           const booked = cLeads.filter(l =>
             l.date_appointment_set &&
             new Date(l.date_appointment_set) >= monthStartDate && new Date(l.date_appointment_set) <= monthEndDate
           );
           quantity = booked.length;
-          rate = client.price_per_set_appointment || 0;
-          calculatedAmount = quantity * rate;
+          booked.forEach(lead => {
+            const ind = (lead.industries && lead.industries[0]) || null;
+            const match = ind ? pricing.find(p => p.industry === ind) : null;
+            calculatedAmount += (match ? (match.price_per_set || 0) : (client.price_per_set_appointment || 0));
+          });
+          rate = quantity > 0 ? Math.round((calculatedAmount / quantity) * 100) / 100 : 0;
         } else if (bt === 'retainer') {
           rate = client.retainer_amount || 0;
           calculatedAmount = rate;
