@@ -5,8 +5,8 @@ import { toast } from '@/components/ui/use-toast';
 import { base44 } from '@/api/base44Client';
 
 export default function AddExpenseModal({ open, onOpenChange, clients, onCreated }) {
-  const [category, setCategory] = useState('ad_spend');
-  const [expenseType, setExpenseType] = useState('overhead');
+  const [category, setCategory] = useState('uncategorized');
+  const [expenseType, setExpenseType] = useState('uncategorized');
   const [description, setDescription] = useState('');
   const [amount, setAmount] = useState('');
   const [date, setDate] = useState(dayjs().format('YYYY-MM-DD'));
@@ -46,6 +46,7 @@ export default function AddExpenseModal({ open, onOpenChange, clients, onCreated
             <div>
               <label className="text-xs font-medium text-gray-700">Category *</label>
               <select value={category} onChange={e => setCategory(e.target.value)} className="w-full mt-1 px-3 py-2 text-sm border border-gray-300 rounded-md">
+                <option value="uncategorized">— Uncategorized —</option>
                 <option value="ad_spend">Ad Spend</option>
                 <option value="payroll">Payroll</option>
                 <option value="software">Software</option>
@@ -60,6 +61,7 @@ export default function AddExpenseModal({ open, onOpenChange, clients, onCreated
             <div>
               <label className="text-xs font-medium text-gray-700">Type *</label>
               <select value={expenseType} onChange={e => setExpenseType(e.target.value)} className="w-full mt-1 px-3 py-2 text-sm border border-gray-300 rounded-md">
+                <option value="uncategorized">— Uncategorized —</option>
                 <option value="cogs">COGS (Cost of Goods Sold)</option>
                 <option value="overhead">Overhead</option>
                 <option value="distribution">Distribution (Owner Draw — not in P&L)</option>

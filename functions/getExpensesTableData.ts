@@ -57,10 +57,18 @@ Deno.serve(async (req) => {
     // ── Apply user filters ──
     let filtered = rangeExpenses;
     if (filterCat && filterCat !== 'all') {
-      filtered = filtered.filter(e => e.category === filterCat);
+      if (filterCat === 'uncategorized') {
+        filtered = filtered.filter(e => !e.category || e.category === 'uncategorized');
+      } else {
+        filtered = filtered.filter(e => e.category === filterCat);
+      }
     }
     if (filterType && filterType !== 'all') {
-      filtered = filtered.filter(e => e.expense_type === filterType);
+      if (filterType === 'uncategorized') {
+        filtered = filtered.filter(e => !e.expense_type || e.expense_type === 'uncategorized');
+      } else {
+        filtered = filtered.filter(e => e.expense_type === filterType);
+      }
     }
     if (search && search.trim()) {
       const q = search.trim().toLowerCase();
