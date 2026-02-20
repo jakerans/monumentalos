@@ -114,8 +114,25 @@ Deno.serve(async (req) => {
       return Response.json({ success: true, message: 'Sheet initialized', sheetCreated: clients.length, sheetUpdated: 0, dbCreated: 0, dbUpdated: 0 });
     }
 
-    // Parse headers from first row
-    const sheetHeaders = rows[0];
+    // Parse headers from first row and add any missing columns
+    let sheetHeaders = [...rows[0]];
+    const missingHeaders = HEADERS.filter(h => !sheetHeaders.includes(h));
+    if (missingHeaders.length > 0) {
+      sheetHeaders = [...sheetHeaders, ...missingHeaders];
+      // Write updated header row back to sheet
+      const headerRange = `${SHEET_NAME}!A1:${String.fromCharCode(64 + Math.min(sheetHeaders.length, 26))}1`;
+      await fetch(`${SHEETS_API}/${SPREADSHEET_ID}/values/${encodeURIComponent(headerRange)}?valueInputOption=USER_ENTERED`, {
+        method: 'PUT',
+        headers,
+        body: JSON.stringify({ values: [sheetHeaders] }),
+      });
+      // Re-read rows so indices are correct
+      const reResp = await fetch(`${SHEETS_API}/${SPREADSHEET_ID}/values/${encodeURIComponent(SHEET_NAME)}`, { headers });
+      const reData = await reResp.json();
+      rows.length = 0;
+      (reData.values || []).forEach(r => rows.push(r));
+    }
+
     const appIdCol = sheetHeaders.indexOf('App ID');
     const colIndices = {};
     for (const [header, field] of Object.entries(COLUMN_MAP)) {
