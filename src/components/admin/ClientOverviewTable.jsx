@@ -123,7 +123,10 @@ export default function ClientOverviewTable({ clients, leads, spend, payments, o
           <span className={`px-1.5 py-0.5 text-[10px] font-medium rounded ${BILLING_COLORS[r.billingType] || 'bg-slate-700 text-slate-300'}`}>
             {BILLING_LABELS[r.billingType] || r.billingType}
           </span>
-          <button onClick={(e) => { e.stopPropagation(); setDeleteClient(r); }} className="p-1 rounded hover:bg-red-500/20 text-slate-500 hover:text-red-400">
+          <button onClick={(e) => { e.stopPropagation(); setEditClient(r); }} className="p-1 rounded hover:bg-blue-500/20 text-slate-500 hover:text-blue-400" title="Edit client">
+            <Pencil className="w-3.5 h-3.5" />
+          </button>
+          <button onClick={(e) => { e.stopPropagation(); setDeleteClient(r); }} className="p-1 rounded hover:bg-red-500/20 text-slate-500 hover:text-red-400" title="Delete client">
             <Trash2 className="w-3.5 h-3.5" />
           </button>
         </div>
