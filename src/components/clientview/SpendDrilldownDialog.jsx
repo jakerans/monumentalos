@@ -71,7 +71,7 @@ function SpendEditRow({ record, expanded, onToggle, onSave }) {
 
       {expanded && (
         <div className="px-3 pb-3 pt-1 border-t border-gray-100 space-y-2">
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+          <div className="grid grid-cols-2 gap-2">
             <div>
               <label className="block text-[10px] font-medium text-gray-500 mb-0.5">Date</label>
               <input type="date" value={form.date} onChange={(e) => set('date', e.target.value)}
@@ -80,28 +80,6 @@ function SpendEditRow({ record, expanded, onToggle, onSave }) {
             <div>
               <label className="block text-[10px] font-medium text-gray-500 mb-0.5">Amount ($)</label>
               <input type="number" value={form.amount} onChange={(e) => set('amount', e.target.value)}
-                className="w-full text-xs px-2 py-1.5 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" />
-            </div>
-            <div>
-              <label className="block text-[10px] font-medium text-gray-500 mb-0.5">Campaign</label>
-              <input type="text" value={form.campaign_name} onChange={(e) => set('campaign_name', e.target.value)}
-                className="w-full text-xs px-2 py-1.5 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" />
-            </div>
-          </div>
-          <div className="grid grid-cols-3 gap-2">
-            <div>
-              <label className="block text-[10px] font-medium text-gray-500 mb-0.5">Impressions</label>
-              <input type="number" value={form.impressions} onChange={(e) => set('impressions', e.target.value)}
-                className="w-full text-xs px-2 py-1.5 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" />
-            </div>
-            <div>
-              <label className="block text-[10px] font-medium text-gray-500 mb-0.5">Clicks</label>
-              <input type="number" value={form.clicks} onChange={(e) => set('clicks', e.target.value)}
-                className="w-full text-xs px-2 py-1.5 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" />
-            </div>
-            <div>
-              <label className="block text-[10px] font-medium text-gray-500 mb-0.5">Leads Count</label>
-              <input type="number" value={form.leads_count} onChange={(e) => set('leads_count', e.target.value)}
                 className="w-full text-xs px-2 py-1.5 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" />
             </div>
           </div>
