@@ -3,12 +3,12 @@ import { base44 } from '@/api/base44Client';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { toast } from '@/components/ui/use-toast';
 import IndustryPicker from '../shared/IndustryPicker';
+import IndustryPricingEditor from '../shared/IndustryPricingEditor';
 
 export default function ClientBillingEditor({ client, open, onOpenChange, onUpdated }) {
   const [industries, setIndustries] = useState([]);
   const [billingType, setBillingType] = useState('pay_per_show');
-  const [pricePerShow, setPricePerShow] = useState('');
-  const [pricePerSet, setPricePerSet] = useState('');
+  const [industryPricing, setIndustryPricing] = useState([]);
   const [retainerAmount, setRetainerAmount] = useState('');
   const [retainerDueDay, setRetainerDueDay] = useState('1');
   const [clientStatus, setClientStatus] = useState('active');
@@ -18,8 +18,7 @@ export default function ClientBillingEditor({ client, open, onOpenChange, onUpda
     if (client) {
       setIndustries(client.industries || []);
       setBillingType(client.billing_type || 'pay_per_show');
-      setPricePerShow(String(client.price_per_shown_appointment || ''));
-      setPricePerSet(String(client.price_per_set_appointment || ''));
+      setIndustryPricing(client.industry_pricing || []);
       setRetainerAmount(String(client.retainer_amount || ''));
       setRetainerDueDay(String(client.retainer_due_day || 1));
       setClientStatus(client.status || 'active');
@@ -28,15 +27,23 @@ export default function ClientBillingEditor({ client, open, onOpenChange, onUpda
 
   const handleSave = async () => {
     setSaving(true);
-    const updates = { billing_type: billingType, industries, status: clientStatus };
+    const parsedPricing = industryPricing.map(row => ({
+      industry: row.industry,
+      price_per_show: row.price_per_show ? parseFloat(row.price_per_show) : null,
+      price_per_set: row.price_per_set ? parseFloat(row.price_per_set) : null,
+    }));
+    const updates = {
+      billing_type: billingType,
+      industries,
+      status: clientStatus,
+      industry_pricing: parsedPricing,
+    };
     if (clientStatus === 'inactive' && client.status !== 'inactive') {
       updates.deactivated_date = new Date().toISOString().split('T')[0];
     }
     if (clientStatus === 'active' && client.status === 'inactive') {
       updates.deactivated_date = null;
     }
-    if (billingType === 'pay_per_show') updates.price_per_shown_appointment = Number(pricePerShow) || 0;
-    if (billingType === 'pay_per_set') updates.price_per_set_appointment = Number(pricePerSet) || 0;
     if (billingType === 'retainer') {
       updates.retainer_amount = Number(retainerAmount) || 0;
       updates.retainer_due_day = Number(retainerDueDay) || 1;
@@ -81,18 +88,8 @@ export default function ClientBillingEditor({ client, open, onOpenChange, onUpda
             </select>
           </div>
 
-          {billingType === 'pay_per_show' && (
-            <div>
-              <label className="text-xs font-medium text-gray-700">Price Per Shown Appointment ($)</label>
-              <input type="number" value={pricePerShow} onChange={e => setPricePerShow(e.target.value)} min="0" step="0.01" className="w-full mt-1 px-3 py-2 text-sm border border-gray-300 rounded-md" placeholder="e.g. 250" />
-            </div>
-          )}
-
-          {billingType === 'pay_per_set' && (
-            <div>
-              <label className="text-xs font-medium text-gray-700">Price Per Appointment Set ($)</label>
-              <input type="number" value={pricePerSet} onChange={e => setPricePerSet(e.target.value)} min="0" step="0.01" className="w-full mt-1 px-3 py-2 text-sm border border-gray-300 rounded-md" placeholder="e.g. 100" />
-            </div>
+          {(billingType === 'pay_per_show' || billingType === 'pay_per_set') && (
+            <IndustryPricingEditor pricing={industryPricing} onChange={setIndustryPricing} billingType={billingType} />
           )}
 
           {billingType === 'retainer' && (
