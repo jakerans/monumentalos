@@ -1,7 +1,9 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
+import { Trash2 } from 'lucide-react';
 import AnimatedTable from '../shared/AnimatedTable';
+import DeleteClientDialog from './DeleteClientDialog';
 
 const BILLING_LABELS = {
   pay_per_show: 'Per Show',
