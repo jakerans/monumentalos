@@ -33,7 +33,7 @@ export default function AccountingClients() {
 
   const revFetchStart = dayjs(startDate).subtract(6, 'month').format('YYYY-MM-DD');
 
-  const { data: dashData, isLoading } = useQuery({
+  const { data: dashData, isLoading, refetch } = useQuery({
     queryKey: ['revenue-dashboard-data', revFetchStart, startDate, endDate],
     queryFn: async () => {
       const res = await base44.functions.invoke('getRevenueDashboardData', { revFetchStart, startDate, endDate });
