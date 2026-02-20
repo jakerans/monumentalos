@@ -13,6 +13,10 @@ export default function EditClientModal({ open, onOpenChange, client, onSaved })
   const [industryPricing, setIndustryPricing] = useState([]);
   const [retainerAmount, setRetainerAmount] = useState('');
   const [retainerDueDay, setRetainerDueDay] = useState('1');
+  const [hybridBaseRetainer, setHybridBaseRetainer] = useState('');
+  const [hybridRetainerDueDay, setHybridRetainerDueDay] = useState('1');
+  const [hybridPerformanceType, setHybridPerformanceType] = useState('pay_per_set');
+  const [hybridPerformancePricing, setHybridPerformancePricing] = useState([]);
   const [adAccountId, setAdAccountId] = useState('');
   const [stripeCustomerId, setStripeCustomerId] = useState('');
   const [bookingLink, setBookingLink] = useState('');
@@ -34,6 +38,10 @@ export default function EditClientModal({ open, onOpenChange, client, onSaved })
       setIndustryPricing(client.industry_pricing || []);
       setRetainerAmount(client.retainer_amount ?? '');
       setRetainerDueDay(String(client.retainer_due_day || 1));
+      setHybridBaseRetainer(client.hybrid_base_retainer ?? '');
+      setHybridRetainerDueDay(String(client.hybrid_retainer_due_day || 1));
+      setHybridPerformanceType(client.hybrid_performance_type || 'pay_per_set');
+      setHybridPerformancePricing(client.hybrid_performance_pricing || []);
       setAdAccountId(client.ad_account_id || '');
       setStripeCustomerId(client.stripe_customer_id || '');
       setBookingLink(client.booking_link || '');
@@ -89,6 +97,16 @@ export default function EditClientModal({ open, onOpenChange, client, onSaved })
       data.retainer_amount = parseFloat(retainerAmount) || 0;
       data.retainer_due_day = parseInt(retainerDueDay) || 1;
     }
+    if (billingType === 'hybrid') {
+      data.hybrid_base_retainer = parseFloat(hybridBaseRetainer) || 0;
+      data.hybrid_retainer_due_day = parseInt(hybridRetainerDueDay) || 1;
+      data.hybrid_performance_type = hybridPerformanceType;
+      data.hybrid_performance_pricing = hybridPerformancePricing.map(row => ({
+        industry: row.industry,
+        price_per_show: row.price_per_show ? parseFloat(row.price_per_show) : null,
+        price_per_set: row.price_per_set ? parseFloat(row.price_per_set) : null,
+      }));
+    }
 
     await base44.entities.Client.update(client.id, data);
 
@@ -142,6 +160,7 @@ export default function EditClientModal({ open, onOpenChange, client, onSaved })
               <option value="pay_per_show">Pay Per Show</option>
               <option value="pay_per_set">Pay Per Set</option>
               <option value="retainer">Retainer (Flat Monthly)</option>
+              <option value="hybrid">Hybrid (Retainer + Performance)</option>
             </select>
           </div>
           {(billingType === 'pay_per_show' || billingType === 'pay_per_set') && (
@@ -183,6 +202,32 @@ export default function EditClientModal({ open, onOpenChange, client, onSaved })
                 </select>
               </div>
             </div>
+          )}
+          {billingType === 'hybrid' && (
+            <>
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <label className={labelClass}>Base Retainer Amount</label>
+                  <input type="number" value={hybridBaseRetainer} onChange={e => setHybridBaseRetainer(e.target.value)} className={inputClass} placeholder="e.g. 1500" />
+                </div>
+                <div>
+                  <label className={labelClass}>Due Day</label>
+                  <select value={hybridRetainerDueDay} onChange={e => setHybridRetainerDueDay(e.target.value)} className={inputClass}>
+                    {Array.from({ length: 28 }, (_, i) => i + 1).map(d => (
+                      <option key={d} value={d}>{d}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+              <div>
+                <label className={labelClass}>Performance Component Type</label>
+                <select value={hybridPerformanceType} onChange={e => setHybridPerformanceType(e.target.value)} className={inputClass}>
+                  <option value="pay_per_set">Pay Per Set</option>
+                  <option value="pay_per_show">Pay Per Show</option>
+                </select>
+              </div>
+              <IndustryPricingEditor pricing={hybridPerformancePricing} onChange={setHybridPerformancePricing} billingType={hybridPerformanceType} />
+            </>
           )}
           <div className="grid grid-cols-2 gap-2">
             <div>
