@@ -147,6 +147,53 @@ export default function RunPayrollModal({ open, onOpenChange, onComplete }) {
                   This will generate a preview of all payroll line items. You can edit amounts, remove items, or add extra items (like taxes) before confirming.
                 </p>
               </div>
+
+              {/* Undo Payroll Section */}
+              <div className="border-t border-slate-700/50 pt-4">
+                <button
+                  onClick={() => {
+                    setUndoDate(payrollDate);
+                    setShowUndoConfirm(!showUndoConfirm);
+                  }}
+                  className="text-xs text-red-400 hover:text-red-300 flex items-center gap-1.5 transition-colors"
+                >
+                  <Undo2 className="w-3.5 h-3.5" />
+                  Undo a previous payroll run
+                </button>
+
+                {showUndoConfirm && (
+                  <div className="mt-3 bg-red-500/10 border border-red-500/20 rounded-lg p-4 space-y-3">
+                    <p className="text-xs text-red-300">
+                      This will <span className="font-bold">permanently delete</span> all payroll expenses for the selected date and revert any performance pay records marked as paid.
+                    </p>
+                    <div>
+                      <label className="text-xs font-medium text-slate-400 mb-1 block">Payroll Date to Undo</label>
+                      <input
+                        type="date"
+                        value={undoDate}
+                        onChange={(e) => setUndoDate(e.target.value)}
+                        className="w-full px-3 py-2 text-sm bg-slate-800 border border-slate-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-red-500/50"
+                      />
+                    </div>
+                    <div className="flex gap-2">
+                      <button
+                        onClick={handleUndoPayroll}
+                        disabled={undoLoading}
+                        className="px-4 py-2 text-xs font-bold bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:opacity-50 flex items-center gap-2"
+                      >
+                        {undoLoading && <Loader2 className="w-3 h-3 animate-spin" />}
+                        {undoLoading ? 'Undoing...' : 'Confirm Undo'}
+                      </button>
+                      <button
+                        onClick={() => setShowUndoConfirm(false)}
+                        className="px-4 py-2 text-xs border border-slate-700 text-slate-400 rounded-lg hover:bg-slate-800"
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
           )}
 
