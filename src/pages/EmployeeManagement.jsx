@@ -157,6 +157,15 @@ export default function EmployeeManagement() {
               <span className="text-[10px] sm:text-xs font-bold text-white capitalize">{payrollSettings?.payroll_frequency?.replace('_', '-') || 'Bi-Weekly'}</span>
             </button>
             <button
+              onClick={() => setRunPayrollOpen(true)}
+              className="px-2.5 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm font-bold text-black rounded-lg hover:opacity-90 flex items-center gap-1.5 sm:gap-2"
+              style={{ backgroundColor: '#D6FF03' }}
+            >
+              <DollarSign className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+              <span className="hidden sm:inline">Run Payroll</span>
+              <span className="sm:hidden">Payroll</span>
+            </button>
+            <button
               onClick={handleSyncFromUsers}
               disabled={syncing}
               className="px-2.5 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm font-medium rounded-lg border border-slate-600 text-slate-300 hover:bg-slate-800 flex items-center gap-1.5 sm:gap-2 disabled:opacity-50"
@@ -167,8 +176,7 @@ export default function EmployeeManagement() {
             </button>
             <button
               onClick={() => setAddOpen(true)}
-              className="px-2.5 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm font-bold text-black rounded-lg hover:opacity-90 flex items-center gap-1.5 sm:gap-2"
-              style={{ backgroundColor: '#D6FF03' }}
+              className="px-2.5 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm font-medium rounded-lg border border-slate-600 text-slate-300 hover:bg-slate-800 flex items-center gap-1.5 sm:gap-2"
             >
               <UserPlus className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
               <span className="hidden sm:inline">Add Employee</span>
