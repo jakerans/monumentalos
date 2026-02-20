@@ -131,7 +131,46 @@ Deno.serve(async (req) => {
       });
     }
 
-    return Response.json({ error: 'Invalid mode. Use "preview" or "run".' }, { status: 400 });
+    // ─── UNDO MODE: delete payroll expenses for a given date ───
+    if (mode === 'undo') {
+      const expenses = await sr.Expense.filter({ date: payrollDate, category: 'payroll' }, '-created_date', 5000);
+
+      if (expenses.length === 0) {
+        return Response.json({ success: true, mode: 'undo', deletedCount: 0, perfRecordsReverted: 0 });
+      }
+
+      // Find any perf pay records that were marked paid on that date and revert them
+      const perfRecords = await sr.PerformancePayRecord.filter({ status: 'paid' }, '-created_date', 5000);
+      let perfReverted = 0;
+
+      // Check expense descriptions for perf pay pattern to identify which records to revert
+      const perfExpenseDescs = expenses
+        .filter(e => e.description && e.description.includes('Perf Pay'))
+        .map(e => e.description);
+
+      for (const pr of perfRecords) {
+        // If any expense description references this period, revert the record
+        const matchDesc = `Perf Pay ${pr.period}`;
+        if (perfExpenseDescs.some(d => d.includes(matchDesc))) {
+          await sr.PerformancePayRecord.update(pr.id, { status: 'calculated' });
+          perfReverted++;
+        }
+      }
+
+      // Delete the expenses
+      for (const exp of expenses) {
+        await sr.Expense.delete(exp.id);
+      }
+
+      return Response.json({
+        success: true,
+        mode: 'undo',
+        deletedCount: expenses.length,
+        perfRecordsReverted: perfReverted,
+      });
+    }
+
+    return Response.json({ error: 'Invalid mode. Use "preview", "run", or "undo".' }, { status: 400 });
   } catch (error) {
     console.error('runPayroll error:', error);
     return Response.json({ error: error.message }, { status: 500 });
