@@ -147,8 +147,8 @@ Deno.serve(async (req) => {
       const cBilling = paidBilling.filter(b => b.client_id === c.id);
       const ltv = cBilling.reduce((s, b) => s + (b.paid_amount || b.calculated_amount || 0), 0);
       let allTimeBilled = 0;
-      if (bt === 'pay_per_show') allTimeBilled = cLeads.filter(l => l.disposition === 'showed').length * (c.price_per_shown_appointment || 0);
-      else if (bt === 'pay_per_set') allTimeBilled = cLeads.filter(l => l.date_appointment_set).length * (c.price_per_set_appointment || 0);
+      if (bt === 'pay_per_show') allTimeBilled = computeLeadRevenue(c, cLeads.filter(l => l.disposition === 'showed'));
+      else if (bt === 'pay_per_set') allTimeBilled = computeLeadRevenue(c, cLeads.filter(l => l.date_appointment_set));
       else if (bt === 'retainer') {
         const dates = [...cBilling.map(b => b.paid_date), ...cLeads.map(l => l.created_date)].filter(Boolean).sort();
         if (dates.length > 0) { const mths = Math.max(1, Math.ceil((now - new Date(dates[0])) / (30*24*60*60*1000))); allTimeBilled = (c.retainer_amount || 0) * mths; }
