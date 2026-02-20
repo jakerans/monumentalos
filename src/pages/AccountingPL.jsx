@@ -85,15 +85,6 @@ export default function AccountingPL() {
             </div>
           </div>
 
-          <div className="flex flex-wrap gap-2">
-            <button onClick={() => setPaymentOpen(true)} className="px-3 py-1.5 text-xs font-medium bg-emerald-600 text-white rounded-md hover:bg-emerald-700 flex items-center gap-1">
-              <DollarSign className="w-3.5 h-3.5" /> Record Payment
-            </button>
-            <button onClick={() => setExpenseOpen(true)} className="px-3 py-1.5 text-xs font-medium bg-red-600 text-white rounded-md hover:bg-red-700 flex items-center gap-1">
-              <Receipt className="w-3.5 h-3.5" /> Add Expense
-            </button>
-          </div>
-
           <AccountingKPIs kpis={kpis} payments={payments} expenses={expenses} />
           <MonthlyPLChart data={monthlyPL} />
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
