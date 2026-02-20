@@ -108,18 +108,26 @@ export default function ClientOverviewTable({ clients, leads, spend, payments, o
   );
 
   return (
-    <AnimatedTable
-      columns={columns}
-      data={rows}
-      title="Client Overview (MTD)"
-      titleRight={
-        <Link to={createPageUrl('ClientManagement')} className="px-3 py-1 text-xs font-medium bg-blue-600 text-white rounded hover:bg-blue-700">
-          + Add Client
-        </Link>
-      }
-      emptyMessage="No active clients"
-      initialSort={{ key: 'mtdBilled', direction: 'desc' }}
-      mobileCardRender={mobileCard}
-    />
+    <>
+      <AnimatedTable
+        columns={columns}
+        data={rows}
+        title="Client Overview (MTD)"
+        titleRight={
+          <Link to={createPageUrl('ClientManagement')} className="px-3 py-1 text-xs font-medium bg-blue-600 text-white rounded hover:bg-blue-700">
+            + Add Client
+          </Link>
+        }
+        emptyMessage="No active clients"
+        initialSort={{ key: 'mtdBilled', direction: 'desc' }}
+        mobileCardRender={mobileCard}
+      />
+      <DeleteClientDialog
+        client={deleteClient}
+        open={!!deleteClient}
+        onOpenChange={(open) => { if (!open) setDeleteClient(null); }}
+        onDeleted={onRefresh}
+      />
+    </>
   );
 }
