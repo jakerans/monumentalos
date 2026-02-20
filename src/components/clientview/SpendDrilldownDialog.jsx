@@ -65,9 +65,6 @@ function SpendEditRow({ record, expanded, onToggle, onSave }) {
         <div className="flex items-center gap-3">
           <span className="text-sm text-gray-600">{record.date}</span>
           <span className="text-sm font-semibold text-gray-900">${(record.amount || 0).toLocaleString()}</span>
-          {record.campaign_name && (
-            <span className="text-[10px] text-gray-400 truncate max-w-[200px]">{record.campaign_name}</span>
-          )}
         </div>
         {expanded ? <ChevronUp className="w-4 h-4 text-gray-400" /> : <ChevronDown className="w-4 h-4 text-gray-400" />}
       </button>
