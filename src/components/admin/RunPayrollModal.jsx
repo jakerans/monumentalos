@@ -2,7 +2,7 @@ import React, { useState, useCallback } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { base44 } from '@/api/base44Client';
 import { toast } from '@/components/ui/use-toast';
-import { Loader2, DollarSign, Calendar, AlertTriangle, Plus, Trash2, Pencil, Check } from 'lucide-react';
+import { Loader2, DollarSign, Calendar, AlertTriangle, Plus, Trash2, Pencil, Check, Undo2 } from 'lucide-react';
 import dayjs from 'dayjs';
 import PayrollLineItems from './PayrollLineItems.js';
 
