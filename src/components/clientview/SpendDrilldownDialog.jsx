@@ -50,9 +50,6 @@ function SpendEditRow({ record, expanded, onToggle, onSave }) {
     setSaving(true);
     const updates = { ...form };
     if (updates.amount) updates.amount = parseFloat(updates.amount);
-    if (updates.impressions) updates.impressions = parseInt(updates.impressions);
-    if (updates.clicks) updates.clicks = parseInt(updates.clicks);
-    if (updates.leads_count) updates.leads_count = parseInt(updates.leads_count);
 
     await base44.entities.Spend.update(record.id, updates);
     setSaving(false);
