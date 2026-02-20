@@ -120,7 +120,8 @@ Deno.serve(async (req) => {
     for (let i = 1; i < rows.length; i++) {
       const row = rows[i];
       const amount = parseAmount(cell(row, BANK_AMOUNT_COL));
-      if (amount === null || amount >= 0) { deleteRowIndices.push(i); skipped++; continue; }
+      if (amount === null) { skipped++; continue; }
+      if (amount >= 0) { deleteRowIndices.push(i); skipped++; continue; }
 
       const date = parseDate(cell(row, BANK_DATE_COL));
       if (!date) { skipped++; continue; }
