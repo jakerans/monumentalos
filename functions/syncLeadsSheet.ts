@@ -161,6 +161,7 @@ Deno.serve(async (req) => {
 
     const seenLeadIds = new Set();
     const sheetUpdates = [];
+    const rowsToDelete = []; // sheet row indices for leads that no longer exist in DB
 
     // 3. Process each sheet row -> sync to DB
     for (let i = 1; i < rows.length; i++) {
@@ -169,6 +170,12 @@ Deno.serve(async (req) => {
       const sheetName = colIndices['name'] !== undefined ? (row[colIndices['name']] || '').trim() : '';
 
       if (!appId && !sheetName) continue;
+
+      // If the row has an App ID but that lead no longer exists in DB, mark for deletion
+      if (appId && !leadById[appId]) {
+        rowsToDelete.push(i);
+        continue;
+      }
 
       if (appId && leadById[appId]) {
         // Existing lead — two-way merge (sheet wins for non-empty differing values)
