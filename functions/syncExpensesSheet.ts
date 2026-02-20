@@ -135,6 +135,9 @@ Deno.serve(async (req) => {
       // Delete transfer/transaction category rows from sheet
       if (SKIP_CATEGORIES.some(kw => sheetCategory.includes(kw))) { deleteRowIndices.push(i); skipped++; continue; }
 
+      // Delete rows matching known payroll/transfer descriptions
+      if (SKIP_DESCRIPTIONS.some(kw => rawDesc.toUpperCase().includes(kw.toUpperCase()))) { deleteRowIndices.push(i); skipped++; continue; }
+
       // ── Check if already synced ──
       const appId = cell(row, APP_ID_COL);
       const matchedBySheetId = sheetRowId && existingSheetIds.has(sheetRowId);
