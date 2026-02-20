@@ -91,17 +91,29 @@ export default function ClientBillingEditor({ client, open, onOpenChange, onUpda
           </div>
 
           {billingType === 'pay_per_show' && (
-            <div>
-              <label className="text-xs font-medium text-gray-700">Price Per Shown Appointment ($)</label>
-              <input type="number" value={pricePerShow} onChange={e => setPricePerShow(e.target.value)} min="0" step="0.01" className="w-full mt-1 px-3 py-2 text-sm border border-gray-300 rounded-md" placeholder="e.g. 250" />
-            </div>
+            <>
+              <div>
+                <label className="text-xs font-medium text-gray-700">Default Price Per Shown Appointment ($)</label>
+                <input type="number" value={pricePerShow} onChange={e => setPricePerShow(e.target.value)} min="0" step="0.01" className="w-full mt-1 px-3 py-2 text-sm border border-gray-300 rounded-md" placeholder="e.g. 250" />
+                <p className="text-[10px] text-gray-400 mt-0.5">Fallback if a lead has no matching industry price</p>
+              </div>
+              {industries.length > 1 && (
+                <IndustryPricingEditor industries={industries} pricing={industryPricing} onChange={setIndustryPricing} billingType={billingType} />
+              )}
+            </>
           )}
 
           {billingType === 'pay_per_set' && (
-            <div>
-              <label className="text-xs font-medium text-gray-700">Price Per Appointment Set ($)</label>
-              <input type="number" value={pricePerSet} onChange={e => setPricePerSet(e.target.value)} min="0" step="0.01" className="w-full mt-1 px-3 py-2 text-sm border border-gray-300 rounded-md" placeholder="e.g. 100" />
-            </div>
+            <>
+              <div>
+                <label className="text-xs font-medium text-gray-700">Default Price Per Appointment Set ($)</label>
+                <input type="number" value={pricePerSet} onChange={e => setPricePerSet(e.target.value)} min="0" step="0.01" className="w-full mt-1 px-3 py-2 text-sm border border-gray-300 rounded-md" placeholder="e.g. 100" />
+                <p className="text-[10px] text-gray-400 mt-0.5">Fallback if a lead has no matching industry price</p>
+              </div>
+              {industries.length > 1 && (
+                <IndustryPricingEditor industries={industries} pricing={industryPricing} onChange={setIndustryPricing} billingType={billingType} />
+              )}
+            </>
           )}
 
           {billingType === 'retainer' && (
