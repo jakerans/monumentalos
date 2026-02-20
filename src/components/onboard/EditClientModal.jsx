@@ -92,6 +92,12 @@ export default function EditClientModal({ open, onOpenChange, client, onSaved })
       data.retainer_amount = parseFloat(retainerAmount) || 0;
       data.retainer_due_day = parseInt(retainerDueDay) || 1;
     }
+    // Clean industry pricing
+    const cleanPricing = {};
+    for (const [k, v] of Object.entries(industryPricing)) {
+      if (industries.includes(k) && v !== '' && v > 0) cleanPricing[k] = v;
+    }
+    data.industry_pricing = cleanPricing;
 
     await base44.entities.Client.update(client.id, data);
 
