@@ -68,12 +68,12 @@ import MMDashboard from './pages/MMDashboard';
 import MMOnboard from './pages/MMOnboard';
 import MonthlyBilling from './pages/MonthlyBilling';
 import OnboardDashboard from './pages/OnboardDashboard';
+import PreviewEffects from './pages/PreviewEffects';
 import RevenueDashboard from './pages/RevenueDashboard';
 import SetterDashboard from './pages/SetterDashboard';
 import SetterPerformance from './pages/SetterPerformance';
 import SetterStats from './pages/SetterStats';
 import UserManagement from './pages/UserManagement';
-import PreviewEffects from './pages/PreviewEffects';
 import __Layout from './Layout.jsx';
 
 
@@ -99,12 +99,12 @@ export const PAGES = {
     "MMOnboard": MMOnboard,
     "MonthlyBilling": MonthlyBilling,
     "OnboardDashboard": OnboardDashboard,
+    "PreviewEffects": PreviewEffects,
     "RevenueDashboard": RevenueDashboard,
     "SetterDashboard": SetterDashboard,
     "SetterPerformance": SetterPerformance,
     "SetterStats": SetterStats,
     "UserManagement": UserManagement,
-    "PreviewEffects": PreviewEffects,
 }
 
 export const pagesConfig = {

@@ -22,8 +22,14 @@ export default function PreviewEffects() {
     const checkAuth = async () => {
       try {
         const currentUser = await base44.auth.me();
-        if (currentUser.app_role !== 'admin') {
-          navigate(createPageUrl('AdminDashboard'));
+        const role = currentUser.app_role;
+        if (role !== 'admin') {
+          const dest = role === 'marketing_manager' ? 'MMDashboard'
+            : role === 'setter' ? 'SetterDashboard'
+            : role === 'onboard_admin' ? 'OnboardDashboard'
+            : role === 'client' ? 'ClientPortal'
+            : 'AccountPending';
+          navigate(createPageUrl(dest));
           return;
         }
         setUser(currentUser);
