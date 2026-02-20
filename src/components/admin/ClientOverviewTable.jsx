@@ -163,6 +163,14 @@ export default function ClientOverviewTable({ clients, leads, spend, payments, o
         onOpenChange={(open) => { if (!open) setDeleteClient(null); }}
         onDeleted={onRefresh}
       />
+      {editClient && (
+        <EditClientModal
+          client={editClient}
+          open={!!editClient}
+          onOpenChange={(open) => { if (!open) setEditClient(null); }}
+          onSaved={() => { setEditClient(null); onRefresh?.(); }}
+        />
+      )}
     </>
   );
 }
