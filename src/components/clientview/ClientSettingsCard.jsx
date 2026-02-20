@@ -3,7 +3,6 @@ import { base44 } from '@/api/base44Client';
 import { toast } from '@/components/ui/use-toast';
 import { MapPin, DollarSign, Link as LinkIcon, Tag, Pencil, Save, X, Power } from 'lucide-react';
 import { INDUSTRY_LABELS, INDUSTRY_COLORS } from '../shared/IndustryPicker';
-import { getLeadPrice } from '../shared/pricingUtils';
 import IndustryPicker from '../shared/IndustryPicker';
 import {
   AlertDialog,
@@ -106,23 +105,13 @@ export default function ClientSettingsCard({ client, userRole, onUpdated }) {
         {/* Billing (read-only here, edited via billing editor) */}
         <div className="flex items-start gap-2">
           <DollarSign className="w-3.5 h-3.5 text-green-500 mt-0.5 flex-shrink-0" />
-          <div className="flex-1">
+          <div>
             <p className="text-slate-500">Billing</p>
             <p className="font-semibold text-white">
               {client.billing_type === 'pay_per_set' ? `$${client.price_per_set_appointment || 0} / appt set` :
                client.billing_type === 'retainer' ? `$${client.retainer_amount || 0}/mo retainer` :
                `$${client.price_per_shown_appointment || 0} / shown appt`}
             </p>
-            {client.industry_pricing && Object.keys(client.industry_pricing).length > 0 && (
-              <div className="mt-1 space-y-0.5">
-                {Object.entries(client.industry_pricing).map(([ind, p]) => (
-                  <div key={ind} className="flex items-center justify-between text-[10px]">
-                    <span className="text-slate-400">{INDUSTRY_LABELS[ind] || ind}</span>
-                    <span className="text-emerald-400 font-medium">${p}</span>
-                  </div>
-                ))}
-              </div>
-            )}
           </div>
         </div>
 

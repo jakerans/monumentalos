@@ -32,22 +32,6 @@ function buildMonthBuckets(refDate, count) {
   return months;
 }
 
-function getLeadPrice(client, lead) {
-  const bt = client.billing_type || 'pay_per_show';
-  if (bt === 'retainer') return 0;
-  const ip = client.industry_pricing || {};
-  const defaultPrice = bt === 'pay_per_set' ? (client.price_per_set_appointment || 0) : (client.price_per_shown_appointment || 0);
-  const li = lead.industries || [];
-  if (li.length > 0 && Object.keys(ip).length > 0) {
-    if (li[0] in ip && ip[li[0]] > 0) return ip[li[0]];
-  }
-  return defaultPrice;
-}
-
-function computeLeadRevenue(client, qualifiedLeads) {
-  return qualifiedLeads.reduce((sum, lead) => sum + getLeadPrice(client, lead), 0);
-}
-
 function computeMonthlyPL(months, clients, leads, billingRecords, expenses) {
   const activeClients = clients.filter(c => c.status === 'active');
   return months.map(m => {
@@ -56,8 +40,8 @@ function computeMonthlyPL(months, clients, leads, billingRecords, expenses) {
     activeClients.forEach(client => {
       const bt = client.billing_type || 'pay_per_show';
       const cLeads = leads.filter(l => l.client_id === client.id);
-      if (bt === 'pay_per_show') grossRevenue += computeLeadRevenue(client, cLeads.filter(l => l.disposition === 'showed' && ir(l.appointment_date)));
-      else if (bt === 'pay_per_set') grossRevenue += computeLeadRevenue(client, cLeads.filter(l => l.date_appointment_set && ir(l.date_appointment_set)));
+      if (bt === 'pay_per_show') grossRevenue += cLeads.filter(l => l.disposition === 'showed' && ir(l.appointment_date)).length * (client.price_per_shown_appointment || 0);
+      else if (bt === 'pay_per_set') grossRevenue += cLeads.filter(l => l.date_appointment_set && ir(l.date_appointment_set)).length * (client.price_per_set_appointment || 0);
       else if (bt === 'retainer') grossRevenue += (client.retainer_amount || 0);
     });
     const collected = billingRecords.filter(b => b.status === 'paid' && ir(b.paid_date)).reduce((s, b) => s + (b.paid_amount || b.calculated_amount || 0), 0);
@@ -93,8 +77,8 @@ function computePeriodKPIs(clients, leads, billingRecords, expenses, startDate, 
   clients.filter(c => c.status === 'active').forEach(client => {
     const bt = client.billing_type || 'pay_per_show';
     const cLeads = leads.filter(l => l.client_id === client.id);
-    if (bt === 'pay_per_show') grossRevenue += computeLeadRevenue(client, cLeads.filter(l => l.disposition === 'showed' && ir(l.appointment_date)));
-    else if (bt === 'pay_per_set') grossRevenue += computeLeadRevenue(client, cLeads.filter(l => l.date_appointment_set && ir(l.date_appointment_set)));
+    if (bt === 'pay_per_show') grossRevenue += cLeads.filter(l => l.disposition === 'showed' && ir(l.appointment_date)).length * (client.price_per_shown_appointment || 0);
+    else if (bt === 'pay_per_set') grossRevenue += cLeads.filter(l => l.date_appointment_set && ir(l.date_appointment_set)).length * (client.price_per_set_appointment || 0);
     else if (bt === 'retainer') grossRevenue += (client.retainer_amount || 0);
   });
   const collected = billingRecords.filter(b => b.status === 'paid' && ir(b.paid_date)).reduce((s, b) => s + (b.paid_amount || b.calculated_amount || 0), 0);
@@ -147,8 +131,8 @@ Deno.serve(async (req) => {
       const cBilling = paidBilling.filter(b => b.client_id === c.id);
       const ltv = cBilling.reduce((s, b) => s + (b.paid_amount || b.calculated_amount || 0), 0);
       let allTimeBilled = 0;
-      if (bt === 'pay_per_show') allTimeBilled = computeLeadRevenue(c, cLeads.filter(l => l.disposition === 'showed'));
-      else if (bt === 'pay_per_set') allTimeBilled = computeLeadRevenue(c, cLeads.filter(l => l.date_appointment_set));
+      if (bt === 'pay_per_show') allTimeBilled = cLeads.filter(l => l.disposition === 'showed').length * (c.price_per_shown_appointment || 0);
+      else if (bt === 'pay_per_set') allTimeBilled = cLeads.filter(l => l.date_appointment_set).length * (c.price_per_set_appointment || 0);
       else if (bt === 'retainer') {
         const dates = [...cBilling.map(b => b.paid_date), ...cLeads.map(l => l.created_date)].filter(Boolean).sort();
         if (dates.length > 0) { const mths = Math.max(1, Math.ceil((now - new Date(dates[0])) / (30*24*60*60*1000))); allTimeBilled = (c.retainer_amount || 0) * mths; }

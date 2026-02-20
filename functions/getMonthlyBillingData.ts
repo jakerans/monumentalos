@@ -56,20 +56,12 @@ Deno.serve(async (req) => {
       const monthStartDate = new Date(selYear, selMonth - 1, 1);
       const monthEndDate = new Date(selYear, selMonth, 0, 23, 59, 59);
 
-      function getLeadPrice(client, lead) {
-        const bt = client.billing_type || 'pay_per_show';
-        const ip = client.industry_pricing || {};
-        const defaultPrice = bt === 'pay_per_set' ? (client.price_per_set_appointment || 0) : (client.price_per_shown_appointment || 0);
-        const li = lead.industries || [];
-        if (li.length > 0 && Object.keys(ip).length > 0 && li[0] in ip && ip[li[0]] > 0) return ip[li[0]];
-        return defaultPrice;
-      }
-
       const records = missingClients.map(client => {
         const bt = client.billing_type || 'pay_per_show';
         const cLeads = leads.filter(l => l.client_id === client.id);
 
         let quantity = 0;
+        let rate = 0;
         let calculatedAmount = 0;
 
         if (bt === 'pay_per_show') {
@@ -78,19 +70,20 @@ Deno.serve(async (req) => {
             new Date(l.appointment_date) >= monthStartDate && new Date(l.appointment_date) <= monthEndDate
           );
           quantity = showed.length;
-          calculatedAmount = showed.reduce((s, l) => s + getLeadPrice(client, l), 0);
+          rate = client.price_per_shown_appointment || 0;
+          calculatedAmount = quantity * rate;
         } else if (bt === 'pay_per_set') {
           const booked = cLeads.filter(l =>
             l.date_appointment_set &&
             new Date(l.date_appointment_set) >= monthStartDate && new Date(l.date_appointment_set) <= monthEndDate
           );
           quantity = booked.length;
-          calculatedAmount = booked.reduce((s, l) => s + getLeadPrice(client, l), 0);
+          rate = client.price_per_set_appointment || 0;
+          calculatedAmount = quantity * rate;
         } else if (bt === 'retainer') {
-          calculatedAmount = client.retainer_amount || 0;
+          rate = client.retainer_amount || 0;
+          calculatedAmount = rate;
         }
-
-        const rate = quantity > 0 ? Math.round(calculatedAmount / quantity * 100) / 100 : (bt === 'retainer' ? (client.retainer_amount || 0) : 0);
 
         return {
           client_id: client.id,

@@ -3,14 +3,12 @@ import { base44 } from '@/api/base44Client';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { toast } from '@/components/ui/use-toast';
 import IndustryPicker from '../shared/IndustryPicker';
-import IndustryPricingEditor from '../shared/IndustryPricingEditor';
 
 export default function ClientBillingEditor({ client, open, onOpenChange, onUpdated }) {
   const [industries, setIndustries] = useState([]);
   const [billingType, setBillingType] = useState('pay_per_show');
   const [pricePerShow, setPricePerShow] = useState('');
   const [pricePerSet, setPricePerSet] = useState('');
-  const [industryPricing, setIndustryPricing] = useState({});
   const [retainerAmount, setRetainerAmount] = useState('');
   const [retainerDueDay, setRetainerDueDay] = useState('1');
   const [clientStatus, setClientStatus] = useState('active');
@@ -22,7 +20,6 @@ export default function ClientBillingEditor({ client, open, onOpenChange, onUpda
       setBillingType(client.billing_type || 'pay_per_show');
       setPricePerShow(String(client.price_per_shown_appointment || ''));
       setPricePerSet(String(client.price_per_set_appointment || ''));
-      setIndustryPricing(client.industry_pricing || {});
       setRetainerAmount(String(client.retainer_amount || ''));
       setRetainerDueDay(String(client.retainer_due_day || 1));
       setClientStatus(client.status || 'active');
@@ -44,12 +41,6 @@ export default function ClientBillingEditor({ client, open, onOpenChange, onUpda
       updates.retainer_amount = Number(retainerAmount) || 0;
       updates.retainer_due_day = Number(retainerDueDay) || 1;
     }
-    // Clean industry pricing: remove empty/zero entries and non-client industries
-    const cleanPricing = {};
-    for (const [k, v] of Object.entries(industryPricing)) {
-      if (industries.includes(k) && v !== '' && v > 0) cleanPricing[k] = v;
-    }
-    updates.industry_pricing = cleanPricing;
     await base44.entities.Client.update(client.id, updates);
     setSaving(false);
     toast({ title: 'Billing Updated', description: `${client.name} settings saved.`, variant: 'success' });
@@ -91,29 +82,17 @@ export default function ClientBillingEditor({ client, open, onOpenChange, onUpda
           </div>
 
           {billingType === 'pay_per_show' && (
-            <>
-              <div>
-                <label className="text-xs font-medium text-gray-700">Default Price Per Shown Appointment ($)</label>
-                <input type="number" value={pricePerShow} onChange={e => setPricePerShow(e.target.value)} min="0" step="0.01" className="w-full mt-1 px-3 py-2 text-sm border border-gray-300 rounded-md" placeholder="e.g. 250" />
-                <p className="text-[10px] text-gray-400 mt-0.5">Fallback if a lead has no matching industry price</p>
-              </div>
-              {industries.length > 1 && (
-                <IndustryPricingEditor industries={industries} pricing={industryPricing} onChange={setIndustryPricing} billingType={billingType} />
-              )}
-            </>
+            <div>
+              <label className="text-xs font-medium text-gray-700">Price Per Shown Appointment ($)</label>
+              <input type="number" value={pricePerShow} onChange={e => setPricePerShow(e.target.value)} min="0" step="0.01" className="w-full mt-1 px-3 py-2 text-sm border border-gray-300 rounded-md" placeholder="e.g. 250" />
+            </div>
           )}
 
           {billingType === 'pay_per_set' && (
-            <>
-              <div>
-                <label className="text-xs font-medium text-gray-700">Default Price Per Appointment Set ($)</label>
-                <input type="number" value={pricePerSet} onChange={e => setPricePerSet(e.target.value)} min="0" step="0.01" className="w-full mt-1 px-3 py-2 text-sm border border-gray-300 rounded-md" placeholder="e.g. 100" />
-                <p className="text-[10px] text-gray-400 mt-0.5">Fallback if a lead has no matching industry price</p>
-              </div>
-              {industries.length > 1 && (
-                <IndustryPricingEditor industries={industries} pricing={industryPricing} onChange={setIndustryPricing} billingType={billingType} />
-              )}
-            </>
+            <div>
+              <label className="text-xs font-medium text-gray-700">Price Per Appointment Set ($)</label>
+              <input type="number" value={pricePerSet} onChange={e => setPricePerSet(e.target.value)} min="0" step="0.01" className="w-full mt-1 px-3 py-2 text-sm border border-gray-300 rounded-md" placeholder="e.g. 100" />
+            </div>
           )}
 
           {billingType === 'retainer' && (

@@ -4,7 +4,6 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { toast } from '@/components/ui/use-toast';
 import { Plus, Trash2, Send } from 'lucide-react';
 import IndustryPicker from '../shared/IndustryPicker';
-import IndustryPricingEditor from '../shared/IndustryPricingEditor';
 
 export default function CreateClientModal({ open, onOpenChange, onCreated }) {
   const [name, setName] = useState('');
@@ -12,7 +11,6 @@ export default function CreateClientModal({ open, onOpenChange, onCreated }) {
   const [billingType, setBillingType] = useState('pay_per_show');
   const [price, setPrice] = useState('');
   const [pricePerSet, setPricePerSet] = useState('');
-  const [industryPricing, setIndustryPricing] = useState({});
   const [retainerAmount, setRetainerAmount] = useState('');
   const [retainerDueDay, setRetainerDueDay] = useState('1');
   const [adAccountId, setAdAccountId] = useState('');
@@ -68,12 +66,6 @@ export default function CreateClientModal({ open, onOpenChange, onCreated }) {
       data.retainer_amount = parseFloat(retainerAmount) || 0;
       data.retainer_due_day = parseInt(retainerDueDay) || 1;
     }
-    // Clean industry pricing
-    const cleanPricing = {};
-    for (const [k, v] of Object.entries(industryPricing)) {
-      if (industries.includes(k) && v !== '' && v > 0) cleanPricing[k] = v;
-    }
-    if (Object.keys(cleanPricing).length > 0) data.industry_pricing = cleanPricing;
     const client = await base44.entities.Client.create(data);
 
     // Auto-generate setup fee billing record
@@ -132,7 +124,6 @@ export default function CreateClientModal({ open, onOpenChange, onCreated }) {
     setBillingType('pay_per_show');
     setPrice('');
     setPricePerSet('');
-    setIndustryPricing({});
     setRetainerAmount('');
     setRetainerDueDay('1');
     setAdAccountId('');
@@ -173,26 +164,16 @@ export default function CreateClientModal({ open, onOpenChange, onCreated }) {
             </select>
           </div>
           {billingType === 'pay_per_show' && (
-            <>
-              <div>
-                <label className="text-xs font-medium text-gray-700">Default Price Per Shown Appointment *</label>
-                <input type="number" value={price} onChange={e => setPrice(e.target.value)} className="w-full mt-1 px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="e.g. 250" />
-              </div>
-              {industries.length > 1 && (
-                <IndustryPricingEditor industries={industries} pricing={industryPricing} onChange={setIndustryPricing} billingType={billingType} />
-              )}
-            </>
+            <div>
+              <label className="text-xs font-medium text-gray-700">Price Per Shown Appointment *</label>
+              <input type="number" value={price} onChange={e => setPrice(e.target.value)} className="w-full mt-1 px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="e.g. 250" />
+            </div>
           )}
           {billingType === 'pay_per_set' && (
-            <>
-              <div>
-                <label className="text-xs font-medium text-gray-700">Default Price Per Appointment Set *</label>
-                <input type="number" value={pricePerSet} onChange={e => setPricePerSet(e.target.value)} className="w-full mt-1 px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="e.g. 100" />
-              </div>
-              {industries.length > 1 && (
-                <IndustryPricingEditor industries={industries} pricing={industryPricing} onChange={setIndustryPricing} billingType={billingType} />
-              )}
-            </>
+            <div>
+              <label className="text-xs font-medium text-gray-700">Price Per Appointment Set *</label>
+              <input type="number" value={pricePerSet} onChange={e => setPricePerSet(e.target.value)} className="w-full mt-1 px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="e.g. 100" />
+            </div>
           )}
           {billingType === 'retainer' && (
             <>
