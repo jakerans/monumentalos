@@ -135,10 +135,10 @@ export default function EmployeeManagement() {
 
   return (
     <PageErrorBoundary>
-    <div className="min-h-screen bg-[#0B0F1A]">
-      <AdminNav user={user} currentPage="EmployeeManagement" clients={clients} />
+    <div className="min-h-screen bg-[#0B0F1A] flex">
+      <AdminSidebar user={user} currentPage="EmployeeManagement" clients={clients} />
 
-      <main className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-5">
+      <main className="flex-1 min-w-0 max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-5">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div className="flex items-center gap-3">
             <Users className="w-6 h-6 text-slate-300 hidden sm:block" />
