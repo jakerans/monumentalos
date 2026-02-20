@@ -19,8 +19,7 @@ export default function AccountingPL() {
   const [user, setUser] = useState(null);
   const [startDate, setStartDate] = useState(dayjs().startOf('month').format('YYYY-MM-DD'));
   const [endDate, setEndDate] = useState(dayjs().format('YYYY-MM-DD'));
-  const [paymentOpen, setPaymentOpen] = useState(false);
-  const [expenseOpen, setExpenseOpen] = useState(false);
+
 
   useEffect(() => {
     const checkAuth = async () => {
