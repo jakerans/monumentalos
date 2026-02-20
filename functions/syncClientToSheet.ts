@@ -65,7 +65,17 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Sheet is empty' }, { status: 400 });
     }
 
-    const sheetHeaders = rows[0];
+    let sheetHeaders = [...rows[0]];
+    const missingHeaders = HEADERS.filter(h => !sheetHeaders.includes(h));
+    if (missingHeaders.length > 0) {
+      sheetHeaders = [...sheetHeaders, ...missingHeaders];
+      const headerRange = `${SHEET_NAME}!A1:${String.fromCharCode(64 + Math.min(sheetHeaders.length, 26))}1`;
+      await fetch(`${SHEETS_API}/${SPREADSHEET_ID}/values/${encodeURIComponent(headerRange)}?valueInputOption=USER_ENTERED`, {
+        method: 'PUT',
+        headers,
+        body: JSON.stringify({ values: [sheetHeaders] }),
+      });
+    }
     const appIdCol = sheetHeaders.indexOf('App ID');
 
     // Find existing row by App ID
