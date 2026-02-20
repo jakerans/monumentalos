@@ -68,6 +68,12 @@ export default function CreateClientModal({ open, onOpenChange, onCreated }) {
       data.retainer_amount = parseFloat(retainerAmount) || 0;
       data.retainer_due_day = parseInt(retainerDueDay) || 1;
     }
+    // Clean industry pricing
+    const cleanPricing = {};
+    for (const [k, v] of Object.entries(industryPricing)) {
+      if (industries.includes(k) && v !== '' && v > 0) cleanPricing[k] = v;
+    }
+    if (Object.keys(cleanPricing).length > 0) data.industry_pricing = cleanPricing;
     const client = await base44.entities.Client.create(data);
 
     // Auto-generate setup fee billing record
