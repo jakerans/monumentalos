@@ -11,6 +11,10 @@ export default function ClientBillingEditor({ client, open, onOpenChange, onUpda
   const [industryPricing, setIndustryPricing] = useState([]);
   const [retainerAmount, setRetainerAmount] = useState('');
   const [retainerDueDay, setRetainerDueDay] = useState('1');
+  const [hybridBaseRetainer, setHybridBaseRetainer] = useState('');
+  const [hybridRetainerDueDay, setHybridRetainerDueDay] = useState('1');
+  const [hybridPerformanceType, setHybridPerformanceType] = useState('pay_per_set');
+  const [hybridPerformancePricing, setHybridPerformancePricing] = useState([]);
   const [clientStatus, setClientStatus] = useState('active');
   const [saving, setSaving] = useState(false);
 
@@ -21,6 +25,10 @@ export default function ClientBillingEditor({ client, open, onOpenChange, onUpda
       setIndustryPricing(client.industry_pricing || []);
       setRetainerAmount(String(client.retainer_amount || ''));
       setRetainerDueDay(String(client.retainer_due_day || 1));
+      setHybridBaseRetainer(String(client.hybrid_base_retainer || ''));
+      setHybridRetainerDueDay(String(client.hybrid_retainer_due_day || 1));
+      setHybridPerformanceType(client.hybrid_performance_type || 'pay_per_set');
+      setHybridPerformancePricing(client.hybrid_performance_pricing || []);
       setClientStatus(client.status || 'active');
     }
   }, [client]);
@@ -47,6 +55,16 @@ export default function ClientBillingEditor({ client, open, onOpenChange, onUpda
     if (billingType === 'retainer') {
       updates.retainer_amount = Number(retainerAmount) || 0;
       updates.retainer_due_day = Number(retainerDueDay) || 1;
+    }
+    if (billingType === 'hybrid') {
+      updates.hybrid_base_retainer = Number(hybridBaseRetainer) || 0;
+      updates.hybrid_retainer_due_day = Number(hybridRetainerDueDay) || 1;
+      updates.hybrid_performance_type = hybridPerformanceType;
+      updates.hybrid_performance_pricing = hybridPerformancePricing.map(row => ({
+        industry: row.industry,
+        price_per_show: row.price_per_show ? Number(row.price_per_show) : null,
+        price_per_set: row.price_per_set ? Number(row.price_per_set) : null,
+      }));
     }
     await base44.entities.Client.update(client.id, updates);
     setSaving(false);
@@ -85,6 +103,7 @@ export default function ClientBillingEditor({ client, open, onOpenChange, onUpda
               <option value="pay_per_show">Pay Per Show</option>
               <option value="pay_per_set">Pay Per Set</option>
               <option value="retainer">Retainer</option>
+              <option value="hybrid">Hybrid (Retainer + Performance)</option>
             </select>
           </div>
 
@@ -106,6 +125,31 @@ export default function ClientBillingEditor({ client, open, onOpenChange, onUpda
                   ))}
                 </select>
               </div>
+            </>
+          )}
+
+          {billingType === 'hybrid' && (
+            <>
+              <div>
+                <label className="text-xs font-medium text-gray-700">Base Retainer Amount ($)</label>
+                <input type="number" value={hybridBaseRetainer} onChange={e => setHybridBaseRetainer(e.target.value)} min="0" step="0.01" className="w-full mt-1 px-3 py-2 text-sm border border-gray-300 rounded-md" placeholder="e.g. 1500" />
+              </div>
+              <div>
+                <label className="text-xs font-medium text-gray-700">Retainer Due Day</label>
+                <select value={hybridRetainerDueDay} onChange={e => setHybridRetainerDueDay(e.target.value)} className="w-full mt-1 px-3 py-2 text-sm border border-gray-300 rounded-md">
+                  {Array.from({ length: 28 }, (_, i) => i + 1).map(d => (
+                    <option key={d} value={d}>{d}{ordinal(d)}</option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="text-xs font-medium text-gray-700">Performance Component Type</label>
+                <select value={hybridPerformanceType} onChange={e => setHybridPerformanceType(e.target.value)} className="w-full mt-1 px-3 py-2 text-sm border border-gray-300 rounded-md">
+                  <option value="pay_per_set">Pay Per Set</option>
+                  <option value="pay_per_show">Pay Per Show</option>
+                </select>
+              </div>
+              <IndustryPricingEditor pricing={hybridPerformancePricing} onChange={setHybridPerformancePricing} billingType={hybridPerformanceType} />
             </>
           )}
 
