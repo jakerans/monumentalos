@@ -5,8 +5,8 @@ import FlipMove from 'react-flip-move';
 import MarkPaidModal from './MarkPaidModal';
 import EditInvoiceModal from './EditInvoiceModal';
 
-const BILLING_LABELS = { pay_per_show: 'Per Show', pay_per_set: 'Per Set', retainer: 'Retainer', setup_fee: 'Setup Fee' };
-const BILLING_COLORS = { pay_per_show: 'bg-blue-100 text-blue-700', pay_per_set: 'bg-purple-100 text-purple-700', retainer: 'bg-amber-100 text-amber-700', setup_fee: 'bg-emerald-100 text-emerald-700' };
+const BILLING_LABELS = { pay_per_show: 'Per Show', pay_per_set: 'Per Set', retainer: 'Retainer', setup_fee: 'Setup Fee', hybrid_retainer: 'Hybrid — Base Retainer', hybrid_performance: 'Hybrid — Performance' };
+const BILLING_COLORS = { pay_per_show: 'bg-blue-100 text-blue-700', pay_per_set: 'bg-purple-100 text-purple-700', retainer: 'bg-amber-100 text-amber-700', setup_fee: 'bg-emerald-100 text-emerald-700', hybrid_retainer: 'bg-cyan-100 text-cyan-700', hybrid_performance: 'bg-teal-100 text-teal-700' };
 
 const STATUS_CONFIG = {
   pending: { label: 'Pending', icon: Clock, color: 'text-amber-600', bg: 'bg-amber-50 border-amber-200' },
@@ -126,7 +126,7 @@ export default function BillingTable({ rows, kpis, pagination, onRefresh, onPage
                 </div>
                 <div className="flex items-center gap-2 flex-wrap">
                   <span className={`px-1.5 py-0.5 text-[10px] font-medium rounded ${BILLING_COLORS[r.billing_type]}`}>{BILLING_LABELS[r.billing_type]}</span>
-                  {r.billing_type !== 'retainer' && <span className="text-[11px] text-slate-400">Qty: {r.quantity || 0}</span>}
+                  {r.billing_type !== 'retainer' && r.billing_type !== 'hybrid_retainer' && <span className="text-[11px] text-slate-400">Qty: {r.quantity || 0}</span>}
                   {r.rate && <span className="text-[11px] text-slate-400">@ ${r.rate}</span>}
                 </div>
                 <div className="flex items-center justify-between">
@@ -240,11 +240,11 @@ const BillingRow = forwardRef(({ r, STATUS_CONFIG, BILLING_LABELS, BILLING_COLOR
         <span className={`px-1.5 py-0.5 text-[10px] font-medium rounded ${BILLING_COLORS[r.billing_type]}`}>{BILLING_LABELS[r.billing_type]}</span>
       </td>
       <td className="px-3 py-3 text-center text-slate-300 text-xs">
-        {r.billing_type === 'retainer' && dueDay
+        {(r.billing_type === 'retainer' || r.billing_type === 'hybrid_retainer') && dueDay
           ? `${dueDay}${dueDaySuffix}`
-          : r.billing_type === 'retainer' ? '1st' : '—'}
+          : (r.billing_type === 'retainer' || r.billing_type === 'hybrid_retainer') ? '1st' : '—'}
       </td>
-      <td className="px-3 py-3 text-right text-slate-300">{r.billing_type === 'retainer' ? '—' : (r.quantity || 0)}</td>
+      <td className="px-3 py-3 text-right text-slate-300">{(r.billing_type === 'retainer' || r.billing_type === 'hybrid_retainer') ? '—' : (r.quantity || 0)}</td>
       <td className="px-3 py-3 text-right text-slate-300">{r.rate ? `$${r.rate}` : '—'}</td>
       <td className="px-3 py-3 text-right font-medium text-white">${r.amount.toLocaleString()}</td>
       <td className="px-3 py-3 text-center">
