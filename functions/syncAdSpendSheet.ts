@@ -1,6 +1,6 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
 
-const SPREADSHEET_ID = '1qn4-rYBgi5ruOm7tB6obbA3yBvSyOU313yBvSyOU313yNI3b41STM';
+const SPREADSHEET_ID = '1qn4-rYBgi5ruOm7tB6obbA3yBvSyOU313yNI3b41STM';
 const SHEET_NAME = 'Ad Spend';
 const SHEETS_API = 'https://sheets.googleapis.com/v4/spreadsheets';
 
