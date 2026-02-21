@@ -12,6 +12,7 @@ const allNavItems = [
   { key: 'AccountingExpenses', label: 'Expenses', icon: Wallet },
   { key: 'AccountingCashFlow', label: 'Cash Flow', icon: TrendingUp },
   { key: 'AccountingClients', label: 'Client Revenue', icon: Calculator },
+  { key: 'ClientProfitability', label: 'Profitability', icon: TrendingUp },
   { key: 'SetterPerformance', label: 'Setter Mgmt', icon: Headset },
   { key: 'SetterStats', label: 'Setter Reporting', icon: Headset },
   { key: 'EmployeeManagement', label: 'Employees', icon: UserCog },

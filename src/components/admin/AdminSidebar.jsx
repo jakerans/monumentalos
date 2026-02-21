@@ -18,6 +18,7 @@ const navItems = [
       { key: 'AccountingExpenses', label: 'Expenses', icon: Wallet },
       { key: 'AccountingCashFlow', label: 'Cash Flow', icon: TrendingUp },
       { key: 'AccountingClients', label: 'Clients', icon: Users },
+      { key: 'ClientProfitability', label: 'Profitability', icon: TrendingUp },
     ],
   },
   {
