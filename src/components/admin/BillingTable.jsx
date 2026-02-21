@@ -1,6 +1,6 @@
 import React, { useState, forwardRef } from 'react';
 import { base44 } from '@/api/base44Client';
-import { Check, Clock, AlertTriangle, DollarSign, Pencil, Trash2, Loader2 } from 'lucide-react';
+import { Check, Clock, AlertTriangle, DollarSign, Pencil, Trash2, Loader2, XCircle } from 'lucide-react';
 import FlipMove from 'react-flip-move';
 import MarkPaidModal from './MarkPaidModal';
 import EditInvoiceModal from './EditInvoiceModal';
@@ -12,6 +12,7 @@ const STATUS_CONFIG = {
   pending: { label: 'Pending', icon: Clock, color: 'text-amber-600', bg: 'bg-amber-50 border-amber-200' },
   paid: { label: 'Paid', icon: Check, color: 'text-emerald-600', bg: 'bg-emerald-50 border-emerald-200' },
   overdue: { label: 'Overdue', icon: AlertTriangle, color: 'text-red-600', bg: 'bg-red-50 border-red-200' },
+  failed: { label: 'Failed', icon: XCircle, color: 'text-rose-600', bg: 'bg-rose-50 border-rose-200' },
 };
 
 export default function BillingTable({ rows, kpis, pagination, onRefresh, onPageChange }) {

@@ -110,6 +110,7 @@ export default function EditInvoiceModal({ record, clientName, open, onOpenChang
               <option value="pending">Pending</option>
               <option value="paid">Paid</option>
               <option value="overdue">Overdue</option>
+              <option value="failed">Failed — Card Declined / Payment Bounced</option>
             </select>
           </div>
 
