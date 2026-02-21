@@ -4,6 +4,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Link, useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import { Settings, Link2, MapPin, Map, Save, Check } from 'lucide-react';
+import ClientSidebar from '../components/client/ClientSidebar';
 
 export default function ClientSettings() {
   const navigate = useNavigate();

@@ -4,6 +4,7 @@ import { useQuery } from '@tanstack/react-query';
 import { Link, useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import { ArrowLeft, Calendar, Phone, Mail } from 'lucide-react';
+import ClientSidebar from '../components/client/ClientSidebar';
 import LeadDetailsDrawer from '../components/LeadDetailsDrawer';
 import AppointmentCard from '../components/client/AppointmentCard';
 
