@@ -125,15 +125,9 @@ Deno.serve(async (req) => {
     const consecutiveNoDrop = profile ? (profile.consecutive_bookings_no_drop || 0) : 0;
 
     // Paid days off bank
-    let bank = null;
-    let daysAvailable = 0;
-    try {
-      const bankRecords = await sr.PaidDayOffBank.filter({ setter_id }, '-created_date', 1);
-      bank = bankRecords.length > 0 ? bankRecords[0] : null;
-      daysAvailable = bank ? ((bank.days_earned || 0) - (bank.days_used || 0)) : 0;
-    } catch (e) {
-      // PaidDayOffBank entity may not exist yet
-    }
+    const bankRecords = await sr.PaidDayOffBank.filter({ setter_id }, '-created_date', 1);
+    const bank = bankRecords.length > 0 ? bankRecords[0] : null;
+    const daysAvailable = bank ? ((bank.days_earned || 0) - (bank.days_used || 0)) : 0;
 
     return Response.json({
       unopenedBoxes,
