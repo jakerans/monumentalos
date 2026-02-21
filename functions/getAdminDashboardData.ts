@@ -480,6 +480,8 @@ Deno.serve(async (req) => {
       billingRecords: lastMonthBilling,
       clients,
       spiffs,
+      leads,
+      users,
     });
   } catch (error) {
     console.error('getAdminDashboardData error:', error);
