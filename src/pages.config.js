@@ -54,6 +54,7 @@ import AccountingExpenses from './pages/AccountingExpenses';
 import AccountingPL from './pages/AccountingPL';
 import AdminDashboard from './pages/AdminDashboard';
 import AppointmentHistory from './pages/AppointmentHistory';
+import BankAccountSettings from './pages/BankAccountSettings';
 import ClientManagement from './pages/ClientManagement';
 import ClientPerformance from './pages/ClientPerformance';
 import ClientPortal from './pages/ClientPortal';
@@ -74,7 +75,7 @@ import SetterDashboard from './pages/SetterDashboard';
 import SetterPerformance from './pages/SetterPerformance';
 import SetterStats from './pages/SetterStats';
 import UserManagement from './pages/UserManagement';
-import BankAccountSettings from './pages/BankAccountSettings';
+import ClientProfitability from './pages/ClientProfitability';
 import __Layout from './Layout.jsx';
 
 
@@ -86,6 +87,7 @@ export const PAGES = {
     "AccountingPL": AccountingPL,
     "AdminDashboard": AdminDashboard,
     "AppointmentHistory": AppointmentHistory,
+    "BankAccountSettings": BankAccountSettings,
     "ClientManagement": ClientManagement,
     "ClientPerformance": ClientPerformance,
     "ClientPortal": ClientPortal,
@@ -106,7 +108,7 @@ export const PAGES = {
     "SetterPerformance": SetterPerformance,
     "SetterStats": SetterStats,
     "UserManagement": UserManagement,
-    "BankAccountSettings": BankAccountSettings,
+    "ClientProfitability": ClientProfitability,
 }
 
 export const pagesConfig = {
