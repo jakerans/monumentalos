@@ -51,11 +51,15 @@ Deno.serve(async (req) => {
 
     const sr = base44.asServiceRole.entities;
 
+    const ninetyDaysAgo = new Date(now);
+    ninetyDaysAgo.setDate(ninetyDaysAgo.getDate() - 90);
+    const ninetyDaysAgoISO = ninetyDaysAgo.toISOString();
+
     const [clients, leads, spend, expenses, goals, billingRecords, users, spiffs] = await Promise.all([
       sr.Client.list(),
-      fetchAll(sr.Lead, '-created_date'),
+      fetchAllFiltered(sr.Lead, { created_date: { $gte: ninetyDaysAgoISO } }, '-created_date'),
       fetchAll(sr.Spend, '-date'),
-      fetchAll(sr.Expense, '-date'),
+      fetchAllFiltered(sr.Expense, { date: { $gte: ninetyDaysAgo.toISOString().split('T')[0] } }, '-date'),
       sr.CompanyGoal.list(),
       fetchAll(sr.MonthlyBilling, '-billing_month'),
       sr.User.list(),
