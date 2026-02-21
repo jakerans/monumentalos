@@ -77,11 +77,18 @@ Deno.serve(async (req) => {
     const accessToken = await base44.asServiceRole.connectors.getAccessToken('googlesheets');
     const gHeaders = { 'Authorization': `Bearer ${accessToken}`, 'Content-Type': 'application/json' };
 
-    // 1. Read sheet + DB in parallel
-    const [sheetResp, dbExpenses] = await Promise.all([
+    // 1. Read sheet + DB + bank accounts in parallel
+    const [sheetResp, dbExpenses, bankAccounts] = await Promise.all([
       fetch(`${SHEETS_API}/${SPREADSHEET_ID}/values/${encodeURIComponent(SHEET_NAME)}`, { headers: gHeaders }),
       fetchAllExpenses(base44),
+      base44.asServiceRole.entities.BankAccount.list(),
     ]);
+
+    // Build bank account lookup: account_id string → BankAccount.id
+    const bankAccountByAccountId = {};
+    for (const acct of bankAccounts) {
+      if (acct.account_id) bankAccountByAccountId[acct.account_id.trim().toLowerCase()] = acct.id;
+    }
 
     if (!sheetResp.ok) {
       const errText = await sheetResp.text();
