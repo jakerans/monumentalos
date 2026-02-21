@@ -72,29 +72,6 @@ Deno.serve(async (req) => {
       fulfillment_status: 'pending',
     });
 
-    // If cash prize, create PerformancePayRecord
-    if (selectedPrize.prize_type === 'cash' && (selectedPrize.cash_value || 0) > 0) {
-      const employees = await sr.Employee.filter({ user_id: setter_id }, '-created_date', 1);
-      if (employees.length > 0) {
-        const employee = employees[0];
-        const now = new Date();
-        const periodStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
-        const ppRecord = await sr.PerformancePayRecord.create({
-          performance_pay_id: 'loot_win',
-          employee_id: employee.id,
-          period: periodStr,
-          payout: selectedPrize.cash_value,
-          status: 'calculated',
-          notes: 'Loot Win: ' + selectedPrize.name,
-        });
-        // Update LootWin with performance_pay_record_id
-        await sr.LootWin.update(lootWin.id, {
-          performance_pay_record_id: ppRecord.id,
-        });
-        lootWin.performance_pay_record_id = ppRecord.id;
-      }
-    }
-
     // Mark box as opened
     await sr.LootBox.update(box.id, {
       status: 'opened',
