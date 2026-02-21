@@ -32,12 +32,30 @@ Deno.serve(async (req) => {
 
     const sr = base44.asServiceRole.entities;
 
-    const [clients, spendRecords, bookedLeads, appointmentLeads, soldLeads] = await Promise.all([
+    // Calculate prior period (same length window shifted back)
+    const startMs = new Date(start_date + 'T00:00:00.000Z').getTime();
+    const endMs = new Date(end_date + 'T23:59:59.999Z').getTime();
+    const periodLength = endMs - startMs;
+    const priorEndDate = new Date(startMs - 1);
+    const priorStartDate = new Date(priorEndDate.getTime() - periodLength);
+    const priorStartStr = priorStartDate.toISOString().slice(0, 10);
+    const priorEndStr = priorEndDate.toISOString().slice(0, 10);
+    const priorStartISO = priorStartDate.toISOString();
+    const priorEndISO = priorEndDate.toISOString();
+
+    const [
+      clients, spendRecords, bookedLeads, appointmentLeads, soldLeads,
+      priorSpendRecords, priorBookedLeads, priorAppointmentLeads, priorSoldLeads,
+    ] = await Promise.all([
       sr.Client.filter({ id: client_id }),
       fetchAllFiltered(sr.Spend, { client_id, date: { $gte: start_date, $lte: end_date } }, '-date'),
       fetchAllFiltered(sr.Lead, { client_id, date_appointment_set: { $gte: startISO, $lte: endISO } }, '-created_date'),
       fetchAllFiltered(sr.Lead, { client_id, appointment_date: { $gte: startISO, $lte: endISO } }, '-created_date'),
       fetchAllFiltered(sr.Lead, { client_id, date_sold: { $gte: start_date, $lte: end_date } }, '-created_date'),
+      fetchAllFiltered(sr.Spend, { client_id, date: { $gte: priorStartStr, $lte: priorEndStr } }, '-date'),
+      fetchAllFiltered(sr.Lead, { client_id, date_appointment_set: { $gte: priorStartISO, $lte: priorEndISO } }, '-created_date'),
+      fetchAllFiltered(sr.Lead, { client_id, appointment_date: { $gte: priorStartISO, $lte: priorEndISO } }, '-created_date'),
+      fetchAllFiltered(sr.Lead, { client_id, date_sold: { $gte: priorStartStr, $lte: priorEndStr } }, '-created_date'),
     ]);
 
     return Response.json({
@@ -46,6 +64,10 @@ Deno.serve(async (req) => {
       bookedLeads,
       appointmentLeads,
       soldLeads,
+      priorSpendRecords,
+      priorBookedLeads,
+      priorAppointmentLeads,
+      priorSoldLeads,
     });
   } catch (error) {
     console.error('getClientReportData error:', error);
