@@ -145,17 +145,16 @@ Deno.serve(async (req) => {
               perfAmount += match ? (match.price_per_set || 0) : 0;
             });
           }
-          if (perfQty > 0) {
-            hybridRecords.push({
-              client_id: client.id,
-              billing_month: selectedMonth,
-              billing_type: 'hybrid_performance',
-              calculated_amount: perfAmount,
-              quantity: perfQty,
-              rate: perfQty > 0 ? Math.round((perfAmount / perfQty) * 100) / 100 : 0,
-              status: 'pending',
-            });
-          }
+          hybridRecords.push({
+            client_id: client.id,
+            billing_month: selectedMonth,
+            billing_type: 'hybrid_performance',
+            calculated_amount: perfAmount,
+            quantity: perfQty,
+            rate: perfQty > 0 ? Math.round((perfAmount / perfQty) * 100) / 100 : 0,
+            status: 'pending',
+            notes: perfQty === 0 ? 'No appointments this month' : undefined,
+          });
           return hybridRecords;
         }
 
