@@ -46,6 +46,8 @@ export default function AdminUserMenu({ user }) {
         const d = res.data;
         const desc = d.sheetCreated != null
           ? `+${d.sheetCreated} new, ${d.sheetUpdated} updated (sheet) · +${d.dbCreated} new, ${d.dbUpdated} updated (db)`
+          : d.bankAccountMatched != null
+          ? `+${d.added || 0} new · ${d.updated || 0} updated · ${d.bankAccountMatched} accounts matched · ${d.bankAccountUnmatched} unmatched`
           : 'Sync completed successfully';
         toast({ title: `${option.label} Synced`, description: desc, variant: 'success' });
       }
