@@ -152,92 +152,193 @@ export default function AdminSidebar({ user, currentPage, clients = [] }) {
 
       {/* Nav Items */}
       <nav className="flex-1 py-3 px-2 space-y-0.5 overflow-y-auto scrollbar-hide">
-        {activeNavItems.map((item, i) => {
-          const Icon = item.icon;
-          const hasChildren = item.children && item.children.length > 0;
-          const isGroupActive = hasChildren && item.children.some(c => c.key === currentPage);
-          const active = !hasChildren && currentPage === item.key;
-          const isExpanded = expandedGroup === item.key;
+        {isFinanceAdmin ? (
+          // Finance Admin: flat list, no sections
+          financeAdminItems.map((item, i) => {
+            const Icon = item.icon;
+            const hasChildren = item.children && item.children.length > 0;
+            const isGroupActive = hasChildren && item.children.some(c => c.key === currentPage);
+            const active = !hasChildren && currentPage === item.key;
+            const isExpanded = expandedGroup === item.key;
 
-          return (
-            <motion.div
-              key={item.key + '-' + activeTab}
-              initial={{ opacity: 0, x: -8 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.05 + i * 0.03, duration: 0.25 }}
-            >
-              {hasChildren ? (
-                <>
-                  <button
-                    onClick={() => {
-                      if (collapsed) {
-                        navigate(createPageUrl(item.children[0].key));
-                      } else {
-                        setExpandedGroup(isExpanded ? null : item.key);
-                      }
-                    }}
+            return (
+              <motion.div
+                key={item.key}
+                initial={{ opacity: 0, x: -8 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.05 + i * 0.03, duration: 0.25 }}
+              >
+                {hasChildren ? (
+                  <>
+                    <button
+                      onClick={() => setExpandedGroup(isExpanded ? null : item.key)}
+                      title={collapsed ? item.label : undefined}
+                      className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+                        isGroupActive ? 'bg-white/10 text-white' : 'text-slate-400 hover:text-white hover:bg-white/5'
+                      } ${collapsed ? 'justify-center' : ''}`}
+                    >
+                      <Icon className="w-4 h-4 shrink-0" />
+                      {!collapsed && (
+                        <>
+                          <span className="flex-1 text-left">{item.label}</span>
+                          <ChevronDown className={`w-3 h-3 transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`} />
+                        </>
+                      )}
+                    </button>
+                    {!collapsed && isExpanded && (
+                      <div className="ml-4 pl-3 border-l border-slate-700/40 mt-0.5 space-y-0.5">
+                        {item.children.map(child => {
+                          const ChildIcon = child.icon;
+                          const childActive = currentPage === child.key;
+                          return (
+                            <Link
+                              key={child.key}
+                              to={createPageUrl(child.key)}
+                              className={`flex items-center gap-2.5 px-2.5 py-1.5 rounded-md text-xs font-medium transition-all duration-200 ${
+                                childActive
+                                  ? 'bg-white/10 text-white'
+                                  : 'text-slate-500 hover:text-white hover:bg-white/5'
+                              }`}
+                            >
+                              {ChildIcon && <ChildIcon className="w-3.5 h-3.5 shrink-0" />}
+                              {!ChildIcon && <Headset className="w-3.5 h-3.5 shrink-0" />}
+                              <span>{child.label}</span>
+                              {childActive && (
+                                <div className="ml-auto w-1.5 h-1.5 rounded-full" style={{ backgroundColor: '#D6FF03' }} />
+                              )}
+                            </Link>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </>
+                ) : (
+                  <Link
+                    to={createPageUrl(item.key)}
                     title={collapsed ? item.label : undefined}
-                    className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
-                      isGroupActive
+                    className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+                      active
                         ? 'bg-white/10 text-white'
                         : 'text-slate-400 hover:text-white hover:bg-white/5'
                     } ${collapsed ? 'justify-center' : ''}`}
                   >
                     <Icon className="w-4 h-4 shrink-0" />
-                    {!collapsed && (
-                      <>
-                        <span className="flex-1 text-left">{item.label}</span>
-                        <ChevronDown className={`w-3 h-3 transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`} />
-                      </>
+                    {!collapsed && <span>{item.label}</span>}
+                    {active && !collapsed && (
+                      <div className="ml-auto w-1.5 h-1.5 rounded-full" style={{ backgroundColor: '#D6FF03' }} />
                     )}
+                  </Link>
+                )}
+              </motion.div>
+            );
+          })
+        ) : (
+          // Admin: accordion sections
+          Object.entries(SECTIONS).map(([sectionId, section], sectionIdx) => {
+            const SectionIcon = section.icon;
+            const isSectionOpen = openSections[sectionId];
+
+            return (
+              <div key={sectionId}>
+                {/* Section header */}
+                {!collapsed && (
+                  <button
+                    onClick={() => toggleSection(sectionId)}
+                    className={`w-full flex items-center gap-2 px-3 py-2 mt-${sectionIdx === 0 ? '0' : '3'} text-[10px] uppercase tracking-wider font-semibold text-slate-500 hover:text-slate-400 transition-colors`}
+                  >
+                    <SectionIcon className="w-3.5 h-3.5 shrink-0" />
+                    <span className="flex-1 text-left">{section.label}</span>
+                    <ChevronDown className={`w-3 h-3 transition-transform duration-200 ${isSectionOpen ? 'rotate-180' : ''}`} />
                   </button>
-                  {!collapsed && isExpanded && (
-                    <div className="ml-4 pl-3 border-l border-slate-700/40 mt-0.5 space-y-0.5">
-                      {item.children.map(child => {
-                        const ChildIcon = child.icon;
-                        const childActive = currentPage === child.key;
-                        return (
-                          <Link
-                            key={child.key}
-                            to={createPageUrl(child.key)}
-                            className={`flex items-center gap-2.5 px-2.5 py-1.5 rounded-md text-xs font-medium transition-all duration-200 ${
-                              childActive
-                                ? 'bg-white/10 text-white'
-                                : 'text-slate-500 hover:text-white hover:bg-white/5'
-                            }`}
-                          >
-                            {ChildIcon && <ChildIcon className="w-3.5 h-3.5 shrink-0" />}
-                            {!ChildIcon && <Headset className="w-3.5 h-3.5 shrink-0" />}
-                            <span>{child.label}</span>
-                            {childActive && (
-                              <div className="ml-auto w-1.5 h-1.5 rounded-full" style={{ backgroundColor: '#D6FF03' }} />
-                            )}
-                          </Link>
-                        );
-                      })}
-                    </div>
-                  )}
-                </>
-              ) : (
-                <Link
-                  to={createPageUrl(item.key)}
-                  title={collapsed ? item.label : undefined}
-                  className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
-                    active
-                      ? 'bg-white/10 text-white'
-                      : 'text-slate-400 hover:text-white hover:bg-white/5'
-                  } ${collapsed ? 'justify-center' : ''}`}
-                >
-                  <Icon className="w-4 h-4 shrink-0" />
-                  {!collapsed && <span>{item.label}</span>}
-                  {active && !collapsed && (
-                    <div className="ml-auto w-1.5 h-1.5 rounded-full" style={{ backgroundColor: '#D6FF03' }} />
-                  )}
-                </Link>
-              )}
-            </motion.div>
-          );
-        })}
+                )}
+
+                {/* Section items */}
+                {isSectionOpen && (
+                  <div className={collapsed ? '' : 'mt-1.5 space-y-0.5'}>
+                    {section.items.map((item, itemIdx) => {
+                      const Icon = item.icon;
+                      const hasChildren = item.children && item.children.length > 0;
+                      const isGroupActive = hasChildren && item.children.some(c => c.key === currentPage);
+                      const active = !hasChildren && currentPage === item.key;
+                      const isExpanded = expandedGroup === item.key;
+
+                      return (
+                        <motion.div
+                          key={item.key}
+                          initial={{ opacity: 0, x: -8 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          transition={{ delay: 0.02 + itemIdx * 0.02, duration: 0.25 }}
+                        >
+                          {hasChildren ? (
+                            <>
+                              <button
+                                onClick={() => setExpandedGroup(isExpanded ? null : item.key)}
+                                title={collapsed ? item.label : undefined}
+                                className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+                                  isGroupActive ? 'bg-white/10 text-white' : 'text-slate-400 hover:text-white hover:bg-white/5'
+                                } ${collapsed ? 'justify-center' : ''}`}
+                              >
+                                <Icon className="w-4 h-4 shrink-0" />
+                                {!collapsed && (
+                                  <>
+                                    <span className="flex-1 text-left">{item.label}</span>
+                                    <ChevronDown className={`w-3 h-3 transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`} />
+                                  </>
+                                )}
+                              </button>
+                              {!collapsed && isExpanded && (
+                                <div className="ml-4 pl-3 border-l border-slate-700/40 mt-0.5 space-y-0.5">
+                                  {item.children.map(child => {
+                                    const ChildIcon = child.icon;
+                                    const childActive = currentPage === child.key;
+                                    return (
+                                      <Link
+                                        key={child.key}
+                                        to={createPageUrl(child.key)}
+                                        className={`flex items-center gap-2.5 px-2.5 py-1.5 rounded-md text-xs font-medium transition-all duration-200 ${
+                                          childActive
+                                            ? 'bg-white/10 text-white'
+                                            : 'text-slate-500 hover:text-white hover:bg-white/5'
+                                        }`}
+                                      >
+                                        {ChildIcon && <ChildIcon className="w-3.5 h-3.5 shrink-0" />}
+                                        {!ChildIcon && <Headset className="w-3.5 h-3.5 shrink-0" />}
+                                        <span>{child.label}</span>
+                                        {childActive && (
+                                          <div className="ml-auto w-1.5 h-1.5 rounded-full" style={{ backgroundColor: '#D6FF03' }} />
+                                        )}
+                                      </Link>
+                                    );
+                                  })}
+                                </div>
+                              )}
+                            </>
+                          ) : (
+                            <Link
+                              to={createPageUrl(item.key)}
+                              title={collapsed ? item.label : undefined}
+                              className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+                                active
+                                  ? 'bg-white/10 text-white'
+                                  : 'text-slate-400 hover:text-white hover:bg-white/5'
+                              } ${collapsed ? 'justify-center' : ''}`}
+                            >
+                              <Icon className="w-4 h-4 shrink-0" />
+                              {!collapsed && <span>{item.label}</span>}
+                              {active && !collapsed && (
+                                <div className="ml-auto w-1.5 h-1.5 rounded-full" style={{ backgroundColor: '#D6FF03' }} />
+                              )}
+                            </Link>
+                          )}
+                        </motion.div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            );
+          })
+        )}
       </nav>
 
       {/* Bottom Section */}
