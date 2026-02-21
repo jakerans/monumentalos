@@ -168,8 +168,9 @@ Deno.serve(async (req) => {
         quantity,
         rate,
         status: 'pending',
+        notes: quantity === 0 ? 'No appointments this month' : undefined,
       };
-    }).filter(r => r.quantity > 0);
+    });
 
     let hybridCreated = 0;
     if (hybridRecords.length > 0) {
