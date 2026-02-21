@@ -34,6 +34,10 @@ export default function LootSettingsTab({ settings, onSettingsSaved }) {
     image_rare: '',
     image_epic: '',
     image_legendary: '',
+    image_common_opened: '',
+    image_rare_opened: '',
+    image_epic_opened: '',
+    image_legendary_opened: '',
   });
 
   useEffect(() => {
@@ -56,6 +60,10 @@ export default function LootSettingsTab({ settings, onSettingsSaved }) {
         image_rare: settings.image_rare || '',
         image_epic: settings.image_epic || '',
         image_legendary: settings.image_legendary || '',
+        image_common_opened: settings.image_common_opened || '',
+        image_rare_opened: settings.image_rare_opened || '',
+        image_epic_opened: settings.image_epic_opened || '',
+        image_legendary_opened: settings.image_legendary_opened || '',
       });
     }
   }, [settings]);
@@ -256,37 +264,71 @@ export default function LootSettingsTab({ settings, onSettingsSaved }) {
           <p className="text-xs text-slate-400 mb-4">Custom images displayed on loot box cards. Leave blank to use default icon.</p>
 
           {['common', 'rare', 'epic', 'legendary'].map(rarity => (
-            <div key={rarity}>
+            <div key={rarity} className="space-y-2">
               <div className="flex items-center gap-2 mb-1">
                 <span
                   className="w-2.5 h-2.5 rounded-full inline-block"
                   style={{ backgroundColor: RARITY_DOT_COLORS[rarity] }}
                 />
                 <Label className="text-slate-200 capitalize">{rarity} Box Image</Label>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Info className="w-3.5 h-3.5 text-slate-500 cursor-help" />
-                  </TooltipTrigger>
-                  <TooltipContent side="right" className="max-w-xs text-xs">
-                    Recommended: 400×400px PNG or WebP with transparent background. Max 2MB. Upload to any image host (Imgur, Cloudinary, etc.) and paste the direct image URL here. The image will be displayed on the box card — use a square format for best results.
-                  </TooltipContent>
-                </Tooltip>
               </div>
-              <div className="flex items-center gap-3">
-                <Input
-                  type="text"
-                  value={formData[`image_${rarity}`]}
-                  onChange={(e) => handleChange(`image_${rarity}`, e.target.value)}
-                  placeholder="https://example.com/box-image.png"
-                  className={`${inputClass} flex-1`}
-                />
-                {formData[`image_${rarity}`] && (
-                  <img
-                    src={formData[`image_${rarity}`]}
-                    alt={`${rarity} preview`}
-                    className="w-[60px] h-[60px] object-contain rounded-lg border border-slate-600 bg-slate-900 shrink-0"
+              <div>
+                <div className="flex items-center gap-2 mb-1">
+                  <Label className="text-slate-400 text-xs">Closed Image URL</Label>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Info className="w-3.5 h-3.5 text-slate-500 cursor-help" />
+                    </TooltipTrigger>
+                    <TooltipContent side="right" className="max-w-xs text-xs">
+                      Recommended: 400×400px PNG or WebP with transparent background. Max 2MB. Upload to any image host (Imgur, Cloudinary, etc.) and paste the direct image URL here. The image will be displayed on the box card — use a square format for best results.
+                    </TooltipContent>
+                  </Tooltip>
+                </div>
+                <div className="flex items-center gap-3">
+                  <Input
+                    type="text"
+                    value={formData[`image_${rarity}`]}
+                    onChange={(e) => handleChange(`image_${rarity}`, e.target.value)}
+                    placeholder="https://example.com/box-closed.png"
+                    className={`${inputClass} flex-1`}
                   />
-                )}
+                  {formData[`image_${rarity}`] && (
+                    <img
+                      src={formData[`image_${rarity}`]}
+                      alt={`${rarity} closed preview`}
+                      className="w-[60px] h-[60px] object-contain rounded-lg border border-slate-600 bg-slate-900 shrink-0"
+                    />
+                  )}
+                </div>
+              </div>
+              <div>
+                <div className="flex items-center gap-2 mb-1">
+                  <Label className="text-slate-400 text-xs">Opened Image URL</Label>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Info className="w-3.5 h-3.5 text-slate-500 cursor-help" />
+                    </TooltipTrigger>
+                    <TooltipContent side="right" className="max-w-xs text-xs">
+                      Recommended: 400×400px PNG or WebP with transparent background. Max 2MB. This image is shown on the prize reveal card after a box is opened. Leave blank to fall back to the closed image.
+                    </TooltipContent>
+                  </Tooltip>
+                </div>
+                <div className="flex items-center gap-3">
+                  <Input
+                    type="text"
+                    value={formData[`image_${rarity}_opened`]}
+                    onChange={(e) => handleChange(`image_${rarity}_opened`, e.target.value)}
+                    placeholder="https://example.com/box-opened.png"
+                    className={`${inputClass} flex-1`}
+                  />
+                  {formData[`image_${rarity}_opened`] && (
+                    <img
+                      src={formData[`image_${rarity}_opened`]}
+                      alt={`${rarity} opened preview`}
+                      className="w-[60px] h-[60px] object-contain rounded-lg border border-slate-600 bg-slate-900 shrink-0"
+                    />
+                  )}
+                </div>
               </div>
             </div>
           ))}

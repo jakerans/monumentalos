@@ -257,9 +257,13 @@ function PrizeCard({ rc, rarity, prize, children }) {
           {rarity}
         </div>
 
-        {/* Box icon placeholder */}
+        {/* Box icon — opened image */}
         <div className="flex items-center justify-center py-8 shrink-0">
-          <Package className="w-16 h-16 text-white opacity-80" />
+          {this_openedImageUrl ? (
+            <img src={this_openedImageUrl} alt={rarity} className="w-20 h-20 object-contain" />
+          ) : (
+            <Package className="w-16 h-16 text-white opacity-80" />
+          )}
         </div>
 
         {/* Divider */}
