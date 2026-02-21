@@ -176,7 +176,7 @@ function OpeningStage({ rc, rarity, imageUrl, onOpen, onClose }) {
               : {}
           }
           transition={pulse ? { duration: 1.5, repeat: Infinity, ease: 'easeInOut' } : {}}
-          className="w-[200px] h-[200px] rounded-2xl flex flex-col items-center justify-center gap-3 relative"
+          className="w-[280px] h-[280px] rounded-2xl flex flex-col items-center justify-center gap-3 relative"
           style={{
             background: `linear-gradient(135deg, ${rc.gradientFrom}, ${rc.gradientTo})`,
             border: `2px solid ${rc.primary}`,
@@ -217,7 +217,7 @@ function ShakingStage({ rc, rarity, imageUrl, onComplete }) {
         animate={{ x: [0, -12, 12, -10, 10, -6, 6, 0] }}
         transition={{ duration: 0.6, ease: 'easeInOut' }}
         onAnimationComplete={onComplete}
-        className="w-[200px] h-[200px] rounded-2xl flex flex-col items-center justify-center gap-3 relative"
+        className="w-[280px] h-[280px] rounded-2xl flex flex-col items-center justify-center gap-3 relative"
         style={{
           background: `linear-gradient(135deg, ${rc.gradientFrom}, ${rc.gradientTo})`,
           border: `2px solid ${rc.primary}`,
