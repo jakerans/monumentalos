@@ -459,9 +459,6 @@ export default function SetterDashboard() {
         onOpeningStateChange={setIsOpeningBox}
         onOpenBox={(win) => {
           queryClient.invalidateQueries({ queryKey: ['setter-inventory', user?.id] });
-          if (win?.prize_type === 'cash') {
-            setCelebration({ type: 'booking' });
-          }
         }}
       />
     </div>
