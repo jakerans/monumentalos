@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import { base44 } from '@/api/base44Client';
-import { Settings, LogOut, ChevronDown, RefreshCw, ChevronRight, Eye } from 'lucide-react';
+import { Settings, LogOut, ChevronDown, RefreshCw, ChevronRight, Eye, Copy, Check } from 'lucide-react';
 import { toast } from '@/components/ui/use-toast';
 
 const SYNC_OPTIONS = [
@@ -17,7 +17,17 @@ export default function AdminUserMenu({ user }) {
   const [syncSubOpen, setSyncSubOpen] = useState(false);
   const [confirmSync, setConfirmSync] = useState(null); // key of sheet to confirm
   const [syncing, setSyncing] = useState(false);
+  const [copied, setCopied] = useState(false);
   const ref = useRef(null);
+
+  const copyUserId = (e) => {
+    e.stopPropagation();
+    if (user?.id) {
+      navigator.clipboard.writeText(user.id);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1500);
+    }
+  };
 
   useEffect(() => {
     const handler = (e) => {
@@ -61,13 +71,32 @@ export default function AdminUserMenu({ user }) {
 
   return (
     <div className="relative" ref={ref}>
-      <button
-        onClick={() => { setOpen(!open); setSyncSubOpen(false); setConfirmSync(null); }}
-        className="flex items-center gap-1.5 text-xs text-slate-400 hover:text-white transition-colors px-2 py-1.5 rounded-md hover:bg-white/5"
-      >
-        <span className="hidden sm:inline">{user?.full_name}</span>
-        <ChevronDown className={`w-3 h-3 transition-transform ${open ? 'rotate-180' : ''}`} />
-      </button>
+      <div className="flex flex-col items-end">
+        <button
+          onClick={() => { setOpen(!open); setSyncSubOpen(false); setConfirmSync(null); }}
+          className="flex items-center gap-1.5 text-xs text-slate-400 hover:text-white transition-colors px-2 py-1.5 rounded-md hover:bg-white/5"
+        >
+          <span className="hidden sm:inline">{user?.full_name}</span>
+          <ChevronDown className={`w-3 h-3 transition-transform ${open ? 'rotate-180' : ''}`} />
+        </button>
+        {user?.id && (
+          <div className="flex items-center gap-1 px-2">
+            <span className="text-[10px] text-slate-500 font-mono">{user.id.slice(0, 8)}...</span>
+            <button
+              onClick={copyUserId}
+              title="Copy full ID"
+              className="p-0.5 rounded text-slate-500 hover:text-slate-300 transition-colors relative"
+            >
+              {copied ? <Check className="w-3 h-3 text-emerald-400" /> : <Copy className="w-3 h-3" />}
+              {copied && (
+                <span className="absolute -top-5 left-1/2 -translate-x-1/2 text-[9px] bg-slate-700 text-emerald-400 px-1.5 py-0.5 rounded whitespace-nowrap">
+                  Copied!
+                </span>
+              )}
+            </button>
+          </div>
+        )}
+      </div>
 
       {open && (
         <div className="absolute right-0 bottom-full mb-1 w-48 bg-slate-800 border border-slate-700 rounded-lg shadow-xl z-50 py-1 overflow-hidden">
