@@ -261,6 +261,7 @@ Deno.serve(async (req) => {
       if (Object.keys(dbUpdates).length > 0) {
         await base44.asServiceRole.entities.Expense.update(existing.id, dbUpdates);
         updated++;
+        if (updated % 10 === 0) await new Promise(r => setTimeout(r, 500));
       }
 
       const desired = [existing.id, existing.category || '', existing.expense_type || '', existing.client_id || '', existing.vendor || '', 'Yes'];
