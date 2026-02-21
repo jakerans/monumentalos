@@ -44,9 +44,10 @@ export default function LootBoxOpenModal({ box, open, onClose, onOpened, setterI
         setPrize(res.data.prize);
         setLootWin(res.data.lootWin);
       })
-      .catch(() => {
+      .catch((err) => {
+        console.error('openLootBox error:', err);
         backendDone.current = true;
-        setPrize({ name: 'Error — Contact Manager', description: 'Something went wrong opening this box', prize_type: 'physical', cash_value: 0 });
+        setPrize({ name: 'Error — Contact Manager', description: err?.message || 'Something went wrong opening this box', prize_type: 'physical', cash_value: 0 });
       });
   };
 
