@@ -197,7 +197,7 @@ function OpeningStage({ rc, rarity, imageUrl, onOpen, onClose }) {
           Open Now
         </button>
         <button
-          onClick={onClose}
+          onClick={() => onClose(true)}
           className="px-8 py-3 rounded-xl text-sm font-medium text-slate-400 bg-white/5 hover:bg-white/10 border border-slate-700 transition-colors"
         >
           Save for Later

@@ -61,7 +61,10 @@ export default function InventoryModal({
     if (onOpenBox) onOpenBox(win);
   };
 
-  const handleOpenModalClose = () => {
+  const handleOpenModalClose = (saveForLater = false) => {
+    if (saveForLater) {
+      openAllMode.current = false;
+    }
     const currentBoxId = openingBox?.id;
     setOpeningBox(null);
     if (onOpeningStateChange) onOpeningStateChange(false);
@@ -145,7 +148,7 @@ export default function InventoryModal({
           <LootBoxOpenModal
             box={openingBox}
             open={!!openingBox}
-            onClose={handleOpenModalClose}
+            onClose={(saveForLater) => handleOpenModalClose(saveForLater)}
             onOpened={handleWinResult}
             setterId={setterId}
             lootSettings={lootSettings}
