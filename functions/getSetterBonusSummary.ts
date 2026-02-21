@@ -17,7 +17,13 @@ Deno.serve(async (req) => {
     const [allUsers, allSpiffs, allLootWins] = await Promise.all([
       sr.User.list('-created_date', 5000),
       sr.Spiff.list('-created_date', 5000),
-      sr.LootWin.filter({ fulfillment_status: 'pending', prize_type: 'cash' }, '-won_date', 5000),
+      (async () => {
+        const [pending, approved] = await Promise.all([
+          sr.LootWin.filter({ fulfillment_status: 'pending', prize_type: 'cash' }, '-won_date', 5000),
+          sr.LootWin.filter({ fulfillment_status: 'approved', prize_type: 'cash' }, '-won_date', 5000),
+        ]);
+        return [...pending, ...approved];
+      })(),
     ]);
 
     const setters = allUsers.filter(u => u.app_role === 'setter');
@@ -43,7 +49,7 @@ Deno.serve(async (req) => {
 
       const myLootItems = allLootWins
         .filter(w => w.setter_id === setter.id)
-        .map(w => ({ id: w.id, prize_name: w.prize_name, rarity: w.rarity, cash_value: w.cash_value || 0, won_date: w.won_date }));
+        .map(w => ({ id: w.id, prize_name: w.prize_name, rarity: w.rarity, cash_value: w.cash_value || 0, won_date: w.won_date, fulfillment_status: w.fulfillment_status }));
 
       const spiff_total = mySpiffItems.reduce((s, i) => s + (i.cash_value || 0), 0);
       const loot_total = myLootItems.reduce((s, i) => s + (i.cash_value || 0), 0);

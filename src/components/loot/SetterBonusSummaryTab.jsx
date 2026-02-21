@@ -35,20 +35,11 @@ export default function SetterBonusSummaryTab({ defaultPeriod }) {
     const today = new Date().toISOString().split('T')[0];
     for (const item of setter.loot_items) {
       await base44.entities.LootWin.update(item.id, {
-        fulfillment_status: 'added_to_payroll',
+        fulfillment_status: 'approved',
         fulfillment_date: today,
       });
-      await base44.entities.Expense.create({
-        category: 'payroll',
-        expense_type: 'cogs',
-        description: `Loot Prize — ${setter.setter_name} — ${item.prize_name}`,
-        amount: item.cash_value,
-        date: today,
-        vendor: setter.setter_name,
-        recurring: false,
-      });
     }
-    toast({ title: 'Loot prizes marked paid — expenses created' });
+    toast({ title: 'Loot prizes approved for payroll' });
     queryClient.invalidateQueries({ queryKey: ['setter-bonus-summary'] });
   };
 
@@ -150,11 +141,11 @@ export default function SetterBonusSummaryTab({ defaultPeriod }) {
                   onClick={() => handleMarkLootPaid(setter)}
                   className="px-3 py-1.5 text-xs font-medium rounded-lg border border-green-500 text-green-400 hover:bg-green-500/10 transition-colors"
                 >
-                  ✓ Mark Loot Prizes Paid
+                  ✓ Approve for Payroll
                 </button>
               )}
 
-              <p className="text-xs text-slate-500 italic">Spiff totals are automatically included when you run payroll below.</p>
+              <p className="text-xs text-slate-500 italic">Spiff totals and approved loot prizes are automatically included when you run payroll.</p>
             </div>
           )}
         </div>

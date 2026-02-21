@@ -34,28 +34,16 @@ export default function LootFulfillmentTab({ pendingWins, onWinUpdated, users = 
     };
 
     if (action === 'payroll') {
-      updateData.fulfillment_status = 'added_to_payroll';
+      updateData.fulfillment_status = 'approved';
     } else if (action === 'fulfilled') {
       updateData.fulfillment_status = 'fulfilled';
     }
 
     try {
-      if (action === 'payroll') {
-        const setterName = getSetterName(win.setter_id);
-        await base44.entities.Expense.create({
-          category: 'payroll',
-          expense_type: 'cogs',
-          description: `Loot Prize — ${setterName} — ${win.prize_name}`,
-          amount: win.cash_value || 0,
-          date: today,
-          vendor: setterName,
-          recurring: false,
-        });
-      }
       await base44.entities.LootWin.update(win.id, updateData);
       onWinUpdated();
       setNotes(prev => ({ ...prev, [win.id]: '' }));
-      toast({ title: action === 'payroll' ? 'Prize added to payroll — expense created' : 'Win updated', variant: 'default' });
+      toast({ title: action === 'payroll' ? 'Prize approved for payroll' : 'Win updated', variant: 'default' });
     } catch (error) {
       toast({ title: 'Error', description: error.message, variant: 'destructive' });
     }
@@ -120,10 +108,10 @@ export default function LootFulfillmentTab({ pendingWins, onWinUpdated, users = 
                       onClick={() => handleAction(win, win.prize_type === 'cash' ? 'payroll' : 'fulfilled')}
                       size="sm"
                       variant="outline"
-                      className="text-xs border-slate-600 text-slate-300 hover:text-white hover:bg-slate-700"
+                      className={`text-xs ${win.prize_type === 'cash' ? 'border-green-600 text-green-400 hover:text-white hover:bg-green-700' : 'border-slate-600 text-slate-300 hover:text-white hover:bg-slate-700'}`}
                     >
                       {win.prize_type === 'cash' ? (
-                        <><DollarSign className="w-3 h-3 mr-1" /> Payroll</>
+                        <><CheckCircle className="w-3 h-3 mr-1" /> Approve</>
                       ) : (
                         <><CheckCircle className="w-3 h-3 mr-1" /> Fulfilled</>
                       )}
@@ -141,7 +129,7 @@ export default function LootFulfillmentTab({ pendingWins, onWinUpdated, users = 
   return (
     <div className="space-y-6">
       <div>
-        <h3 className="text-white font-bold mb-3">💵 Cash Prizes — Add to Payroll</h3>
+        <h3 className="text-white font-bold mb-3">💵 Cash Prizes — Approve for Payroll</h3>
         {cashWins.length > 0 ? renderTable(cashWins) : (
           <div className="bg-slate-800/50 rounded-lg border border-slate-700/50 p-6 text-center">
             <p className="text-sm text-slate-500">None pending</p>

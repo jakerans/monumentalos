@@ -117,6 +117,28 @@ Deno.serve(async (req) => {
         }
       }
 
+      // ─── LOOT CASH WINS: one combined line item per setter ───
+      const approvedLootWins = await sr.LootWin.filter({ fulfillment_status: 'approved', prize_type: 'cash' }, '-won_date', 5000);
+
+      for (const setter of setters) {
+        const myWins = approvedLootWins.filter((w) => w.setter_id === setter.id);
+        const lootTotal = myWins.reduce((sum, w) => sum + (w.cash_value || 0), 0);
+
+        if (lootTotal > 0) {
+          items.push({
+            id: `loot_${setter.id}`,
+            type: 'loot_prizes',
+            employee_name: setter.full_name || setter.email,
+            description: `${setter.full_name || setter.email} — Loot Prizes ${prevMonthStr}`,
+            amount: lootTotal,
+            expense_type: 'cogs',
+            category: 'payroll',
+            editable: true,
+            loot_win_ids: myWins.map((w) => w.id),
+          });
+        }
+      }
+
       return Response.json({ success: true, mode: 'preview', items });
     }
 
@@ -157,6 +179,20 @@ Deno.serve(async (req) => {
 
       for (const prId of perfRecordIds) {
         await sr.PerformancePayRecord.update(prId, { status: 'paid' });
+      }
+
+      // Mark approved loot wins as added_to_payroll
+      const lootWinIds = [];
+      for (const item of lineItems) {
+        if (item.loot_win_ids && Array.isArray(item.loot_win_ids)) {
+          lootWinIds.push(...item.loot_win_ids);
+        }
+      }
+      for (const winId of lootWinIds) {
+        await sr.LootWin.update(winId, {
+          fulfillment_status: 'added_to_payroll',
+          fulfillment_date: payrollDate,
+        });
       }
 
       return Response.json({
