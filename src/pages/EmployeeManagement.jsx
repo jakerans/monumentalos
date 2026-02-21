@@ -220,24 +220,25 @@ export default function EmployeeManagement() {
             {/* Period context header */}
             <div className="flex items-center gap-2">
               <Calendar className="w-3.5 h-3.5 text-slate-400" />
-              <span className="text-[10px] text-slate-400 uppercase tracking-wider font-medium">
+              <span className="text-[10px] text-slate-400 uppercase tracking-wider">
                 Payroll Period: {dayjs().subtract(1, 'month').format('MMMM YYYY')}
               </span>
             </div>
 
-            <div className="flex justify-end mb-2">
+            {/* Tour button */}
+            <div className="flex justify-end">
               <PayrollTourGuide setRunPayrollModalOpen={setRunPayrollOpen} />
             </div>
 
-            {/* Step 1 — Review Setter Bonuses */}
+            {/* Step 1 */}
+            <p className="text-[10px] text-slate-400 uppercase tracking-wider">Step 1 — Review Setter Bonuses</p>
             <div data-tour="setter-bonuses-section">
-              <p className="text-[10px] text-slate-400 uppercase tracking-wider">Step 1 — Review Setter Bonuses</p>
               <SetterBonusSummaryTab defaultPeriod={dayjs().subtract(1, 'month').format('YYYY-MM')} />
             </div>
 
             <div className="border-t border-slate-700/50" />
 
-            {/* Step 2 — Run Payroll */}
+            {/* Step 2 */}
             <p className="text-[10px] text-slate-400 uppercase tracking-wider">Step 2 — Run Payroll</p>
             <p className="text-xs text-slate-500 italic">Setter bonuses from the prior month are loaded automatically.</p>
             <div className="flex justify-end">
