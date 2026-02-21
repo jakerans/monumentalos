@@ -76,6 +76,7 @@ import SetterDashboard from './pages/SetterDashboard';
 import SetterPerformance from './pages/SetterPerformance';
 import SetterStats from './pages/SetterStats';
 import UserManagement from './pages/UserManagement';
+import FinanceAdminDashboard from './pages/FinanceAdminDashboard';
 import __Layout from './Layout.jsx';
 
 
@@ -109,6 +110,7 @@ export const PAGES = {
     "SetterPerformance": SetterPerformance,
     "SetterStats": SetterStats,
     "UserManagement": UserManagement,
+    "FinanceAdminDashboard": FinanceAdminDashboard,
 }
 
 export const pagesConfig = {
