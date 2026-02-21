@@ -1,6 +1,6 @@
 import React from 'react';
 import Driver from 'driver.js';
-import 'driver.js/dist/driver.min.css';
+import 'driver.js/dist/driver.css';
 
 export default function PayrollTourGuide({ onStart, setRunPayrollModalOpen }) {
   const startTour = () => {
