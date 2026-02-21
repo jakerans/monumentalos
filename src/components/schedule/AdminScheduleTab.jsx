@@ -4,6 +4,7 @@ import { base44 } from '@/api/base44Client';
 import { ChevronLeft, ChevronRight, CalendarPlus } from 'lucide-react';
 import ScheduleGrid from './ScheduleGrid';
 import GenerateScheduleModal from './GenerateScheduleModal';
+import AdminPTOQueue from './AdminPTOQueue';
 
 function getMonday(date) {
   const d = new Date(date);
@@ -56,6 +57,11 @@ export default function AdminScheduleTab() {
 
   return (
     <div className="space-y-4">
+      {/* PTO Queue */}
+      <AdminPTOQueue onScheduleChanged={refetch} />
+
+      <div className="border-t border-slate-700/50" />
+
       {/* Week nav + Generate button */}
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div className="flex items-center gap-2">

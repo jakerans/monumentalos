@@ -1,5 +1,10 @@
-import React from 'react';
-import { Calendar, Palmtree } from 'lucide-react';
+import React, { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { base44 } from '@/api/base44Client';
+import { Calendar, Palmtree, Plus } from 'lucide-react';
+import PendingCoverRequests from './PendingCoverRequests';
+import PTORequestModal from './PTORequestModal';
+import MyPTORequests from './MyPTORequests';
 
 const STATUS_COLORS = {
   scheduled: 'bg-green-500',
@@ -84,7 +89,8 @@ function getMonday(date) {
   return d.toISOString().split('T')[0];
 }
 
-export default function MyScheduleTab({ workspaceData }) {
+export default function MyScheduleTab({ workspaceData, userId }) {
+  const [ptoModalOpen, setPtoModalOpen] = useState(false);
   const weekSchedule = workspaceData?.weekSchedule || [];
   const nextWeekSchedule = workspaceData?.nextWeekSchedule || [];
   const ptoBank = workspaceData?.ptoBank || { days_available: 0, days_earned: 0, days_used: 0 };
@@ -100,20 +106,50 @@ export default function MyScheduleTab({ workspaceData }) {
   const thisWeekDates = getWeekDates(thisMondayStr);
   const nextWeekDates = getWeekDates(nextMondayStr);
 
-  // Build lookup by date
   const scheduleLookup = {};
   weekSchedule.forEach(s => { scheduleLookup[s.date] = s; });
   nextWeekSchedule.forEach(s => { scheduleLookup[s.date] = s; });
 
+  // Fetch my requests to know existing request dates (for disabling in modal)
+  const { data: myReqData, refetch: refetchMyRequests } = useQuery({
+    queryKey: ['my-pto-requests', userId],
+    queryFn: async () => {
+      const res = await base44.functions.invoke('managePTORequest', {
+        action: 'get_my_requests',
+        setter_id: userId,
+      });
+      return res.data?.requests || [];
+    },
+    enabled: !!userId,
+    staleTime: 60 * 1000,
+  });
+
+  const existingRequestDates = (myReqData || [])
+    .filter(r => r.status !== 'cancelled' && r.status !== 'denied')
+    .map(r => r.request_date);
+
   return (
     <div className="space-y-4">
-      {/* PTO Balance */}
-      <div className="flex items-center gap-3 px-4 py-3 rounded-xl border border-blue-500/20 bg-blue-500/5">
-        <Palmtree className="w-5 h-5 text-blue-400 flex-shrink-0" />
-        <div>
-          <p className="text-sm font-medium text-white">PTO Balance: <span className="text-blue-400">{ptoBank.days_available} day{ptoBank.days_available !== 1 ? 's' : ''} available</span></p>
-          <p className="text-[10px] text-slate-500">{ptoBank.days_earned} earned · {ptoBank.days_used} used</p>
+      {/* Pending cover requests */}
+      <PendingCoverRequests setterId={userId} onActionComplete={refetchMyRequests} />
+
+      {/* PTO Balance + Request button */}
+      <div className="flex items-center justify-between gap-3 px-4 py-3 rounded-xl border border-blue-500/20 bg-blue-500/5">
+        <div className="flex items-center gap-3">
+          <Palmtree className="w-5 h-5 text-blue-400 flex-shrink-0" />
+          <div>
+            <p className="text-sm font-medium text-white">PTO Balance: <span className="text-blue-400">{ptoBank.days_available} day{ptoBank.days_available !== 1 ? 's' : ''} available</span></p>
+            <p className="text-[10px] text-slate-500">{ptoBank.days_earned} earned · {ptoBank.days_used} used</p>
+          </div>
         </div>
+        <button
+          onClick={() => setPtoModalOpen(true)}
+          className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-lg text-black hover:opacity-90"
+          style={{ backgroundColor: '#D6FF03' }}
+        >
+          <Plus className="w-3.5 h-3.5" />
+          Request PTO
+        </button>
       </div>
 
       {/* This Week */}
@@ -124,12 +160,7 @@ export default function MyScheduleTab({ workspaceData }) {
         </div>
         <div className="space-y-1.5">
           {thisWeekDates.map(d => (
-            <ScheduleDayRow
-              key={d}
-              dateStr={d}
-              schedule={scheduleLookup[d]}
-              isToday={d === todayStr}
-            />
+            <ScheduleDayRow key={d} dateStr={d} schedule={scheduleLookup[d]} isToday={d === todayStr} />
           ))}
         </div>
       </div>
@@ -142,15 +173,22 @@ export default function MyScheduleTab({ workspaceData }) {
         </div>
         <div className="space-y-1.5 opacity-80">
           {nextWeekDates.map(d => (
-            <ScheduleDayRow
-              key={d}
-              dateStr={d}
-              schedule={scheduleLookup[d]}
-              isToday={false}
-            />
+            <ScheduleDayRow key={d} dateStr={d} schedule={scheduleLookup[d]} isToday={false} />
           ))}
         </div>
       </div>
+
+      {/* My PTO Requests */}
+      <MyPTORequests setterId={userId} />
+
+      {/* PTO Request Modal */}
+      <PTORequestModal
+        open={ptoModalOpen}
+        onOpenChange={setPtoModalOpen}
+        setterId={userId}
+        existingRequestDates={existingRequestDates}
+        onCreated={refetchMyRequests}
+      />
     </div>
   );
 }
