@@ -124,6 +124,11 @@ Deno.serve(async (req) => {
     // Consecutive no drop
     const consecutiveNoDrop = profile ? (profile.consecutive_bookings_no_drop || 0) : 0;
 
+    // Paid days off bank
+    const bankRecords = await sr.PaidDayOffBank.filter({ setter_id }, '-created_date', 1);
+    const bank = bankRecords.length > 0 ? bankRecords[0] : null;
+    const daysAvailable = bank ? ((bank.days_earned || 0) - (bank.days_used || 0)) : 0;
+
     return Response.json({
       unopenedBoxes,
       inventoryCap,
