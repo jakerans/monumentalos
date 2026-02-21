@@ -166,6 +166,9 @@ Deno.serve(async (req) => {
       const resolvedCategory = isDistribution ? 'distribution' : ((sheetCategory && VALID_CATEGORIES.includes(sheetCategory)) ? sheetCategory : 'uncategorized');
       const resolvedExpType = isDistribution ? 'distribution' : ((sheetExpType && VALID_TYPES.includes(sheetExpType)) ? sheetExpType : 'uncategorized');
 
+      const rawAccountId = cell(row, BANK_ACCOUNT_COL);
+      const resolvedBankAccountId = rawAccountId ? bankAccountByAccountId[rawAccountId.trim().toLowerCase()] : null;
+
       const newExpense = {
         category: resolvedCategory,
         expense_type: resolvedExpType,
@@ -176,6 +179,7 @@ Deno.serve(async (req) => {
       };
       if (sheetRowId) newExpense.sheet_row_id = sheetRowId;
       if (sheetClientId) newExpense.client_id = sheetClientId;
+      if (resolvedBankAccountId) newExpense.bank_account_id = resolvedBankAccountId;
 
       newRows.push({ rowIndex: i, data: newExpense });
     }
