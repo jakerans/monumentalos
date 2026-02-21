@@ -291,7 +291,7 @@ export default function AdminSidebar({ user, currentPage, clients = [] }) {
           >
             {effectsOn ? <Zap className="w-3.5 h-3.5" /> : <ZapOff className="w-3.5 h-3.5" />}
           </button>
-          <AdminUserMenu user={user} />
+          <AdminUserMenu user={user} collapsed={collapsed} />
         </div>
       </div>
     </motion.aside>
