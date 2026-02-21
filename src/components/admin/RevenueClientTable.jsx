@@ -5,12 +5,26 @@ import { base44 } from '@/api/base44Client';
 import { ArrowUpDown, ArrowUp, ArrowDown, Pencil, Check, X } from 'lucide-react';
 import { toast } from '@/components/ui/use-toast';
 
-const BILLING_LABELS = { pay_per_show: 'Per Show', pay_per_set: 'Per Set', retainer: 'Retainer' };
-const BILLING_COLORS = { pay_per_show: 'bg-blue-500/15 text-blue-400', pay_per_set: 'bg-purple-500/15 text-purple-400', retainer: 'bg-amber-500/15 text-amber-400' };
+const BILLING_LABELS = { pay_per_show: 'Per Show', pay_per_set: 'Per Set', retainer: 'Retainer', hybrid: 'Hybrid' };
+const BILLING_COLORS = { pay_per_show: 'bg-blue-500/15 text-blue-400', pay_per_set: 'bg-purple-500/15 text-purple-400', retainer: 'bg-amber-500/15 text-amber-400', hybrid: 'bg-teal-500/15 text-teal-400' };
 const INDUSTRIES = ['painting', 'epoxy', 'kitchen_bath', 'reno'];
 const IND_LABELS = { painting: 'Painting', epoxy: 'Epoxy', kitchen_bath: 'Kitchen/Bath', reno: 'Reno' };
 
 function getPricingDisplay(client) {
+  if (client.billing_type === 'hybrid') {
+    const base = `$${client.hybrid_base_retainer || 0}/mo`;
+    const perfType = client.hybrid_performance_type || 'pay_per_set';
+    const perfLabel = perfType === 'pay_per_show' ? 'show' : 'set';
+    const perfPricing = client.hybrid_performance_pricing || [];
+    if (perfPricing.length > 0) {
+      const rates = perfPricing.map(p => {
+        const rate = perfType === 'pay_per_show' ? (p.price_per_show || 0) : (p.price_per_set || 0);
+        return `${IND_LABELS[p.industry] || p.industry}: $${rate}/${perfLabel}`;
+      }).join(', ');
+      return [{ industry: null, rate: `${base} + ${rates}` }];
+    }
+    return [{ industry: null, rate: `${base} + per ${perfLabel}` }];
+  }
   const pricing = client.industry_pricing || [];
   if (pricing.length > 0) {
     return pricing.map(p => {
@@ -90,6 +104,7 @@ function InlineEditRow({ client, clientSummary, onSaved }) {
           <option value="pay_per_show">Pay Per Show</option>
           <option value="pay_per_set">Pay Per Set</option>
           <option value="retainer">Retainer</option>
+          <option value="hybrid">Hybrid (Retainer + Performance)</option>
         </select>
       </div>
 
