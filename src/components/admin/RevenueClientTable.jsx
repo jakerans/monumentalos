@@ -85,6 +85,11 @@ function InlineEditRow({ client, clientSummary, onSaved }) {
     const update = { billing_type: billingType };
     if (billingType === 'retainer') {
       update.retainer_amount = Number(retainerAmount) || 0;
+    } else if (billingType === 'hybrid') {
+      update.hybrid_base_retainer = Number(hybridBaseRetainer) || 0;
+      update.hybrid_retainer_due_day = Number(hybridRetainerDueDay) || 1;
+      update.hybrid_performance_type = hybridPerformanceType;
+      update.hybrid_performance_pricing = hybridPerformancePricing;
     } else {
       update.price_per_shown_appointment = Number(legacyShow) || 0;
       update.price_per_set_appointment = Number(legacySet) || 0;
