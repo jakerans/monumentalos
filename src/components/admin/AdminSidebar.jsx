@@ -121,7 +121,6 @@ export default function AdminSidebar({ user, currentPage, clients = [] }) {
   };
 
   const w = collapsed ? 'w-16' : 'w-52';
-  const showTabs = !isFinanceAdmin;
 
   return (
     <motion.aside
