@@ -202,7 +202,7 @@ export default function AdminDashboard() {
       </main>
 
       <GoalManagementModal open={goalsOpen} onOpenChange={setGoalsOpen} goals={goals} onSaved={refetchDash} />
-      <AdminMobileNav currentPage="AdminDashboard" clients={clients} />
+      <AdminMobileNav currentPage="AdminDashboard" clients={clients} user={user} />
     </div>
     </PageErrorBoundary>
   );

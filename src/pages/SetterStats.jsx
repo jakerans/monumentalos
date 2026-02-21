@@ -163,7 +163,7 @@ export default function SetterStats() {
 
           <SetterStatsDQChart stats={stats} overallDQReasons={overallDQReasons} />
         </main>
-        <AdminMobileNav currentPage="SetterStats" clients={clients} />
+        <AdminMobileNav currentPage="SetterStats" clients={clients} user={user} />
       </div>
     </PageErrorBoundary>
   );

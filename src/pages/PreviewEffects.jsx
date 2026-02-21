@@ -80,7 +80,7 @@ export default function PreviewEffects() {
           </div>
         </main>
 
-        <AdminMobileNav currentPage="PreviewEffects" clients={[]} />
+        <AdminMobileNav currentPage="PreviewEffects" clients={[]} user={user} />
       </div>
     </PageErrorBoundary>
   );

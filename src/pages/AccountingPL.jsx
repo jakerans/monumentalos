@@ -87,7 +87,7 @@ export default function AccountingPL() {
             </div>
           </div>
         </main>
-        <AdminMobileNav currentPage="AccountingPL" clients={clients} />
+        <AdminMobileNav currentPage="AccountingPL" clients={clients} user={user} />
       </div>
     </PageErrorBoundary>
   );

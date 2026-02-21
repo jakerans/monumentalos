@@ -70,7 +70,7 @@ export default function SetterPerformance() {
 
         <SpiffManager leads={leads} users={users} />
       </main>
-      <AdminMobileNav currentPage="SetterPerformance" clients={clients} />
+      <AdminMobileNav currentPage="SetterPerformance" clients={clients} user={user} />
     </div>
     </PageErrorBoundary>
   );

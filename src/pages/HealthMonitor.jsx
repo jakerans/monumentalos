@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
-import AdminNav from '../components/admin/AdminNav';
+import AdminSidebar from '../components/admin/AdminSidebar';
+import AdminMobileNav from '../components/admin/AdminMobileNav';
 import { Activity, CheckCircle, XCircle, RefreshCw, Clock } from 'lucide-react';
 
 const ENDPOINTS = [
@@ -63,10 +64,10 @@ export default function HealthMonitor() {
   const allHealthy = results.length > 0 && results.every(r => r.status === 'ok');
 
   return (
-    <div className="min-h-screen bg-[#0B0F1A]">
-      <AdminNav user={user} currentPage="HealthMonitor" clients={[]} />
+    <div className="min-h-screen bg-[#0B0F1A] flex">
+      <AdminSidebar user={user} currentPage="HealthMonitor" clients={[]} />
 
-      <main className="max-w-3xl mx-auto px-4 sm:px-6 py-8">
+      <main className="flex-1 min-w-0 max-w-3xl mx-auto px-4 sm:px-6 py-8">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
           <div className="flex items-center gap-3">
             <Activity className="w-5 h-5 sm:w-6 sm:h-6 text-[#D6FF03]" />
@@ -142,6 +143,8 @@ export default function HealthMonitor() {
           ))}
         </div>
       </main>
+
+      <AdminMobileNav currentPage="HealthMonitor" user={user} />
     </div>
   );
 }

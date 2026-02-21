@@ -68,7 +68,7 @@ export default function AccountingCashFlow() {
 
           <CashFlowAnalysis cashFlowData={cashFlowData} />
         </main>
-        <AdminMobileNav currentPage="AccountingCashFlow" clients={clients} />
+        <AdminMobileNav currentPage="AccountingCashFlow" clients={clients} user={user} />
       </div>
     </PageErrorBoundary>
   );

@@ -231,7 +231,7 @@ export default function FinanceAdminDashboard() {
         )}
       </main>
 
-      <AdminMobileNav currentPage="FinanceAdminDashboard" clients={[]} />
+      <AdminMobileNav currentPage="FinanceAdminDashboard" clients={[]} user={user} />
 
       {/* Tour placeholder modal */}
       <Dialog open={tourOpen} onOpenChange={setTourOpen}>

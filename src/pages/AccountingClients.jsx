@@ -68,7 +68,7 @@ export default function AccountingClients() {
 
           <RevenueClientTable clients={clients} clientSummary={clientSummary} onRefresh={refetch} />
         </main>
-        <AdminMobileNav currentPage="AccountingClients" clients={clients} />
+        <AdminMobileNav currentPage="AccountingClients" clients={clients} user={user} />
       </div>
     </PageErrorBoundary>
   );

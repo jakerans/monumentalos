@@ -78,7 +78,7 @@ export default function ClientPerformance() {
           <ClientGrid clients={clients} leads={leads} onRefresh={refetch} />
         </motion.div>
       </main>
-      <AdminMobileNav currentPage="ClientPerformance" clients={clients} />
+      <AdminMobileNav currentPage="ClientPerformance" clients={clients} user={user} />
     </div>
     </PageErrorBoundary>
   );

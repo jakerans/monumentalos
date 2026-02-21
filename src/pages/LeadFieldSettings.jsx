@@ -3,7 +3,7 @@ import { base44 } from '@/api/base44Client';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
-import AdminNav from '../components/admin/AdminNav';
+import AdminSidebar from '../components/admin/AdminSidebar';
 import AdminMobileNav from '../components/admin/AdminMobileNav';
 import PageErrorBoundary from '../components/shared/PageErrorBoundary';
 import PageLoader from '../components/shared/PageLoader';
@@ -68,11 +68,10 @@ export default function LeadFieldSettings() {
 
   return (
     <PageErrorBoundary>
-      <div className="min-h-screen bg-[#0B0F1A]">
-        <AdminNav user={user} currentPage="LeadFieldSettings" clients={clients || []} />
-        <AdminMobileNav currentPage="LeadFieldSettings" clients={clients || []} />
+      <div className="min-h-screen bg-[#0B0F1A] flex">
+        <AdminSidebar user={user} currentPage="LeadFieldSettings" clients={clients || []} />
 
-        <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-5">
+        <main className="flex-1 min-w-0 max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-5">
           <div className="flex items-center gap-2">
             <Settings className="w-5 h-5 text-slate-400" />
             <h1 className="text-xl font-bold text-white">Settings</h1>
@@ -113,6 +112,7 @@ export default function LeadFieldSettings() {
             <BankAccountsTab />
           )}
         </main>
+        <AdminMobileNav currentPage="LeadFieldSettings" clients={clients || []} user={user} />
       </div>
     </PageErrorBoundary>
   );

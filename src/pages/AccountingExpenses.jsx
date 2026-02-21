@@ -103,7 +103,7 @@ export default function AccountingExpenses() {
 
         <AddExpenseModal open={expenseOpen} onOpenChange={setExpenseOpen} clients={clients} onCreated={refetchAll} />
         <RunPayrollModal open={payrollOpen} onOpenChange={setPayrollOpen} onComplete={refetchAll} />
-        <AdminMobileNav currentPage="AccountingExpenses" clients={clients} />
+        <AdminMobileNav currentPage="AccountingExpenses" clients={clients} user={user} />
       </div>
     </PageErrorBoundary>
   );

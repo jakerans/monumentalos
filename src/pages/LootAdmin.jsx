@@ -190,7 +190,7 @@ export default function LootAdmin() {
         }}
       />
 
-      <AdminMobileNav currentPage="LootAdmin" clients={clients} />
+      <AdminMobileNav currentPage="LootAdmin" clients={clients} user={user} />
     </div>
     </PageErrorBoundary>
   );

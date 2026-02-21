@@ -159,7 +159,7 @@ export default function MonthlyBilling() {
           onPageChange={setPage}
         />
       </main>
-      <AdminMobileNav currentPage="MonthlyBilling" clients={clients} />
+      <AdminMobileNav currentPage="MonthlyBilling" clients={clients} user={user} />
     </div>
     </PageErrorBoundary>
   );

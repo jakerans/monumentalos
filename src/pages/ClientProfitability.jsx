@@ -69,7 +69,7 @@ export default function ClientProfitability() {
           {/* Table */}
           <ProfitabilityTable clients={data?.clients} />
         </main>
-        <AdminMobileNav currentPage="ClientProfitability" clients={data?.clients?.map(c => ({ id: c.client_id, name: c.client_name })) || []} />
+        <AdminMobileNav currentPage="ClientProfitability" clients={data?.clients?.map(c => ({ id: c.client_id, name: c.client_name })) || []} user={user} />
       </div>
     </PageErrorBoundary>
   );

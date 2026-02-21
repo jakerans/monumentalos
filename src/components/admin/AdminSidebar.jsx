@@ -3,13 +3,23 @@ import { Link, useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import { base44 } from '@/api/base44Client';
 import { motion } from 'framer-motion';
-import { Zap, ZapOff, LayoutDashboard, Users, Receipt, Calculator, Headset, UserCog, ChevronLeft, ChevronRight, ChevronDown, BarChart3, Wallet, TrendingUp, Settings, Landmark, Gift } from 'lucide-react';
+import {
+  Zap, ZapOff, LayoutDashboard, Users, Receipt, Calculator, Headset, UserCog,
+  ChevronLeft, ChevronRight, ChevronDown, BarChart3, Wallet, TrendingUp,
+  Settings, Landmark, Gift, DollarSign, Briefcase, Activity, Eye,
+} from 'lucide-react';
 import { useEffectsToggle } from '../shared/useEffectsToggle';
 import AdminUserMenu from './AdminUserMenu';
 
-const navItems = [
+// --- Tab definitions ---
+const TABS = [
+  { id: 'finance', label: 'Finance', icon: DollarSign },
+  { id: 'operations', label: 'Operations', icon: Briefcase },
+  { id: 'settings', label: 'Settings', icon: Settings },
+];
+
+const financeItems = [
   { key: 'AdminDashboard', label: 'Dashboard', icon: LayoutDashboard },
-  { key: 'ClientPerformance', label: 'Client Overview', icon: Users },
   { key: 'MonthlyBilling', label: 'Billing', icon: Receipt },
   {
     key: 'AccountingPL', label: 'Accounting', icon: Calculator,
@@ -21,25 +31,10 @@ const navItems = [
       { key: 'ClientProfitability', label: 'Profitability', icon: TrendingUp },
     ],
   },
-  {
-    key: 'SetterPerformance', label: 'Setters', icon: Headset,
-    children: [
-      { key: 'SetterPerformance', label: 'Management' },
-      { key: 'SetterStats', label: 'Reporting', icon: BarChart3 },
-      { key: 'LootAdmin', label: 'Loot System', icon: Gift },
-    ],
-  },
   { key: 'EmployeeManagement', label: 'Employees', icon: UserCog },
-  { key: 'UserManagement', label: 'Users', icon: Users },
-  {
-    key: 'BankAccountSettings', label: 'Settings', icon: Settings,
-    children: [
-      { key: 'BankAccountSettings', label: 'Bank Accounts', icon: Landmark },
-    ],
-  },
 ];
 
-const financeNavItems = [
+const financeAdminItems = [
   { key: 'FinanceAdminDashboard', label: 'Dashboard', icon: LayoutDashboard },
   { key: 'MonthlyBilling', label: 'Billing', icon: Receipt },
   {
@@ -55,21 +50,86 @@ const financeNavItems = [
   { key: 'EmployeeManagement', label: 'Payroll', icon: UserCog },
 ];
 
+const operationsItems = [
+  { key: 'ClientPerformance', label: 'Client Overview', icon: Users },
+  {
+    key: 'SetterPerformance', label: 'Setters', icon: Headset,
+    children: [
+      { key: 'SetterPerformance', label: 'Management' },
+      { key: 'SetterStats', label: 'Reporting', icon: BarChart3 },
+      { key: 'LootAdmin', label: 'Loot System', icon: Gift },
+    ],
+  },
+];
+
+const settingsItems = [
+  { key: 'UserManagement', label: 'Users', icon: Users },
+  { key: 'BankAccountSettings', label: 'Bank Accounts', icon: Landmark },
+  { key: 'LeadFieldSettings', label: 'Settings', icon: Settings },
+  { key: 'HealthMonitor', label: 'Health Monitor', icon: Activity },
+  { key: 'PreviewEffects', label: 'Preview Effects', icon: Eye },
+];
+
+const TAB_ITEMS = {
+  finance: financeItems,
+  operations: operationsItems,
+  settings: settingsItems,
+};
+
+function allKeysForTab(tabId) {
+  const items = TAB_ITEMS[tabId] || [];
+  const keys = [];
+  items.forEach(item => {
+    keys.push(item.key);
+    if (item.children) item.children.forEach(c => keys.push(c.key));
+  });
+  return keys;
+}
+
+function detectTab(currentPage) {
+  // Also check finance_admin items
+  for (const item of financeAdminItems) {
+    if (item.key === currentPage) return 'finance';
+    if (item.children?.some(c => c.key === currentPage)) return 'finance';
+  }
+  for (const tabId of ['finance', 'operations', 'settings']) {
+    if (allKeysForTab(tabId).includes(currentPage)) return tabId;
+  }
+  return 'finance';
+}
+
 export default function AdminSidebar({ user, currentPage, clients = [] }) {
   const { effectsOn, toggle: toggleEffects } = useEffectsToggle();
   const navigate = useNavigate();
   const [collapsed, setCollapsed] = useState(false);
-  const activeNavItems = user?.app_role === 'finance_admin' ? financeNavItems : navItems;
+
+  const isFinanceAdmin = user?.app_role === 'finance_admin';
+  const [activeTab, setActiveTab] = useState(() => detectTab(currentPage));
+
+  const activeNavItems = isFinanceAdmin
+    ? financeAdminItems
+    : (TAB_ITEMS[activeTab] || financeItems);
 
   const [expandedGroup, setExpandedGroup] = useState(() => {
-    // Auto-expand if current page is a child
     for (const item of activeNavItems) {
       if (item.children?.some(c => c.key === currentPage)) return item.key;
     }
     return null;
   });
 
+  // Re-expand group when tab changes
+  const handleTabChange = (tabId) => {
+    setActiveTab(tabId);
+    const items = TAB_ITEMS[tabId] || [];
+    let foundGroup = null;
+    for (const item of items) {
+      if (item.children?.some(c => c.key === currentPage)) { foundGroup = item.key; break; }
+    }
+    setExpandedGroup(foundGroup);
+  };
+
   const w = collapsed ? 'w-16' : 'w-52';
+  const showTabs = !isFinanceAdmin;
 
   return (
     <motion.aside
@@ -97,6 +157,33 @@ export default function AdminSidebar({ user, currentPage, clients = [] }) {
         </button>
       </div>
 
+      {/* Tab strip (admin only) */}
+      {showTabs && (
+        <div className={`flex ${collapsed ? 'flex-col items-center gap-1 py-2 px-1' : 'items-center gap-1 px-2 py-2'} border-b border-slate-700/50`}>
+          {TABS.map(tab => {
+            const TabIcon = tab.icon;
+            const isActive = activeTab === tab.id;
+            return (
+              <button
+                key={tab.id}
+                onClick={() => handleTabChange(tab.id)}
+                title={collapsed ? tab.label : undefined}
+                className={`flex items-center gap-1.5 rounded-md text-[11px] font-medium transition-all duration-150 ${
+                  collapsed ? 'p-1.5' : 'px-2.5 py-1.5'
+                } ${
+                  isActive
+                    ? 'bg-[#D6FF03] text-black'
+                    : 'text-slate-400 hover:text-white hover:bg-white/5'
+                }`}
+              >
+                <TabIcon className="w-3.5 h-3.5 shrink-0" />
+                {!collapsed && <span>{tab.label}</span>}
+              </button>
+            );
+          })}
+        </div>
+      )}
+
       {/* Nav Items */}
       <nav className="flex-1 py-3 px-2 space-y-0.5 overflow-y-auto scrollbar-hide">
         {activeNavItems.map((item, i) => {
@@ -108,10 +195,10 @@ export default function AdminSidebar({ user, currentPage, clients = [] }) {
 
           return (
             <motion.div
-              key={item.key}
+              key={item.key + '-' + activeTab}
               initial={{ opacity: 0, x: -8 }}
               animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.1 + i * 0.04, duration: 0.3 }}
+              transition={{ delay: 0.05 + i * 0.03, duration: 0.25 }}
             >
               {hasChildren ? (
                 <>

@@ -287,7 +287,7 @@ export default function EmployeeManagement() {
         onOpenChange={setRunPayrollOpen}
         onComplete={refetch}
       />
-      <AdminMobileNav currentPage="EmployeeManagement" clients={clients} />
+      <AdminMobileNav currentPage="EmployeeManagement" clients={clients} user={user} />
     </div>
     </PageErrorBoundary>
   );

@@ -120,7 +120,7 @@ export default function UserManagement() {
         clients={clients}
         onInvited={refetchUsers}
       />
-      <AdminMobileNav currentPage="UserManagement" clients={clients} />
+      <AdminMobileNav currentPage="UserManagement" clients={clients} user={user} />
     </div>
     </PageErrorBoundary>
   );
