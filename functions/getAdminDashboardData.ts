@@ -208,7 +208,7 @@ Deno.serve(async (req) => {
     const recordedCogsMTD = expenses.filter(e => inMTD(e.date) && e.expense_type === 'cogs').reduce((s, e) => s + (e.amount || 0), 0);
 
     const totalAccruedExpenses = Math.max(totalAccruedPayroll, recordedExpensesMTD);
-    const accruedGrossProfit = projectedRevenue - Math.max(totalAccruedPayroll * 0.6, recordedCogsMTD);
+    const accruedGrossProfit = projectedRevenue - Math.max(totalAccruedPayroll * cogsRatio, recordedCogsMTD);
     const accruedGrossMargin = projectedRevenue > 0 ? (accruedGrossProfit / projectedRevenue) * 100 : 0;
 
     const realtimeNetProfit = realizedRevenue - totalAccruedExpenses;
