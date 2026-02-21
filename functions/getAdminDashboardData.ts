@@ -145,7 +145,7 @@ Deno.serve(async (req) => {
       fetchAll(sr.Employee, '-created_date'),
       fetchAll(sr.PerformancePay, '-created_date'),
       fetchAll(sr.PerformancePayRecord, '-created_date'),
-      sr.CompanySettings.filter({ key: 'payroll' }, '-created_date', 1),
+      sr.CompanySettings.filter({ key: { $in: ['payroll', 'cogs_ratio'] } }, '-created_date', 10),
     ]);
     const activeEmployees = employees.filter(e => e.status === 'active');
     const payrollSettings = companySettings[0] || {};
