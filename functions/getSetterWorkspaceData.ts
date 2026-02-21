@@ -56,8 +56,8 @@ Deno.serve(async (req) => {
       sr.entities.PaidDayOffBank.filter({ setter_id: setterId }, '-created_date', 1),
       // Week completed entries for hours calc
       sr.entities.TimeEntry.filter({ setter_id: setterId, status: 'completed' }, '-clock_in', 200),
-      // Month completed entries (reuse weekEntries above, filter in code)
-      Promise.resolve(null),
+      // Month completed entries — separate query to avoid undercounting
+      sr.entities.TimeEntry.filter({ setter_id: setterId, status: 'completed' }, '-clock_in', 500),
     ]);
 
     // Clock status
@@ -78,7 +78,7 @@ Deno.serve(async (req) => {
       .reduce((sum, e) => sum + (e.total_hours || 0), 0);
 
     // Hours this month
-    const hoursThisMonth = weekEntries
+    const hoursThisMonth = monthEntries
       .filter(e => e.date && e.date >= monthStartStr)
       .reduce((sum, e) => sum + (e.total_hours || 0), 0);
 

@@ -42,30 +42,24 @@ export default function ClockWidget({ workspaceData, onClockAction, userId }) {
 
   const handleClockIn = async () => {
     setLoading(true);
-    const now = new Date();
-    await base44.entities.TimeEntry.create({
-      setter_id: userId,
-      clock_in: now.toISOString(),
-      status: 'active',
-      date: now.toISOString().split('T')[0],
-    });
-    toast({ title: '⏱️ Clocked In', description: `Started at ${now.toLocaleTimeString()}`, variant: 'success' });
+    const res = await base44.functions.invoke('clockInOut', { action: 'clock_in' });
+    if (res.data?.already_active) {
+      toast({ title: "You're already clocked in", variant: 'warning' });
+    } else if (res.data?.success) {
+      toast({ title: '⏱️ Clocked In', description: `Started at ${new Date(res.data.clock_in).toLocaleTimeString()}`, variant: 'success' });
+    }
     onClockAction();
     setLoading(false);
   };
 
   const handleClockOut = async () => {
-    if (!clockStatus?.id || !clockStatus?.clock_in) return;
     setLoading(true);
-    const now = new Date();
-    const start = new Date(clockStatus.clock_in);
-    const diffHours = Math.round(((now - start) / 3600000) * 100) / 100;
-    await base44.entities.TimeEntry.update(clockStatus.id, {
-      clock_out: now.toISOString(),
-      total_hours: diffHours,
-      status: 'completed',
-    });
-    toast({ title: '✅ Clocked Out', description: `Worked ${diffHours} hours`, variant: 'success' });
+    const res = await base44.functions.invoke('clockInOut', { action: 'clock_out' });
+    if (res.data?.not_active) {
+      toast({ title: "You're not clocked in", variant: 'warning' });
+    } else if (res.data?.success) {
+      toast({ title: '✅ Clocked Out', description: `Worked ${res.data.total_hours} hours`, variant: 'success' });
+    }
     onClockAction();
     setLoading(false);
   };
