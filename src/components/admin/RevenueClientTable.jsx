@@ -70,6 +70,10 @@ function InlineEditRow({ client, clientSummary, onSaved }) {
           price_per_set: client.price_per_set_appointment || 0,
         }))
   );
+  const [hybridBaseRetainer, setHybridBaseRetainer] = useState(client.hybrid_base_retainer || '');
+  const [hybridRetainerDueDay, setHybridRetainerDueDay] = useState(client.hybrid_retainer_due_day || 1);
+  const [hybridPerformanceType, setHybridPerformanceType] = useState(client.hybrid_performance_type || 'pay_per_set');
+  const [hybridPerformancePricing] = useState(client.hybrid_performance_pricing || []);
   const [saving, setSaving] = useState(false);
 
   const updateIndPrice = (idx, field, val) => {
