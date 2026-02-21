@@ -159,7 +159,7 @@ export default function AdminSidebar({ user, currentPage, clients = [] }) {
 
       {/* Tab strip (admin only) */}
       {showTabs && (
-        <div className={`flex ${collapsed ? 'flex-col items-center gap-1 py-2 px-1' : 'items-center gap-1 px-2 py-2'} border-b border-slate-700/50`}>
+        <div className={`flex flex-col ${collapsed ? 'items-center gap-1 py-2 px-1' : 'gap-0.5 px-2 py-2'} border-b border-slate-700/50`}>
           {TABS.map(tab => {
             const TabIcon = tab.icon;
             const isActive = activeTab === tab.id;
@@ -168,15 +168,15 @@ export default function AdminSidebar({ user, currentPage, clients = [] }) {
                 key={tab.id}
                 onClick={() => handleTabChange(tab.id)}
                 title={collapsed ? tab.label : undefined}
-                className={`flex items-center gap-1.5 rounded-md text-[11px] font-medium transition-all duration-150 ${
-                  collapsed ? 'p-1.5' : 'px-2.5 py-1.5'
+                className={`flex items-center gap-3 rounded-md text-sm font-medium transition-all duration-150 ${
+                  collapsed ? 'p-1.5 justify-center' : 'px-3 py-2 w-full'
                 } ${
                   isActive
                     ? 'bg-[#D6FF03] text-black'
                     : 'text-slate-400 hover:text-white hover:bg-white/5'
                 }`}
               >
-                <TabIcon className="w-3.5 h-3.5 shrink-0" />
+                <TabIcon className="w-4 h-4 shrink-0" />
                 {!collapsed && <span>{tab.label}</span>}
               </button>
             );
