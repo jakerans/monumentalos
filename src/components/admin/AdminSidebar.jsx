@@ -11,28 +11,57 @@ import {
 import { useEffectsToggle } from '../shared/useEffectsToggle';
 import AdminUserMenu from './AdminUserMenu';
 
-// --- Tab definitions ---
-const TABS = [
-  { id: 'finance', label: 'Finance', icon: DollarSign },
-  { id: 'operations', label: 'Operations', icon: Briefcase },
-  { id: 'settings', label: 'Settings', icon: Settings },
-];
-
-const financeItems = [
-  { key: 'AdminDashboard', label: 'Dashboard', icon: LayoutDashboard },
-  { key: 'MonthlyBilling', label: 'Billing', icon: Receipt },
-  {
-    key: 'AccountingPL', label: 'Accounting', icon: Calculator,
-    children: [
-      { key: 'AccountingPL', label: 'P&L', icon: BarChart3 },
-      { key: 'AccountingExpenses', label: 'Expenses', icon: Wallet },
-      { key: 'AccountingCashFlow', label: 'Cash Flow', icon: TrendingUp },
-      { key: 'AccountingClients', label: 'Clients', icon: Users },
-      { key: 'ClientProfitability', label: 'Profitability', icon: TrendingUp },
+// --- Accordion section definitions ---
+const SECTIONS = {
+  finance: {
+    id: 'finance',
+    label: 'Finance',
+    icon: DollarSign,
+    items: [
+      { key: 'AdminDashboard', label: 'Dashboard', icon: LayoutDashboard },
+      { key: 'MonthlyBilling', label: 'Billing', icon: Receipt },
+      {
+        key: 'AccountingPL', label: 'Accounting', icon: Calculator,
+        children: [
+          { key: 'AccountingPL', label: 'P&L', icon: BarChart3 },
+          { key: 'AccountingExpenses', label: 'Expenses', icon: Wallet },
+          { key: 'AccountingCashFlow', label: 'Cash Flow', icon: TrendingUp },
+          { key: 'AccountingClients', label: 'Clients', icon: Users },
+          { key: 'ClientProfitability', label: 'Profitability', icon: TrendingUp },
+        ],
+      },
+      { key: 'EmployeeManagement', label: 'Employees', icon: UserCog },
     ],
   },
-  { key: 'EmployeeManagement', label: 'Employees', icon: UserCog },
-];
+  operations: {
+    id: 'operations',
+    label: 'Operations',
+    icon: Briefcase,
+    items: [
+      { key: 'ClientPerformance', label: 'Client Overview', icon: Users },
+      {
+        key: 'SetterPerformance', label: 'Setters', icon: Headset,
+        children: [
+          { key: 'SetterPerformance', label: 'Management' },
+          { key: 'SetterStats', label: 'Reporting', icon: BarChart3 },
+          { key: 'LootAdmin', label: 'Loot System', icon: Gift },
+        ],
+      },
+    ],
+  },
+  settings: {
+    id: 'settings',
+    label: 'Settings',
+    icon: Settings,
+    items: [
+      { key: 'UserManagement', label: 'Users', icon: Users },
+      { key: 'BankAccountSettings', label: 'Bank Accounts', icon: Landmark },
+      { key: 'LeadFieldSettings', label: 'Settings', icon: Settings },
+      { key: 'HealthMonitor', label: 'Health Monitor', icon: Activity },
+      { key: 'PreviewEffects', label: 'Preview Effects', icon: Eye },
+    ],
+  },
+};
 
 const financeAdminItems = [
   { key: 'FinanceAdminDashboard', label: 'Dashboard', icon: LayoutDashboard },
@@ -50,52 +79,14 @@ const financeAdminItems = [
   { key: 'EmployeeManagement', label: 'Payroll', icon: UserCog },
 ];
 
-const operationsItems = [
-  { key: 'ClientPerformance', label: 'Client Overview', icon: Users },
-  {
-    key: 'SetterPerformance', label: 'Setters', icon: Headset,
-    children: [
-      { key: 'SetterPerformance', label: 'Management' },
-      { key: 'SetterStats', label: 'Reporting', icon: BarChart3 },
-      { key: 'LootAdmin', label: 'Loot System', icon: Gift },
-    ],
-  },
-];
-
-const settingsItems = [
-  { key: 'UserManagement', label: 'Users', icon: Users },
-  { key: 'BankAccountSettings', label: 'Bank Accounts', icon: Landmark },
-  { key: 'LeadFieldSettings', label: 'Settings', icon: Settings },
-  { key: 'HealthMonitor', label: 'Health Monitor', icon: Activity },
-  { key: 'PreviewEffects', label: 'Preview Effects', icon: Eye },
-];
-
-const TAB_ITEMS = {
-  finance: financeItems,
-  operations: operationsItems,
-  settings: settingsItems,
-};
-
-function allKeysForTab(tabId) {
-  const items = TAB_ITEMS[tabId] || [];
-  const keys = [];
-  items.forEach(item => {
-    keys.push(item.key);
-    if (item.children) item.children.forEach(c => keys.push(c.key));
-  });
-  return keys;
-}
-
-function detectTab(currentPage) {
-  // Also check finance_admin items
-  for (const item of financeAdminItems) {
-    if (item.key === currentPage) return 'finance';
-    if (item.children?.some(c => c.key === currentPage)) return 'finance';
+function findSectionWithPage(currentPage) {
+  for (const [sectionId, section] of Object.entries(SECTIONS)) {
+    for (const item of section.items) {
+      if (item.key === currentPage) return sectionId;
+      if (item.children?.some(c => c.key === currentPage)) return sectionId;
+    }
   }
-  for (const tabId of ['finance', 'operations', 'settings']) {
-    if (allKeysForTab(tabId).includes(currentPage)) return tabId;
-  }
-  return 'finance';
+  return null;
 }
 
 export default function AdminSidebar({ user, currentPage, clients = [] }) {
