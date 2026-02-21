@@ -10,6 +10,7 @@ import AppointmentCard from '../components/client/AppointmentCard';
 import OutstandingInvoiceAlert from '../components/client/OutstandingInvoiceAlert';
 import PageErrorBoundary from '../components/shared/PageErrorBoundary';
 import PageLoader from '../components/shared/PageLoader';
+import ClientSidebar from '../components/client/ClientSidebar';
 
 const PAGE_SIZE = 20;
 
