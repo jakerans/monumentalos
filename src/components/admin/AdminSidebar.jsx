@@ -18,7 +18,7 @@ const ADMIN_SECTIONS = {
     label: 'Finance',
     icon: DollarSign,
     items: [
-      { key: 'FinanceAdminDashboard', label: 'Finance Dashboard', icon: LayoutDashboard },
+      { key: 'FinanceAdminDashboard', label: 'Finance Home', icon: LayoutDashboard },
       { key: 'MonthlyBilling', label: 'Billing', icon: Receipt },
       { key: 'AccountingPL', label: 'P&L', icon: BarChart3 },
       { key: 'AccountingExpenses', label: 'Expenses', icon: Wallet },
