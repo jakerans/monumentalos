@@ -21,7 +21,7 @@ Deno.serve(async (req) => {
     }
 
     const body = await req.json();
-    const { startDate, endDate, filterCat, filterType, search, skip = 0, limit = 50, sortField = 'date', sortDir = 'desc', showDistributions = false } = body;
+    const { startDate, endDate, filterCat, filterType, filterAccount, search, skip = 0, limit = 50, sortField = 'date', sortDir = 'desc', showDistributions = false } = body;
 
     // Fetch all expenses in range + active clients in parallel
     const [allExpenses, clients] = await Promise.all([
@@ -69,6 +69,13 @@ Deno.serve(async (req) => {
         filtered = filtered.filter(e => !e.expense_type || e.expense_type === 'uncategorized');
       } else {
         filtered = filtered.filter(e => e.expense_type === filterType);
+      }
+    }
+    if (filterAccount && filterAccount !== 'all') {
+      if (filterAccount === 'none') {
+        filtered = filtered.filter(e => !e.bank_account_id);
+      } else {
+        filtered = filtered.filter(e => e.bank_account_id === filterAccount);
       }
     }
     if (search && search.trim()) {
