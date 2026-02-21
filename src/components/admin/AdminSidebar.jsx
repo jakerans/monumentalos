@@ -11,26 +11,21 @@ import {
 import { useEffectsToggle } from '../shared/useEffectsToggle';
 import AdminUserMenu from './AdminUserMenu';
 
-// --- Accordion section definitions ---
-const SECTIONS = {
+// --- Admin Navigation Structure ---
+const ADMIN_SECTIONS = {
   finance: {
     id: 'finance',
     label: 'Finance',
     icon: DollarSign,
     items: [
-      { key: 'AdminDashboard', label: 'Dashboard', icon: LayoutDashboard },
+      { key: 'FinanceAdminDashboard', label: 'Finance Dashboard', icon: LayoutDashboard },
       { key: 'MonthlyBilling', label: 'Billing', icon: Receipt },
-      {
-        key: 'AccountingPL', label: 'Accounting', icon: Calculator,
-        children: [
-          { key: 'AccountingPL', label: 'P&L', icon: BarChart3 },
-          { key: 'AccountingExpenses', label: 'Expenses', icon: Wallet },
-          { key: 'AccountingCashFlow', label: 'Cash Flow', icon: TrendingUp },
-          { key: 'AccountingClients', label: 'Clients', icon: Users },
-          { key: 'ClientProfitability', label: 'Profitability', icon: TrendingUp },
-        ],
-      },
-      { key: 'EmployeeManagement', label: 'Employees', icon: UserCog },
+      { key: 'AccountingPL', label: 'P&L', icon: BarChart3 },
+      { key: 'AccountingExpenses', label: 'Expenses', icon: Wallet },
+      { key: 'AccountingCashFlow', label: 'Cash Flow', icon: TrendingUp },
+      { key: 'AccountingClients', label: 'Client Revenue', icon: Users },
+      { key: 'ClientProfitability', label: 'Profitability', icon: TrendingUp },
+      { key: 'EmployeeManagement', label: 'Payroll', icon: UserCog },
     ],
   },
   operations: {
@@ -39,14 +34,9 @@ const SECTIONS = {
     icon: Briefcase,
     items: [
       { key: 'ClientPerformance', label: 'Client Overview', icon: Users },
-      {
-        key: 'SetterPerformance', label: 'Setters', icon: Headset,
-        children: [
-          { key: 'SetterPerformance', label: 'Management' },
-          { key: 'SetterStats', label: 'Reporting', icon: BarChart3 },
-          { key: 'LootAdmin', label: 'Loot System', icon: Gift },
-        ],
-      },
+      { key: 'SetterPerformance', label: 'Setter Management', icon: Headset },
+      { key: 'SetterStats', label: 'Setter Reporting', icon: BarChart3 },
+      { key: 'LootAdmin', label: 'Loot System', icon: Gift },
     ],
   },
   settings: {
@@ -63,27 +53,28 @@ const SECTIONS = {
   },
 };
 
-const financeAdminItems = [
-  { key: 'FinanceAdminDashboard', label: 'Dashboard', icon: LayoutDashboard },
-  { key: 'MonthlyBilling', label: 'Billing', icon: Receipt },
-  {
-    key: 'AccountingPL', label: 'Accounting', icon: Calculator,
-    children: [
+// --- Finance Admin Navigation Structure ---
+const FINANCE_ADMIN_SECTIONS = {
+  finance: {
+    id: 'finance',
+    label: 'Finance',
+    icon: DollarSign,
+    items: [
+      { key: 'MonthlyBilling', label: 'Billing', icon: Receipt },
       { key: 'AccountingPL', label: 'P&L', icon: BarChart3 },
       { key: 'AccountingExpenses', label: 'Expenses', icon: Wallet },
       { key: 'AccountingCashFlow', label: 'Cash Flow', icon: TrendingUp },
-      { key: 'AccountingClients', label: 'Clients', icon: Users },
+      { key: 'AccountingClients', label: 'Client Revenue', icon: Users },
       { key: 'ClientProfitability', label: 'Profitability', icon: TrendingUp },
+      { key: 'EmployeeManagement', label: 'Payroll', icon: UserCog },
     ],
   },
-  { key: 'EmployeeManagement', label: 'Payroll', icon: UserCog },
-];
+};
 
-function findSectionWithPage(currentPage) {
-  for (const [sectionId, section] of Object.entries(SECTIONS)) {
-    for (const item of section.items) {
-      if (item.key === currentPage) return sectionId;
-      if (item.children?.some(c => c.key === currentPage)) return sectionId;
+function findSectionWithPage(currentPage, sectionsObj) {
+  for (const section of Object.values(sectionsObj)) {
+    if (section.items.some(item => item.key === currentPage)) {
+      return section.id;
     }
   }
   return null;
