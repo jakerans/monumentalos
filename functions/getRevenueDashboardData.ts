@@ -88,6 +88,19 @@ function computePeriodKPIs(clients, leads, billingRecords, expenses, startDate, 
     if (bt === 'pay_per_show') cLeads.filter(l => l.disposition === 'showed' && ir(l.appointment_date)).forEach(l => { grossRevenue += getLeadPrice(client, l, 'price_per_show'); });
     else if (bt === 'pay_per_set') cLeads.filter(l => l.date_appointment_set && ir(l.date_appointment_set)).forEach(l => { grossRevenue += getLeadPrice(client, l, 'price_per_set'); });
     else if (bt === 'retainer') grossRevenue += (client.retainer_amount || 0);
+    else if (bt === 'hybrid') {
+      grossRevenue += (client.hybrid_base_retainer || 0);
+      const perfType = client.hybrid_performance_type || 'pay_per_show';
+      const perfPricing = client.hybrid_performance_pricing || client.industry_pricing || [];
+      const getHybridPrice = (lead, field) => {
+        const ind = (lead.industries && lead.industries[0]) || null;
+        const match = ind ? perfPricing.find(p => p.industry === ind) : null;
+        if (match) return match[field] || 0;
+        return field === 'price_per_show' ? (client.price_per_shown_appointment || 0) : (client.price_per_set_appointment || 0);
+      };
+      if (perfType === 'pay_per_show') cLeads.filter(l => l.disposition === 'showed' && ir(l.appointment_date)).forEach(l => { grossRevenue += getHybridPrice(l, 'price_per_show'); });
+      else if (perfType === 'pay_per_set') cLeads.filter(l => l.date_appointment_set && ir(l.date_appointment_set)).forEach(l => { grossRevenue += getHybridPrice(l, 'price_per_set'); });
+    }
   });
   const collected = billingRecords.filter(b => b.status === 'paid' && ir(b.paid_date)).reduce((s, b) => s + (b.paid_amount || b.calculated_amount || 0), 0);
   const re = expenses.filter(e => ir(e.date) && e.expense_type !== 'distribution' && e.category !== 'distribution');
