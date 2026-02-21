@@ -7,6 +7,10 @@ import { Activity, CheckCircle, XCircle, RefreshCw, Clock } from 'lucide-react';
 
 const ENDPOINTS = [
   { name: 'healthCheck', label: 'Health Check' },
+  { name: 'getAdminDashboardData', label: 'Admin Dashboard Data' },
+  { name: 'getMMDashboardData', label: 'MM Dashboard Data' },
+  { name: 'getSetterDashboardData', label: 'Setter Dashboard Data' },
+  { name: 'getMonthlyBillingData', label: 'Monthly Billing Data', payload: { selectedMonth: '2026-01' } },
 ];
 
 export default function HealthMonitor() {
