@@ -255,7 +255,8 @@ function BoxCard({ box, onOpen, lootSettings }) {
     <motion.div
       animate={pulse ? { boxShadow: [rc.glow, rc.glowStrong, rc.glow] } : {}}
       transition={pulse ? { duration: 1.5, repeat: Infinity, ease: 'easeInOut' } : {}}
-      className="rounded-xl p-4 flex flex-col items-center gap-3"
+      className="rounded-xl p-5 flex flex-col items-center gap-3"
+      style-min-height-hack="true"
       style={{
         background: `linear-gradient(135deg, ${rc.gradientFrom}, ${rc.gradientTo})`,
         border: `2px solid ${rc.primary}`,

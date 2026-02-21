@@ -233,6 +233,74 @@ function ShakingStage({ rc, rarity, imageUrl, onComplete }) {
 }
 
 /* ──── REVEALING STAGE ──── */
+function PrizeCard({ rc, rarity, prize, children }) {
+  const bannerBg = rarity === 'common' ? '#475569' : rc.primary;
+
+  return (
+    <div
+      className="w-[320px] rounded-2xl overflow-hidden relative"
+      style={{
+        height: 480,
+        border: `2px solid ${rc.primary}`,
+        boxShadow: rc.glowStrong,
+      }}
+    >
+      {/* Tiled diamond background layer */}
+      <div className="absolute inset-0" style={getTiledBgStyle(rc.primary)} />
+      {/* Gradient overlay */}
+      <div className="absolute inset-0" style={{ background: `linear-gradient(135deg, ${rc.gradientFrom}dd, ${rc.gradientTo}dd)` }} />
+
+      {/* Content */}
+      <div className="relative z-10 flex flex-col h-full">
+        {/* Rarity banner */}
+        <div className="py-2.5 text-center font-black text-sm uppercase tracking-widest text-black shrink-0" style={{ backgroundColor: bannerBg }}>
+          {rarity}
+        </div>
+
+        {/* Box icon placeholder */}
+        <div className="flex items-center justify-center py-8 shrink-0">
+          <Package className="w-16 h-16 text-white opacity-80" />
+        </div>
+
+        {/* Divider */}
+        <div className="mx-6 h-px shrink-0" style={{ backgroundColor: rc.primary, opacity: 0.2 }} />
+
+        {/* Prize content area */}
+        <div className="flex-1 flex flex-col items-center justify-center text-center px-6 gap-3">
+          {prize !== null ? (
+            <>
+              <p className="text-xl font-bold text-white">{prize.name}</p>
+              <p className="text-sm text-slate-400">{prize.description}</p>
+              {prize.prize_type === 'cash' && prize.cash_value > 0 ? (
+                <p className="text-4xl font-black mt-2" style={{ color: rc.primary }}>${prize.cash_value}</p>
+              ) : (
+                <Gift className="w-12 h-12 mt-2" style={{ color: rc.primary }} />
+              )}
+              <p className="text-xs text-slate-400 mt-1">Prize Unlocked!</p>
+            </>
+          ) : (
+            <div className="w-full flex flex-col items-center gap-3">
+              <motion.div
+                animate={{ opacity: [0.3, 0.6, 0.3] }}
+                transition={{ duration: 1.2, repeat: Infinity, ease: 'easeInOut' }}
+                className="h-5 w-40 rounded-full bg-white/10"
+              />
+              <motion.div
+                animate={{ opacity: [0.3, 0.6, 0.3] }}
+                transition={{ duration: 1.2, repeat: Infinity, ease: 'easeInOut', delay: 0.15 }}
+                className="h-3 w-28 rounded-full bg-white/10"
+              />
+            </div>
+          )}
+        </div>
+
+        {/* Bottom action area */}
+        {children && <div className="px-6 pb-5 shrink-0">{children}</div>}
+      </div>
+    </div>
+  );
+}
+
 function RevealingStage({ rc, rarity, imageUrl, prize, onComplete }) {
   const [boxGone, setBoxGone] = useState(false);
 
@@ -242,12 +310,7 @@ function RevealingStage({ rc, rarity, imageUrl, prize, onComplete }) {
   }, []);
 
   return (
-    <div className="relative flex items-center justify-center" style={{ width: 360, height: 400 }}>
-      {/* Tiled background */}
-      {boxGone && (
-        <div className="absolute inset-0 z-0" style={getTiledBgStyle(rc.primary)} />
-      )}
-
+    <div className="relative flex items-center justify-center" style={{ width: 360, height: 520 }}>
       {/* Box shrinking away */}
       {!boxGone && (
         <motion.div
@@ -266,7 +329,7 @@ function RevealingStage({ rc, rarity, imageUrl, prize, onComplete }) {
         </motion.div>
       )}
 
-      {/* Particle burst */}
+      {/* Particle burst — radiates from center into dark bg */}
       {boxGone && <ParticleBurst rc={rc} rarity={rarity} />}
 
       {/* Prize card */}
@@ -276,44 +339,9 @@ function RevealingStage({ rc, rarity, imageUrl, prize, onComplete }) {
           animate={{ scale: 1, opacity: 1 }}
           transition={{ type: 'spring', damping: 12, stiffness: 200 }}
           onAnimationComplete={onComplete}
-          className="absolute w-full max-w-xs rounded-2xl overflow-hidden shadow-2xl z-10"
-          style={{
-            background: `linear-gradient(135deg, ${rc.gradientFrom}, ${rc.gradientTo})`,
-            border: `2px solid ${rc.primary}`,
-            boxShadow: rc.glowStrong,
-          }}
+          className="absolute z-10"
         >
-          {/* Rarity banner */}
-          <div className="py-2.5 text-center font-black text-sm uppercase tracking-widest text-black" style={{ backgroundColor: rc.primary }}>
-            {rarity}
-          </div>
-          <div className="p-6 flex flex-col items-center text-center gap-3">
-            {prize !== null ? (
-              <>
-                <p className="text-xl font-bold text-white">{prize.name}</p>
-                <p className="text-sm text-slate-300">{prize.description}</p>
-                {prize.prize_type === 'cash' && prize.cash_value > 0 ? (
-                  <p className="text-4xl font-black mt-2" style={{ color: rc.primary }}>${prize.cash_value}</p>
-                ) : (
-                  <Gift className="w-12 h-12 mt-2" style={{ color: rc.primary }} />
-                )}
-              </>
-            ) : (
-              <div className="py-6 w-full flex flex-col items-center gap-3">
-                <motion.div
-                  animate={{ opacity: [0.3, 0.6, 0.3] }}
-                  transition={{ duration: 1.2, repeat: Infinity, ease: 'easeInOut' }}
-                  className="h-5 w-40 rounded-full bg-white/10"
-                />
-                <motion.div
-                  animate={{ opacity: [0.3, 0.6, 0.3] }}
-                  transition={{ duration: 1.2, repeat: Infinity, ease: 'easeInOut', delay: 0.15 }}
-                  className="h-3 w-28 rounded-full bg-white/10"
-                />
-              </div>
-            )}
-            {prize !== null && <p className="text-xs text-slate-400 mt-1">Prize Unlocked!</p>}
-          </div>
+          <PrizeCard rc={rc} rarity={rarity} prize={prize} />
         </motion.div>
       )}
     </div>
@@ -322,58 +350,24 @@ function RevealingStage({ rc, rarity, imageUrl, prize, onComplete }) {
 
 /* ──── DONE STAGE ──── */
 function DoneStage({ rc, rarity, prize, onClose }) {
-  return (
-    <div className="relative flex items-center justify-center w-full" style={{ minHeight: 400 }}>
-      {/* Tiled background */}
-      <div className="absolute inset-0 z-0" style={getTiledBgStyle(rc.primary)} />
+  const claimBg = rarity === 'common' ? '#475569' : rc.primary;
 
+  return (
+    <div className="relative flex items-center justify-center w-full" style={{ minHeight: 520 }}>
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        className="w-full max-w-xs rounded-2xl overflow-hidden shadow-2xl relative z-10"
-        style={{
-          background: `linear-gradient(135deg, ${rc.gradientFrom}, ${rc.gradientTo})`,
-          border: `2px solid ${rc.primary}`,
-          boxShadow: rc.glowStrong,
-        }}
+        className="relative z-10"
       >
-        <div className="py-2.5 text-center font-black text-sm uppercase tracking-widest text-black" style={{ backgroundColor: rc.primary }}>
-          {rarity}
-        </div>
-        <div className="p-6 flex flex-col items-center text-center gap-3">
-          {prize !== null ? (
-            <>
-              <p className="text-xl font-bold text-white">{prize.name}</p>
-              <p className="text-sm text-slate-300">{prize.description}</p>
-              {prize.prize_type === 'cash' && prize.cash_value > 0 ? (
-                <p className="text-4xl font-black mt-2" style={{ color: rc.primary }}>${prize.cash_value}</p>
-              ) : (
-                <Gift className="w-12 h-12 mt-2" style={{ color: rc.primary }} />
-              )}
-            </>
-          ) : (
-            <div className="py-4 w-full flex flex-col items-center gap-3">
-              <motion.div
-                animate={{ opacity: [0.3, 0.6, 0.3] }}
-                transition={{ duration: 1.2, repeat: Infinity, ease: 'easeInOut' }}
-                className="h-5 w-40 rounded-full bg-white/10"
-              />
-              <motion.div
-                animate={{ opacity: [0.3, 0.6, 0.3] }}
-                transition={{ duration: 1.2, repeat: Infinity, ease: 'easeInOut', delay: 0.15 }}
-                className="h-3 w-28 rounded-full bg-white/10"
-              />
-            </div>
-          )}
-          <p className="text-xs text-slate-400 mt-1">Prize Unlocked!</p>
+        <PrizeCard rc={rc} rarity={rarity} prize={prize}>
           <button
             onClick={onClose}
-            className="mt-4 w-full py-3 rounded-xl text-sm font-bold text-black transition-opacity hover:opacity-90"
-            style={{ backgroundColor: rc.primary }}
+            className="w-full py-3 rounded-xl text-sm font-bold text-black transition-opacity hover:opacity-90"
+            style={{ backgroundColor: claimBg }}
           >
             Claim
           </button>
-        </div>
+        </PrizeCard>
       </motion.div>
     </div>
   );
