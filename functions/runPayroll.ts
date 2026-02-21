@@ -19,11 +19,13 @@ Deno.serve(async (req) => {
 
     // ─── PREVIEW MODE: build line items from employee data ───
     if (mode === 'preview') {
-      const [employees, perfPlans, perfRecords, companySettings] = await Promise.all([
+      const [employees, perfPlans, perfRecords, companySettings, allUsers, allSpiffs] = await Promise.all([
         sr.Employee.filter({ status: 'active' }, '-created_date', 5000),
         sr.PerformancePay.filter({ status: 'active' }, '-created_date', 5000),
         sr.PerformancePayRecord.list('-created_date', 5000),
         sr.CompanySettings.filter({ key: 'payroll' }, '-created_date', 1),
+        sr.User.list('-created_date', 5000),
+        sr.Spiff.list('-created_date', 5000),
       ]);
 
       const payrollSettings = companySettings[0] || {};
@@ -77,6 +79,41 @@ Deno.serve(async (req) => {
               });
             }
           }
+        }
+      }
+
+      // ─── SETTER BONUSES: one line item per setter, spiff totals only ───
+      const setters = allUsers.filter((u) => u.app_role === 'setter');
+
+      const completedSpiffs = allSpiffs.filter((s) =>
+        s.status === 'completed' &&
+        s.due_date &&
+        s.due_date.startsWith(prevMonthStr) &&
+        (s.cash_value || 0) > 0
+      );
+
+      const individualSpiffs = completedSpiffs.filter((s) => s.scope === 'individual');
+      const teamEachSpiffs = completedSpiffs.filter((s) => s.scope === 'team_each');
+
+      for (const setter of setters) {
+        const myTotal =
+          individualSpiffs
+            .filter((s) => s.assigned_setter_id === setter.id)
+            .reduce((sum, s) => sum + (s.cash_value || 0), 0) +
+          teamEachSpiffs
+            .reduce((sum, s) => sum + (s.cash_value || 0), 0);
+
+        if (myTotal > 0) {
+          items.push({
+            id: `spiff_${setter.id}`,
+            type: 'setter_bonus',
+            employee_name: setter.full_name || setter.email,
+            description: `${setter.full_name || setter.email} — Setter Bonuses ${prevMonthStr}`,
+            amount: myTotal,
+            expense_type: 'cogs',
+            category: 'payroll',
+            editable: true,
+          });
         }
       }
 
