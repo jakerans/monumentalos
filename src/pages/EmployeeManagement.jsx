@@ -16,6 +16,8 @@ import RunPayrollModal from '../components/admin/RunPayrollModal';
 import { getCyclesPerYear } from '../components/employee/payUtils';
 import PageErrorBoundary from '../components/shared/PageErrorBoundary';
 import PageLoader from '../components/shared/PageLoader';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import SetterBonusSummaryTab from '../components/loot/SetterBonusSummaryTab';
 
 export default function EmployeeManagement() {
   const navigate = useNavigate();
@@ -28,6 +30,7 @@ export default function EmployeeManagement() {
   const [showDismissed, setShowDismissed] = useState(false);
   const [payrollOpen, setPayrollOpen] = useState(false);
   const [runPayrollOpen, setRunPayrollOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState('roster');
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -147,70 +150,88 @@ export default function EmployeeManagement() {
               <p className="text-xs sm:text-sm text-slate-400">{employees.filter(e => e.status === 'active').length} active employees</p>
             </div>
           </div>
-          <div className="flex items-center gap-2 flex-wrap">
-            <button
-              onClick={() => setPayrollOpen(true)}
-              className="px-2.5 sm:px-3 py-1.5 sm:py-2 text-xs sm:text-sm font-medium rounded-lg border border-slate-600 text-slate-300 hover:bg-slate-800 flex items-center gap-1.5 sm:gap-2"
-            >
-              <Settings className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-              <span className="hidden sm:inline">Payroll:</span>
-              <span className="text-[10px] sm:text-xs font-bold text-white capitalize">{payrollSettings?.payroll_frequency?.replace('_', '-') || 'Bi-Weekly'}</span>
-            </button>
-            <button
-              onClick={() => setRunPayrollOpen(true)}
-              className="px-2.5 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm font-bold text-black rounded-lg hover:opacity-90 flex items-center gap-1.5 sm:gap-2"
-              style={{ backgroundColor: '#D6FF03' }}
-            >
-              <DollarSign className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-              <span className="hidden sm:inline">Run Payroll</span>
-              <span className="sm:hidden">Payroll</span>
-            </button>
-            <button
-              onClick={handleSyncFromUsers}
-              disabled={syncing}
-              className="px-2.5 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm font-medium rounded-lg border border-slate-600 text-slate-300 hover:bg-slate-800 flex items-center gap-1.5 sm:gap-2 disabled:opacity-50"
-            >
-              <RefreshCw className={`w-3.5 h-3.5 sm:w-4 sm:h-4 ${syncing ? 'animate-spin' : ''}`} />
-              <span className="hidden sm:inline">Sync from Users</span>
-              <span className="sm:hidden">Sync</span>
-            </button>
-            <button
-              onClick={() => setAddOpen(true)}
-              className="px-2.5 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm font-medium rounded-lg border border-slate-600 text-slate-300 hover:bg-slate-800 flex items-center gap-1.5 sm:gap-2"
-            >
-              <UserPlus className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-              <span className="hidden sm:inline">Add Employee</span>
-              <span className="sm:hidden">Add</span>
-            </button>
-          </div>
-        </div>
-
-        {/* Status toggle */}
-        <div className="flex gap-2">
           <button
-            onClick={() => setShowDismissed(false)}
-            className={`px-3 py-1.5 text-xs font-medium rounded-full border transition-colors ${!showDismissed ? 'bg-slate-700 text-white border-slate-600' : 'bg-slate-800 text-slate-400 border-slate-700 hover:bg-slate-700'}`}
+            onClick={() => setPayrollOpen(true)}
+            className="px-2.5 sm:px-3 py-1.5 sm:py-2 text-xs sm:text-sm font-medium rounded-lg border border-slate-600 text-slate-300 hover:bg-slate-800 flex items-center gap-1.5 sm:gap-2"
           >
-            Active ({employees.filter(e => e.status !== 'dismissed').length})
-          </button>
-          <button
-            onClick={() => setShowDismissed(true)}
-            className={`px-3 py-1.5 text-xs font-medium rounded-full border transition-colors ${showDismissed ? 'bg-red-500/20 text-red-400 border-red-500/30' : 'bg-slate-800 text-slate-400 border-slate-700 hover:bg-slate-700'}`}
-          >
-            Dismissed ({employees.filter(e => e.status === 'dismissed').length})
+            <Settings className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+            <span className="hidden sm:inline">Payroll:</span>
+            <span className="text-[10px] sm:text-xs font-bold text-white capitalize">{payrollSettings?.payroll_frequency?.replace('_', '-') || 'Bi-Weekly'}</span>
           </button>
         </div>
 
-        <EmployeeTable employees={filtered} payrollSettings={payrollSettings} onSelect={handleSelectEmp} lastMonthCollected={lastMonthCollected} />
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+          <TabsList className="bg-slate-800/50 border border-slate-700/50">
+            <TabsTrigger value="roster">Team Roster</TabsTrigger>
+            <TabsTrigger value="performance">Performance Pay</TabsTrigger>
+            <TabsTrigger value="payroll">💰 Payroll</TabsTrigger>
+          </TabsList>
 
-        {/* Performance Pay Section */}
-        <PerformancePayWidget
-          employees={employees}
-          perfPlans={perfPlans}
-          payrollSettings={payrollSettings}
-          onSelectPlan={handleSelectPlan}
-          perfRecords={perfRecords}
-        />
+          <TabsContent value="roster" className="space-y-4">
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setAddOpen(true)}
+                className="px-3 py-1.5 text-xs font-medium rounded-lg border border-slate-600 text-slate-300 hover:bg-slate-800 flex items-center gap-1.5"
+              >
+                <UserPlus className="w-3.5 h-3.5" />
+                Add Employee
+              </button>
+              <button
+                onClick={handleSyncFromUsers}
+                disabled={syncing}
+                className="px-3 py-1.5 text-xs font-medium rounded-lg border border-slate-600 text-slate-300 hover:bg-slate-800 flex items-center gap-1.5 disabled:opacity-50"
+              >
+                <RefreshCw className={`w-3.5 h-3.5 ${syncing ? 'animate-spin' : ''}`} />
+                Sync from Users
+              </button>
+            </div>
+
+            <div className="flex gap-2">
+              <button
+                onClick={() => setShowDismissed(false)}
+                className={`px-3 py-1.5 text-xs font-medium rounded-full border transition-colors ${!showDismissed ? 'bg-slate-700 text-white border-slate-600' : 'bg-slate-800 text-slate-400 border-slate-700 hover:bg-slate-700'}`}
+              >
+                Active ({employees.filter(e => e.status !== 'dismissed').length})
+              </button>
+              <button
+                onClick={() => setShowDismissed(true)}
+                className={`px-3 py-1.5 text-xs font-medium rounded-full border transition-colors ${showDismissed ? 'bg-red-500/20 text-red-400 border-red-500/30' : 'bg-slate-800 text-slate-400 border-slate-700 hover:bg-slate-700'}`}
+              >
+                Dismissed ({employees.filter(e => e.status === 'dismissed').length})
+              </button>
+            </div>
+
+            <EmployeeTable employees={filtered} payrollSettings={payrollSettings} onSelect={handleSelectEmp} lastMonthCollected={lastMonthCollected} />
+          </TabsContent>
+
+          <TabsContent value="performance" className="space-y-4">
+            <PerformancePayWidget
+              employees={employees}
+              perfPlans={perfPlans}
+              payrollSettings={payrollSettings}
+              onSelectPlan={handleSelectPlan}
+              perfRecords={perfRecords}
+            />
+          </TabsContent>
+
+          <TabsContent value="payroll" className="space-y-4">
+            <div className="flex justify-end">
+              <button
+                onClick={() => setRunPayrollOpen(true)}
+                className="px-4 py-2 text-sm font-bold text-black rounded-lg hover:opacity-90 flex items-center gap-2"
+                style={{ backgroundColor: '#D6FF03' }}
+              >
+                <DollarSign className="w-4 h-4" />
+                Run Payroll
+              </button>
+            </div>
+
+            <div className="border-t border-slate-700/50 pt-4">
+              <p className="text-[10px] text-slate-400 uppercase tracking-wider mb-3">Setter Bonuses</p>
+              <SetterBonusSummaryTab />
+            </div>
+          </TabsContent>
+        </Tabs>
       </main>
 
       <AddEmployeeModal open={addOpen} onOpenChange={setAddOpen} onAdd={handleAdd} />
