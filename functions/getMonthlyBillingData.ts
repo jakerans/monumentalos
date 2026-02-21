@@ -102,6 +102,62 @@ Deno.serve(async (req) => {
           calculatedAmount = rate;
         }
 
+        if (bt === 'hybrid') {
+          // Generate two records for hybrid clients
+          const hybridRecords = [];
+          // 1. Retainer record
+          const retainerRate = client.hybrid_base_retainer || 0;
+          hybridRecords.push({
+            client_id: client.id,
+            billing_month: selectedMonth,
+            billing_type: 'hybrid_retainer',
+            calculated_amount: retainerRate,
+            quantity: 0,
+            rate: retainerRate,
+            status: 'pending',
+          });
+          // 2. Performance record
+          const perfType = client.hybrid_performance_type || 'pay_per_set';
+          const perfPricing = client.hybrid_performance_pricing || [];
+          let perfQty = 0;
+          let perfAmount = 0;
+          if (perfType === 'pay_per_show') {
+            const showed = cLeads.filter(l =>
+              l.disposition === 'showed' && l.appointment_date &&
+              new Date(l.appointment_date) >= monthStartDate && new Date(l.appointment_date) <= monthEndDate
+            );
+            perfQty = showed.length;
+            showed.forEach(lead => {
+              const ind = (lead.industries && lead.industries[0]) || null;
+              const match = ind ? perfPricing.find(p => p.industry === ind) : null;
+              perfAmount += match ? (match.price_per_show || 0) : 0;
+            });
+          } else {
+            const booked = cLeads.filter(l =>
+              l.date_appointment_set &&
+              new Date(l.date_appointment_set) >= monthStartDate && new Date(l.date_appointment_set) <= monthEndDate
+            );
+            perfQty = booked.length;
+            booked.forEach(lead => {
+              const ind = (lead.industries && lead.industries[0]) || null;
+              const match = ind ? perfPricing.find(p => p.industry === ind) : null;
+              perfAmount += match ? (match.price_per_set || 0) : 0;
+            });
+          }
+          if (perfQty > 0) {
+            hybridRecords.push({
+              client_id: client.id,
+              billing_month: selectedMonth,
+              billing_type: 'hybrid_performance',
+              calculated_amount: perfAmount,
+              quantity: perfQty,
+              rate: perfQty > 0 ? Math.round((perfAmount / perfQty) * 100) / 100 : 0,
+              status: 'pending',
+            });
+          }
+          return hybridRecords;
+        }
+
         return {
           client_id: client.id,
           billing_month: selectedMonth,
@@ -113,8 +169,9 @@ Deno.serve(async (req) => {
         };
       });
 
-      if (records.length > 0) {
-        await sr.MonthlyBilling.bulkCreate(records);
+      const flatRecords = records.flat();
+      if (flatRecords.length > 0) {
+        await sr.MonthlyBilling.bulkCreate(flatRecords);
       }
 
       // Auto-flag overdue

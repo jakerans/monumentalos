@@ -162,11 +162,13 @@ export default function ClientView() {
             <p className="text-xs text-slate-400 mt-0.5">
               {client?.billing_type === 'retainer'
                 ? `$${client?.retainer_amount || 0}/mo retainer`
-                : (client?.industry_pricing && client.industry_pricing.length > 0)
-                  ? client.industry_pricing.map(p => `${p.industry}: $${client?.billing_type === 'pay_per_set' ? (p.price_per_set || 0) : (p.price_per_show || 0)}`).join(' · ')
-                  : client?.billing_type === 'pay_per_set'
-                    ? `$${client?.price_per_set_appointment || 0} / appt set`
-                    : `$${client?.price_per_shown_appointment || 0} / shown appt`
+                : client?.billing_type === 'hybrid'
+                  ? `Hybrid: $${client?.hybrid_base_retainer || 0}/mo + ${client?.hybrid_performance_type === 'pay_per_show' ? 'per show' : 'per set'}${client?.hybrid_performance_pricing?.length > 0 ? ` (${client.hybrid_performance_pricing.map(p => `${p.industry}: $${client.hybrid_performance_type === 'pay_per_show' ? (p.price_per_show || 0) : (p.price_per_set || 0)}`).join(', ')})` : ''}`
+                  : (client?.industry_pricing && client.industry_pricing.length > 0)
+                    ? client.industry_pricing.map(p => `${p.industry}: $${client?.billing_type === 'pay_per_set' ? (p.price_per_set || 0) : (p.price_per_show || 0)}`).join(' · ')
+                    : client?.billing_type === 'pay_per_set'
+                      ? `$${client?.price_per_set_appointment || 0} / appt set`
+                      : `$${client?.price_per_shown_appointment || 0} / shown appt`
               } · {client?.status || 'active'}
             </p>
           </div>
@@ -203,11 +205,13 @@ export default function ClientView() {
               <p className="text-xs text-slate-400 mb-3">
                 {client?.billing_type === 'retainer'
                   ? `Retainer: $${client?.retainer_amount || 0}/mo · Due on the ${client?.retainer_due_day || 1}${client?.retainer_due_day === 1 ? 'st' : client?.retainer_due_day === 2 ? 'nd' : client?.retainer_due_day === 3 ? 'rd' : 'th'}`
-                  : (client?.industry_pricing && client.industry_pricing.length > 0)
-                    ? client.industry_pricing.map(p => `${p.industry}: $${client?.billing_type === 'pay_per_set' ? (p.price_per_set || 0) : (p.price_per_show || 0)}`).join(' · ')
-                    : client?.billing_type === 'pay_per_set'
-                    ? `Pay Per Set: $${client?.price_per_set_appointment || 0}/appt`
-                    : `Pay Per Show: $${client?.price_per_shown_appointment || 0}/show`}
+                  : client?.billing_type === 'hybrid'
+                    ? `Hybrid: $${client?.hybrid_base_retainer || 0}/mo retainer · Due on the ${client?.hybrid_retainer_due_day || 1}${[1,'1'].includes(client?.hybrid_retainer_due_day) ? 'st' : [2,'2'].includes(client?.hybrid_retainer_due_day) ? 'nd' : [3,'3'].includes(client?.hybrid_retainer_due_day) ? 'rd' : 'th'} + ${client?.hybrid_performance_type === 'pay_per_show' ? 'Pay Per Show' : 'Pay Per Set'}${client?.hybrid_performance_pricing?.length > 0 ? `: ${client.hybrid_performance_pricing.map(p => `${p.industry} $${client.hybrid_performance_type === 'pay_per_show' ? (p.price_per_show || 0) : (p.price_per_set || 0)}`).join(', ')}` : ''}`
+                    : (client?.industry_pricing && client.industry_pricing.length > 0)
+                      ? client.industry_pricing.map(p => `${p.industry}: $${client?.billing_type === 'pay_per_set' ? (p.price_per_set || 0) : (p.price_per_show || 0)}`).join(' · ')
+                      : client?.billing_type === 'pay_per_set'
+                        ? `Pay Per Set: $${client?.price_per_set_appointment || 0}/appt`
+                        : `Pay Per Show: $${client?.price_per_shown_appointment || 0}/show`}
               </p>
               <button
                 onClick={() => setBillingEditorOpen(true)}

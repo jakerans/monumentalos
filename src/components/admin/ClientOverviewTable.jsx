@@ -60,6 +60,22 @@ export default function ClientOverviewTable({ clients, leads, spend, payments, o
       cLeads.filter(l => l.date_appointment_set && new Date(l.date_appointment_set) >= thisMonthStart).forEach(l => { mtdBilled += getLeadPrice(l, 'price_per_set'); });
     } else if (billingType === 'retainer') {
       mtdBilled = client.retainer_amount || 0;
+    } else if (billingType === 'hybrid') {
+      mtdBilled = client.hybrid_base_retainer || 0;
+      const hybridPricing = client.hybrid_performance_pricing || [];
+      const hybridPerfType = client.hybrid_performance_type || 'pay_per_set';
+      function getHybridLeadPrice(lead) {
+        const ind = (lead.industries && lead.industries[0]) || null;
+        const match = ind ? hybridPricing.find(p => p.industry === ind) : null;
+        return hybridPerfType === 'pay_per_show'
+          ? (match ? (match.price_per_show || 0) : 0)
+          : (match ? (match.price_per_set || 0) : 0);
+      }
+      if (hybridPerfType === 'pay_per_show') {
+        cLeads.filter(l => l.disposition === 'showed' && l.appointment_date && new Date(l.appointment_date) >= thisMonthStart).forEach(l => { mtdBilled += getHybridLeadPrice(l); });
+      } else {
+        cLeads.filter(l => l.date_appointment_set && new Date(l.date_appointment_set) >= thisMonthStart).forEach(l => { mtdBilled += getHybridLeadPrice(l); });
+      }
     }
 
     const mtdPaid = payments.filter(p => p.client_id === client.id && new Date(p.date) >= thisMonthStart).reduce((s, p) => s + (p.amount || 0), 0);
