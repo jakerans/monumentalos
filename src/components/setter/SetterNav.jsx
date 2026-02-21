@@ -6,7 +6,7 @@ import { motion } from 'framer-motion';
 import { Zap, ZapOff, Package } from 'lucide-react';
 import { useEffectsToggle } from '../shared/useEffectsToggle';
 
-export default function SetterNav({ user, unopenedCount = 0, onOpenInventory }) {
+export default function SetterNav({ user, unopenedCount = 0, yellowWarning = 8, inventoryCap = 10, onOpenInventory }) {
   const { effectsOn, toggle: toggleEffects } = useEffectsToggle();
   const navigate = useNavigate();
 
@@ -51,7 +51,7 @@ export default function SetterNav({ user, unopenedCount = 0, onOpenInventory }) 
               <Package className="w-4 h-4" />
               {unopenedCount > 0 && (
                 <span className={`absolute -top-1 -right-1 w-4 h-4 flex items-center justify-center rounded-full text-[9px] font-bold text-white ${
-                  unopenedCount >= 10 ? 'bg-red-500' : unopenedCount >= 8 ? 'bg-amber-400' : 'bg-emerald-500'
+                  unopenedCount >= inventoryCap ? 'bg-red-500' : unopenedCount >= yellowWarning ? 'bg-amber-400' : 'bg-emerald-500'
                 }`}>
                   {unopenedCount}
                 </span>

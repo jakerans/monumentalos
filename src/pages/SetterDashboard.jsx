@@ -263,7 +263,7 @@ export default function SetterDashboard() {
   return (
     <PageErrorBoundary>
     <div className="min-h-screen bg-[#0B0F1A] flex flex-col">
-      <SetterNav user={user} unopenedCount={unopenedBoxes.length} onOpenInventory={() => setInventoryOpen(true)} />
+      <SetterNav user={user} unopenedCount={unopenedBoxes.length} yellowWarning={yellowWarning} inventoryCap={inventoryCap} onOpenInventory={() => setInventoryOpen(true)} />
 
       <main className="flex-1 max-w-7xl w-full mx-auto px-3 sm:px-6 lg:pl-24 lg:pr-8 py-4 sm:py-6">
         {/* Hero row: Welcome + AI message on left, Spiff cards on right */}
