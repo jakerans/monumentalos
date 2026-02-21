@@ -80,6 +80,7 @@ Deno.serve(async (req) => {
         const now = new Date();
         const periodStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
         const ppRecord = await sr.PerformancePayRecord.create({
+          performance_pay_id: 'loot_win',
           employee_id: employee.id,
           period: periodStr,
           payout: selectedPrize.cash_value,
