@@ -85,11 +85,30 @@ Deno.serve(async (req) => {
       base44.asServiceRole.entities.BankAccount.list(),
     ]);
 
-    // Build bank account lookup: account_id string → BankAccount.id
-    const bankAccountByAccountId = {};
-    for (const acct of bankAccounts) {
-      if (acct.account_id) bankAccountByAccountId[acct.account_id.trim().toLowerCase()] = acct.id;
+    // Build bank account lookup for O(1) exact match + partial match fallback
+    const bankAccountEntries = bankAccounts
+      .filter(a => a.account_id)
+      .map(a => ({ key: a.account_id.trim().toLowerCase(), id: a.id }));
+    const bankAccountByExactId = {};
+    for (const entry of bankAccountEntries) {
+      bankAccountByExactId[entry.key] = entry.id;
     }
+
+    function matchBankAccount(rawValue) {
+      if (!rawValue) return null;
+      const val = rawValue.trim().toLowerCase();
+      if (!val) return null;
+      // 1. Exact match
+      if (bankAccountByExactId[val]) return bankAccountByExactId[val];
+      // 2. Partial match — sheet value contains account_id or vice versa
+      for (const entry of bankAccountEntries) {
+        if (val.includes(entry.key) || entry.key.includes(val)) return entry.id;
+      }
+      return null;
+    }
+
+    let bankAccountMatched = 0;
+    let bankAccountUnmatched = 0;
 
     if (!sheetResp.ok) {
       const errText = await sheetResp.text();
