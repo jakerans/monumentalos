@@ -167,6 +167,8 @@ export default function LootAdmin() {
             <LootFulfillmentTab
               pendingWins={pendingWins}
               onWinUpdated={refetch}
+              users={lootData?.users || []}
+              prizes={prizes}
             />
           </TabsContent>
         </Tabs>
