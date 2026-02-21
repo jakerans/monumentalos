@@ -16,8 +16,13 @@ export default function EditInvoiceModal({ record, clientName, open, onOpenChang
   const [saving, setSaving] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
 
-  const isRetainer = billingType === 'retainer';
-  const calculatedAmount = isRetainer ? Number(manualAmount) : Number(quantity) * Number(rate);
+  const isRetainer = billingType === 'retainer' || billingType === 'hybrid_retainer';
+  const isPerformance = billingType === 'hybrid_performance';
+  const calculatedAmount = isRetainer
+    ? Number(manualAmount)
+    : isPerformance
+      ? Number(quantity) * Number(rate)
+      : Number(quantity) * Number(rate);
 
   const handleSave = async () => {
     setSaving(true);
@@ -27,6 +32,7 @@ export default function EditInvoiceModal({ record, clientName, open, onOpenChang
       rate: Number(rate),
       calculated_amount: isRetainer ? Number(manualAmount) : Number(quantity) * Number(rate),
       manual_amount: isRetainer ? Number(manualAmount) : undefined,
+      calculated_amount: isRetainer ? Number(manualAmount) : Number(quantity) * Number(rate),
       notes,
       status,
     };
@@ -66,6 +72,8 @@ export default function EditInvoiceModal({ record, clientName, open, onOpenChang
               <option value="pay_per_show">Pay Per Show</option>
               <option value="pay_per_set">Pay Per Set</option>
               <option value="retainer">Retainer</option>
+              <option value="hybrid_retainer">Hybrid — Base Retainer</option>
+              <option value="hybrid_performance">Hybrid — Performance</option>
             </select>
           </div>
 
@@ -84,7 +92,9 @@ export default function EditInvoiceModal({ record, clientName, open, onOpenChang
 
           {isRetainer && (
             <div>
-              <label className="text-xs font-medium text-gray-700">Retainer Amount ($)</label>
+              <label className="text-xs font-medium text-gray-700">
+                {billingType === 'hybrid_retainer' ? 'Base Retainer Amount ($)' : 'Retainer Amount ($)'}
+              </label>
               <input type="number" value={manualAmount} onChange={e => setManualAmount(e.target.value)} className="w-full mt-1 px-3 py-2 text-sm border border-gray-300 rounded-md" />
             </div>
           )}
