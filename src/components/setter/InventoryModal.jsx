@@ -181,7 +181,7 @@ function EligibilityBanner({ eligibility }) {
       transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
       className="px-5 py-2.5 bg-red-600/20 border-b border-red-600/30"
     >
-      <span className="text-sm text-red-300 font-medium">✗ Not eligible — STL {avgSTL} min avg (need under {threshold} min)</span>
+      <span className="text-sm text-red-300 font-medium">{`✗ Not eligible — STL ${avgSTL} min avg (need under ${threshold} min)`}</span>
     </motion.div>
   );
 }
@@ -192,7 +192,7 @@ function LifetimeStatsRow({ stats, paidDaysOffBank }) {
   return (
     <div>
       <h3 className="text-xs text-slate-500 uppercase tracking-wider mb-2">Lifetime Stats</h3>
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+      <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
         <StatCard label="Total Opened" value={totalOpened} />
         <StatCard label="Rarest Win" value={
           rarestWin ? <Badge className={rarityBadgeClass[rarestWin]}>{rarestWin}</Badge> : '—'
