@@ -8,6 +8,7 @@ import DateRangePicker from '../components/admin/DateRangePicker';
 import ReportKPICards from '../components/report/ReportKPICards';
 import ReportCalculations from '../components/report/ReportCalculations';
 import ReportCharts from '../components/report/ReportCharts';
+import ReportFunnel from '../components/report/ReportFunnel';
 import ClientSidebar from '../components/client/ClientSidebar';
 
 export default function ClientReport() {
@@ -59,32 +60,35 @@ export default function ClientReport() {
   const bookedLeads = reportData?.bookedLeads || [];
   const appointmentLeads = reportData?.appointmentLeads || [];
   const soldLeads = reportData?.soldLeads || [];
+  const priorSpendRecords = reportData?.priorSpendRecords || [];
+  const priorBookedLeads = reportData?.priorBookedLeads || [];
+  const priorAppointmentLeads = reportData?.priorAppointmentLeads || [];
+  const priorSoldLeads = reportData?.priorSoldLeads || [];
 
   if (!user) return null;
 
-  const totalSpend = spendRecords.reduce((sum, s) => sum + (s.amount || 0), 0);
-  const appointmentsBooked = bookedLeads.length;
-  // Showed = any lead with appointment_date in range whose disposition progressed to showed (including sold/lost)
-  const showedAppointments = appointmentLeads.filter(l => l.disposition === 'showed' || l.disposition === 'rescheduled' || l.outcome === 'sold' || l.outcome === 'lost');
-  const appointmentsShowed = showedAppointments.length;
-  const cancelledCount = appointmentLeads.filter(l => l.disposition === 'cancelled').length;
-  // Jobs sold & revenue based on date_sold range
-  const actualSoldLeads = soldLeads.filter(l => l.outcome === 'sold');
-  const jobsSold = actualSoldLeads.length;
-  const totalRevenue = actualSoldLeads.reduce((sum, l) => sum + (l.sale_amount || 0), 0);
+  // Helper to compute metrics from a set of data
+  const calcMetrics = (spend, booked, appts, sold) => {
+    const totalSpend = spend.reduce((s, r) => s + (r.amount || 0), 0);
+    const appointmentsBooked = booked.length;
+    const showed = appts.filter(l => l.disposition === 'showed' || l.disposition === 'rescheduled' || l.outcome === 'sold' || l.outcome === 'lost');
+    const appointmentsShowed = showed.length;
+    const cancelledCount = appts.filter(l => l.disposition === 'cancelled').length;
+    const actualSold = sold.filter(l => l.outcome === 'sold');
+    const jobsSold = actualSold.length;
+    const totalRevenue = actualSold.reduce((s, l) => s + (l.sale_amount || 0), 0);
+    const showRate = appointmentsBooked > 0 ? ((appointmentsShowed / appointmentsBooked) * 100).toFixed(1) : '0.0';
+    const costPerAppointment = appointmentsBooked > 0 ? totalSpend / appointmentsBooked : 0;
+    const roi = totalSpend > 0 ? `${(totalRevenue / totalSpend).toFixed(1)}x` : '0.0x';
+    const cancellationRate = appts.length > 0 ? ((cancelledCount / appts.length) * 100).toFixed(1) : '0.0';
+    const winRate = appointmentsShowed > 0 ? ((jobsSold / appointmentsShowed) * 100).toFixed(1) : '0.0';
+    const avgJobSize = jobsSold > 0 ? (totalRevenue / jobsSold).toFixed(0) : '0';
+    const costOfMarketing = totalRevenue > 0 ? ((totalSpend / totalRevenue) * 100).toFixed(1) : '0.0';
+    return { totalSpend, appointmentsBooked, appointmentsShowed, jobsSold, totalRevenue, showRate, costPerAppointment, roi, cancellationRate, winRate, avgJobSize, costOfMarketing };
+  };
 
-  const cancellationRate = appointmentLeads.length > 0
-    ? ((cancelledCount / appointmentLeads.length) * 100).toFixed(1)
-    : '0.0';
-  const winRate = appointmentsShowed > 0
-    ? ((jobsSold / appointmentsShowed) * 100).toFixed(1)
-    : '0.0';
-  const avgJobSize = jobsSold > 0
-    ? (totalRevenue / jobsSold).toFixed(0)
-    : '0';
-  const costOfMarketing = totalRevenue > 0
-    ? ((totalSpend / totalRevenue) * 100).toFixed(1)
-    : '0.0';
+  const cur = calcMetrics(spendRecords, bookedLeads, appointmentLeads, soldLeads);
+  const pri = calcMetrics(priorSpendRecords, priorBookedLeads, priorAppointmentLeads, priorSoldLeads);
 
   return (
     <div className="min-h-screen bg-[#0B0F1A] flex">
@@ -105,20 +109,41 @@ export default function ClientReport() {
         </div>
 
         <ReportKPICards
-          totalSpend={totalSpend}
-          appointmentsBooked={appointmentsBooked}
-          appointmentsShowed={appointmentsShowed}
-          jobsSold={jobsSold}
-          totalRevenue={totalRevenue}
+          totalSpend={cur.totalSpend}
+          appointmentsBooked={cur.appointmentsBooked}
+          appointmentsShowed={cur.appointmentsShowed}
+          jobsSold={cur.jobsSold}
+          totalRevenue={cur.totalRevenue}
+          showRate={cur.showRate}
+          costPerAppointment={cur.costPerAppointment}
+          roi={cur.roi}
+          priorTotalSpend={pri.totalSpend}
+          priorAppointmentsBooked={pri.appointmentsBooked}
+          priorAppointmentsShowed={pri.appointmentsShowed}
+          priorJobsSold={pri.jobsSold}
+          priorTotalRevenue={pri.totalRevenue}
+          priorShowRate={pri.showRate}
+          priorCostPerAppointment={pri.costPerAppointment}
+          priorRoi={pri.roi}
+        />
+
+        <ReportFunnel
+          appointmentsBooked={cur.appointmentsBooked}
+          appointmentsShowed={cur.appointmentsShowed}
+          jobsSold={cur.jobsSold}
         />
 
         <ReportCalculations
-          cancellationRate={cancellationRate}
-          winRate={winRate}
-          avgJobSize={avgJobSize}
-          costOfMarketing={costOfMarketing}
-          totalSpend={totalSpend}
-          totalRevenue={totalRevenue}
+          cancellationRate={cur.cancellationRate}
+          winRate={cur.winRate}
+          avgJobSize={cur.avgJobSize}
+          costOfMarketing={cur.costOfMarketing}
+          totalSpend={cur.totalSpend}
+          totalRevenue={cur.totalRevenue}
+          priorCancellationRate={pri.cancellationRate}
+          priorWinRate={pri.winRate}
+          priorAvgJobSize={pri.avgJobSize}
+          priorCostOfMarketing={pri.costOfMarketing}
         />
 
         <ReportCharts
