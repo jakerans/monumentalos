@@ -11,13 +11,15 @@ import LeadFieldOptionsTab from '../components/admin/LeadFieldOptionsTab';
 import LeadFieldAITab from '../components/admin/LeadFieldAITab';
 import AICoachSettingsTab from '../components/admin/AICoachSettingsTab';
 import AIExpenseSettingsTab from '../components/admin/AIExpenseSettingsTab';
-import { Settings, List, Sparkles, MessageSquare, Receipt } from 'lucide-react';
+import BankAccountsTab from '../components/admin/BankAccountsTab';
+import { Settings, List, Sparkles, MessageSquare, Receipt, Landmark } from 'lucide-react';
 
 const TABS = [
   { id: 'lead_options', label: 'Lead Field Options', icon: List },
   { id: 'ai_leads', label: 'AI Lead Classify', icon: Sparkles },
   { id: 'ai_coach', label: 'AI Setter Coach', icon: MessageSquare },
   { id: 'ai_expense', label: 'AI Expenses', icon: Receipt },
+  { id: 'bank_accounts', label: 'Bank Accounts', icon: Landmark },
 ];
 
 export default function LeadFieldSettings() {
@@ -106,6 +108,9 @@ export default function LeadFieldSettings() {
           )}
           {tab === 'ai_expense' && (
             <AIExpenseSettingsTab />
+          )}
+          {tab === 'bank_accounts' && (
+            <BankAccountsTab />
           )}
         </main>
       </div>
