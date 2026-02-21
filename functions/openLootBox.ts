@@ -30,8 +30,7 @@ Deno.serve(async (req) => {
     const sr = base44.asServiceRole.entities;
 
     // Fetch the LootBox
-    const boxes = await sr.LootBox.filter({ id: loot_box_id }, '-created_date', 1);
-    const box = boxes.length > 0 ? boxes[0] : null;
+    const box = await sr.LootBox.get(loot_box_id);
     if (!box) {
       return Response.json({ error: 'not_found' }, { status: 404 });
     }
