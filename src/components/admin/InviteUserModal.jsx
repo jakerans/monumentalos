@@ -9,6 +9,7 @@ const ROLES = [
   { value: 'marketing_manager', label: 'Marketing Manager' },
   { value: 'setter', label: 'Setter' },
   { value: 'onboard_admin', label: 'Onboard Admin' },
+  { value: 'finance_admin', label: 'Finance Admin' },
   { value: 'client', label: 'Client' },
 ];
 

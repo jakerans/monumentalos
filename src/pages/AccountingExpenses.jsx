@@ -29,7 +29,8 @@ export default function AccountingExpenses() {
       try {
         const currentUser = await base44.auth.me();
         setUser(currentUser);
-        if (currentUser.app_role !== 'admin') {
+        const allowed = ['admin', 'finance_admin'];
+        if (!allowed.includes(currentUser.app_role)) {
           if (currentUser.app_role === 'marketing_manager') navigate(createPageUrl('MMDashboard'));
           else navigate(createPageUrl('SetterDashboard'));
         }
@@ -87,9 +88,11 @@ export default function AccountingExpenses() {
             <button onClick={handleSyncExpenses} disabled={syncing} className="px-3 py-1.5 text-xs font-medium bg-slate-700 text-white rounded-md hover:bg-slate-600 disabled:opacity-50 flex items-center gap-1">
               <RefreshCw className={`w-3.5 h-3.5 ${syncing ? 'animate-spin' : ''}`} /> {syncing ? 'Syncing...' : 'Sync Sheet'}
             </button>
-            <button onClick={() => setPayrollOpen(true)} className="px-3 py-1.5 text-xs font-medium bg-purple-600 text-white rounded-md hover:bg-purple-700 flex items-center gap-1">
-              <Banknote className="w-3.5 h-3.5" /> Run Payroll
-            </button>
+            {user?.app_role === 'admin' && (
+              <button onClick={() => setPayrollOpen(true)} className="px-3 py-1.5 text-xs font-medium bg-purple-600 text-white rounded-md hover:bg-purple-700 flex items-center gap-1">
+                <Banknote className="w-3.5 h-3.5" /> Run Payroll
+              </button>
+            )}
           </div>
 
           <ExpenseManager startDate={startDate} endDate={endDate} onAddExpense={() => setExpenseOpen(true)} />

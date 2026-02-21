@@ -39,13 +39,31 @@ const navItems = [
   },
 ];
 
+const financeNavItems = [
+  { key: 'FinanceAdminDashboard', label: 'Dashboard', icon: LayoutDashboard },
+  { key: 'MonthlyBilling', label: 'Billing', icon: Receipt },
+  {
+    key: 'AccountingPL', label: 'Accounting', icon: Calculator,
+    children: [
+      { key: 'AccountingPL', label: 'P&L', icon: BarChart3 },
+      { key: 'AccountingExpenses', label: 'Expenses', icon: Wallet },
+      { key: 'AccountingCashFlow', label: 'Cash Flow', icon: TrendingUp },
+      { key: 'AccountingClients', label: 'Clients', icon: Users },
+      { key: 'ClientProfitability', label: 'Profitability', icon: TrendingUp },
+    ],
+  },
+  { key: 'EmployeeManagement', label: 'Payroll', icon: UserCog },
+];
+
 export default function AdminSidebar({ user, currentPage, clients = [] }) {
   const { effectsOn, toggle: toggleEffects } = useEffectsToggle();
   const navigate = useNavigate();
   const [collapsed, setCollapsed] = useState(false);
+  const activeNavItems = user?.app_role === 'finance_admin' ? financeNavItems : navItems;
+
   const [expandedGroup, setExpandedGroup] = useState(() => {
     // Auto-expand if current page is a child
-    for (const item of navItems) {
+    for (const item of activeNavItems) {
       if (item.children?.some(c => c.key === currentPage)) return item.key;
     }
     return null;
@@ -81,7 +99,7 @@ export default function AdminSidebar({ user, currentPage, clients = [] }) {
 
       {/* Nav Items */}
       <nav className="flex-1 py-3 px-2 space-y-0.5 overflow-y-auto scrollbar-hide">
-        {navItems.map((item, i) => {
+        {activeNavItems.map((item, i) => {
           const Icon = item.icon;
           const hasChildren = item.children && item.children.length > 0;
           const isGroupActive = hasChildren && item.children.some(c => c.key === currentPage);

@@ -39,8 +39,10 @@ export default function EmployeeManagement() {
       try {
         const currentUser = await base44.auth.me();
         setUser(currentUser);
-        if (currentUser.app_role !== 'admin') {
-          navigate(createPageUrl('AccountPending'));
+        const allowed = ['admin', 'finance_admin'];
+        if (!allowed.includes(currentUser.app_role)) {
+          if (currentUser.app_role === 'marketing_manager') navigate(createPageUrl('MMDashboard'));
+          else navigate(createPageUrl('SetterDashboard'));
         }
       } catch {
         base44.auth.redirectToLogin();
