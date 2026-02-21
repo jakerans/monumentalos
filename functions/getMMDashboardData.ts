@@ -32,6 +32,10 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
+    if (user.app_role !== 'marketing_manager' && user.app_role !== 'admin') {
+      return Response.json({ error: 'Forbidden' }, { status: 403 });
+    }
+
     const body = await req.json().catch(() => ({}));
     const { dateStart, dateEnd } = body;
 
