@@ -138,6 +138,7 @@ export default function SetterBonusSummaryTab({ defaultPeriod }) {
 
               {setter.loot_items.length > 0 && (
                 <button
+                  data-tour="approve-for-payroll-btn"
                   onClick={() => handleMarkLootPaid(setter)}
                   className="px-3 py-1.5 text-xs font-medium rounded-lg border border-green-500 text-green-400 hover:bg-green-500/10 transition-colors"
                 >

@@ -19,6 +19,7 @@ import PageErrorBoundary from '../components/shared/PageErrorBoundary';
 import PageLoader from '../components/shared/PageLoader';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import SetterBonusSummaryTab from '../components/loot/SetterBonusSummaryTab';
+import PayrollTourGuide from '../components/admin/PayrollTourGuide';
 
 export default function EmployeeManagement() {
   const navigate = useNavigate();
@@ -224,9 +225,15 @@ export default function EmployeeManagement() {
               </span>
             </div>
 
+            <div className="flex justify-end mb-2">
+              <PayrollTourGuide setRunPayrollModalOpen={setRunPayrollOpen} />
+            </div>
+
             {/* Step 1 — Review Setter Bonuses */}
-            <p className="text-[10px] text-slate-400 uppercase tracking-wider">Step 1 — Review Setter Bonuses</p>
-            <SetterBonusSummaryTab defaultPeriod={dayjs().subtract(1, 'month').format('YYYY-MM')} />
+            <div data-tour="setter-bonuses-section">
+              <p className="text-[10px] text-slate-400 uppercase tracking-wider">Step 1 — Review Setter Bonuses</p>
+              <SetterBonusSummaryTab defaultPeriod={dayjs().subtract(1, 'month').format('YYYY-MM')} />
+            </div>
 
             <div className="border-t border-slate-700/50" />
 
@@ -235,6 +242,7 @@ export default function EmployeeManagement() {
             <p className="text-xs text-slate-500 italic">Setter bonuses from the prior month are loaded automatically.</p>
             <div className="flex justify-end">
               <button
+                data-tour="run-payroll-btn"
                 onClick={() => setRunPayrollOpen(true)}
                 className="px-4 py-2 text-sm font-bold text-black rounded-lg hover:opacity-90 flex items-center gap-2"
                 style={{ backgroundColor: '#D6FF03' }}

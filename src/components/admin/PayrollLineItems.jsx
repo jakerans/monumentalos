@@ -239,7 +239,7 @@ function GustoSummaryBox({ grouped }) {
   if (people.length === 0) return null;
 
   return (
-    <div className="border-l-2 border-[#D6FF03] bg-slate-800/60 rounded-lg px-4 py-3 mb-4">
+    <div data-tour="gusto-summary-box" className="border-l-2 border-[#D6FF03] bg-slate-800/60 rounded-lg px-4 py-3 mb-4">
       <p className="text-xs font-bold text-white uppercase tracking-wider mb-2">Gusto Entry Summary</p>
       <div className="space-y-0.5">
         {people.map(p => (
@@ -371,8 +371,10 @@ export default function PayrollLineItems({ lineItems, setLineItems }) {
       <GustoSummaryBox grouped={grouped} />
 
       <div className="space-y-2 max-h-[400px] overflow-y-auto">
-        {grouped.map(g => (
-          <PersonCard key={g.name} name={g.name} items={g.items} onUpdate={handleUpdate} onDelete={handleDelete} />
+        {grouped.map((g, idx) => (
+          <div key={g.name} {...(idx === 0 ? { 'data-tour': 'person-card' } : {})}>
+            <PersonCard name={g.name} items={g.items} onUpdate={handleUpdate} onDelete={handleDelete} />
+          </div>
         ))}
 
         {/* Ungrouped / custom items */}

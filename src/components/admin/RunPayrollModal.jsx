@@ -114,6 +114,7 @@ export default function RunPayrollModal({ open, onOpenChange, onComplete }) {
                 <div className="relative">
                   <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
                   <input
+                    data-tour="payroll-date-input"
                     type="date"
                     value={payrollDate}
                     onChange={(e) => setPayrollDate(e.target.value)}
@@ -122,7 +123,7 @@ export default function RunPayrollModal({ open, onOpenChange, onComplete }) {
                 </div>
               </div>
 
-              <div className="space-y-2">
+              <div className="space-y-2" data-tour="check-number-toggle">
                 <label className="text-xs font-medium text-slate-400 uppercase mb-1.5 block">Which payroll run is this?</label>
                 <div className="grid grid-cols-2 gap-2">
                   <button
@@ -254,6 +255,7 @@ export default function RunPayrollModal({ open, onOpenChange, onComplete }) {
             <>
               <button onClick={() => handleClose(false)} className="px-4 py-2 text-sm border border-slate-700 text-slate-300 rounded-lg hover:bg-slate-800">Cancel</button>
               <button
+                data-tour="generate-preview-btn"
                 onClick={handleGeneratePreview}
                 disabled={loading}
                 className="px-4 py-2 text-sm font-bold text-black rounded-lg hover:opacity-90 disabled:opacity-50 flex items-center gap-2"
@@ -273,6 +275,7 @@ export default function RunPayrollModal({ open, onOpenChange, onComplete }) {
               </div>
               <button onClick={() => setStep(STEPS.CONFIG)} className="px-4 py-2 text-sm border border-slate-700 text-slate-300 rounded-lg hover:bg-slate-800">Back</button>
               <button
+                data-tour="confirm-run-btn"
                 onClick={handleConfirmRun}
                 disabled={loading}
                 className="px-4 py-2 text-sm font-bold text-black rounded-lg hover:opacity-90 disabled:opacity-50 flex items-center gap-2"
