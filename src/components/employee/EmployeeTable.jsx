@@ -10,7 +10,7 @@ const DISC_COLORS = {
 };
 
 const ROLE_LABELS = {
-  admin: 'Admin', marketing_manager: 'MM', setter: 'Setter',
+  admin: 'Admin', finance_admin: 'Finance', marketing_manager: 'MM', setter: 'Setter',
   onboard_admin: 'Onboard', client: 'Client',
 };
 

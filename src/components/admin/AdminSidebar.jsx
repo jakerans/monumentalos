@@ -197,6 +197,7 @@ export default function AdminSidebar({ user, currentPage, clients = [] }) {
               if (val === 'mm') navigate(createPageUrl('MMDashboard'));
               else if (val === 'onboard') navigate(createPageUrl('OnboardDashboard'));
               else if (val === 'setter') navigate(createPageUrl('SetterDashboard'));
+              else if (val === 'finance') navigate(createPageUrl('FinanceAdminDashboard'));
               else if (val.startsWith('client-')) {
                 localStorage.setItem('admin_view_client_id', val.replace('client-', ''));
                 navigate(createPageUrl('ClientPortal'));
@@ -208,6 +209,7 @@ export default function AdminSidebar({ user, currentPage, clients = [] }) {
             <option value="mm">Marketing Manager</option>
             <option value="onboard">Onboard Admin</option>
             <option value="setter">Setter</option>
+            <option value="finance">Finance Admin</option>
             {clients.length > 0 && (
               <optgroup label="Client Portal">
                 {clients.map(c => (

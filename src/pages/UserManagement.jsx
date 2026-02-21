@@ -93,6 +93,7 @@ export default function UserManagement() {
           </button>
           {[
             { value: 'admin', label: 'Admin' },
+            { value: 'finance_admin', label: 'Finance Admin' },
             { value: 'marketing_manager', label: 'Marketing Manager' },
             { value: 'setter', label: 'Setter' },
             { value: 'onboard_admin', label: 'Onboard Admin' },

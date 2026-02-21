@@ -46,6 +46,7 @@ export default function AccountPending() {
   const redirectByRole = (role) => {
     const routes = {
       admin: 'AdminDashboard',
+      finance_admin: 'FinanceAdminDashboard',
       marketing_manager: 'MMDashboard',
       setter: 'SetterDashboard',
       onboard_admin: 'OnboardDashboard',

@@ -3,6 +3,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 
 const ROLES = [
   { value: 'admin', label: 'Admin' },
+  { value: 'finance_admin', label: 'Finance Admin' },
   { value: 'marketing_manager', label: 'Marketing Manager' },
   { value: 'setter', label: 'Setter' },
   { value: 'onboard_admin', label: 'Onboard Admin' },

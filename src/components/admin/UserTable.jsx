@@ -6,6 +6,7 @@ import FlipMove from 'react-flip-move';
 
 const ROLE_LABELS = {
   admin: { label: 'Admin', bg: 'bg-purple-100 text-purple-700' },
+  finance_admin: { label: 'Finance Admin', bg: 'bg-cyan-100 text-cyan-700' },
   marketing_manager: { label: 'Marketing Manager', bg: 'bg-blue-100 text-blue-700' },
   setter: { label: 'Setter', bg: 'bg-amber-100 text-amber-700' },
   onboard_admin: { label: 'Onboard Admin', bg: 'bg-teal-100 text-teal-700' },
@@ -15,6 +16,7 @@ const ROLE_LABELS = {
 
 const ROLE_OPTIONS = [
   { value: 'admin', label: 'Admin' },
+  { value: 'finance_admin', label: 'Finance Admin' },
   { value: 'marketing_manager', label: 'Marketing Manager' },
   { value: 'setter', label: 'Setter' },
   { value: 'onboard_admin', label: 'Onboard Admin' },
@@ -154,7 +156,7 @@ const UserRow = forwardRef(({ user, editingId, editRole, setEditRole, saving, st
       {editingId === user.id ? (
         <div className="flex items-center gap-1">
           <select value={editRole} onChange={(e) => setEditRole(e.target.value)} className="px-2 py-1 text-xs border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
-            {[{ value: 'admin', label: 'Admin' }, { value: 'marketing_manager', label: 'Marketing Manager' }, { value: 'setter', label: 'Setter' }, { value: 'onboard_admin', label: 'Onboard Admin' }, { value: 'client', label: 'Client' }, { value: 'user', label: 'User' }].map(r => (
+            {[{ value: 'admin', label: 'Admin' }, { value: 'finance_admin', label: 'Finance Admin' }, { value: 'marketing_manager', label: 'Marketing Manager' }, { value: 'setter', label: 'Setter' }, { value: 'onboard_admin', label: 'Onboard Admin' }, { value: 'client', label: 'Client' }, { value: 'user', label: 'User' }].map(r => (
               <option key={r.value} value={r.value}>{r.label}</option>
             ))}
           </select>

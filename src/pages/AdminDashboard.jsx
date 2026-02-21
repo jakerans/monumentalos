@@ -41,6 +41,7 @@ export default function AdminDashboard() {
         if (appRole === 'onboard_admin') { navigate(createPageUrl('OnboardDashboard')); return; }
         if (appRole === 'setter') { navigate(createPageUrl('SetterDashboard')); return; }
         if (appRole === 'client') { navigate(createPageUrl('ClientPortal')); return; }
+        if (appRole === 'finance_admin') { navigate(createPageUrl('FinanceAdminDashboard')); return; }
         if (appRole !== 'admin') { navigate(createPageUrl('AccountPending')); }
       } catch { base44.auth.redirectToLogin(); }
     };

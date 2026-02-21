@@ -7,7 +7,7 @@ Deno.serve(async (req) => {
     if (!user) {
       return Response.json({ error: 'Unauthorized' }, { status: 401 });
     }
-    if (user.app_role !== 'admin' && user.role !== 'admin') {
+    if (user.app_role !== 'admin' && user.role !== 'admin' && user.app_role !== 'finance_admin') {
       return Response.json({ error: 'Forbidden' }, { status: 403 });
     }
 

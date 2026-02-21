@@ -6,7 +6,7 @@ import AddPerformancePayModal from './AddPerformancePayModal';
 import { getPayDisplay, getCyclesPerYear } from './payUtils';
 
 const DISC_COLORS = { green: 'bg-green-500/20 border-green-500 text-green-400', yellow: 'bg-yellow-500/20 border-yellow-500 text-yellow-400', red: 'bg-red-500/20 border-red-500 text-red-400' };
-const ROLE_LABELS = { admin: 'Admin', marketing_manager: 'Marketing Manager', setter: 'Setter', onboard_admin: 'Onboard Admin', client: 'Client' };
+const ROLE_LABELS = { admin: 'Admin', finance_admin: 'Finance Admin', marketing_manager: 'Marketing Manager', setter: 'Setter', onboard_admin: 'Onboard Admin', client: 'Client' };
 
 export default function EmployeeDetailPanel({ employee, payrollSettings, open, onOpenChange, onUpdated }) {
   const [editing, setEditing] = useState(false);
@@ -101,7 +101,7 @@ export default function EmployeeDetailPanel({ employee, payrollSettings, open, o
                   <div><label className={labelCls}>Full Name</label><input className={inputCls} value={form.full_name || ''} onChange={e => setForm({ ...form, full_name: e.target.value })} /></div>
                   <div><label className={labelCls}>Email</label><input className={inputCls} value={form.email || ''} onChange={e => setForm({ ...form, email: e.target.value })} /></div>
                   <div><label className={labelCls}>Phone</label><input className={inputCls} value={form.phone || ''} onChange={e => setForm({ ...form, phone: e.target.value })} /></div>
-                  <div><label className={labelCls}>Role</label><select className={inputCls} value={form.app_role || ''} onChange={e => setForm({ ...form, app_role: e.target.value })}><option value="admin">Admin</option><option value="marketing_manager">Marketing Manager</option><option value="setter">Setter</option><option value="onboard_admin">Onboard Admin</option><option value="client">Client</option></select></div>
+                  <div><label className={labelCls}>Role</label><select className={inputCls} value={form.app_role || ''} onChange={e => setForm({ ...form, app_role: e.target.value })}><option value="admin">Admin</option><option value="finance_admin">Finance Admin</option><option value="marketing_manager">Marketing Manager</option><option value="setter">Setter</option><option value="onboard_admin">Onboard Admin</option><option value="client">Client</option></select></div>
                   <div><label className={labelCls}>Classification</label><select className={inputCls} value={form.classification} onChange={e => setForm({ ...form, classification: e.target.value })}><option value="salary">Salary</option><option value="hourly">Hourly</option><option value="contractor">Contractor</option></select></div>
                   <div><label className={labelCls}>Cost Type</label><select className={inputCls} value={form.cost_type} onChange={e => setForm({ ...form, cost_type: e.target.value })}><option value="overhead">Overhead</option><option value="cogs">COGS</option></select></div>
                 </div>

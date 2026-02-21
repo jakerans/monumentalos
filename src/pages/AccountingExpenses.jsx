@@ -91,7 +91,7 @@ export default function AccountingExpenses() {
             <button onClick={handleSyncExpenses} disabled={syncing} className="px-3 py-1.5 text-xs font-medium bg-slate-700 text-white rounded-md hover:bg-slate-600 disabled:opacity-50 flex items-center gap-1">
               <RefreshCw className={`w-3.5 h-3.5 ${syncing ? 'animate-spin' : ''}`} /> {syncing ? 'Syncing...' : 'Sync Sheet'}
             </button>
-            {user?.app_role === 'admin' && (
+            {(user?.app_role === 'admin' || user?.app_role === 'finance_admin') && (
               <button onClick={() => setPayrollOpen(true)} className="px-3 py-1.5 text-xs font-medium bg-purple-600 text-white rounded-md hover:bg-purple-700 flex items-center gap-1">
                 <Banknote className="w-3.5 h-3.5" /> Run Payroll
               </button>
