@@ -496,10 +496,11 @@ function SortableHeader({ field, label, current, dir, onClick, align = 'left' })
   );
 }
 
-function ExpenseRow({ expense: e, clients, onUpdate, onDelete, onApproveAI, selected, onToggleSelect }) {
+function ExpenseRow({ expense: e, clients, bankAccounts, bankAccountMap, onUpdate, onDelete, onApproveAI, selected, onToggleSelect }) {
   const categoryOptions = Object.entries(CATEGORY_LABELS).map(([k, v]) => ({ value: k, label: v }));
   const typeOptions = [{ value: 'uncategorized', label: 'Uncategorized' }, { value: 'cogs', label: 'COGS' }, { value: 'overhead', label: 'Overhead' }, { value: 'distribution', label: 'Distribution' }];
   const clientOptions = [{ value: '', label: 'None' }, ...clients.map(c => ({ value: c.id, label: c.name }))];
+  const bankAccountOptions = [{ value: '', label: '— None —' }, ...(bankAccounts || []).map(a => ({ value: a.id, label: a.name }))];
 
   const hasPendingAI = !e.ai_approved && e.suggested_category;
 
@@ -545,6 +546,9 @@ function ExpenseRow({ expense: e, clients, onUpdate, onDelete, onApproveAI, sele
       </td>
       <td className="px-3 py-2 text-slate-400">
         <InlineEditCell value={e.client_id || ''} displayValue={<span className="truncate block">{e.client_name || '—'}</span>} field="client_id" expenseId={e.id} onUpdate={onUpdate} options={clientOptions} />
+      </td>
+      <td className="px-3 py-2 text-slate-400">
+        <InlineEditCell value={e.bank_account_id || ''} displayValue={<span className="truncate block">{bankAccountMap[e.bank_account_id] || '—'}</span>} field="bank_account_id" expenseId={e.id} onUpdate={onUpdate} options={bankAccountOptions} />
       </td>
       <td className="px-3 py-2 text-right font-bold text-red-400">
         <InlineEditCell value={e.amount || 0} displayValue={`$${(e.amount || 0).toLocaleString()}`} field="amount" expenseId={e.id} onUpdate={onUpdate} type="number" className="text-right" />
