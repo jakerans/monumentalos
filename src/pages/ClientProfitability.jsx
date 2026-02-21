@@ -12,18 +12,7 @@ import ProfitabilityTable from '../components/admin/ProfitabilityTable';
 import PageErrorBoundary from '../components/shared/PageErrorBoundary';
 import RevenueDashboardSkeleton from '../components/admin/RevenueDashboardSkeleton';
 
-const PRESETS = [
-  { label: 'MTD', getRange: () => [dayjs().startOf('month'), dayjs()] },
-  { label: 'Last Month', getRange: () => [dayjs().subtract(1, 'month').startOf('month'), dayjs().subtract(1, 'month').endOf('month')] },
-  { label: 'Last Quarter', getRange: () => {
-    const q = Math.floor((dayjs().month() - 1) / 3);
-    const qStart = q < 0
-      ? dayjs().subtract(1, 'year').month(9).startOf('month')
-      : dayjs().month(q * 3).startOf('month');
-    return [qStart.subtract(3, 'month').startOf('month'), qStart.subtract(1, 'day')];
-  }},
-  { label: 'YTD', getRange: () => [dayjs().startOf('year'), dayjs()] },
-];
+
 
 export default function ClientProfitability() {
   const navigate = useNavigate();
@@ -76,18 +65,7 @@ export default function ClientProfitability() {
               <h1 className="text-2xl font-bold text-white">Client Profitability</h1>
               <p className="text-sm text-slate-400">Net profit and margin per client</p>
             </div>
-            <div className="flex items-center gap-2 flex-wrap">
-              {PRESETS.map(p => (
-                <button
-                  key={p.label}
-                  onClick={() => applyPreset(p)}
-                  className="px-2.5 py-1.5 text-[11px] font-semibold rounded-md border border-slate-700/50 text-slate-300 hover:bg-[#D6FF03]/10 hover:text-[#D6FF03] hover:border-[#D6FF03]/30 transition-colors"
-                >
-                  {p.label}
-                </button>
-              ))}
-              <DateRangePicker startDate={startDate} endDate={endDate} onStartChange={setStartDate} onEndChange={setEndDate} />
-            </div>
+            <DateRangePicker startDate={startDate} endDate={endDate} onStartChange={setStartDate} onEndChange={setEndDate} />
           </div>
 
           {/* KPIs */}
