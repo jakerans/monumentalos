@@ -174,9 +174,35 @@ Deno.serve(async (req) => {
       return { title: sp.title, progress: sp._progress, goal: sp.goal_value, qualifier: sp.qualifier, met };
     });
 
-    // --- Leaderboard from SetterProfile ---
-    const leaderboard = [...profiles].sort((a, b) => (b.mtd_booked || 0) - (a.mtd_booked || 0));
-    const myIndex = leaderboard.findIndex(s => s.user_id === userId);
+    // --- Leaderboard from live leads data ---
+    // Get all unique setter user_ids that have booked at least one MTD lead
+    const allSetterIds = new Set([
+      ...allLeads
+        .filter(l => l.booked_by_setter_id && l.date_appointment_set && new Date(l.date_appointment_set) >= mtdStart)
+        .map(l => l.booked_by_setter_id),
+      // Also include the current user even if they have 0 bookings this month
+      userId,
+    ]);
+
+    // Build a profile map for display fields
+    const profileMap = {};
+    profiles.forEach(p => { profileMap[p.user_id] = p; });
+
+    // Calculate live stats per setter
+    const liveLeaderboard = [...allSetterIds].map(sid => {
+      const profile = profileMap[sid] || {};
+      const liveMtdBooked = allLeads.filter(l => l.booked_by_setter_id === sid && l.date_appointment_set && new Date(l.date_appointment_set) >= mtdStart).length;
+      const stlLeads = allLeads.filter(l => l.setter_id === sid && l.speed_to_lead_minutes != null && l.created_date && new Date(l.created_date) >= stl7dStart);
+      const liveAvgSTL = stlLeads.length > 0 ? Math.round(stlLeads.reduce((s, l) => s + l.speed_to_lead_minutes, 0) / stlLeads.length * 10) / 10 : null;
+      return {
+        ...profile,
+        user_id: sid,
+        mtd_booked: liveMtdBooked,
+        mtd_avg_stl: liveAvgSTL,
+      };
+    }).sort((a, b) => (b.mtd_booked || 0) - (a.mtd_booked || 0));
+
+    const myIndex = liveLeaderboard.findIndex(s => s.user_id === userId);
     const myRank = myIndex !== -1 ? myIndex + 1 : null;
 
     // Client name map (for lead cards)
