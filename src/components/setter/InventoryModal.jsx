@@ -49,6 +49,8 @@ export default function InventoryModal({
   });
 
   const liveBoxes = inventoryData?.unopenedBoxes ?? unopenedBoxes;
+  const liveLifetimeStats = inventoryData?.lifetimeStats || lifetimeStats;
+  const liveRecentWins = inventoryData?.recentWins || recentWins;
   const paidDaysOffBank = inventoryData?.paidDaysOffBank || null;
 
   if (!open) return null;
@@ -131,7 +133,7 @@ export default function InventoryModal({
             <EligibilityBanner eligibility={inventoryData?.eligibility || eligibility} />
 
             <div className="px-5 py-4 space-y-6">
-              <LifetimeStatsRow stats={lifetimeStats} paidDaysOffBank={paidDaysOffBank} />
+              <LifetimeStatsRow stats={liveLifetimeStats} paidDaysOffBank={paidDaysOffBank} />
               <InventoryGrid
                 boxes={liveBoxes}
                 count={count}
@@ -141,7 +143,7 @@ export default function InventoryModal({
                 onOpenAll={handleOpenAll}
                 lootSettings={lootSettings}
               />
-              <RecentWinsFeed wins={recentWins} />
+              <RecentWinsFeed wins={liveRecentWins} />
             </div>
           </motion.div>
 
