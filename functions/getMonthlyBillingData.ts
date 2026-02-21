@@ -36,8 +36,16 @@ Deno.serve(async (req) => {
       ]);
 
       const activeClients = clients.filter(c => c.status === 'active');
-      const existingClientIds = new Set(existingBilling.map(r => r.client_id));
-      const missingClients = activeClients.filter(c => !existingClientIds.has(c.id));
+      const hybridWithRecord = new Set();
+      const nonHybridWithRecord = new Set();
+      existingBilling.forEach(r => {
+        const c = clients.find(cl => cl.id === r.client_id);
+        if (c?.billing_type === 'hybrid') hybridWithRecord.add(r.client_id);
+        else nonHybridWithRecord.add(r.client_id);
+      });
+      const missingClients = activeClients.filter(c =>
+        c.billing_type === 'hybrid' ? !hybridWithRecord.has(c.id) : !nonHybridWithRecord.has(c.id)
+      );
 
       if (missingClients.length === 0) {
         return Response.json({ generated: 0 });

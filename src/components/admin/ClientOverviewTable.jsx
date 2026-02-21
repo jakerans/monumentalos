@@ -10,12 +10,14 @@ const BILLING_LABELS = {
   pay_per_show: 'Per Show',
   pay_per_set: 'Per Set',
   retainer: 'Retainer',
+  hybrid: 'Hybrid',
 };
 
 const BILLING_COLORS = {
   pay_per_show: 'bg-blue-500/20 text-blue-400',
   pay_per_set: 'bg-purple-500/20 text-purple-400',
   retainer: 'bg-amber-500/20 text-amber-400',
+  hybrid: 'bg-teal-500/20 text-teal-400',
 };
 
 function getBillingRate(client) {
