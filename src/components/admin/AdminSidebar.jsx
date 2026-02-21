@@ -201,6 +201,9 @@ export default function AdminSidebar({ user, currentPage, clients = [] }) {
               {isSectionOpen && (
                 <div className={collapsed ? '' : 'mt-1.5 space-y-0.5'}>
                   {section.items.map((item, itemIdx) => {
+                    // Skip FinanceAdminDashboard when collapsed to avoid duplicate dashboard icon
+                    if (collapsed && item.key === 'FinanceAdminDashboard') return null;
+
                     const Icon = item.icon;
                     const active = currentPage === item.key;
 
