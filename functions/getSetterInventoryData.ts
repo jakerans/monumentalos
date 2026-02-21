@@ -143,6 +143,7 @@ Deno.serve(async (req) => {
       },
       recentWins,
       consecutiveNoDrop,
+      lootSettings: settings,
     });
   } catch (error) {
     console.error('getSetterInventoryData error:', error);
