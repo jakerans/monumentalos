@@ -37,7 +37,7 @@ export default function AddExpenseModal({ open, onOpenChange, clients, onCreated
     });
     setSaving(false);
     toast({ title: 'Expense Added', description: `$${Number(amount).toLocaleString()} — ${category}`, variant: 'success' });
-    setDescription(''); setAmount(''); setVendor('');
+    setDescription(''); setAmount(''); setVendor(''); setBankAccountId('');
     onCreated();
     onOpenChange(false);
   };
@@ -92,6 +92,13 @@ export default function AddExpenseModal({ open, onOpenChange, clients, onCreated
           <div>
             <label className="text-xs font-medium text-gray-700">Vendor</label>
             <input type="text" value={vendor} onChange={e => setVendor(e.target.value)} className="w-full mt-1 px-3 py-2 text-sm border border-gray-300 rounded-md" placeholder="e.g. Meta, Gusto" />
+          </div>
+          <div>
+            <label className="text-xs font-medium text-gray-700">Bank Account</label>
+            <select value={bankAccountId} onChange={e => setBankAccountId(e.target.value)} className="w-full mt-1 px-3 py-2 text-sm border border-gray-300 rounded-md">
+              <option value="">— None —</option>
+              {bankAccounts.map(a => <option key={a.id} value={a.id}>{a.name}</option>)}
+            </select>
           </div>
 
           <label className="flex items-center gap-2 text-sm text-gray-700">
