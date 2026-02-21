@@ -45,12 +45,6 @@ export default function ClientProfitability() {
     retryDelay: (attempt) => Math.min(1000 * 2 ** attempt, 10000),
   });
 
-  const applyPreset = (preset) => {
-    const [s, e] = preset.getRange();
-    setStartDate(s.format('YYYY-MM-DD'));
-    setEndDate(e.format('YYYY-MM-DD'));
-  };
-
   if (!user) return null;
   if (isLoading) return <RevenueDashboardSkeleton />;
 
