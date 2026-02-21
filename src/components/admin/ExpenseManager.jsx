@@ -380,6 +380,7 @@ export default function ExpenseManager({ startDate, endDate, onAddExpense }) {
               <col />
               <col style={{ width: '100px' }} />
               <col style={{ width: '100px' }} />
+              <col style={{ width: '110px' }} />
               <col style={{ width: '90px' }} />
               <col style={{ width: '70px' }} />
             </colgroup>
@@ -396,15 +397,16 @@ export default function ExpenseManager({ startDate, endDate, onAddExpense }) {
                 <th className="text-left px-3 py-2 font-medium">Description</th>
                 <SortableHeader field="vendor" label="Vendor" current={sortField} dir={sortDir} onClick={handleSort} />
                 <SortableHeader field="client_id" label="Client" current={sortField} dir={sortDir} onClick={handleSort} />
+                <th className="text-left px-3 py-2 font-medium">Account</th>
                 <SortableHeader field="amount" label="Amount" current={sortField} dir={sortDir} onClick={handleSort} align="right" />
                 <th className="text-center px-3 py-2 font-medium">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-700/30">
               {expenses.length === 0 ? (
-                <tr><td colSpan={9} className="text-center py-8 text-slate-500">No expenses match your filters</td></tr>
+                <tr><td colSpan={10} className="text-center py-8 text-slate-500">No expenses match your filters</td></tr>
               ) : expenses.map(e => (
-                <ExpenseRow key={e.id} expense={e} clients={clients} onUpdate={handleInlineUpdate} onDelete={() => handleDelete(e.id)} onApproveAI={handleApproveAI} selected={selected.has(e.id)} onToggleSelect={() => toggleSelect(e.id)} />
+                <ExpenseRow key={e.id} expense={e} clients={clients} bankAccounts={bankAccounts} bankAccountMap={bankAccountMap} onUpdate={handleInlineUpdate} onDelete={() => handleDelete(e.id)} onApproveAI={handleApproveAI} selected={selected.has(e.id)} onToggleSelect={() => toggleSelect(e.id)} />
               ))}
             </tbody>
           </table>
