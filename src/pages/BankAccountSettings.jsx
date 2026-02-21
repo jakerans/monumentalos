@@ -4,6 +4,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import { Plus, Trash2, Landmark, X } from 'lucide-react';
 import AdminSidebar from '../components/admin/AdminSidebar';
+import AdminMobileNav from '../components/admin/AdminMobileNav';
 
 const TYPE_LABELS = {
   operating: 'Operating',
@@ -199,6 +200,7 @@ export default function BankAccountSettings() {
           onSave={(data) => createMutation.mutateAsync(data)}
         />
       )}
+      <AdminMobileNav currentPage="BankAccountSettings" user={user} />
     </div>
   );
 }
