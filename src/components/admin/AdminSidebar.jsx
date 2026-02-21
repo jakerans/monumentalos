@@ -154,7 +154,7 @@ export default function AdminSidebar({ user, currentPage, clients = [] }) {
               }`}
             >
               <LayoutDashboard className="w-4 h-4 shrink-0" />
-              <span>{isFinanceAdmin ? 'Finance Dashboard' : 'Dashboard'}</span>
+              <span>Dashboard</span>
               {currentPage === (isFinanceAdmin ? 'FinanceAdminDashboard' : 'AdminDashboard') && (
                 <div className="ml-auto w-1.5 h-1.5 rounded-full" style={{ backgroundColor: '#D6FF03' }} />
               )}
