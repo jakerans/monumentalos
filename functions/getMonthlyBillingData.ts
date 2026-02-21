@@ -44,6 +44,10 @@ Deno.serve(async (req) => {
         c.billing_type === 'hybrid' ? !hybridWithRecord.has(c.id) : !nonHybridWithRecord.has(c.id)
       );
 
+      if (existingBilling.length > 0) {
+        return Response.json({ error: 'Billing records already exist for this month. Delete existing records before regenerating.' }, { status: 409 });
+      }
+
       if (missingClients.length === 0) {
         return Response.json({ generated: 0 });
       }
