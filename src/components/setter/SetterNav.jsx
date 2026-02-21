@@ -3,10 +3,10 @@ import { useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import { base44 } from '@/api/base44Client';
 import { motion } from 'framer-motion';
-import { Zap, ZapOff } from 'lucide-react';
+import { Zap, ZapOff, Package } from 'lucide-react';
 import { useEffectsToggle } from '../shared/useEffectsToggle';
 
-export default function SetterNav({ user }) {
+export default function SetterNav({ user, unopenedCount = 0, onOpenInventory }) {
   const { effectsOn, toggle: toggleEffects } = useEffectsToggle();
   const navigate = useNavigate();
 
@@ -43,6 +43,20 @@ export default function SetterNav({ user }) {
                 <option value="client">Client</option>
               </select>
             )}
+            <button
+              onClick={onOpenInventory}
+              title="Inventory"
+              className="relative p-1.5 rounded-md text-slate-400 hover:text-white hover:bg-white/5 transition-colors"
+            >
+              <Package className="w-4 h-4" />
+              {unopenedCount > 0 && (
+                <span className={`absolute -top-1 -right-1 w-4 h-4 flex items-center justify-center rounded-full text-[9px] font-bold text-white ${
+                  unopenedCount >= 10 ? 'bg-red-500' : unopenedCount >= 8 ? 'bg-amber-400' : 'bg-emerald-500'
+                }`}>
+                  {unopenedCount}
+                </span>
+              )}
+            </button>
             <button
               onClick={toggleEffects}
               title={effectsOn ? 'Disable animations' : 'Enable animations'}

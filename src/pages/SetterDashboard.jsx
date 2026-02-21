@@ -18,6 +18,7 @@ import DisqualifyModal from '../components/setter/DisqualifyModal';
 import LeaderboardWidget from '../components/setter/LeaderboardWidget';
 import CelebrationOverlay from '../components/setter/CelebrationOverlay';
 import DailySpiffBanner from '../components/setter/DailySpiffBanner';
+import InventoryModal from '../components/setter/InventoryModal';
 import PageErrorBoundary from '../components/shared/PageErrorBoundary';
 import PageLoader from '../components/shared/PageLoader';
 import { motion } from 'framer-motion';
@@ -39,6 +40,7 @@ export default function SetterDashboard() {
   const [dqOpen, setDqOpen] = useState(false);
   const [showDQ, setShowDQ] = useState(false);
   const [celebration, setCelebration] = useState(null);
+  const [inventoryOpen, setInventoryOpen] = useState(false);
   const prevRankRef = useRef(null);
   const [animateRef] = useAutoAnimate({ duration: 350, easing: 'ease-out' });
 
@@ -86,6 +88,25 @@ export default function SetterDashboard() {
     retry: 2,
     retryDelay: (attempt) => Math.min(1000 * 2 ** attempt, 10000),
   });
+
+  // Inventory data
+  const { data: invData } = useQuery({
+    queryKey: ['setter-inventory', user?.id],
+    queryFn: async () => {
+      const res = await base44.functions.invoke('getSetterInventoryData', { setter_id: user.id });
+      return res.data;
+    },
+    enabled: !!user?.id,
+    staleTime: 60 * 1000,
+    retry: 2,
+  });
+
+  const unopenedBoxes = invData?.unopenedBoxes || [];
+  const inventoryCap = invData?.inventoryCap ?? 10;
+  const yellowWarning = invData?.yellowWarning ?? 8;
+  const eligibility = invData?.eligibility || {};
+  const lifetimeStats = invData?.lifetimeStats || {};
+  const recentWins = invData?.recentWins || [];
 
   const pipelineData = dashData?.pipeline || { newLeads: [], inProgressLeads: [], bookedLeads: [], dqLeads: [] };
   const preStats = dashData?.stats || {};
@@ -242,7 +263,7 @@ export default function SetterDashboard() {
   return (
     <PageErrorBoundary>
     <div className="min-h-screen bg-[#0B0F1A] flex flex-col">
-      <SetterNav user={user} />
+      <SetterNav user={user} unopenedCount={unopenedBoxes.length} onOpenInventory={() => setInventoryOpen(true)} />
 
       <main className="flex-1 max-w-7xl w-full mx-auto px-3 sm:px-6 lg:pl-24 lg:pr-8 py-4 sm:py-6">
         {/* Hero row: Welcome + AI message on left, Spiff cards on right */}
@@ -421,6 +442,18 @@ export default function SetterDashboard() {
           onDone={() => setCelebration(null)}
         />
       )}
+
+      <InventoryModal
+        open={inventoryOpen}
+        onClose={() => setInventoryOpen(false)}
+        unopenedBoxes={unopenedBoxes}
+        inventoryCap={inventoryCap}
+        yellowWarning={yellowWarning}
+        eligibility={eligibility}
+        lifetimeStats={lifetimeStats}
+        recentWins={recentWins}
+        setterId={user?.id}
+      />
     </div>
     </PageErrorBoundary>
   );

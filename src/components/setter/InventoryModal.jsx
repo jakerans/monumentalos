@@ -1,0 +1,247 @@
+import React from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { X } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { format } from 'date-fns';
+
+const rarityGlow = {
+  common: 'shadow-slate-400/50 border-slate-400/30 bg-slate-800/60',
+  rare: 'shadow-blue-400/50 border-blue-400/30 bg-blue-950/40',
+  epic: 'shadow-purple-500/50 border-purple-500/30 bg-purple-950/40',
+  legendary: 'shadow-amber-400/50 border-amber-400/30 bg-amber-950/40',
+};
+
+const rarityTextColor = {
+  common: 'text-slate-300',
+  rare: 'text-blue-400',
+  epic: 'text-purple-400',
+  legendary: 'text-amber-400',
+};
+
+const rarityBadgeClass = {
+  common: 'bg-slate-600 text-white',
+  rare: 'bg-blue-600 text-white',
+  epic: 'bg-purple-600 text-white',
+  legendary: 'bg-amber-600 text-white',
+};
+
+export default function InventoryModal({
+  open,
+  onClose,
+  unopenedBoxes = [],
+  inventoryCap = 10,
+  yellowWarning = 8,
+  eligibility = {},
+  lifetimeStats = {},
+  recentWins = [],
+}) {
+  if (!open) return null;
+
+  const count = unopenedBoxes.length;
+  const countColor = count >= inventoryCap ? 'text-red-500' : count >= yellowWarning ? 'text-amber-400' : 'text-white';
+
+  return (
+    <AnimatePresence>
+      {open && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          className="fixed inset-0 z-50 flex items-end sm:items-center justify-center"
+        >
+          {/* Backdrop */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="absolute inset-0 bg-black/80"
+            onClick={onClose}
+          />
+
+          {/* Modal */}
+          <motion.div
+            initial={{ opacity: 0, y: 60 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 60 }}
+            transition={{ type: 'spring', damping: 28, stiffness: 300 }}
+            className="relative w-full max-w-2xl max-h-[90vh] overflow-y-auto bg-slate-900 border border-slate-700/50 rounded-t-2xl sm:rounded-2xl"
+          >
+            {/* Header */}
+            <div className="sticky top-0 z-10 flex items-center justify-between px-5 py-4 bg-slate-900/95 backdrop-blur border-b border-slate-700/50">
+              <h2 className="text-lg font-bold text-white">My Inventory</h2>
+              <button onClick={onClose} className="p-1.5 rounded-md text-slate-400 hover:text-white hover:bg-white/10 transition-colors">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Eligibility Banner */}
+            <EligibilityBanner eligibility={eligibility} />
+
+            <div className="px-5 py-4 space-y-6">
+              {/* Lifetime Stats */}
+              <LifetimeStatsRow stats={lifetimeStats} />
+
+              {/* Inventory Section */}
+              <InventoryGrid
+                boxes={unopenedBoxes}
+                count={count}
+                cap={inventoryCap}
+                countColor={countColor}
+              />
+
+              {/* Recent Wins */}
+              <RecentWinsFeed wins={recentWins} />
+            </div>
+          </motion.div>
+        </motion.div>
+      )}
+    </AnimatePresence>
+  );
+}
+
+function EligibilityBanner({ eligibility }) {
+  const { eligible, avgSTL, threshold, reason } = eligibility;
+
+  if (reason === 'no_data') {
+    return (
+      <div className="px-5 py-2.5 bg-amber-600/20 border-b border-amber-600/30">
+        <span className="text-sm text-amber-300 font-medium">⚠ No recent STL data — eligible by default</span>
+      </div>
+    );
+  }
+
+  if (eligible) {
+    return (
+      <div className="px-5 py-2.5 bg-emerald-600/20 border-b border-emerald-600/30">
+        <span className="text-sm text-emerald-300 font-medium">✓ Eligible for drops — STL {avgSTL} min avg</span>
+      </div>
+    );
+  }
+
+  return (
+    <motion.div
+      animate={{ opacity: [0.85, 1, 0.85] }}
+      transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
+      className="px-5 py-2.5 bg-red-600/20 border-b border-red-600/30"
+    >
+      <span className="text-sm text-red-300 font-medium">✗ Not eligible — STL {avgSTL} min avg (need under {threshold} min)</span>
+    </motion.div>
+  );
+}
+
+function LifetimeStatsRow({ stats }) {
+  const { totalOpened = 0, rarestWin, totalCashWon = 0, biggestWin } = stats;
+
+  return (
+    <div>
+      <h3 className="text-xs text-slate-500 uppercase tracking-wider mb-2">Lifetime Stats</h3>
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <StatCard label="Total Opened" value={totalOpened} />
+        <StatCard label="Rarest Win" value={
+          rarestWin ? <Badge className={rarityBadgeClass[rarestWin]}>{rarestWin}</Badge> : '—'
+        } />
+        <StatCard label="Total Cash Won" value={`$${totalCashWon.toLocaleString()}`} />
+        <StatCard label="Biggest Win" value={biggestWin != null ? `$${biggestWin.toLocaleString()}` : '—'} />
+      </div>
+    </div>
+  );
+}
+
+function StatCard({ label, value }) {
+  return (
+    <div className="bg-slate-800/60 rounded-lg px-3 py-3 border border-slate-700/40">
+      <p className="text-[10px] text-slate-500 uppercase tracking-wider">{label}</p>
+      <div className="text-lg font-bold text-white mt-1">{value}</div>
+    </div>
+  );
+}
+
+function InventoryGrid({ boxes, count, cap, countColor }) {
+  return (
+    <div>
+      <div className="flex items-center justify-between mb-3">
+        <h3 className="text-xs text-slate-500 uppercase tracking-wider">
+          Unopened Boxes (<span className={countColor}>{count}</span>/{cap})
+        </h3>
+        {count >= 2 && (
+          <button
+            onClick={null}
+            className="px-3 py-1.5 text-xs font-bold rounded-lg text-black hover:opacity-90"
+            style={{ backgroundColor: '#D6FF03' }}
+          >
+            Open All
+          </button>
+        )}
+      </div>
+
+      {count === 0 ? (
+        <div className="text-center py-8 text-sm text-slate-500">
+          No unopened boxes — keep booking to earn drops!
+        </div>
+      ) : (
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+          {boxes.map(box => (
+            <BoxCard key={box.id} box={box} />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function BoxCard({ box }) {
+  const isLegendary = box.rarity === 'legendary';
+
+  return (
+    <motion.div
+      animate={isLegendary ? { boxShadow: ['0 0 12px rgba(251,191,36,0.3)', '0 0 24px rgba(251,191,36,0.5)', '0 0 12px rgba(251,191,36,0.3)'] } : {}}
+      transition={isLegendary ? { duration: 2, repeat: Infinity, ease: 'easeInOut' } : {}}
+      className={`rounded-xl border shadow-lg p-4 flex flex-col items-center gap-3 ${rarityGlow[box.rarity]}`}
+    >
+      <span className={`text-sm font-bold capitalize ${rarityTextColor[box.rarity]}`}>
+        {box.rarity}
+      </span>
+      <button
+        onClick={null}
+        className="w-full py-1.5 text-xs font-bold rounded-lg bg-white/10 text-white hover:bg-white/20 transition-colors"
+      >
+        Open
+      </button>
+    </motion.div>
+  );
+}
+
+function RecentWinsFeed({ wins }) {
+  return (
+    <div>
+      <h3 className="text-xs text-slate-500 uppercase tracking-wider mb-2">Recent Wins</h3>
+      {wins.length === 0 ? (
+        <div className="text-center py-6 text-sm text-slate-500">
+          No wins yet — open a box to get started!
+        </div>
+      ) : (
+        <div className="space-y-2 max-h-60 overflow-y-auto">
+          {wins.map(win => (
+            <div key={win.id} className="flex items-center justify-between px-3 py-2.5 bg-slate-800/50 rounded-lg border border-slate-700/30">
+              <div className="flex items-center gap-2 min-w-0">
+                <span className="text-sm text-white font-medium truncate">{win.prize_name}</span>
+                <Badge className={`text-[10px] ${rarityBadgeClass[win.rarity]}`}>{win.rarity}</Badge>
+                <Badge variant="outline" className="text-[10px] text-slate-400 border-slate-600">
+                  {win.prize_type === 'cash' ? 'Cash' : 'Physical'}
+                </Badge>
+              </div>
+              <div className="flex items-center gap-3 shrink-0 ml-2">
+                {win.prize_type === 'cash' && (
+                  <span className="text-sm font-bold text-emerald-400">${win.cash_value}</span>
+                )}
+                <span className="text-[10px] text-slate-500">
+                  {win.won_date ? format(new Date(win.won_date), 'MMM d yyyy') : '—'}
+                </span>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
