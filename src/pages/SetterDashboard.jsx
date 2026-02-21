@@ -438,7 +438,7 @@ export default function SetterDashboard() {
         leaderboardProfiles={leaderboardData.profiles}
       />
 
-      {celebration && (
+      {celebration && !isOpeningBox && (
         <CelebrationOverlay
           type={celebration.type}
           onDone={() => setCelebration(null)}
@@ -447,7 +447,7 @@ export default function SetterDashboard() {
 
       <InventoryModal
         open={inventoryOpen}
-        onClose={() => setInventoryOpen(false)}
+        onClose={() => { setInventoryOpen(false); setIsOpeningBox(false); }}
         unopenedBoxes={unopenedBoxes}
         inventoryCap={inventoryCap}
         yellowWarning={yellowWarning}
@@ -455,6 +455,8 @@ export default function SetterDashboard() {
         lifetimeStats={lifetimeStats}
         recentWins={recentWins}
         setterId={user?.id}
+        lootSettings={invData?.lootSettings || null}
+        onOpeningStateChange={setIsOpeningBox}
         onOpenBox={(win) => {
           queryClient.invalidateQueries({ queryKey: ['setter-inventory', user?.id] });
           if (win?.prize_type === 'cash') {
