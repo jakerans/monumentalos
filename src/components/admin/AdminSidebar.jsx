@@ -86,22 +86,12 @@ export default function AdminSidebar({ user, currentPage, clients = [] }) {
   const [collapsed, setCollapsed] = useState(false);
 
   const isFinanceAdmin = user?.app_role === 'finance_admin';
+  const sections = isFinanceAdmin ? FINANCE_ADMIN_SECTIONS : ADMIN_SECTIONS;
 
   // Track which accordion sections are open
   const [openSections, setOpenSections] = useState(() => {
-    const initialSection = findSectionWithPage(currentPage);
-    return initialSection ? { [initialSection]: true } : {};
-  });
-
-  // Track which nested groups are expanded (within sections)
-  const [expandedGroup, setExpandedGroup] = useState(() => {
-    if (isFinanceAdmin) return null;
-    for (const section of Object.values(SECTIONS)) {
-      for (const item of section.items) {
-        if (item.children?.some(c => c.key === currentPage)) return item.key;
-      }
-    }
-    return null;
+    const defaultSection = isFinanceAdmin ? 'finance' : findSectionWithPage(currentPage, sections);
+    return defaultSection ? { [defaultSection]: true } : {};
   });
 
   const toggleSection = (sectionId) => {
