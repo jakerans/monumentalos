@@ -125,7 +125,7 @@ export default function InventoryModal({
               </button>
             </div>
 
-            <EligibilityBanner eligibility={eligibility} />
+            <EligibilityBanner eligibility={inventoryData?.eligibility || eligibility} />
 
             <div className="px-5 py-4 space-y-6">
               <LifetimeStatsRow stats={lifetimeStats} paidDaysOffBank={paidDaysOffBank} />
