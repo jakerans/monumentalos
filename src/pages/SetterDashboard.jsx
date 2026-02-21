@@ -20,6 +20,7 @@ import CelebrationOverlay from '../components/setter/CelebrationOverlay';
 import DailySpiffBanner from '../components/setter/DailySpiffBanner';
 import InventoryModal from '../components/setter/InventoryModal';
 import LootBoxOpenModal from '../components/setter/LootBoxOpenModal';
+import ClockWidget from '../components/setter/ClockWidget';
 import PageErrorBoundary from '../components/shared/PageErrorBoundary';
 import PageLoader from '../components/shared/PageLoader';
 import { motion } from 'framer-motion';
