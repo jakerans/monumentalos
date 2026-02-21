@@ -66,7 +66,7 @@ const FINANCE_ADMIN_SECTIONS = {
       { key: 'AccountingExpenses', label: 'Expenses', icon: Wallet },
       { key: 'AccountingCashFlow', label: 'Cash Flow', icon: TrendingUp },
       { key: 'AccountingClients', label: 'Client Revenue', icon: Users },
-      { key: 'ClientProfitability', label: 'Profitability', icon: TrendingUp },
+      { key: 'ClientProfitability', label: 'Profitability', icon: PieChart },
       { key: 'EmployeeManagement', label: 'Payroll', icon: UserCog },
     ],
   },
