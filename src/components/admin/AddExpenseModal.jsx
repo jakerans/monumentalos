@@ -3,6 +3,7 @@ import dayjs from 'dayjs';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { toast } from '@/components/ui/use-toast';
 import { base44 } from '@/api/base44Client';
+import { useQuery } from '@tanstack/react-query';
 
 export default function AddExpenseModal({ open, onOpenChange, clients, onCreated }) {
   const [category, setCategory] = useState('uncategorized');
@@ -10,10 +11,16 @@ export default function AddExpenseModal({ open, onOpenChange, clients, onCreated
   const [description, setDescription] = useState('');
   const [amount, setAmount] = useState('');
   const [date, setDate] = useState(dayjs().format('YYYY-MM-DD'));
-
   const [vendor, setVendor] = useState('');
+  const [bankAccountId, setBankAccountId] = useState('');
   const [recurring, setRecurring] = useState(false);
   const [saving, setSaving] = useState(false);
+
+  const { data: bankAccounts = [] } = useQuery({
+    queryKey: ['bank-accounts-modal'],
+    queryFn: () => base44.entities.BankAccount.list('-created_date'),
+    enabled: open,
+  });
 
   const handleSave = async () => {
     if (!amount || !category) return;
@@ -24,8 +31,8 @@ export default function AddExpenseModal({ open, onOpenChange, clients, onCreated
       description: description || undefined,
       amount: Number(amount),
       date,
-
       vendor: vendor || undefined,
+      bank_account_id: bankAccountId || undefined,
       recurring,
     });
     setSaving(false);
