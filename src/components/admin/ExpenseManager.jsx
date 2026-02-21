@@ -39,6 +39,7 @@ const PAGE_SIZE = 50;
 export default function ExpenseManager({ startDate, endDate, onAddExpense }) {
   const [filterCat, setFilterCat] = useState('all');
   const [filterType, setFilterType] = useState('all');
+  const [filterAccount, setFilterAccount] = useState('all');
   const [page, setPage] = useState(0);
   const [sortField, setSortField] = useState('date');
   const [sortDir, setSortDir] = useState('desc');
@@ -54,8 +55,15 @@ export default function ExpenseManager({ startDate, endDate, onAddExpense }) {
     return () => clearTimeout(t);
   }, [search]);
 
+  const { data: bankAccounts = [] } = useQuery({
+    queryKey: ['bank-accounts-expense-manager'],
+    queryFn: () => base44.entities.BankAccount.list('-created_date'),
+    staleTime: 5 * 60 * 1000,
+  });
+  const bankAccountMap = Object.fromEntries(bankAccounts.map(a => [a.id, a.name]));
+
   const { data, isLoading, isFetching, refetch } = useQuery({
-    queryKey: ['expenses-table', startDate, endDate, filterCat, filterType, page, sortField, sortDir, debouncedSearch, showDistributions],
+    queryKey: ['expenses-table', startDate, endDate, filterCat, filterType, page, sortField, sortDir, debouncedSearch, showDistributions, filterAccount],
     queryFn: async () => {
       const res = await base44.functions.invoke('getExpensesTableData', {
         startDate,
@@ -68,6 +76,7 @@ export default function ExpenseManager({ startDate, endDate, onAddExpense }) {
         sortField,
         sortDir,
         showDistributions,
+        filterAccount,
       });
       return res.data;
     },
