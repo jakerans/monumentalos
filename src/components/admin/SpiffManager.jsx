@@ -230,7 +230,7 @@ export default function SpiffManager({ leads, users }) {
     const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0);
     setForm({
       title: '', description: '', scope: 'team_each', assigned_setter_id: '',
-      qualifier: 'appointments', goal_value: '', reward: '',
+      qualifier: 'appointments', goal_value: '', reward: '', cash_value: 0,
       due_date: endOfMonth.toISOString().split('T')[0], is_daily: false, status: 'active',
       loot_box_enabled: false, loot_box_rarity: 'common',
     });
@@ -240,6 +240,7 @@ export default function SpiffManager({ leads, users }) {
     const data = {
       ...form,
       goal_value: Number(form.goal_value),
+      cash_value: Number(form.cash_value) || 0,
       due_date: form.due_date,
       loot_box_enabled: form.loot_box_enabled,
       loot_box_rarity: form.loot_box_enabled ? form.loot_box_rarity : undefined,
@@ -426,6 +427,13 @@ export default function SpiffManager({ leads, users }) {
                   className="w-full px-3 py-2 text-sm bg-slate-900 border border-slate-700 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-[#D6FF03]"
                   placeholder="e.g. $200 bonus" />
               </div>
+            </div>
+            <div>
+              <label className="text-[10px] text-slate-400 uppercase mb-1 block">Cash Value ($)</label>
+              <p className="text-[10px] text-slate-500 mb-1">Dollar amount to pay — used for payroll summary</p>
+              <input type="number" value={form.cash_value} onChange={e => setForm({ ...form, cash_value: e.target.value })}
+                className="w-full px-3 py-2 text-sm bg-slate-900 border border-slate-700 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-[#D6FF03]"
+                placeholder="e.g. 200" />
             </div>
             {/* Daily Spiff Toggle */}
             <div className="flex items-center gap-3 py-1">
