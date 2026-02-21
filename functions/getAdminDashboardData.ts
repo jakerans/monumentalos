@@ -313,17 +313,53 @@ Deno.serve(async (req) => {
         let revenue = 0;
         const btClients = clients.filter(c => c.status === 'active' && (c.billing_type || 'pay_per_show') === bt);
         btClients.forEach(client => {
+          const pricing = client.industry_pricing || [];
           const cLeads = leads.filter(l => l.client_id === client.id);
           if (bt === 'pay_per_show') {
-            revenue += cLeads.filter(l => l.disposition === 'showed' && inMTD(l.appointment_date)).length * (client.price_per_shown_appointment || 0);
+            cLeads.filter(l => l.disposition === 'showed' && inMTD(l.appointment_date)).forEach(lead => {
+              const ind = (lead.industries && lead.industries[0]) || null;
+              const match = ind ? pricing.find(p => p.industry === ind) : null;
+              revenue += match ? (match.price_per_show || 0) : (client.price_per_shown_appointment || 0);
+            });
           } else if (bt === 'pay_per_set') {
-            revenue += cLeads.filter(l => l.date_appointment_set && inMTD(l.date_appointment_set)).length * (client.price_per_set_appointment || 0);
+            cLeads.filter(l => l.date_appointment_set && inMTD(l.date_appointment_set)).forEach(lead => {
+              const ind = (lead.industries && lead.industries[0]) || null;
+              const match = ind ? pricing.find(p => p.industry === ind) : null;
+              revenue += match ? (match.price_per_set || 0) : (client.price_per_set_appointment || 0);
+            });
           } else if (bt === 'retainer') {
             revenue += (client.retainer_amount || 0);
           }
         });
         result[bt] = { revenue, count: btClients.length };
       });
+
+      // Hybrid clients: split into hybrid_retainer and hybrid_performance
+      const hybridClients = clients.filter(c => c.status === 'active' && c.billing_type === 'hybrid');
+      let hybridRetainerRevenue = 0;
+      let hybridPerformanceRevenue = 0;
+      hybridClients.forEach(client => {
+        hybridRetainerRevenue += (client.hybrid_base_retainer || 0);
+        const perfType = client.hybrid_performance_type || 'pay_per_set';
+        const pricing = client.hybrid_performance_pricing || [];
+        const cLeads = leads.filter(l => l.client_id === client.id);
+        if (perfType === 'pay_per_show') {
+          cLeads.filter(l => l.disposition === 'showed' && inMTD(l.appointment_date)).forEach(lead => {
+            const ind = (lead.industries && lead.industries[0]) || null;
+            const match = ind ? pricing.find(p => p.industry === ind) : null;
+            hybridPerformanceRevenue += match ? (match.price_per_show || 0) : 0;
+          });
+        } else if (perfType === 'pay_per_set') {
+          cLeads.filter(l => l.date_appointment_set && inMTD(l.date_appointment_set)).forEach(lead => {
+            const ind = (lead.industries && lead.industries[0]) || null;
+            const match = ind ? pricing.find(p => p.industry === ind) : null;
+            hybridPerformanceRevenue += match ? (match.price_per_set || 0) : 0;
+          });
+        }
+      });
+      result['hybrid_retainer'] = { revenue: hybridRetainerRevenue, count: hybridClients.length };
+      result['hybrid_performance'] = { revenue: hybridPerformanceRevenue, count: hybridClients.length };
+
       return result;
     })();
 
@@ -334,11 +370,38 @@ Deno.serve(async (req) => {
         const bt = client.billing_type || 'pay_per_show';
         const cLeads = leads.filter(l => l.client_id === client.id);
         if (bt === 'pay_per_show') {
-          grossRevenue += cLeads.filter(l => l.disposition === 'showed' && rangeFn(l.appointment_date)).length * (client.price_per_shown_appointment || 0);
+          const pricing = client.industry_pricing || [];
+          cLeads.filter(l => l.disposition === 'showed' && rangeFn(l.appointment_date)).forEach(lead => {
+            const ind = (lead.industries && lead.industries[0]) || null;
+            const match = ind ? pricing.find(p => p.industry === ind) : null;
+            grossRevenue += match ? (match.price_per_show || 0) : (client.price_per_shown_appointment || 0);
+          });
         } else if (bt === 'pay_per_set') {
-          grossRevenue += cLeads.filter(l => l.date_appointment_set && rangeFn(l.date_appointment_set)).length * (client.price_per_set_appointment || 0);
+          const pricing = client.industry_pricing || [];
+          cLeads.filter(l => l.date_appointment_set && rangeFn(l.date_appointment_set)).forEach(lead => {
+            const ind = (lead.industries && lead.industries[0]) || null;
+            const match = ind ? pricing.find(p => p.industry === ind) : null;
+            grossRevenue += match ? (match.price_per_set || 0) : (client.price_per_set_appointment || 0);
+          });
         } else if (bt === 'retainer') {
           grossRevenue += (client.retainer_amount || 0);
+        } else if (bt === 'hybrid') {
+          grossRevenue += (client.hybrid_base_retainer || 0);
+          const perfType = client.hybrid_performance_type || 'pay_per_set';
+          const pricing = client.hybrid_performance_pricing || [];
+          if (perfType === 'pay_per_show') {
+            cLeads.filter(l => l.disposition === 'showed' && rangeFn(l.appointment_date)).forEach(lead => {
+              const ind = (lead.industries && lead.industries[0]) || null;
+              const match = ind ? pricing.find(p => p.industry === ind) : null;
+              grossRevenue += match ? (match.price_per_show || 0) : 0;
+            });
+          } else if (perfType === 'pay_per_set') {
+            cLeads.filter(l => l.date_appointment_set && rangeFn(l.date_appointment_set)).forEach(lead => {
+              const ind = (lead.industries && lead.industries[0]) || null;
+              const match = ind ? pricing.find(p => p.industry === ind) : null;
+              grossRevenue += match ? (match.price_per_set || 0) : 0;
+            });
+          }
         }
       });
       const collected = paidBillingRecords.filter(b => rangeFn(b.paid_date)).reduce((s, b) => s + (b.paid_amount || b.calculated_amount || 0), 0);
