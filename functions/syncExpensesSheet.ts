@@ -17,7 +17,7 @@ const BANK_ID_COL = 0;        // Column A — unique row identifier
 const BANK_DATE_COL = 1;
 const BANK_DESC_COL = 3;
 const BANK_AMOUNT_COL = 6;
-const BANK_ACCOUNT_COL = 2;   // Column C — account identifier from bank feed
+const BANK_ACCOUNT_COL = 14;  // Column O — account identifier from bank feed
 
 const VALID_CATEGORIES = ['ad_spend', 'payroll', 'software', 'office', 'contractor', 'travel', 'distribution', 'processing_fee', 'other', 'uncategorized'];
 const SKIP_CATEGORIES = ['transaction', 'transfer'];
