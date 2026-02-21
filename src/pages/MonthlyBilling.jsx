@@ -4,7 +4,7 @@ import { useQuery } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import dayjs from 'dayjs';
-import { RefreshCw } from 'lucide-react';
+import { RefreshCw, Undo2 } from 'lucide-react';
 import AdminSidebar from '../components/admin/AdminSidebar';
 import AdminMobileNav from '../components/admin/AdminMobileNav';
 import BillingMonthSelector from '../components/admin/BillingMonthSelector';
@@ -22,6 +22,8 @@ export default function MonthlyBilling() {
   const [selectedMonth, setSelectedMonth] = useState(getPrevMonth());
   const [page, setPage] = useState(0);
   const [generating, setGenerating] = useState(false);
+  const [lastGeneratedIds, setLastGeneratedIds] = useState([]);
+  const [undoing, setUndoing] = useState(false);
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -61,8 +63,22 @@ export default function MonthlyBilling() {
 
   const generateBillingRecords = async () => {
     setGenerating(true);
-    await base44.functions.invoke('getMonthlyBillingData', { selectedMonth, action: 'generate' });
+    setLastGeneratedIds([]);
+    const res = await base44.functions.invoke('getMonthlyBillingData', { selectedMonth, action: 'generate' });
+    const ids = res.data?.createdIds || [];
+    setLastGeneratedIds(ids);
     setGenerating(false);
+    refetch();
+  };
+
+  const undoGenerate = async () => {
+    if (lastGeneratedIds.length === 0) return;
+    setUndoing(true);
+    for (const id of lastGeneratedIds) {
+      await base44.entities.MonthlyBilling.delete(id);
+    }
+    setLastGeneratedIds([]);
+    setUndoing(false);
     refetch();
   };
 
@@ -107,6 +123,23 @@ export default function MonthlyBilling() {
             >
               <RefreshCw className={`w-3.5 h-3.5 ${generating ? 'animate-spin' : ''}`} />
               {generating ? 'Generating...' : 'Generate Billing Records'}
+            </button>
+          </div>
+        )}
+
+        {/* Undo banner — shown after a successful generate */}
+        {lastGeneratedIds.length > 0 && (
+          <div className="bg-slate-700/50 border border-slate-600/50 rounded-lg px-4 py-3 flex items-center justify-between">
+            <span className="text-slate-300 text-xs font-medium">
+              {lastGeneratedIds.length} billing record{lastGeneratedIds.length !== 1 ? 's' : ''} generated.
+            </span>
+            <button
+              onClick={undoGenerate}
+              disabled={undoing}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium bg-slate-600 text-white rounded-md hover:bg-slate-500 disabled:opacity-50"
+            >
+              <Undo2 className={`w-3.5 h-3.5 ${undoing ? 'animate-spin' : ''}`} />
+              {undoing ? 'Undoing...' : 'Undo'}
             </button>
           </div>
         )}

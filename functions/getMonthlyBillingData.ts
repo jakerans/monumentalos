@@ -170,8 +170,10 @@ Deno.serve(async (req) => {
       });
 
       const flatRecords = records.flat();
+      let createdIds = [];
       if (flatRecords.length > 0) {
-        await sr.MonthlyBilling.bulkCreate(flatRecords);
+        const created = await sr.MonthlyBilling.bulkCreate(flatRecords);
+        createdIds = (created || []).map(r => r.id).filter(Boolean);
       }
 
       // Auto-flag overdue
@@ -184,7 +186,7 @@ Deno.serve(async (req) => {
         }
       }
 
-      return Response.json({ generated: records.length });
+      return Response.json({ generated: flatRecords.length, createdIds });
     }
 
     // ========== DEFAULT: Return paginated billing data with pre-computed KPIs ==========
