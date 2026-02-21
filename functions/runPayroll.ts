@@ -9,7 +9,7 @@ Deno.serve(async (req) => {
     }
 
     const body = await req.json();
-    const { mode, payrollDate, includePrevPerfPay, lineItems } = body;
+    const { mode, payrollDate, checkNumber, lineItems } = body;
 
     if (!payrollDate) {
       return Response.json({ error: 'payrollDate is required' }, { status: 400 });
@@ -59,7 +59,7 @@ Deno.serve(async (req) => {
           });
         }
 
-        if (includePrevPerfPay && emp.has_performance_pay) {
+        if (checkNumber === 'first' && emp.has_performance_pay) {
           const empPlans = perfPlans.filter(p => p.employee_id === emp.id);
           for (const plan of empPlans) {
             const prevRecord = perfRecords.find(r =>
@@ -82,68 +82,70 @@ Deno.serve(async (req) => {
         }
       }
 
-      // ─── SETTER BONUSES: one line item per setter, spiff totals only ───
-      const setters = allUsers.filter((u) => u.app_role === 'setter');
+      if (checkNumber === 'first') {
+        // ─── SETTER BONUSES: one line item per setter, spiff totals only ───
+        const setters = allUsers.filter((u) => u.app_role === 'setter');
 
-      const completedSpiffs = allSpiffs.filter((s) =>
-        s.status === 'completed' &&
-        s.due_date &&
-        s.due_date.startsWith(prevMonthStr) &&
-        (s.cash_value || 0) > 0
-      );
+        const completedSpiffs = allSpiffs.filter((s) =>
+          s.status === 'completed' &&
+          s.due_date &&
+          s.due_date.startsWith(prevMonthStr) &&
+          (s.cash_value || 0) > 0
+        );
 
-      const individualSpiffs = completedSpiffs.filter((s) => s.scope === 'individual');
-      const teamEachSpiffs = completedSpiffs.filter((s) => s.scope === 'team_each');
+        const individualSpiffs = completedSpiffs.filter((s) => s.scope === 'individual');
+        const teamEachSpiffs = completedSpiffs.filter((s) => s.scope === 'team_each');
 
-      for (const setter of setters) {
-        const myTotal =
-          individualSpiffs
-            .filter((s) => s.assigned_setter_id === setter.id)
-            .reduce((sum, s) => sum + (s.cash_value || 0), 0) +
-          teamEachSpiffs
-            .reduce((sum, s) => sum + (s.cash_value || 0), 0);
+        for (const setter of setters) {
+          const myTotal =
+            individualSpiffs
+              .filter((s) => s.assigned_setter_id === setter.id)
+              .reduce((sum, s) => sum + (s.cash_value || 0), 0) +
+            teamEachSpiffs
+              .reduce((sum, s) => sum + (s.cash_value || 0), 0);
 
-        if (myTotal > 0) {
-          items.push({
-            id: `spiff_${setter.id}`,
-            type: 'setter_bonus',
-            employee_name: setter.full_name || setter.email,
-            description: `${setter.full_name || setter.email} — Setter Bonuses ${prevMonthStr}`,
-            amount: myTotal,
-            expense_type: 'cogs',
-            category: 'payroll',
-            editable: true,
-            breakdown: [
-              ...individualSpiffs
-                .filter((s) => s.assigned_setter_id === setter.id)
-                .map((s) => ({ label: s.title, amount: s.cash_value || 0 })),
-              ...teamEachSpiffs
-                .map((s) => ({ label: s.title, amount: s.cash_value || 0 })),
-            ],
-          });
+          if (myTotal > 0) {
+            items.push({
+              id: `spiff_${setter.id}`,
+              type: 'setter_bonus',
+              employee_name: setter.full_name || setter.email,
+              description: `${setter.full_name || setter.email} — Setter Bonuses ${prevMonthStr}`,
+              amount: myTotal,
+              expense_type: 'cogs',
+              category: 'payroll',
+              editable: true,
+              breakdown: [
+                ...individualSpiffs
+                  .filter((s) => s.assigned_setter_id === setter.id)
+                  .map((s) => ({ label: s.title, amount: s.cash_value || 0 })),
+                ...teamEachSpiffs
+                  .map((s) => ({ label: s.title, amount: s.cash_value || 0 })),
+              ],
+            });
+          }
         }
-      }
 
-      // ─── LOOT CASH WINS: one combined line item per setter ───
-      const approvedLootWins = await sr.LootWin.filter({ fulfillment_status: 'approved', prize_type: 'cash' }, '-won_date', 5000);
+        // ─── LOOT CASH WINS: one combined line item per setter ───
+        const approvedLootWins = await sr.LootWin.filter({ fulfillment_status: 'approved', prize_type: 'cash' }, '-won_date', 5000);
 
-      for (const setter of setters) {
-        const myWins = approvedLootWins.filter((w) => w.setter_id === setter.id);
-        const lootTotal = myWins.reduce((sum, w) => sum + (w.cash_value || 0), 0);
+        for (const setter of setters) {
+          const myWins = approvedLootWins.filter((w) => w.setter_id === setter.id);
+          const lootTotal = myWins.reduce((sum, w) => sum + (w.cash_value || 0), 0);
 
-        if (lootTotal > 0) {
-          items.push({
-            id: `loot_${setter.id}`,
-            type: 'loot_prizes',
-            employee_name: setter.full_name || setter.email,
-            description: `${setter.full_name || setter.email} — Loot Prizes ${prevMonthStr}`,
-            amount: lootTotal,
-            expense_type: 'cogs',
-            category: 'payroll',
-            editable: true,
-            loot_win_ids: myWins.map((w) => w.id),
-            breakdown: myWins.map((w) => ({ label: w.prize_name, amount: w.cash_value || 0 })),
-          });
+          if (lootTotal > 0) {
+            items.push({
+              id: `loot_${setter.id}`,
+              type: 'loot_prizes',
+              employee_name: setter.full_name || setter.email,
+              description: `${setter.full_name || setter.email} — Loot Prizes ${prevMonthStr}`,
+              amount: lootTotal,
+              expense_type: 'cogs',
+              category: 'payroll',
+              editable: true,
+              loot_win_ids: myWins.map((w) => w.id),
+              breakdown: myWins.map((w) => ({ label: w.prize_name, amount: w.cash_value || 0 })),
+            });
+          }
         }
       }
 

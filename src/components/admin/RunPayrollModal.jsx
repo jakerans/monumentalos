@@ -10,7 +10,7 @@ const STEPS = { CONFIG: 'config', PREVIEW: 'preview', DONE: 'done' };
 
 export default function RunPayrollModal({ open, onOpenChange, onComplete }) {
   const [payrollDate, setPayrollDate] = useState(dayjs().format('YYYY-MM-DD'));
-  const [includePrevPerfPay, setIncludePrevPerfPay] = useState(false);
+  const [checkNumber, setCheckNumber] = useState('first');
   const [step, setStep] = useState(STEPS.CONFIG);
   const [loading, setLoading] = useState(false);
   const [lineItems, setLineItems] = useState([]);
@@ -26,7 +26,7 @@ export default function RunPayrollModal({ open, onOpenChange, onComplete }) {
     const res = await base44.functions.invoke('runPayroll', {
       mode: 'preview',
       payrollDate,
-      includePrevPerfPay,
+      checkNumber,
     });
     setLoading(false);
     if (res.data?.success) {
@@ -87,7 +87,7 @@ export default function RunPayrollModal({ open, onOpenChange, onComplete }) {
       setStep(STEPS.CONFIG);
       setLineItems([]);
       setResult(null);
-      setIncludePrevPerfPay(false);
+      setCheckNumber('first');
       setShowUndoConfirm(false);
     }
     onOpenChange(v);
@@ -124,21 +124,42 @@ export default function RunPayrollModal({ open, onOpenChange, onComplete }) {
                 </div>
               </div>
 
-              <div className="bg-slate-800/50 rounded-lg border border-slate-700/50 p-4">
-                <label className="flex items-start gap-3 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={includePrevPerfPay}
-                    onChange={(e) => setIncludePrevPerfPay(e.target.checked)}
-                    className="mt-0.5 w-4 h-4 rounded border-slate-600 bg-slate-800 text-[#D6FF03] focus:ring-[#D6FF03]/50"
-                  />
-                  <div>
-                    <p className="text-sm font-medium text-white">Include Previous Month Performance Pay</p>
-                    <p className="text-xs text-slate-400 mt-0.5">
-                      Pay out earned performance pay for <span className="text-slate-300 font-medium">{prevMonthLabel}</span> and mark it as paid.
-                    </p>
-                  </div>
-                </label>
+              <div className="space-y-2">
+                <label className="text-xs font-medium text-slate-400 uppercase mb-1.5 block">Which payroll run is this?</label>
+                <div className="grid grid-cols-2 gap-2">
+                  <button
+                    onClick={() => setCheckNumber('first')}
+                    className={`px-3 py-3 rounded-lg border text-sm font-medium text-left transition-all ${
+                      checkNumber === 'first'
+                        ? 'border-[#D6FF03] bg-[#D6FF03]/10 text-white'
+                        : 'border-slate-700 bg-slate-800/50 text-slate-400 hover:border-slate-500'
+                    }`}
+                  >
+                    <p className="font-bold text-sm">1st Check</p>
+                    <p className="text-[10px] mt-0.5 opacity-70">Base pay + prior month bonuses</p>
+                  </button>
+                  <button
+                    onClick={() => setCheckNumber('second')}
+                    className={`px-3 py-3 rounded-lg border text-sm font-medium text-left transition-all ${
+                      checkNumber === 'second'
+                        ? 'border-slate-400 bg-slate-700/50 text-white'
+                        : 'border-slate-700 bg-slate-800/50 text-slate-400 hover:border-slate-500'
+                    }`}
+                  >
+                    <p className="font-bold text-sm">2nd Check</p>
+                    <p className="text-[10px] mt-0.5 opacity-70">Base pay only</p>
+                  </button>
+                </div>
+                {checkNumber === 'first' && (
+                  <p className="text-[10px] text-slate-500 italic px-1">
+                    Loads MM performance bonus, setter spiffs, and approved loot prizes from prior month.
+                  </p>
+                )}
+                {checkNumber === 'second' && (
+                  <p className="text-[10px] text-slate-500 italic px-1">
+                    Base pay only. No bonuses will be included.
+                  </p>
+                )}
               </div>
 
               <div className="bg-amber-500/10 border border-amber-500/20 rounded-lg p-3 flex items-start gap-2">
