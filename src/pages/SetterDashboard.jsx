@@ -21,6 +21,7 @@ import DailySpiffBanner from '../components/setter/DailySpiffBanner';
 import InventoryModal from '../components/setter/InventoryModal';
 import LootBoxOpenModal from '../components/setter/LootBoxOpenModal';
 import ClockWidget from '../components/setter/ClockWidget';
+import MyScheduleTab from '../components/setter/MyScheduleTab';
 import PageErrorBoundary from '../components/shared/PageErrorBoundary';
 import PageLoader from '../components/shared/PageLoader';
 import { motion } from 'framer-motion';
@@ -46,6 +47,7 @@ export default function SetterDashboard() {
   const [inventoryOpen, setInventoryOpen] = useState(false);
   const [isOpeningBox, setIsOpeningBox] = useState(false);
   const [droppedBox, setDroppedBox] = useState(null);
+  const [dashTab, setDashTab] = useState('pipeline');
   const prevRankRef = useRef(null);
   const [animateRef] = useAutoAnimate({ duration: 350, easing: 'ease-out' });
 
@@ -308,6 +310,30 @@ export default function SetterDashboard() {
           />
         </div>
 
+        {/* Tab bar: Pipeline / My Schedule */}
+        <div className="flex items-center gap-1 mb-4 border-b border-slate-700/50 pb-0">
+          <button
+            onClick={() => setDashTab('pipeline')}
+            className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
+              dashTab === 'pipeline' ? 'border-[#D6FF03] text-[#D6FF03]' : 'border-transparent text-slate-400 hover:text-white'
+            }`}
+          >
+            Pipeline
+          </button>
+          <button
+            onClick={() => setDashTab('schedule')}
+            className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
+              dashTab === 'schedule' ? 'border-[#D6FF03] text-[#D6FF03]' : 'border-transparent text-slate-400 hover:text-white'
+            }`}
+          >
+            My Schedule
+          </button>
+        </div>
+
+        {dashTab === 'schedule' ? (
+          <MyScheduleTab workspaceData={workspaceData} />
+        ) : (
+        <>
         {/* Hero row: Welcome + AI message on left, Spiff cards on right */}
         <div className="grid grid-cols-1 lg:grid-cols-5 gap-4 mb-4">
           <div className="lg:col-span-3 flex flex-col gap-3">
@@ -429,6 +455,8 @@ export default function SetterDashboard() {
             />
           )}
         </motion.div>
+        </>
+        )}
       </main>
 
       <LeadDetailPanel
