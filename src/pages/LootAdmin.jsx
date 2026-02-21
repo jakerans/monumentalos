@@ -19,12 +19,13 @@ import AddLootPrizeModal from '../components/loot/AddLootPrizeModal';
 import LootTableTab from '../components/loot/LootTableTab';
 import LootSettingsTab from '../components/loot/LootSettingsTab';
 import LootFulfillmentTab from '../components/loot/LootFulfillmentTab';
+import SetterBonusSummaryTab from '../components/loot/SetterBonusSummaryTab';
 
 export default function LootAdmin() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [user, setUser] = useState(null);
-  const [activeTab, setActiveTab] = useState('fulfillment');
+  const [activeTab, setActiveTab] = useState('bonus');
   const [showAddModal, setShowAddModal] = useState(false);
   const [showAwardModal, setShowAwardModal] = useState(false);
   const [awardRarity, setAwardRarity] = useState('common');
@@ -138,6 +139,7 @@ export default function LootAdmin() {
             <TabsTrigger value="table">Loot Table</TabsTrigger>
             <TabsTrigger value="settings">Drop Settings</TabsTrigger>
             <TabsTrigger value="fulfillment">Fulfillment Queue</TabsTrigger>
+            <TabsTrigger value="bonus">Bonus Summary</TabsTrigger>
           </TabsList>
 
           <TabsContent value="table" className="space-y-4">
@@ -170,6 +172,10 @@ export default function LootAdmin() {
               users={lootData?.users || []}
               prizes={prizes}
             />
+          </TabsContent>
+
+          <TabsContent value="bonus" className="space-y-4">
+            <SetterBonusSummaryTab />
           </TabsContent>
         </Tabs>
       </main>
