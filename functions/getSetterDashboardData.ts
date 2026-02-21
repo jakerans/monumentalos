@@ -225,14 +225,14 @@ Deno.serve(async (req) => {
       },
       spiffs: spiffsWithProgress,
       leaderboard: {
-        profiles: leaderboard,
+        profiles: liveLeaderboard,
         myRank,
       },
       aiContext: {
         spiffSummaries: mySpiffsForAI,
         myRank,
-        leaderboardLength: leaderboard.length,
-        topBooked: leaderboard[0]?.mtd_booked || 0,
+        leaderboardLength: liveLeaderboard.length,
+        topBooked: liveLeaderboard[0]?.mtd_booked || 0,
       },
       clients: settableClients.map(c => ({ id: c.id, name: c.name, booking_link: c.booking_link, billing_type: c.billing_type })),
       clientMap,
