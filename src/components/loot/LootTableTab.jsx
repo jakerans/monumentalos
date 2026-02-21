@@ -3,8 +3,9 @@ import { base44 } from '@/api/base44Client';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
-import { Trash2, Edit2 } from 'lucide-react';
+import { Trash2, Pencil } from 'lucide-react';
 import { toast } from '@/components/ui/use-toast';
+import EditLootPrizeModal from './EditLootPrizeModal';
 
 const rarityColors = {
   common: 'bg-slate-600 text-white',
@@ -21,6 +22,8 @@ const rarityBgHeaders = {
 };
 
 export default function LootTableTab({ prizes, onPrizeUpdated, onPrizeDeleted }) {
+  const [editPrize, setEditPrize] = useState(null);
+
   const groupedPrizes = {
     common: prizes.filter(p => p.rarity === 'common'),
     rare: prizes.filter(p => p.rarity === 'rare'),
@@ -78,24 +81,33 @@ export default function LootTableTab({ prizes, onPrizeUpdated, onPrizeDeleted })
               {groupedPrizes[rarity].map(prize => (
                 <div key={prize.id} className="px-6 py-4 flex items-center justify-between gap-4">
                   <div className="flex-1">
-                    <h4 className="font-medium text-white">{prize.name}</h4>
-                    <p className="text-sm text-slate-400 mt-1">{prize.description}</p>
+                    <h4 className="font-bold text-white">{prize.name}</h4>
+                    <p className="text-sm text-slate-300 mt-1">{prize.description}</p>
                     <div className="flex items-center gap-3 mt-2">
-                      <Badge variant="outline" className="text-xs">
+                      <Badge className="text-xs bg-slate-700 text-white border-slate-600">
                         {prize.prize_type === 'cash' ? `$${prize.cash_value}` : 'Physical'}
                       </Badge>
-                      <span className="text-xs text-slate-500">Weight: {prize.drop_weight}</span>
+                      <span className="text-xs text-slate-400">Weight: {prize.drop_weight}</span>
                     </div>
                   </div>
                   
                   <div className="flex items-center gap-4">
                     <div className="flex items-center gap-2">
-                      <span className="text-xs text-slate-400">Active</span>
+                      <span className="text-xs text-slate-300">Active</span>
                       <Switch
                         checked={prize.is_active}
                         onCheckedChange={() => handleToggleActive(prize)}
                       />
                     </div>
+
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => setEditPrize(prize)}
+                      className="text-slate-400 hover:text-white hover:bg-white/10"
+                    >
+                      <Pencil className="w-4 h-4" />
+                    </Button>
                     
                     <Button
                       variant="ghost"
@@ -112,6 +124,12 @@ export default function LootTableTab({ prizes, onPrizeUpdated, onPrizeDeleted })
           )}
         </div>
       ))}
+      <EditLootPrizeModal
+        open={!!editPrize}
+        onOpenChange={(v) => { if (!v) setEditPrize(null); }}
+        prize={editPrize}
+        onPrizeSaved={() => { setEditPrize(null); onPrizeUpdated(); }}
+      />
     </div>
   );
 }
