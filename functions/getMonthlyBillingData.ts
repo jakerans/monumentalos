@@ -141,7 +141,7 @@ Deno.serve(async (req) => {
     let totalAmount = 0;
     let totalPaid = 0;
     allBillingForMonth.forEach(record => {
-      const amount = record.billing_type === 'retainer'
+      const amount = (record.billing_type === 'retainer' || record.billing_type === 'hybrid_retainer')
         ? (record.manual_amount || record.calculated_amount || 0)
         : (record.calculated_amount || 0);
       totalAmount += amount;
@@ -153,8 +153,22 @@ Deno.serve(async (req) => {
 
     // ---- Which active clients are missing billing records? ----
     const activeClients = clients.filter(c => c.status === 'active');
-    const existingClientIds = new Set(allBillingForMonth.map(r => r.client_id));
-    const missingClientCount = activeClients.filter(c => !existingClientIds.has(c.id)).length;
+    const hybridClientsWithEitherRecord = new Set();
+    const nonHybridClientsWithRecord = new Set();
+    allBillingForMonth.forEach(r => {
+      const client = clientMap[r.client_id];
+      if (client?.billing_type === 'hybrid') {
+        hybridClientsWithEitherRecord.add(r.client_id);
+      } else {
+        nonHybridClientsWithRecord.add(r.client_id);
+      }
+    });
+    const missingClientCount = activeClients.filter(c => {
+      if (c.billing_type === 'hybrid') {
+        return !hybridClientsWithEitherRecord.has(c.id);
+      }
+      return !nonHybridClientsWithRecord.has(c.id);
+    }).length;
 
     // ---- Paginate billing rows ----
     const totalCount = allBillingForMonth.length;
@@ -164,15 +178,18 @@ Deno.serve(async (req) => {
     // Enrich each row with client name, computed amount, and display status
     const rows = pageRows.map(record => {
       const client = clientMap[record.client_id];
-      const amount = record.billing_type === 'retainer'
+      const amount = (record.billing_type === 'retainer' || record.billing_type === 'hybrid_retainer')
         ? (record.manual_amount || record.calculated_amount || 0)
         : (record.calculated_amount || 0);
       const displayStatus = (isOverdueMonth && record.status === 'pending') ? 'overdue' : record.status;
+      const retainerDueDay = record.billing_type === 'hybrid_retainer'
+        ? (client?.hybrid_retainer_due_day || null)
+        : (client?.retainer_due_day || null);
 
       return {
         ...record,
         clientName: client?.name || '—',
-        retainerDueDay: client?.retainer_due_day || null,
+        retainerDueDay,
         amount,
         displayStatus,
       };
