@@ -299,6 +299,15 @@ export default function SetterDashboard() {
       <SetterNav user={user} unopenedCount={unopenedBoxes.length} yellowWarning={yellowWarning} inventoryCap={inventoryCap} onOpenInventory={() => setInventoryOpen(true)} />
 
       <main className="flex-1 max-w-7xl w-full mx-auto px-3 sm:px-6 lg:pl-24 lg:pr-8 py-4 sm:py-6">
+        {/* Clock Widget */}
+        <div className="mb-4">
+          <ClockWidget
+            workspaceData={workspaceData}
+            onClockAction={() => refetchWorkspace()}
+            userId={user?.id}
+          />
+        </div>
+
         {/* Hero row: Welcome + AI message on left, Spiff cards on right */}
         <div className="grid grid-cols-1 lg:grid-cols-5 gap-4 mb-4">
           <div className="lg:col-span-3 flex flex-col gap-3">
