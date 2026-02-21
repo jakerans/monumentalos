@@ -20,6 +20,7 @@ import PageLoader from '../components/shared/PageLoader';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import SetterBonusSummaryTab from '../components/loot/SetterBonusSummaryTab';
 import PayrollTourGuide from '../components/admin/PayrollTourGuide';
+import AdminScheduleTab from '../components/schedule/AdminScheduleTab';
 
 export default function EmployeeManagement() {
   const navigate = useNavigate();
@@ -167,6 +168,7 @@ export default function EmployeeManagement() {
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <TabsList className="bg-slate-800/50 border border-slate-700/50">
             <TabsTrigger value="roster">Team Roster</TabsTrigger>
+            <TabsTrigger value="schedules">Schedules</TabsTrigger>
             <TabsTrigger value="performance">Performance Pay</TabsTrigger>
             <TabsTrigger value="payroll">💰 Payroll</TabsTrigger>
           </TabsList>
@@ -206,6 +208,10 @@ export default function EmployeeManagement() {
             </div>
 
             <EmployeeTable employees={filtered} payrollSettings={payrollSettings} onSelect={handleSelectEmp} lastMonthCollected={lastMonthCollected} />
+          </TabsContent>
+
+          <TabsContent value="schedules" className="space-y-4">
+            <AdminScheduleTab />
           </TabsContent>
 
           <TabsContent value="performance" className="space-y-4">

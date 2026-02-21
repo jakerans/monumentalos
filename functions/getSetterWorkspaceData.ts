@@ -72,6 +72,16 @@ Deno.serve(async (req) => {
     const weekSchedule = allSchedules.filter(s => s.date >= mondayStr && s.date <= sundayStr)
       .sort((a, b) => a.date.localeCompare(b.date));
 
+    // Next week schedule
+    const nextMonday = new Date(monday);
+    nextMonday.setDate(monday.getDate() + 7);
+    const nextSunday = new Date(nextMonday);
+    nextSunday.setDate(nextMonday.getDate() + 6);
+    const nextMondayStr = nextMonday.toISOString().split('T')[0];
+    const nextSundayStr = nextSunday.toISOString().split('T')[0];
+    const nextWeekSchedule = allSchedules.filter(s => s.date >= nextMondayStr && s.date <= nextSundayStr)
+      .sort((a, b) => a.date.localeCompare(b.date));
+
     // Hours this week
     const hoursThisWeek = weekEntries
       .filter(e => e.date && e.date >= mondayStr && e.date <= sundayStr)
@@ -96,6 +106,7 @@ Deno.serve(async (req) => {
       clockStatus,
       todaySchedule,
       weekSchedule,
+      nextWeekSchedule,
       recentTimeEntries: recentEntries,
       ptoBank,
       hoursThisWeek: Math.round(hoursThisWeek * 100) / 100,
