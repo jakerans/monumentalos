@@ -87,64 +87,10 @@ export default function ClientReport() {
     : '0.0';
 
   return (
-    <div className="min-h-screen bg-[#0B0F1A]">
-      <nav className="bg-slate-900 shadow-lg">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col sm:flex-row sm:justify-between sm:h-16">
-            <div className="flex items-center justify-between h-14 sm:h-16">
-              <h1 className="text-lg sm:text-xl font-bold text-white tracking-tight">Monumental<span style={{color:'#D6FF03'}}>OS</span></h1>
-              <div className="flex items-center gap-2 sm:hidden">
-                {user.app_role === 'admin' && (
-                  <button
-                    onClick={() => {
-                      localStorage.removeItem('admin_view_client_id');
-                      navigate(createPageUrl('AdminDashboard'));
-                    }}
-                    className="px-2 py-1 text-xs border border-slate-700 text-slate-300 rounded-md hover:bg-white/5"
-                  >
-                    Admin
-                  </button>
-                )}
-                <button onClick={() => base44.auth.logout()} className="text-xs text-slate-400 hover:text-white">Logout</button>
-              </div>
-            </div>
-            <div className="flex items-center gap-1 sm:gap-4 pb-2 sm:pb-0 overflow-x-auto">
-              <Link to={createPageUrl('ClientPortal')} className="px-2 sm:px-3 py-1.5 sm:py-2 rounded-md text-xs sm:text-sm font-medium text-slate-400 hover:text-white hover:bg-white/5 whitespace-nowrap">
-                Appointments
-              </Link>
-              <Link to={createPageUrl('AppointmentHistory')} className="px-2 sm:px-3 py-1.5 sm:py-2 rounded-md text-xs sm:text-sm font-medium text-slate-400 hover:text-white hover:bg-white/5 whitespace-nowrap">
-                History
-              </Link>
-              <Link to={createPageUrl('ClientReport')} className="px-2 sm:px-3 py-1.5 sm:py-2 rounded-md text-xs sm:text-sm font-medium bg-white/10 text-white whitespace-nowrap">
-                Report
-              </Link>
-              <Link to={createPageUrl('ClientSettings')} className="px-2 sm:px-3 py-1.5 sm:py-2 rounded-md text-xs sm:text-sm font-medium text-slate-400 hover:text-white hover:bg-white/5 whitespace-nowrap">
-                Settings
-              </Link>
-              {user.app_role === 'admin' && clientInfo && (
-                <span className="text-xs text-slate-500 whitespace-nowrap ml-2">(Viewing: {clientInfo.name})</span>
-              )}
-            </div>
-            <div className="hidden sm:flex items-center gap-4">
-              {user.app_role === 'admin' && (
-                <button
-                  onClick={() => {
-                    localStorage.removeItem('admin_view_client_id');
-                    navigate(createPageUrl('AdminDashboard'));
-                  }}
-                  className="px-3 py-1.5 text-sm border border-slate-700 text-slate-300 rounded-md hover:bg-white/5 focus:outline-none focus:ring-2 focus:ring-[#D6FF03]"
-                >
-                  Back to Admin
-                </button>
-              )}
-              <span className="text-sm text-slate-400">{user.full_name}</span>
-              <button onClick={() => base44.auth.logout()} className="text-sm text-slate-500 hover:text-white transition-colors">Logout</button>
-            </div>
-          </div>
-        </div>
-      </nav>
+    <div className="min-h-screen bg-[#0B0F1A] flex">
+      <ClientSidebar user={user} currentPage="ClientReport" />
 
-      <main className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-8">
+      <main className="flex-1 min-w-0 pt-14 md:pt-6 px-3 sm:px-6 lg:px-8 py-4 sm:py-8">
         <div className="mb-4 sm:mb-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4">
           <div>
             <h1 className="text-xl sm:text-3xl font-bold text-white">Performance Report</h1>
