@@ -12,7 +12,7 @@ const SYNC_OPTIONS = [
   { key: 'expenses', label: 'Expenses', fn: 'syncExpensesSheet' },
 ];
 
-export default function AdminUserMenu({ user }) {
+export default function AdminUserMenu({ user, collapsed }) {
   const [open, setOpen] = useState(false);
   const [syncSubOpen, setSyncSubOpen] = useState(false);
   const [confirmSync, setConfirmSync] = useState(null); // key of sheet to confirm
