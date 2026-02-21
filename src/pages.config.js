@@ -58,6 +58,7 @@ import BankAccountSettings from './pages/BankAccountSettings';
 import ClientManagement from './pages/ClientManagement';
 import ClientPerformance from './pages/ClientPerformance';
 import ClientPortal from './pages/ClientPortal';
+import ClientProfitability from './pages/ClientProfitability';
 import ClientReport from './pages/ClientReport';
 import ClientSettings from './pages/ClientSettings';
 import ClientView from './pages/ClientView';
@@ -70,12 +71,10 @@ import MMOnboard from './pages/MMOnboard';
 import MonthlyBilling from './pages/MonthlyBilling';
 import OnboardDashboard from './pages/OnboardDashboard';
 import PreviewEffects from './pages/PreviewEffects';
-import RevenueDashboard from './pages/RevenueDashboard';
 import SetterDashboard from './pages/SetterDashboard';
 import SetterPerformance from './pages/SetterPerformance';
 import SetterStats from './pages/SetterStats';
 import UserManagement from './pages/UserManagement';
-import ClientProfitability from './pages/ClientProfitability';
 import __Layout from './Layout.jsx';
 
 
@@ -91,6 +90,7 @@ export const PAGES = {
     "ClientManagement": ClientManagement,
     "ClientPerformance": ClientPerformance,
     "ClientPortal": ClientPortal,
+    "ClientProfitability": ClientProfitability,
     "ClientReport": ClientReport,
     "ClientSettings": ClientSettings,
     "ClientView": ClientView,
@@ -103,12 +103,10 @@ export const PAGES = {
     "MonthlyBilling": MonthlyBilling,
     "OnboardDashboard": OnboardDashboard,
     "PreviewEffects": PreviewEffects,
-    "RevenueDashboard": RevenueDashboard,
     "SetterDashboard": SetterDashboard,
     "SetterPerformance": SetterPerformance,
     "SetterStats": SetterStats,
     "UserManagement": UserManagement,
-    "ClientProfitability": ClientProfitability,
 }
 
 export const pagesConfig = {
