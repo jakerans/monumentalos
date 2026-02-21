@@ -204,6 +204,7 @@ export default function AdminDashboard() {
             </button>
           </div>
         )}
+        </div>
       </main>
 
       <GoalManagementModal open={goalsOpen} onOpenChange={setGoalsOpen} goals={goals} onSaved={refetchDash} />
