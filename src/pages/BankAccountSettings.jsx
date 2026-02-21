@@ -92,7 +92,7 @@ export default function BankAccountSettings() {
   useEffect(() => {
     base44.auth.me().then(u => {
       setUser(u);
-      if (u?.role !== 'admin') navigate('/');
+      if (u?.app_role !== 'admin') navigate(createPageUrl('AdminDashboard'));
     }).catch(() => base44.auth.redirectToLogin());
   }, []);
 
