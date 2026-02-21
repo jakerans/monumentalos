@@ -4,8 +4,8 @@ import { createPageUrl } from '@/utils';
 import { base44 } from '@/api/base44Client';
 import {
   LayoutDashboard, Users, Receipt, Calculator, Headset, UserCog,
-  Menu, X, LogOut, ArrowRightLeft, Settings, BarChart3, Wallet,
-  TrendingUp, Landmark, Gift, Activity, Eye,
+  Menu, X, LogOut, ArrowRightLeft, BarChart3, Wallet,
+  Landmark, Gift, Activity, Eye, PieChart, Target, LineChart, Building, Cog, DollarSign, ArrowUpDown,
 } from 'lucide-react';
 
 const financeAdminNav = [
