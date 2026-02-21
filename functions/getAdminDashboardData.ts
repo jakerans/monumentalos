@@ -43,6 +43,7 @@ function buildDailySparkline(items, dateKey, days = 14) {
 
 Deno.serve(async (req) => {
   try {
+    const now = new Date();
     const base44 = createClientFromRequest(req);
     const user = await base44.auth.me();
     if (!user || user.app_role !== 'admin') {
@@ -66,7 +67,6 @@ Deno.serve(async (req) => {
       fetchAllFiltered(sr.Spiff, { status: 'active' }, '-created_date'),
     ]);
 
-    const now = new Date();
     const thisMonthStart = new Date(now.getFullYear(), now.getMonth(), 1);
     const lastMonthStart = new Date(now.getFullYear(), now.getMonth() - 1, 1);
     const lastMonthEnd = new Date(now.getFullYear(), now.getMonth(), 0, 23, 59, 59);
