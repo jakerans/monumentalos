@@ -185,8 +185,8 @@ Deno.serve(async (req) => {
       const resolvedCategory = isDistribution ? 'distribution' : ((sheetCategory && VALID_CATEGORIES.includes(sheetCategory)) ? sheetCategory : 'uncategorized');
       const resolvedExpType = isDistribution ? 'distribution' : ((sheetExpType && VALID_TYPES.includes(sheetExpType)) ? sheetExpType : 'uncategorized');
 
-      const rawAccountId = cell(row, BANK_ACCOUNT_COL);
-      const resolvedBankAccountId = rawAccountId ? bankAccountByAccountId[rawAccountId.trim().toLowerCase()] : null;
+      const resolvedBankAccountId = matchBankAccount(cell(row, BANK_ACCOUNT_COL));
+      if (resolvedBankAccountId) bankAccountMatched++; else bankAccountUnmatched++;
 
       const newExpense = {
         category: resolvedCategory,
@@ -247,11 +247,15 @@ Deno.serve(async (req) => {
       if (sheetClientId && sheetClientId !== (existing.client_id || '')) dbUpdates.client_id = sheetClientId;
       if (sheetVendor && sheetVendor !== (existing.vendor || '')) dbUpdates.vendor = sheetVendor;
 
-      // Auto-match bank account if not already set
-      const rawAccountIdExisting = cell(row, BANK_ACCOUNT_COL);
-      if (rawAccountIdExisting && !existing.bank_account_id) {
-        const matchedBankId = bankAccountByAccountId[rawAccountIdExisting.trim().toLowerCase()];
-        if (matchedBankId) dbUpdates.bank_account_id = matchedBankId;
+      // Auto-match bank account if not already set (never overwrite manual assignment)
+      if (!existing.bank_account_id) {
+        const matchedBankId = matchBankAccount(cell(row, BANK_ACCOUNT_COL));
+        if (matchedBankId) {
+          dbUpdates.bank_account_id = matchedBankId;
+          bankAccountMatched++;
+        } else {
+          bankAccountUnmatched++;
+        }
       }
 
       if (Object.keys(dbUpdates).length > 0) {
@@ -289,6 +293,8 @@ Deno.serve(async (req) => {
       skipped,
       updated,
       totalProcessed: rows.length - 1,
+      bankAccountMatched,
+      bankAccountUnmatched,
     });
   } catch (error) {
     return Response.json({ error: error.message }, { status: 500 });
