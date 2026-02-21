@@ -331,7 +331,7 @@ export default function SetterDashboard() {
         </div>
 
         {dashTab === 'schedule' ? (
-          <MyScheduleTab workspaceData={workspaceData} />
+          <MyScheduleTab workspaceData={workspaceData} userId={user?.id} />
         ) : (
         <>
         {/* Hero row: Welcome + AI message on left, Spiff cards on right */}
