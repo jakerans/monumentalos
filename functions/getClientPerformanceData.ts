@@ -37,9 +37,12 @@ Deno.serve(async (req) => {
 
     const sr = base44.asServiceRole.entities;
 
+    const cutoff = new Date();
+    cutoff.setDate(cutoff.getDate() - 180);
+
     const [clients, leads, spend, paidBilling] = await Promise.all([
       sr.Client.list(),
-      fetchAll(sr.Lead, '-created_date'),
+      fetchAllFiltered(sr.Lead, { created_date: { $gte: cutoff.toISOString() } }, '-created_date'),
       fetchAll(sr.Spend, '-date'),
       fetchAllFiltered(sr.MonthlyBilling, { status: 'paid' }, '-paid_date'),
     ]);

@@ -46,9 +46,12 @@ Deno.serve(async (req) => {
 
     const sr = base44.asServiceRole.entities;
 
+    const ninetyDaysAgo = new Date();
+    ninetyDaysAgo.setDate(ninetyDaysAgo.getDate() - 90);
+
     // Fetch all data in parallel using service role with pagination safety
     const [allLeads, clients, spiffs, profiles] = await Promise.all([
-      fetchAll(sr.Lead, '-created_date'),
+      fetchAllFiltered(sr.Lead, { created_date: { $gte: ninetyDaysAgo.toISOString() } }, '-created_date'),
       sr.Client.list(),
       fetchAllFiltered(sr.Spiff, { status: 'active' }, '-created_date'),
       fetchAllFiltered(sr.SetterProfile, { status: 'active' }, '-created_date'),

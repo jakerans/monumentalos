@@ -46,9 +46,9 @@ export default function MMDashboard() {
 
   // Single backend call for all dashboard data
   const { data: dashData, isLoading: dashLoading, refetch: refetchDash } = useQuery({
-    queryKey: ['mm-dashboard-data'],
+    queryKey: ['mm-dashboard-data', dateStart, dateEnd],
     queryFn: async () => {
-      const res = await base44.functions.invoke('getMMDashboardData');
+      const res = await base44.functions.invoke('getMMDashboardData', { dateStart, dateEnd });
       return res.data;
     },
     staleTime: 2 * 60 * 1000,
