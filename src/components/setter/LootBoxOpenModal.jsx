@@ -50,6 +50,9 @@ export default function LootBoxOpenModal({ box, open, onClose, onOpened, setterI
 
   const rc = box ? RARITY_COLORS[box.rarity] || RARITY_COLORS.common : RARITY_COLORS.common;
   const imageUrl = box && lootSettings ? lootSettings[`image_${box.rarity}`] : null;
+  const openedImageUrl = box && lootSettings
+    ? (lootSettings[`image_${box.rarity}_opened`] || lootSettings[`image_${box.rarity}`] || null)
+    : null;
 
   const handleOpenNow = () => setStage('shaking');
 
@@ -105,10 +108,10 @@ export default function LootBoxOpenModal({ box, open, onClose, onOpened, setterI
               <ShakingStage rc={rc} rarity={box.rarity} imageUrl={imageUrl} onComplete={handleShakeComplete} />
             )}
             {stage === 'revealing' && (
-              <RevealingStage rc={rc} rarity={box.rarity} imageUrl={imageUrl} prize={prize} onComplete={handleRevealComplete} />
+              <RevealingStage rc={rc} rarity={box.rarity} imageUrl={imageUrl} openedImageUrl={openedImageUrl} prize={prize} onComplete={handleRevealComplete} />
             )}
             {stage === 'done' && (
-              <DoneStage rc={rc} rarity={box.rarity} prize={prize} lootWin={lootWin} onClose={onClose} />
+              <DoneStage rc={rc} rarity={box.rarity} prize={prize} lootWin={lootWin} openedImageUrl={openedImageUrl} onClose={onClose} />
             )}
           </div>
         </motion.div>
@@ -305,7 +308,7 @@ function PrizeCard({ rc, rarity, prize, openedImageUrl, children }) {
   );
 }
 
-function RevealingStage({ rc, rarity, imageUrl, prize, onComplete }) {
+function RevealingStage({ rc, rarity, imageUrl, openedImageUrl, prize, onComplete }) {
   const [boxGone, setBoxGone] = useState(false);
 
   useEffect(() => {
@@ -345,7 +348,7 @@ function RevealingStage({ rc, rarity, imageUrl, prize, onComplete }) {
           onAnimationComplete={onComplete}
           className="absolute z-10"
         >
-          <PrizeCard rc={rc} rarity={rarity} prize={prize} />
+          <PrizeCard rc={rc} rarity={rarity} prize={prize} openedImageUrl={openedImageUrl} />
         </motion.div>
       )}
     </div>
@@ -353,7 +356,7 @@ function RevealingStage({ rc, rarity, imageUrl, prize, onComplete }) {
 }
 
 /* ──── DONE STAGE ──── */
-function DoneStage({ rc, rarity, prize, onClose }) {
+function DoneStage({ rc, rarity, prize, openedImageUrl, onClose }) {
   const claimBg = rarity === 'common' ? '#475569' : rc.primary;
 
   return (
@@ -363,7 +366,7 @@ function DoneStage({ rc, rarity, prize, onClose }) {
         animate={{ opacity: 1 }}
         className="relative z-10"
       >
-        <PrizeCard rc={rc} rarity={rarity} prize={prize}>
+        <PrizeCard rc={rc} rarity={rarity} prize={prize} openedImageUrl={openedImageUrl}>
           <button
             onClick={onClose}
             className="w-full py-3 rounded-xl text-sm font-bold text-black transition-opacity hover:opacity-90"
