@@ -147,6 +147,7 @@ export default function SpiffManager({ leads, users }) {
   const [form, setForm] = useState({
     title: '', description: '', scope: 'team_each', assigned_setter_id: '',
     qualifier: 'appointments', goal_value: '', reward: '', due_date: '', is_daily: false, status: 'active',
+    loot_box_enabled: false, loot_box_rarity: 'common',
   });
 
   const { data: spiffs = [], refetch } = useQuery({
@@ -164,6 +165,44 @@ export default function SpiffManager({ leads, users }) {
       const goalMet = checkSpiffGoalMet(spiff, leads, users);
       if (goalMet) {
         await base44.entities.Spiff.update(spiff.id, { status: 'completed' });
+
+        // Award loot boxes if enabled
+        if (spiff.loot_box_enabled && spiff.loot_box_rarity) {
+          const settersToAward = [];
+          if (spiff.scope === 'individual' && spiff.assigned_setter_id) {
+            settersToAward.push(spiff.assigned_setter_id);
+          } else {
+            // team_each or team_company — award each setter who met the goal individually
+            const { rangeStart, rangeEnd } = getDateRangeForSpiff(spiff);
+            const inRange = (d) => d ? new Date(d) >= rangeStart && new Date(d) <= rangeEnd : false;
+            const allSetters = users.filter(u => u.app_role === 'setter');
+            const isSTL = spiff.qualifier === 'stl';
+
+            for (const setter of allSetters) {
+              let progress;
+              if (spiff.qualifier === 'appointments') {
+                progress = leads.filter(l => l.booked_by_setter_id === setter.id && inRange(l.date_appointment_set)).length;
+              } else {
+                const stlLeads = leads.filter(l => l.setter_id === setter.id && l.speed_to_lead_minutes != null && inRange(l.created_date));
+                progress = stlLeads.length > 0 ? Math.round(stlLeads.reduce((s, l) => s + l.speed_to_lead_minutes, 0) / stlLeads.length) : null;
+              }
+              const met = progress != null && (isSTL ? progress <= spiff.goal_value : progress >= spiff.goal_value);
+              if (met) settersToAward.push(setter.id);
+            }
+          }
+
+          for (const setterId of settersToAward) {
+            await base44.entities.LootBox.create({
+              setter_id: setterId,
+              rarity: spiff.loot_box_rarity,
+              status: 'unopened',
+              awarded_date: todayStr,
+              source: 'spiff_reward',
+              spiff_id: spiff.id,
+            });
+          }
+        }
+
         refetch();
       } else if (spiff.is_daily && spiff.due_date && spiff.due_date < todayStr) {
         // Daily spiff expired — day has passed without meeting goal
@@ -193,6 +232,7 @@ export default function SpiffManager({ leads, users }) {
       title: '', description: '', scope: 'team_each', assigned_setter_id: '',
       qualifier: 'appointments', goal_value: '', reward: '',
       due_date: endOfMonth.toISOString().split('T')[0], is_daily: false, status: 'active',
+      loot_box_enabled: false, loot_box_rarity: 'common',
     });
   };
 
@@ -201,6 +241,8 @@ export default function SpiffManager({ leads, users }) {
       ...form,
       goal_value: Number(form.goal_value),
       due_date: form.due_date,
+      loot_box_enabled: form.loot_box_enabled,
+      loot_box_rarity: form.loot_box_enabled ? form.loot_box_rarity : undefined,
       ...(form.scope !== 'individual' ? { assigned_setter_id: undefined } : {}),
     };
     createMutation.mutate(data);
@@ -263,13 +305,16 @@ export default function SpiffManager({ leads, users }) {
                       </span>
                     )}
                     <span>Goal: {sp.qualifier === 'stl' ? `≤${sp.goal_value}m` : sp.goal_value}</span>
-                  </div>
-                </div>
-                <button onClick={() => deleteMutation.mutate(sp.id)} className="text-slate-600 hover:text-red-400 p-1">
-                  <Trash2 className="w-3.5 h-3.5" />
-                </button>
-              </div>
-              <SpiffProgressBar spiff={sp} leads={leads} users={users} />
+                    {sp.loot_box_enabled && (
+                      <span className="text-purple-400 font-medium">🎁 Loot Box: {sp.loot_box_rarity?.charAt(0).toUpperCase() + sp.loot_box_rarity?.slice(1)}</span>
+                    )}
+                    </div>
+                    </div>
+                    <button onClick={() => deleteMutation.mutate(sp.id)} className="text-slate-600 hover:text-red-400 p-1">
+                    <Trash2 className="w-3.5 h-3.5" />
+                    </button>
+                    </div>
+                    <SpiffProgressBar spiff={sp} leads={leads} users={users} />
             </div>
           );
         })}
@@ -408,6 +453,33 @@ export default function SpiffManager({ leads, users }) {
                 <label className="text-[10px] text-slate-400 uppercase mb-1 block">Due Date</label>
                 <input type="date" value={form.due_date} onChange={e => setForm({ ...form, due_date: e.target.value })}
                   className="w-full px-3 py-2 text-sm bg-slate-900 border border-slate-700 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-[#D6FF03]" />
+              </div>
+            )}
+
+            {/* Loot Box Award Toggle */}
+            <div className="flex items-center gap-3 py-1">
+              <button
+                type="button"
+                onClick={() => setForm({ ...form, loot_box_enabled: !form.loot_box_enabled })}
+                className={`relative w-10 h-5 rounded-full transition-colors ${form.loot_box_enabled ? 'bg-purple-500' : 'bg-slate-700'}`}
+              >
+                <div className={`absolute top-0.5 w-4 h-4 rounded-full bg-white shadow transition-transform ${form.loot_box_enabled ? 'translate-x-5' : 'translate-x-0.5'}`} />
+              </button>
+              <div>
+                <span className="text-xs text-white font-medium">Award Loot Box on Completion</span>
+                <p className="text-[10px] text-slate-500">Winning setters receive a guaranteed loot box</p>
+              </div>
+            </div>
+            {form.loot_box_enabled && (
+              <div>
+                <label className="text-[10px] text-slate-400 uppercase mb-1 block">Loot Box Rarity</label>
+                <select value={form.loot_box_rarity} onChange={e => setForm({ ...form, loot_box_rarity: e.target.value })}
+                  className="w-full px-3 py-2 text-sm bg-slate-900 border border-slate-700 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-[#D6FF03]">
+                  <option value="common">Common</option>
+                  <option value="rare">Rare</option>
+                  <option value="epic">Epic</option>
+                  <option value="legendary">Legendary</option>
+                </select>
               </div>
             )}
             <button
