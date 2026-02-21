@@ -1,5 +1,5 @@
 import React from 'react';
-import Driver from 'driver.js';
+import { driver as createDriver } from 'driver.js';
 import 'driver.js/dist/driver.css';
 
 export default function PayrollTourGuide({ onStart, setRunPayrollModalOpen }) {
