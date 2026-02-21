@@ -83,8 +83,6 @@ Deno.serve(async (req) => {
     const newClientsThisMonth = clients.filter(c => inMTD(c.created_date)).length;
     const newClientsLastMonth = clients.filter(c => inLM(c.created_date)).length;
 
-    const ninetyDaysAgo = new Date(now);
-    ninetyDaysAgo.setDate(ninetyDaysAgo.getDate() - 90);
     const churnedCount = inactiveClients.filter(c => c.deactivated_date && new Date(c.deactivated_date) >= ninetyDaysAgo).length;
     const baseCount = activeClients.length + churnedCount;
     const churnRate = baseCount > 0 ? Math.round((churnedCount / baseCount) * 100) : 0;
