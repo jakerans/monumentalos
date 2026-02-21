@@ -233,7 +233,7 @@ function ShakingStage({ rc, rarity, imageUrl, onComplete }) {
 }
 
 /* ──── REVEALING STAGE ──── */
-function PrizeCard({ rc, rarity, prize, children }) {
+function PrizeCard({ rc, rarity, prize, openedImageUrl, children }) {
   const bannerBg = rarity === 'common' ? '#475569' : rc.primary;
 
   return (
@@ -259,8 +259,8 @@ function PrizeCard({ rc, rarity, prize, children }) {
 
         {/* Box icon — opened image */}
         <div className="flex items-center justify-center py-8 shrink-0">
-          {this_openedImageUrl ? (
-            <img src={this_openedImageUrl} alt={rarity} className="w-20 h-20 object-contain" />
+          {openedImageUrl ? (
+            <img src={openedImageUrl} alt={rarity} className="w-20 h-20 object-contain" />
           ) : (
             <Package className="w-16 h-16 text-white opacity-80" />
           )}
