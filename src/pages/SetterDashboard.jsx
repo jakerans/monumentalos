@@ -81,6 +81,18 @@ export default function SetterDashboard() {
     retryDelay: (attempt) => Math.min(1000 * 2 ** attempt, 10000),
   });
 
+  // Workspace data (clock, schedule, hours)
+  const { data: workspaceData, refetch: refetchWorkspace } = useQuery({
+    queryKey: ['setter-workspace-data'],
+    queryFn: async () => {
+      const res = await base44.functions.invoke('getSetterWorkspaceData');
+      return res.data;
+    },
+    staleTime: 60 * 1000,
+    retry: 2,
+    retryDelay: (attempt) => Math.min(1000 * 2 ** attempt, 10000),
+  });
+
   // Users still fetched separately (for name lookups in detail panels)
   const { data: users = [] } = useQuery({
     queryKey: ['all-users'],
