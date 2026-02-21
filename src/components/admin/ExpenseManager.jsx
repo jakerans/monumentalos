@@ -103,7 +103,7 @@ export default function ExpenseManager({ startDate, endDate, onAddExpense }) {
   };
 
   // Clear selection when page/filters change
-  useEffect(() => { setSelected(new Set()); setSelectAllMode(null); }, [page, filterCat, filterType, startDate, endDate]);
+  useEffect(() => { setSelected(new Set()); setSelectAllMode(null); }, [page, filterCat, filterType, filterAccount, startDate, endDate]);
 
   const toggleSelect = (id) => {
     setSelected(prev => {
@@ -294,6 +294,13 @@ export default function ExpenseManager({ startDate, endDate, onAddExpense }) {
             <option value="overhead">Overhead</option>
             <option value="distribution">Distribution</option>
           </select>
+          {bankAccounts.length > 0 && (
+            <select value={filterAccount} onChange={e => handleFilterChange(setFilterAccount, e.target.value)} className="px-2 py-1.5 text-xs bg-slate-800 border border-slate-700 rounded-md text-slate-300 focus:outline-none focus:ring-1 focus:ring-[#D6FF03]/50">
+              <option value="all">All Accounts</option>
+              <option value="none">No Account</option>
+              {bankAccounts.map(a => <option key={a.id} value={a.id}>{a.name}</option>)}
+            </select>
+          )}
           <div className="flex-1" />
           <span className="text-xs text-slate-500">
             {totalFiltered} expense{totalFiltered !== 1 ? 's' : ''}
