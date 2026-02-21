@@ -82,6 +82,8 @@ export default function ClientPortal() {
   const pagination = portalData?.pagination || { page: 0, total_pages: 0, total_count: 0, has_more: false };
 
   const handleDisqualify = async (leadId) => {
+    const lead = activeLeads.find(l => l.id === leadId);
+    if (!lead || lead.client_id !== clientId) return;
     await base44.entities.Lead.update(leadId, { status: 'disqualified' });
     refetch();
     toast({ title: 'Lead Disqualified', variant: 'default' });

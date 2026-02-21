@@ -38,7 +38,7 @@ const ENUM_FIELDS = {
   lead_source: ['form', 'msg', 'quiz', 'inbound_call', 'agency'],
   status: ['new', 'first_call_made', 'contacted', 'appointment_booked', 'disqualified', 'completed'],
   dq_reason: ['looking_for_work', 'not_interested', 'wrong_invalid_number', 'project_size', 'oosa', 'client_availability'],
-  disposition: ['scheduled', 'showed', 'cancelled', 'rescheduled'],
+  disposition: ['scheduled', 'showed', 'cancelled', 'rescheduled', 'no_show'],
   outcome: ['pending', 'sold', 'lost'],
 };
 

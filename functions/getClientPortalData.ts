@@ -85,7 +85,7 @@ Deno.serve(async (req) => {
     const needsOutcomeLeads = visibleLeads.filter(l =>
       l.appointment_date && new Date(l.appointment_date) <= now &&
       (!l.outcome || l.outcome === 'pending') &&
-      l.disposition !== 'cancelled'
+      l.disposition !== 'cancelled' && l.disposition !== 'rescheduled'
     );
     const needsOutcomeIds = new Set(needsOutcomeLeads.map(l => l.id));
 
