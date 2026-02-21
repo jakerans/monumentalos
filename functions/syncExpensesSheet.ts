@@ -228,6 +228,13 @@ Deno.serve(async (req) => {
       if (sheetClientId && sheetClientId !== (existing.client_id || '')) dbUpdates.client_id = sheetClientId;
       if (sheetVendor && sheetVendor !== (existing.vendor || '')) dbUpdates.vendor = sheetVendor;
 
+      // Auto-match bank account if not already set
+      const rawAccountIdExisting = cell(row, BANK_ACCOUNT_COL);
+      if (rawAccountIdExisting && !existing.bank_account_id) {
+        const matchedBankId = bankAccountByAccountId[rawAccountIdExisting.trim().toLowerCase()];
+        if (matchedBankId) dbUpdates.bank_account_id = matchedBankId;
+      }
+
       if (Object.keys(dbUpdates).length > 0) {
         await base44.asServiceRole.entities.Expense.update(existing.id, dbUpdates);
         updated++;
