@@ -68,7 +68,7 @@ export default function AppointmentHistory() {
     <div className="min-h-screen bg-[#0B0F1A] flex">
       <ClientSidebar user={user} currentPage="AppointmentHistory" />
 
-      <main className="flex-1 min-w-0 pt-14 md:pt-0 px-3 sm:px-6 lg:px-8 py-4 sm:py-8">
+      <main className="flex-1 min-w-0 pt-14 md:pt-6 px-3 sm:px-6 lg:px-8 py-4 sm:py-8">
 
         <div className="bg-slate-800/50 rounded-lg shadow border border-slate-700/50 mb-6">
           <div className="px-4 sm:px-6 py-4">

@@ -79,7 +79,7 @@ export default function ClientSettings() {
     <div className="min-h-screen bg-[#0B0F1A] flex">
       <ClientSidebar user={user} currentPage="ClientSettings" />
 
-      <main className="flex-1 min-w-0 pt-14 md:pt-0 px-3 sm:px-6 lg:px-8 py-4 sm:py-8">
+      <main className="flex-1 min-w-0 pt-14 md:pt-6 px-3 sm:px-6 lg:px-8 py-4 sm:py-8">
         <div className="max-w-3xl mx-auto">
         <div className="flex items-center gap-2 mb-6">
           <Settings className="w-5 h-5 text-slate-300" />
