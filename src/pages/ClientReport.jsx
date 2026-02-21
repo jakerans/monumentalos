@@ -99,6 +99,14 @@ export default function ClientReport() {
           <div>
             <h1 className="text-xl sm:text-3xl font-bold text-white">Performance Report</h1>
             <p className="text-sm sm:text-base text-slate-400 mt-0.5 sm:mt-1">{clientInfo?.name || 'Loading...'}</p>
+            {user.app_role === 'admin' && (
+              <button
+                onClick={() => { localStorage.removeItem('admin_view_client_id'); navigate(createPageUrl('AdminDashboard')); }}
+                className="mt-1 text-xs text-slate-500 hover:text-[#D6FF03] transition-colors"
+              >
+                ← Back to Admin
+              </button>
+            )}
           </div>
           <DateRangePicker
             startDate={startDate}
