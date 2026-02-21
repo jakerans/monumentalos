@@ -1,5 +1,17 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
 
+async function fetchAllFiltered(entityRef, filter, sort, pageSize = 5000) {
+  let all = [];
+  let skip = 0;
+  while (true) {
+    const page = await entityRef.filter(filter, sort, pageSize, skip);
+    all = all.concat(page);
+    if (page.length < pageSize) break;
+    skip += pageSize;
+  }
+  return all;
+}
+
 const DEFAULTS = {
   base_drop_rate: 5,
   dry_spell_threshold: 25,
@@ -41,6 +53,11 @@ Deno.serve(async (req) => {
     const { setter_id, lead_id } = await req.json();
     if (!setter_id || !lead_id) {
       return Response.json({ error: 'setter_id and lead_id are required' }, { status: 400 });
+    }
+
+    // Caller verification — non-admins can only process drops for themselves
+    if (user.app_role !== 'admin' && user.id !== setter_id) {
+      return Response.json({ error: 'Forbidden' }, { status: 403 });
     }
 
     const sr = base44.asServiceRole.entities;
@@ -89,7 +106,7 @@ Deno.serve(async (req) => {
     const profile = profiles.length > 0 ? profiles[0] : null;
 
     // Fetch setter's leads to determine last active day and STL
-    const setterLeads = await sr.Lead.filter({ setter_id }, '-created_date', 500);
+    const setterLeads = await fetchAllFiltered(sr.Lead, { setter_id }, '-created_date');
 
     // Find last active day across created_date, first_call_made_date, date_appointment_set
     let lastActiveDay = null;
