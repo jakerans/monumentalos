@@ -148,7 +148,9 @@ Deno.serve(async (req) => {
       sr.CompanySettings.filter({ key: { $in: ['payroll', 'cogs_ratio'] } }, '-created_date', 10),
     ]);
     const activeEmployees = employees.filter(e => e.status === 'active');
-    const payrollSettings = companySettings[0] || {};
+    const payrollSettings = companySettings.find(s => s.key === 'payroll') || {};
+    const cogsRatioSetting = companySettings.find(s => s.key === 'cogs_ratio');
+    const cogsRatio = cogsRatioSetting?.value != null ? cogsRatioSetting.value : 0.6;
 
     // Payroll cycles per year
     const freq = payrollSettings.payroll_frequency || 'biweekly';
