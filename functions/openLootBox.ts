@@ -40,7 +40,8 @@ Deno.serve(async (req) => {
     }
 
     // Fetch active prizes for this rarity
-    const prizes = await sr.LootPrize.filter({ rarity: box.rarity, is_active: true }, '-drop_weight', 5000);
+    const allPrizesForRarity = await sr.LootPrize.filter({ rarity: box.rarity }, '-drop_weight', 5000);
+    const prizes = allPrizesForRarity.filter(p => p.is_active === true || p.is_active === 1);
 
     let selectedPrize;
     if (prizes.length === 0) {
