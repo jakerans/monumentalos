@@ -8,6 +8,7 @@ const BILLING_CONFIG = [
   { key: 'pay_per_show', label: 'Pay Per Show', color: '#3b82f6', glow: 'rgba(59,130,246,0.4)' },
   { key: 'pay_per_set', label: 'Pay Per Set', color: '#8b5cf6', glow: 'rgba(139,92,246,0.4)' },
   { key: 'retainer', label: 'Retainer', color: '#f59e0b', glow: 'rgba(245,158,11,0.4)' },
+  { key: 'hybrid', label: 'Hybrid', color: '#14b8a6', glow: 'rgba(20,184,166,0.4)' },
 ];
 
 const CustomTooltip = ({ active, payload }) => {
@@ -29,7 +30,17 @@ export default function RevenueBreakdownChart({ data }) {
   if (!data) return null;
 
   const breakdown = BILLING_CONFIG.map(bt => {
-    const entry = data[bt.key] || { revenue: 0, count: 0 };
+    let entry;
+    if (bt.key === 'hybrid') {
+      const hybridRetainer = data.hybrid_retainer || { revenue: 0, count: 0 };
+      const hybridPerformance = data.hybrid_performance || { revenue: 0, count: 0 };
+      entry = {
+        revenue: (hybridRetainer.revenue || 0) + (hybridPerformance.revenue || 0),
+        count: Math.max(hybridRetainer.count || 0, hybridPerformance.count || 0)
+      };
+    } else {
+      entry = data[bt.key] || { revenue: 0, count: 0 };
+    }
     return { name: bt.label, value: entry.revenue, color: bt.color, glow: bt.glow, count: entry.count };
   }).filter(d => d.value > 0 || d.count > 0);
 
