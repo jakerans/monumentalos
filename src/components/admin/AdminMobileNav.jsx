@@ -94,48 +94,69 @@ export default function AdminMobileNav({ currentPage, clients = [], user }) {
             </div>
 
             <nav className="space-y-1 flex-1">
-              {isFinanceAdmin ? (
-                financeAdminNav.map(item => {
-                  const Icon = item.icon;
-                  const active = currentPage === item.key;
-                  return (
-                    <Link
-                      key={item.key}
-                      to={createPageUrl(item.key)}
-                      onClick={() => setOpen(false)}
-                      className={`flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors ${
-                        active ? 'bg-white/10 text-[#D6FF03]' : 'text-slate-300 hover:bg-white/5'
-                      }`}
-                    >
-                      <Icon className="w-4 h-4" />
-                      <span className="text-sm font-medium">{item.label}</span>
-                    </Link>
-                  );
-                })
-              ) : (
-                adminSections.map(section => (
-                  <div key={section.label}>
-                    <p className="text-[10px] uppercase tracking-wider text-slate-500 px-3 mb-1.5 mt-3 first:mt-0">{section.label}</p>
-                    {section.items.map(item => {
-                      const Icon = item.icon;
-                      const active = currentPage === item.key;
-                      return (
-                        <Link
-                          key={item.key}
-                          to={createPageUrl(item.key)}
-                          onClick={() => setOpen(false)}
-                          className={`flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors ${
-                            active ? 'bg-white/10 text-[#D6FF03]' : 'text-slate-300 hover:bg-white/5'
-                          }`}
-                        >
-                          <Icon className="w-4 h-4" />
-                          <span className="text-sm font-medium">{item.label}</span>
-                        </Link>
-                      );
-                    })}
-                  </div>
-                ))
-              )}
+               {isFinanceAdmin ? (
+                 financeAdminNav.map(item => {
+                   const Icon = item.icon;
+                   const active = currentPage === item.key;
+                   return (
+                     <Link
+                       key={item.key}
+                       to={createPageUrl(item.key)}
+                       onClick={() => setOpen(false)}
+                       className={`flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors ${
+                         active ? 'bg-white/10 text-[#D6FF03]' : 'text-slate-300 hover:bg-white/5'
+                       }`}
+                     >
+                       <Icon className="w-4 h-4" />
+                       <span className="text-sm font-medium">{item.label}</span>
+                     </Link>
+                   );
+                 })
+               ) : (
+                 <>
+                   {/* Standalone Dashboard Link */}
+                   {(() => {
+                     const Icon = LayoutDashboard;
+                     const active = currentPage === 'AdminDashboard';
+                     return (
+                       <Link
+                         to={createPageUrl('AdminDashboard')}
+                         onClick={() => setOpen(false)}
+                         className={`flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors mb-3 pb-3 border-b border-slate-700/30 ${
+                           active ? 'bg-white/10 text-[#D6FF03]' : 'text-slate-300 hover:bg-white/5'
+                         }`}
+                       >
+                         <Icon className="w-4 h-4" />
+                         <span className="text-sm font-medium">Dashboard</span>
+                       </Link>
+                     );
+                   })()}
+
+                   {/* Section Groups */}
+                   {adminSections.map(section => (
+                     <div key={section.label}>
+                       <p className="text-[10px] uppercase tracking-wider text-slate-500 px-3 mb-1.5 mt-3">{section.label}</p>
+                       {section.items.map(item => {
+                         const Icon = item.icon;
+                         const active = currentPage === item.key;
+                         return (
+                           <Link
+                             key={item.key}
+                             to={createPageUrl(item.key)}
+                             onClick={() => setOpen(false)}
+                             className={`flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors ${
+                               active ? 'bg-white/10 text-[#D6FF03]' : 'text-slate-300 hover:bg-white/5'
+                             }`}
+                           >
+                             <Icon className="w-4 h-4" />
+                             <span className="text-sm font-medium">{item.label}</span>
+                           </Link>
+                         );
+                       })}
+                     </div>
+                   ))}
+                 </>
+               )}
 
               {/* View Switcher — admin only */}
               {!isFinanceAdmin && (
