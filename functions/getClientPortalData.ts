@@ -15,6 +15,17 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'client_id is required' }, { status: 400 });
     }
 
+    const role = user.app_role;
+    if (role === 'admin' || role === 'onboard_admin') {
+      // allowed
+    } else if (role === 'client') {
+      if (user.client_id !== client_id) {
+        return Response.json({ error: 'Forbidden' }, { status: 403 });
+      }
+    } else {
+      return Response.json({ error: 'Forbidden' }, { status: 403 });
+    }
+
     // Paginated fetch helper
     async function fetchAllFiltered(entityRef, filter, sort, pageSize = 5000) {
       let all = [];
