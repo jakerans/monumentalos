@@ -24,7 +24,7 @@ export default function LootAdmin() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [user, setUser] = useState(null);
-  const [activeTab, setActiveTab] = useState('table');
+  const [activeTab, setActiveTab] = useState('fulfillment');
   const [showAddModal, setShowAddModal] = useState(false);
 
   useEffect(() => {
