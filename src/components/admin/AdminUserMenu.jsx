@@ -74,12 +74,15 @@ export default function AdminUserMenu({ user, collapsed }) {
       <div className="flex flex-col items-end">
         <button
           onClick={() => { setOpen(!open); setSyncSubOpen(false); setConfirmSync(null); }}
-          className="flex items-center gap-1.5 text-xs text-slate-400 hover:text-white transition-colors px-2 py-1.5 rounded-md hover:bg-white/5"
+          className={`flex items-center gap-1.5 text-xs text-slate-400 hover:text-white transition-colors px-2 py-1.5 rounded-md hover:bg-white/5 ${
+            collapsed ? 'justify-center' : ''
+          }`}
         >
-          <span className="hidden sm:inline">{user?.full_name}</span>
-          <ChevronDown className={`w-3 h-3 transition-transform ${open ? 'rotate-180' : ''}`} />
+          {!collapsed && <span>{user?.full_name}</span>}
+          {!collapsed && <ChevronDown className={`w-3 h-3 transition-transform ${open ? 'rotate-180' : ''}`} />}
+          {collapsed && <ChevronDown className={`w-3 h-3 transition-transform ${open ? 'rotate-180' : ''}`} />}
         </button>
-        {user?.id && (
+        {!collapsed && user?.id && (
           <div className="flex items-center gap-1 px-2">
             <span className="text-[10px] text-slate-500 font-mono">{user.id.slice(0, 8)}...</span>
             <button
