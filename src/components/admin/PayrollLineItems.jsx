@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Plus, Trash2, Pencil, Check, X } from 'lucide-react';
+import React, { useState, useMemo } from 'react';
+import { Plus, Trash2, Pencil, Check, X, ChevronDown, ChevronUp } from 'lucide-react';
 
 const TYPE_OPTIONS = [
   { value: 'cogs', label: 'COGS' },
@@ -97,31 +97,158 @@ function LineItemRow({ item, onUpdate, onDelete }) {
     );
   }
 
+  return null; // Only used inside expanded breakdown via editing
+}
+
+const fmt = (n) => parseFloat(n).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+function PersonCard({ name, items, onUpdate, onDelete }) {
+  const [expanded, setExpanded] = useState(false);
+  const [editingItemId, setEditingItemId] = useState(null);
+
+  const salaryItems = items.filter(i => i.type === 'base_pay');
+  const bonusItems = items.filter(i => i.type === 'perf_pay' || i.type === 'setter_bonus' || i.type === 'loot_prizes');
+
+  const salaryTotal = salaryItems.reduce((s, i) => s + (parseFloat(i.amount) || 0), 0);
+  const bonusTotal = bonusItems.reduce((s, i) => s + (parseFloat(i.amount) || 0), 0);
+  const grandTotal = salaryTotal + bonusTotal;
+
   return (
-    <div className="flex items-center justify-between bg-slate-800 rounded-lg px-3 py-2.5 group hover:bg-slate-750">
-      <div className="flex-1 min-w-0 mr-3">
-        <p className="text-xs text-slate-300 truncate">{item.description}</p>
-        {item.employee_name && item.type !== 'custom' && (
-          <p className="text-[10px] text-slate-500 mt-0.5">{item.type === 'perf_pay' ? 'Performance Pay' : 'Base Pay'}</p>
-        )}
-        {item.type === 'custom' && (
-          <p className="text-[10px] text-emerald-400 mt-0.5">Custom Item</p>
-        )}
+    <div className="bg-slate-800/70 rounded-lg border border-slate-700/50 group">
+      {/* Header */}
+      <div className="px-3 py-2.5 flex items-center justify-between">
+        <span className="text-sm font-bold text-white">{name}</span>
+        <span className="text-sm font-bold text-white">${fmt(grandTotal)}</span>
       </div>
-      <div className="flex items-center gap-2 flex-shrink-0">
-        <TypeBadge type={item.expense_type} />
-        <span className="text-sm font-medium text-white min-w-[70px] text-right">
-          ${parseFloat(item.amount).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-        </span>
-        <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
-          <button onClick={startEdit} className="p-1 text-slate-400 hover:text-white rounded hover:bg-slate-700">
-            <Pencil className="w-3.5 h-3.5" />
-          </button>
-          <button onClick={() => onDelete(item.id)} className="p-1 text-slate-400 hover:text-red-400 rounded hover:bg-slate-700">
-            <Trash2 className="w-3.5 h-3.5" />
-          </button>
+
+      {/* Sub-rows */}
+      <div className="px-3 pb-2 space-y-1">
+        {/* Base Pay row */}
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <span className="text-xs text-slate-400">💼 Base Pay</span>
+            <span className="text-[10px] text-slate-500 italic">→ Salary in Gusto</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="text-xs text-white font-medium">${fmt(salaryTotal)}</span>
+            <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+              {salaryItems.map(si => (
+                <React.Fragment key={si.id}>
+                  <button onClick={() => setEditingItemId(editingItemId === si.id ? null : si.id)} className="p-0.5 text-slate-400 hover:text-white rounded hover:bg-slate-700">
+                    <Pencil className="w-3 h-3" />
+                  </button>
+                  <button onClick={() => onDelete(si.id)} className="p-0.5 text-slate-400 hover:text-red-400 rounded hover:bg-slate-700">
+                    <Trash2 className="w-3 h-3" />
+                  </button>
+                </React.Fragment>
+              ))}
+            </div>
+          </div>
         </div>
+
+        {/* Inline edit for salary items */}
+        {salaryItems.map(si => editingItemId === si.id && (
+          <LineItemRow key={`edit_${si.id}`} item={si} onUpdate={(id, u) => { onUpdate(id, u); setEditingItemId(null); }} onDelete={onDelete} />
+        ))}
+
+        {/* Bonus row */}
+        {bonusTotal > 0 && (
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <span className="text-xs text-slate-400">🎁 Bonuses</span>
+              <span className="text-[10px] text-slate-500 italic">→ Bonus in Gusto</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-medium" style={{ color: '#D6FF03' }}>${fmt(bonusTotal)}</span>
+            </div>
+          </div>
+        )}
+
+        {/* Toggle breakdown */}
+        {bonusItems.length > 0 && (
+          <div
+            onClick={() => setExpanded(!expanded)}
+            className="flex items-center gap-1 text-[10px] text-slate-500 hover:text-slate-300 cursor-pointer pt-0.5 select-none"
+          >
+            {expanded ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
+            {expanded ? 'hide breakdown' : 'see breakdown'}
+          </div>
+        )}
+
+        {/* Expanded breakdown */}
+        {expanded && (
+          <div className="pl-2 pt-1 space-y-1.5 border-l border-slate-700/50 ml-1">
+            {bonusItems.map(bi => (
+              <div key={bi.id}>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-1.5 min-w-0">
+                    <TypeBadge type={bi.expense_type} />
+                    <span className="text-[11px] text-slate-300 truncate">{bi.description}</span>
+                  </div>
+                  <div className="flex items-center gap-2 flex-shrink-0">
+                    <span className="text-xs text-white font-medium">${fmt(bi.amount)}</span>
+                    <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <button onClick={() => setEditingItemId(editingItemId === bi.id ? null : bi.id)} className="p-0.5 text-slate-400 hover:text-white rounded hover:bg-slate-700">
+                        <Pencil className="w-3 h-3" />
+                      </button>
+                      <button onClick={() => onDelete(bi.id)} className="p-0.5 text-slate-400 hover:text-red-400 rounded hover:bg-slate-700">
+                        <Trash2 className="w-3 h-3" />
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Inline edit */}
+                {editingItemId === bi.id && (
+                  <LineItemRow item={bi} onUpdate={(id, u) => { onUpdate(id, u); setEditingItemId(null); }} onDelete={onDelete} />
+                )}
+
+                {/* Sub-breakdown */}
+                {bi.breakdown && bi.breakdown.length > 0 && (
+                  <div className="pl-4 pt-0.5 space-y-0.5">
+                    {bi.breakdown.map((b, idx) => (
+                      <div key={idx} className="flex items-center justify-between">
+                        <span className="text-[10px] text-slate-500">{b.label}</span>
+                        <span className="text-[10px] text-slate-500">${fmt(b.amount)}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
       </div>
+    </div>
+  );
+}
+
+function GustoSummaryBox({ grouped }) {
+  const people = grouped
+    .map(g => {
+      const bonusTotal = g.items
+        .filter(i => i.type === 'perf_pay' || i.type === 'setter_bonus' || i.type === 'loot_prizes')
+        .reduce((s, i) => s + (parseFloat(i.amount) || 0), 0);
+      const salaryTotal = g.items
+        .filter(i => i.type === 'base_pay')
+        .reduce((s, i) => s + (parseFloat(i.amount) || 0), 0);
+      return { name: g.name, salaryTotal, bonusTotal };
+    })
+    .filter(p => p.bonusTotal > 0);
+
+  if (people.length === 0) return null;
+
+  return (
+    <div className="border-l-2 border-[#D6FF03] bg-slate-800/60 rounded-lg px-4 py-3 mb-4">
+      <p className="text-xs font-bold text-white uppercase tracking-wider mb-2">Gusto Entry Summary</p>
+      <div className="space-y-0.5">
+        {people.map(p => (
+          <p key={p.name} className="text-xs text-slate-300">
+            {p.name} — Salary: ${fmt(p.salaryTotal)} | Bonus: ${fmt(p.bonusTotal)}
+          </p>
+        ))}
+      </div>
+      <p className="text-[10px] text-slate-500 italic mt-2">Enter salary and bonus as separate fields in Gusto.</p>
     </div>
   );
 }
@@ -155,6 +282,22 @@ export default function PayrollLineItems({ lineItems, setLineItems }) {
     setNewItem({ description: '', amount: '', expense_type: 'overhead', category: 'payroll', vendor: '' });
     setAdding(false);
   };
+
+  const { grouped, ungrouped } = useMemo(() => {
+    const byName = {};
+    const noName = [];
+    for (const item of lineItems) {
+      if (item.employee_name && item.type !== 'custom') {
+        if (!byName[item.employee_name]) byName[item.employee_name] = [];
+        byName[item.employee_name].push(item);
+      } else {
+        noName.push(item);
+      }
+    }
+    const grouped = Object.entries(byName).map(([name, items]) => ({ name, items }));
+    grouped.sort((a, b) => a.name.localeCompare(b.name));
+    return { grouped, ungrouped: noName };
+  }, [lineItems]);
 
   return (
     <div className="space-y-3 py-2">
@@ -225,10 +368,32 @@ export default function PayrollLineItems({ lineItems, setLineItems }) {
         </div>
       )}
 
-      <div className="space-y-1.5 max-h-[400px] overflow-y-auto">
-        {lineItems.map(item => (
-          <LineItemRow key={item.id} item={item} onUpdate={handleUpdate} onDelete={handleDelete} />
+      <GustoSummaryBox grouped={grouped} />
+
+      <div className="space-y-2 max-h-[400px] overflow-y-auto">
+        {grouped.map(g => (
+          <PersonCard key={g.name} name={g.name} items={g.items} onUpdate={handleUpdate} onDelete={handleDelete} />
         ))}
+
+        {/* Ungrouped / custom items */}
+        {ungrouped.map(item => (
+          <div key={item.id} className="flex items-center justify-between bg-slate-800 rounded-lg px-3 py-2.5 group hover:bg-slate-750">
+            <div className="flex-1 min-w-0 mr-3">
+              <p className="text-xs text-slate-300 truncate">{item.description}</p>
+              <p className="text-[10px] text-emerald-400 mt-0.5">Custom Item</p>
+            </div>
+            <div className="flex items-center gap-2 flex-shrink-0">
+              <TypeBadge type={item.expense_type} />
+              <span className="text-sm font-medium text-white min-w-[70px] text-right">${fmt(item.amount)}</span>
+              <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                <button onClick={() => handleDelete(item.id)} className="p-1 text-slate-400 hover:text-red-400 rounded hover:bg-slate-700">
+                  <Trash2 className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            </div>
+          </div>
+        ))}
+
         {lineItems.length === 0 && (
           <div className="text-center py-8 text-sm text-slate-500">
             No line items. Add custom items using the button above.

@@ -113,6 +113,13 @@ Deno.serve(async (req) => {
             expense_type: 'cogs',
             category: 'payroll',
             editable: true,
+            breakdown: [
+              ...individualSpiffs
+                .filter((s) => s.assigned_setter_id === setter.id)
+                .map((s) => ({ label: s.title, amount: s.cash_value || 0 })),
+              ...teamEachSpiffs
+                .map((s) => ({ label: s.title, amount: s.cash_value || 0 })),
+            ],
           });
         }
       }
@@ -135,6 +142,7 @@ Deno.serve(async (req) => {
             category: 'payroll',
             editable: true,
             loot_win_ids: myWins.map((w) => w.id),
+            breakdown: myWins.map((w) => ({ label: w.prize_name, amount: w.cash_value || 0 })),
           });
         }
       }
