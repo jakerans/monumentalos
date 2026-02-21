@@ -19,8 +19,6 @@ export default function RunPayrollModal({ open, onOpenChange, onComplete }) {
   const [undoLoading, setUndoLoading] = useState(false);
   const [showUndoConfirm, setShowUndoConfirm] = useState(false);
 
-  const prevMonthLabel = dayjs(payrollDate).subtract(1, 'month').format('MMMM YYYY');
-
   const handleGeneratePreview = async () => {
     setLoading(true);
     const res = await base44.functions.invoke('runPayroll', {
