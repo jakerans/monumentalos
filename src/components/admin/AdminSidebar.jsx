@@ -90,8 +90,12 @@ export default function AdminSidebar({ user, currentPage, clients = [] }) {
 
   // Track which accordion sections are open
   const [openSections, setOpenSections] = useState(() => {
-    const defaultSection = isFinanceAdmin ? 'finance' : findSectionWithPage(currentPage, sections);
-    return defaultSection ? { [defaultSection]: true } : {};
+    if (isFinanceAdmin) {
+      return { finance: true };
+    }
+    // For admin: find the section containing currentPage, or default to Finance
+    const containingSection = findSectionWithPage(currentPage, sections);
+    return { [containingSection || 'finance']: true };
   });
 
   const toggleSection = (sectionId) => {
