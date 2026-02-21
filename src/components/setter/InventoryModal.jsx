@@ -49,6 +49,7 @@ export default function InventoryModal({
   });
 
   const liveBoxes = inventoryData?.unopenedBoxes ?? unopenedBoxes;
+  const paidDaysOffBank = inventoryData?.paidDaysOffBank || null;
 
   if (!open) return null;
 
@@ -127,7 +128,7 @@ export default function InventoryModal({
             <EligibilityBanner eligibility={eligibility} />
 
             <div className="px-5 py-4 space-y-6">
-              <LifetimeStatsRow stats={lifetimeStats} />
+              <LifetimeStatsRow stats={lifetimeStats} paidDaysOffBank={paidDaysOffBank} />
               <InventoryGrid
                 boxes={liveBoxes}
                 count={count}
@@ -185,19 +186,28 @@ function EligibilityBanner({ eligibility }) {
   );
 }
 
-function LifetimeStatsRow({ stats }) {
+function LifetimeStatsRow({ stats, paidDaysOffBank }) {
   const { totalOpened = 0, rarestWin, totalCashWon = 0, biggestWin } = stats;
 
   return (
     <div>
       <h3 className="text-xs text-slate-500 uppercase tracking-wider mb-2">Lifetime Stats</h3>
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
         <StatCard label="Total Opened" value={totalOpened} />
         <StatCard label="Rarest Win" value={
           rarestWin ? <Badge className={rarityBadgeClass[rarestWin]}>{rarestWin}</Badge> : '—'
         } />
         <StatCard label="Total Cash Won" value={`$${totalCashWon.toLocaleString()}`} />
         <StatCard label="Biggest Win" value={biggestWin != null ? `$${biggestWin.toLocaleString()}` : '—'} />
+        <div className="bg-slate-800/60 rounded-lg px-3 py-3 border border-slate-700/40">
+          <p className="text-[10px] text-slate-500 uppercase tracking-wider">Days Off Banked</p>
+          <div className={`text-lg font-bold mt-1 ${paidDaysOffBank?.daysAvailable > 0 ? 'text-amber-400' : 'text-white'}`}>
+            {paidDaysOffBank?.daysAvailable > 0 ? `🏖️ ${paidDaysOffBank.daysAvailable}` : '0'}
+          </div>
+          {paidDaysOffBank && (
+            <p className="text-[10px] text-slate-500 mt-0.5">{paidDaysOffBank.daysUsed} used / {paidDaysOffBank.daysEarned} earned</p>
+          )}
+        </div>
       </div>
     </div>
   );
