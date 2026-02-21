@@ -2,14 +2,14 @@ import React, { useEffect, useState } from 'react';
 import { Trophy, Calendar } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
-export default function CelebrationOverlay({ type, onDone }) {
+export default function CelebrationOverlay({ type, rarity, onDone }) {
   const [visible, setVisible] = useState(true);
 
   useEffect(() => {
     const timer = setTimeout(() => {
       setVisible(false);
       setTimeout(() => onDone?.(), 500);
-    }, type === 'rank_up' ? 4000 : 2500);
+    }, type === 'rank_up' ? 4000 : type === 'loot_drop' ? 2800 : 2500);
     return () => clearTimeout(timer);
   }, [type, onDone]);
 
@@ -96,6 +96,93 @@ export default function CelebrationOverlay({ type, onDone }) {
               >
                 You've taken the top spot! 🔥
               </motion.p>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    );
+  }
+
+  if (type === 'loot_drop') {
+    const rarityConfig = {
+      common:    { color: '#94a3b8', glow: 'rgba(148,163,184,0.4)', label: 'COMMON' },
+      rare:      { color: '#60a5fa', glow: 'rgba(96,165,250,0.5)',  label: 'RARE' },
+      epic:      { color: '#a855f7', glow: 'rgba(168,85,247,0.5)',  label: 'EPIC' },
+      legendary: { color: '#fbbf24', glow: 'rgba(251,191,36,0.6)',  label: 'LEGENDARY' },
+    }[rarity] || { color: '#94a3b8', glow: 'rgba(148,163,184,0.4)', label: 'COMMON' };
+
+    return (
+      <AnimatePresence>
+        {visible && (
+          <motion.div
+            className="fixed inset-0 z-[100] flex items-center justify-center pointer-events-none"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+          >
+            {/* Background glow */}
+            <motion.div
+              className="absolute inset-0"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: [0, 0.35, 0.15] }}
+              transition={{ duration: 1.2 }}
+              style={{ background: `radial-gradient(circle, ${rarityConfig.glow} 0%, transparent 70%)` }}
+            />
+
+            {/* Burst particles */}
+            {Array.from({ length: 20 }).map((_, i) => {
+              const angle = (i / 20) * Math.PI * 2;
+              return (
+                <motion.div
+                  key={i}
+                  className="absolute rounded-full"
+                  style={{ width: 6, height: 6, background: rarityConfig.color, left: '50%', top: '50%' }}
+                  initial={{ x: 0, y: 0, opacity: 1, scale: 1 }}
+                  animate={{
+                    x: Math.cos(angle) * (80 + Math.random() * 80),
+                    y: Math.sin(angle) * (80 + Math.random() * 80),
+                    opacity: 0,
+                    scale: 0,
+                  }}
+                  transition={{ duration: 1.2, delay: 0.1, ease: 'easeOut' }}
+                />
+              );
+            })}
+
+            {/* Main content */}
+            <motion.div
+              className="relative flex flex-col items-center gap-3"
+              initial={{ scale: 0 }}
+              animate={{ scale: [0, 1.2, 1] }}
+              transition={{ duration: 0.4, ease: 'easeOut' }}
+            >
+              <motion.div
+                animate={{ y: [0, -8, 0], rotate: [-5, 5, -5, 0] }}
+                transition={{ duration: 0.8, repeat: 1 }}
+                style={{ fontSize: '4rem', lineHeight: 1 }}
+              >
+                🎁
+              </motion.div>
+
+              <motion.p
+                className="text-2xl font-black"
+                style={{ color: rarityConfig.color, textShadow: `0 0 20px ${rarityConfig.glow}` }}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.2 }}
+              >
+                LOOT DROP!
+              </motion.p>
+
+              <motion.span
+                className="text-xs font-bold uppercase tracking-widest px-3 py-1 rounded-full"
+                style={{ color: rarityConfig.color, border: `1px solid ${rarityConfig.color}`, background: `${rarityConfig.glow}` }}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.35 }}
+              >
+                {rarityConfig.label}
+              </motion.span>
             </motion.div>
           </motion.div>
         )}

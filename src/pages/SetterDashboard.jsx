@@ -19,6 +19,7 @@ import LeaderboardWidget from '../components/setter/LeaderboardWidget';
 import CelebrationOverlay from '../components/setter/CelebrationOverlay';
 import DailySpiffBanner from '../components/setter/DailySpiffBanner';
 import InventoryModal from '../components/setter/InventoryModal';
+import LootBoxOpenModal from '../components/setter/LootBoxOpenModal';
 import PageErrorBoundary from '../components/shared/PageErrorBoundary';
 import PageLoader from '../components/shared/PageLoader';
 import { motion } from 'framer-motion';
@@ -43,6 +44,7 @@ export default function SetterDashboard() {
   const [celebration, setCelebration] = useState(null);
   const [inventoryOpen, setInventoryOpen] = useState(false);
   const [isOpeningBox, setIsOpeningBox] = useState(false);
+  const [droppedBox, setDroppedBox] = useState(null);
   const prevRankRef = useRef(null);
   const [animateRef] = useAutoAnimate({ duration: 350, easing: 'ease-out' });
 
@@ -219,8 +221,24 @@ export default function SetterDashboard() {
       booked_by_setter_id: user.id,
     });
     refetch();
-    setCelebration({ type: 'booking' });
     toast({ title: '🗓️ Appointment Booked!', description: `${lead?.name || 'Lead'} is scheduled.`, variant: 'success', duration: 5000 });
+
+    // Fire the drop engine — non-blocking
+    try {
+      const dropRes = await base44.functions.invoke('processLootBoxDrop', {
+        setter_id: user.id,
+        lead_id: leadId,
+      });
+      const drop = dropRes?.data;
+      if (drop?.dropped && drop?.loot_box_id) {
+        setDroppedBox({ id: drop.loot_box_id, rarity: drop.rarity, status: 'unopened' });
+        setCelebration({ type: 'loot_drop', rarity: drop.rarity });
+      } else {
+        setCelebration({ type: 'booking' });
+      }
+    } catch {
+      setCelebration({ type: 'booking' });
+    }
   };
 
   const handleAddLead = async (leadData) => {
@@ -441,6 +459,7 @@ export default function SetterDashboard() {
       {celebration && !isOpeningBox && (
         <CelebrationOverlay
           type={celebration.type}
+          rarity={celebration.rarity}
           onDone={() => setCelebration(null)}
         />
       )}
@@ -460,6 +479,20 @@ export default function SetterDashboard() {
         onOpenBox={(win) => {
           queryClient.invalidateQueries({ queryKey: ['setter-inventory', user?.id] });
         }}
+      />
+
+      <LootBoxOpenModal
+        box={droppedBox}
+        open={!!droppedBox && !celebration}
+        onClose={() => {
+          setDroppedBox(null);
+          queryClient.invalidateQueries({ queryKey: ['setter-inventory', user?.id] });
+        }}
+        onOpened={() => {
+          queryClient.invalidateQueries({ queryKey: ['setter-inventory', user?.id] });
+        }}
+        setterId={user?.id}
+        lootSettings={invData?.lootSettings || null}
       />
     </div>
     </PageErrorBoundary>
