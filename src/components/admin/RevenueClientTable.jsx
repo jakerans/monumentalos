@@ -117,7 +117,30 @@ function InlineEditRow({ client, clientSummary, onSaved }) {
         </select>
       </div>
 
-      {billingType === 'retainer' ? (
+      {billingType === 'hybrid' ? (
+        <div className="flex items-center gap-4 flex-wrap">
+          <div className="flex items-center gap-2">
+            <label className="text-[10px] text-slate-400">Base Retainer $</label>
+            <input
+              type="number"
+              value={hybridBaseRetainer}
+              onChange={e => setHybridBaseRetainer(e.target.value)}
+              className="bg-slate-700 text-white text-xs rounded px-2 py-1 w-24 border border-slate-600"
+            />
+          </div>
+          <div className="flex items-center gap-2">
+            <label className="text-[10px] text-slate-400">Performance Type</label>
+            <select
+              value={hybridPerformanceType}
+              onChange={e => setHybridPerformanceType(e.target.value)}
+              className="bg-slate-700 text-white text-xs rounded px-2 py-1 border border-slate-600"
+            >
+              <option value="pay_per_set">Pay Per Set</option>
+              <option value="pay_per_show">Pay Per Show</option>
+            </select>
+          </div>
+        </div>
+      ) : billingType === 'retainer' ? (
         <div className="flex items-center gap-2">
           <label className="text-[10px] text-slate-400">Monthly Retainer $</label>
           <input
