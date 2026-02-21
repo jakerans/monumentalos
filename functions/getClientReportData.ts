@@ -25,6 +25,17 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'client_id is required' }, { status: 400 });
     }
 
+    const role = user.app_role;
+    if (role === 'admin' || role === 'onboard_admin') {
+      // allowed
+    } else if (role === 'client') {
+      if (user.client_id !== client_id) {
+        return Response.json({ error: 'Forbidden' }, { status: 403 });
+      }
+    } else {
+      return Response.json({ error: 'Forbidden' }, { status: 403 });
+    }
+
     // Build date end with end-of-day for ISO comparisons
     const startISO = new Date(start_date + 'T00:00:00.000Z').toISOString();
     const endDate = new Date(end_date + 'T23:59:59.999Z');
