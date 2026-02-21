@@ -46,7 +46,7 @@ export default function LootBoxOpenModal({ box, open, onClose, onOpened, setterI
       })
       .catch(() => {
         backendDone.current = true;
-        setPrize({ name: 'Mystery Prize', description: 'Contact your manager to claim', prize_type: 'physical', cash_value: 0 });
+        setPrize({ name: 'Error — Contact Manager', description: 'Something went wrong opening this box', prize_type: 'physical', cash_value: 0 });
       });
   };
 
@@ -194,7 +194,7 @@ function RevealingStage({ color, rarity, prize, onComplete }) {
             {rarity}
           </div>
           <div className="p-6 flex flex-col items-center text-center gap-3">
-            {prize ? (
+            {prize !== null ? (
               <>
                 <p className="text-xl font-bold text-white">{prize.name}</p>
                 <p className="text-sm text-slate-400">{prize.description}</p>
@@ -205,16 +205,20 @@ function RevealingStage({ color, rarity, prize, onComplete }) {
                 )}
               </>
             ) : (
-              <div className="py-4">
+              <div className="py-6 w-full flex flex-col items-center gap-3">
                 <motion.div
-                  animate={{ rotate: 360 }}
-                  transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
-                  className="w-8 h-8 border-2 border-t-transparent rounded-full mx-auto"
-                  style={{ borderColor: `${color}60`, borderTopColor: 'transparent' }}
+                  animate={{ opacity: [0.3, 0.6, 0.3] }}
+                  transition={{ duration: 1.2, repeat: Infinity, ease: 'easeInOut' }}
+                  className="h-5 w-40 rounded-full bg-slate-700"
+                />
+                <motion.div
+                  animate={{ opacity: [0.3, 0.6, 0.3] }}
+                  transition={{ duration: 1.2, repeat: Infinity, ease: 'easeInOut', delay: 0.15 }}
+                  className="h-3 w-28 rounded-full bg-slate-700"
                 />
               </div>
             )}
-            <p className="text-xs text-slate-500 mt-1">Prize Unlocked!</p>
+            {prize !== null && <p className="text-xs text-slate-500 mt-1">Prize Unlocked!</p>}
           </div>
         </motion.div>
       )}
@@ -234,7 +238,7 @@ function DoneStage({ color, rarity, prize, onClose }) {
         {rarity}
       </div>
       <div className="p-6 flex flex-col items-center text-center gap-3">
-        {prize ? (
+        {prize !== null ? (
           <>
             <p className="text-xl font-bold text-white">{prize.name}</p>
             <p className="text-sm text-slate-400">{prize.description}</p>
@@ -245,7 +249,18 @@ function DoneStage({ color, rarity, prize, onClose }) {
             )}
           </>
         ) : (
-          <p className="text-white">Mystery Prize</p>
+          <div className="py-4 w-full flex flex-col items-center gap-3">
+            <motion.div
+              animate={{ opacity: [0.3, 0.6, 0.3] }}
+              transition={{ duration: 1.2, repeat: Infinity, ease: 'easeInOut' }}
+              className="h-5 w-40 rounded-full bg-slate-700"
+            />
+            <motion.div
+              animate={{ opacity: [0.3, 0.6, 0.3] }}
+              transition={{ duration: 1.2, repeat: Infinity, ease: 'easeInOut', delay: 0.15 }}
+              className="h-3 w-28 rounded-full bg-slate-700"
+            />
+          </div>
         )}
         <p className="text-xs text-slate-500 mt-1">Prize Unlocked!</p>
         <button

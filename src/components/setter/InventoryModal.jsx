@@ -3,7 +3,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { X } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { format } from 'date-fns';
-import { useQueryClient } from '@tanstack/react-query';
+import { useQueryClient, useQuery } from '@tanstack/react-query';
+import { base44 } from '@/api/base44Client';
 import LootBoxOpenModal from './LootBoxOpenModal';
 
 const rarityGlow = {
@@ -43,9 +44,20 @@ export default function InventoryModal({
   const openAllMode = useRef(false);
   const queryClient = useQueryClient();
 
+  const { data: inventoryData } = useQuery({
+    queryKey: ['setter-inventory', setterId],
+    queryFn: async () => {
+      const res = await base44.functions.invoke('getSetterInventoryData', { setter_id: setterId });
+      return res.data;
+    },
+    enabled: !!setterId && open,
+  });
+
+  const liveBoxes = inventoryData?.unopenedBoxes ?? unopenedBoxes;
+
   if (!open) return null;
 
-  const count = unopenedBoxes.length;
+  const count = liveBoxes.length;
   const countColor = count >= inventoryCap ? 'text-red-500' : count >= yellowWarning ? 'text-amber-400' : 'text-white';
 
   const handleWinResult = (win) => {
@@ -60,7 +72,7 @@ export default function InventoryModal({
 
     // If in open-all mode, advance to next box
     if (openAllMode.current) {
-      const remaining = unopenedBoxes.filter(b => b.id !== currentBoxId);
+      const remaining = liveBoxes.filter(b => b.id !== currentBoxId);
       if (remaining.length > 0) {
         setTimeout(() => setOpeningBox(remaining[0]), 300);
       } else {
@@ -70,9 +82,9 @@ export default function InventoryModal({
   };
 
   const handleOpenAll = () => {
-    if (unopenedBoxes.length > 0) {
+    if (liveBoxes.length > 0) {
       openAllMode.current = true;
-      setOpeningBox(unopenedBoxes[0]);
+      setOpeningBox(liveBoxes[0]);
     }
   };
 
@@ -124,7 +136,7 @@ export default function InventoryModal({
 
               {/* Inventory Section */}
               <InventoryGrid
-                boxes={unopenedBoxes}
+                boxes={liveBoxes}
                 count={count}
                 cap={inventoryCap}
                 countColor={countColor}
