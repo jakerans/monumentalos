@@ -149,6 +149,7 @@ Deno.serve(async (req) => {
       recentWins,
       consecutiveNoDrop,
       lootSettings: settings,
+      paidDaysOffBank: { daysEarned: bank?.days_earned || 0, daysUsed: bank?.days_used || 0, daysAvailable },
     });
   } catch (error) {
     console.error('getSetterInventoryData error:', error);
