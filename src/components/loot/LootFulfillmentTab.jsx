@@ -40,10 +40,22 @@ export default function LootFulfillmentTab({ pendingWins, onWinUpdated, users = 
     }
 
     try {
+      if (action === 'payroll') {
+        const setterName = getSetterName(win.setter_id);
+        await base44.entities.Expense.create({
+          category: 'payroll',
+          expense_type: 'cogs',
+          description: `Loot Prize — ${setterName} — ${win.prize_name}`,
+          amount: win.cash_value || 0,
+          date: today,
+          vendor: setterName,
+          recurring: false,
+        });
+      }
       await base44.entities.LootWin.update(win.id, updateData);
       onWinUpdated();
       setNotes(prev => ({ ...prev, [win.id]: '' }));
-      toast({ title: 'Win updated', variant: 'default' });
+      toast({ title: action === 'payroll' ? 'Prize added to payroll — expense created' : 'Win updated', variant: 'default' });
     } catch (error) {
       toast({ title: 'Error', description: error.message, variant: 'destructive' });
     }
