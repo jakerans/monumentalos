@@ -42,6 +42,7 @@ export default function SetterDashboard() {
   const [showDQ, setShowDQ] = useState(false);
   const [celebration, setCelebration] = useState(null);
   const [inventoryOpen, setInventoryOpen] = useState(false);
+  const [isOpeningBox, setIsOpeningBox] = useState(false);
   const prevRankRef = useRef(null);
   const [animateRef] = useAutoAnimate({ duration: 350, easing: 'ease-out' });
 

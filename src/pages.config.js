@@ -66,6 +66,7 @@ import EmployeeManagement from './pages/EmployeeManagement';
 import HealthMonitor from './pages/HealthMonitor';
 import LeadDetails from './pages/LeadDetails';
 import LeadFieldSettings from './pages/LeadFieldSettings';
+import LootAdmin from './pages/LootAdmin';
 import MMDashboard from './pages/MMDashboard';
 import MMOnboard from './pages/MMOnboard';
 import MonthlyBilling from './pages/MonthlyBilling';
@@ -75,7 +76,6 @@ import SetterDashboard from './pages/SetterDashboard';
 import SetterPerformance from './pages/SetterPerformance';
 import SetterStats from './pages/SetterStats';
 import UserManagement from './pages/UserManagement';
-import LootAdmin from './pages/LootAdmin';
 import __Layout from './Layout.jsx';
 
 
@@ -99,6 +99,7 @@ export const PAGES = {
     "HealthMonitor": HealthMonitor,
     "LeadDetails": LeadDetails,
     "LeadFieldSettings": LeadFieldSettings,
+    "LootAdmin": LootAdmin,
     "MMDashboard": MMDashboard,
     "MMOnboard": MMOnboard,
     "MonthlyBilling": MonthlyBilling,
@@ -108,7 +109,6 @@ export const PAGES = {
     "SetterPerformance": SetterPerformance,
     "SetterStats": SetterStats,
     "UserManagement": UserManagement,
-    "LootAdmin": LootAdmin,
 }
 
 export const pagesConfig = {

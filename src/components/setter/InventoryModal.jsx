@@ -1,24 +1,17 @@
 import React, { useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X } from 'lucide-react';
+import { X, Package } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { format } from 'date-fns';
 import { useQueryClient, useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import LootBoxOpenModal from './LootBoxOpenModal';
 
-const rarityGlow = {
-  common: 'shadow-slate-400/50 border-slate-400/30 bg-slate-800/60',
-  rare: 'shadow-blue-400/50 border-blue-400/30 bg-blue-950/40',
-  epic: 'shadow-purple-500/50 border-purple-500/30 bg-purple-950/40',
-  legendary: 'shadow-amber-400/50 border-amber-400/30 bg-amber-950/40',
-};
-
-const rarityTextColor = {
-  common: 'text-slate-300',
-  rare: 'text-blue-400',
-  epic: 'text-purple-400',
-  legendary: 'text-amber-400',
+const RARITY_COLORS = {
+  common: { primary: '#94a3b8', gradientFrom: '#334155', gradientTo: '#1e293b', glow: '0 0 30px #94a3b840', glowStrong: '0 0 60px #94a3b860' },
+  rare: { primary: '#60a5fa', gradientFrom: '#1e3a5f', gradientTo: '#1e3a8a', glow: '0 0 60px #60a5fa80', glowStrong: '0 0 120px #60a5faaa' },
+  epic: { primary: '#a855f7', gradientFrom: '#3b0764', gradientTo: '#581c87', glow: '0 0 80px #a855f7aa', glowStrong: '0 0 160px #a855f7cc' },
+  legendary: { primary: '#fbbf24', gradientFrom: '#1c1400', gradientTo: '#78350f', glow: '0 0 100px #fbbf24bb', glowStrong: '0 0 200px #fbbf24dd' },
 };
 
 const rarityBadgeClass = {
@@ -39,6 +32,8 @@ export default function InventoryModal({
   recentWins = [],
   setterId,
   onOpenBox,
+  onOpeningStateChange,
+  lootSettings,
 }) {
   const [openingBox, setOpeningBox] = useState(null);
   const openAllMode = useRef(false);
@@ -68,13 +63,16 @@ export default function InventoryModal({
   const handleOpenModalClose = () => {
     const currentBoxId = openingBox?.id;
     setOpeningBox(null);
+    if (onOpeningStateChange) onOpeningStateChange(false);
     queryClient.invalidateQueries({ queryKey: ['setter-inventory', setterId] });
 
-    // If in open-all mode, advance to next box
     if (openAllMode.current) {
       const remaining = liveBoxes.filter(b => b.id !== currentBoxId);
       if (remaining.length > 0) {
-        setTimeout(() => setOpeningBox(remaining[0]), 300);
+        setTimeout(() => {
+          setOpeningBox(remaining[0]);
+          if (onOpeningStateChange) onOpeningStateChange(true);
+        }, 300);
       } else {
         openAllMode.current = false;
       }
@@ -85,12 +83,14 @@ export default function InventoryModal({
     if (liveBoxes.length > 0) {
       openAllMode.current = true;
       setOpeningBox(liveBoxes[0]);
+      if (onOpeningStateChange) onOpeningStateChange(true);
     }
   };
 
   const handleOpenSingle = (box) => {
     openAllMode.current = false;
     setOpeningBox(box);
+    if (onOpeningStateChange) onOpeningStateChange(true);
   };
 
   return (
@@ -102,7 +102,6 @@ export default function InventoryModal({
           exit={{ opacity: 0 }}
           className="fixed inset-0 z-50 flex items-end sm:items-center justify-center"
         >
-          {/* Backdrop */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -111,7 +110,6 @@ export default function InventoryModal({
             onClick={onClose}
           />
 
-          {/* Modal */}
           <motion.div
             initial={{ opacity: 0, y: 60 }}
             animate={{ opacity: 1, y: 0 }}
@@ -119,7 +117,6 @@ export default function InventoryModal({
             transition={{ type: 'spring', damping: 28, stiffness: 300 }}
             className="relative w-full max-w-2xl max-h-[90vh] overflow-y-auto bg-slate-900 border border-slate-700/50 rounded-t-2xl sm:rounded-2xl"
           >
-            {/* Header */}
             <div className="sticky top-0 z-10 flex items-center justify-between px-5 py-4 bg-slate-900/95 backdrop-blur border-b border-slate-700/50">
               <h2 className="text-lg font-bold text-white">My Inventory</h2>
               <button onClick={onClose} className="p-1.5 rounded-md text-slate-400 hover:text-white hover:bg-white/10 transition-colors">
@@ -127,14 +124,10 @@ export default function InventoryModal({
               </button>
             </div>
 
-            {/* Eligibility Banner */}
             <EligibilityBanner eligibility={eligibility} />
 
             <div className="px-5 py-4 space-y-6">
-              {/* Lifetime Stats */}
               <LifetimeStatsRow stats={lifetimeStats} />
-
-              {/* Inventory Section */}
               <InventoryGrid
                 boxes={liveBoxes}
                 count={count}
@@ -142,9 +135,8 @@ export default function InventoryModal({
                 countColor={countColor}
                 onOpenBox={handleOpenSingle}
                 onOpenAll={handleOpenAll}
+                lootSettings={lootSettings}
               />
-
-              {/* Recent Wins */}
               <RecentWinsFeed wins={recentWins} />
             </div>
           </motion.div>
@@ -155,6 +147,7 @@ export default function InventoryModal({
             onClose={handleOpenModalClose}
             onOpened={handleWinResult}
             setterId={setterId}
+            lootSettings={lootSettings}
           />
         </motion.div>
       )}
@@ -219,7 +212,7 @@ function StatCard({ label, value }) {
   );
 }
 
-function InventoryGrid({ boxes, count, cap, countColor, onOpenBox, onOpenAll }) {
+function InventoryGrid({ boxes, count, cap, countColor, onOpenBox, onOpenAll, lootSettings }) {
   return (
     <div>
       <div className="flex items-center justify-between mb-3">
@@ -244,7 +237,7 @@ function InventoryGrid({ boxes, count, cap, countColor, onOpenBox, onOpenAll }) 
       ) : (
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
           {boxes.map(box => (
-            <BoxCard key={box.id} box={box} onOpen={onOpenBox} />
+            <BoxCard key={box.id} box={box} onOpen={onOpenBox} lootSettings={lootSettings} />
           ))}
         </div>
       )}
@@ -252,16 +245,29 @@ function InventoryGrid({ boxes, count, cap, countColor, onOpenBox, onOpenAll }) 
   );
 }
 
-function BoxCard({ box, onOpen }) {
+function BoxCard({ box, onOpen, lootSettings }) {
+  const rc = RARITY_COLORS[box.rarity] || RARITY_COLORS.common;
+  const imageUrl = lootSettings ? lootSettings[`image_${box.rarity}`] : null;
   const isLegendary = box.rarity === 'legendary';
+  const pulse = box.rarity === 'rare' || box.rarity === 'epic' || isLegendary;
 
   return (
     <motion.div
-      animate={isLegendary ? { boxShadow: ['0 0 12px rgba(251,191,36,0.3)', '0 0 24px rgba(251,191,36,0.5)', '0 0 12px rgba(251,191,36,0.3)'] } : {}}
-      transition={isLegendary ? { duration: 2, repeat: Infinity, ease: 'easeInOut' } : {}}
-      className={`rounded-xl border shadow-lg p-4 flex flex-col items-center gap-3 ${rarityGlow[box.rarity]}`}
+      animate={pulse ? { boxShadow: [rc.glow, rc.glowStrong, rc.glow] } : {}}
+      transition={pulse ? { duration: 1.5, repeat: Infinity, ease: 'easeInOut' } : {}}
+      className="rounded-xl p-4 flex flex-col items-center gap-3"
+      style={{
+        background: `linear-gradient(135deg, ${rc.gradientFrom}, ${rc.gradientTo})`,
+        border: `2px solid ${rc.primary}`,
+        boxShadow: rc.glow,
+      }}
     >
-      <span className={`text-sm font-bold capitalize ${rarityTextColor[box.rarity]}`}>
+      {imageUrl ? (
+        <img src={imageUrl} alt={box.rarity} className="w-16 h-16 object-contain" />
+      ) : (
+        <Package className="w-16 h-16 text-white opacity-90" />
+      )}
+      <span className="text-sm font-bold capitalize text-white">
         {box.rarity}
       </span>
       <button

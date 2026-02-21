@@ -1,23 +1,43 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Gift } from 'lucide-react';
+import { Gift, Package } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 
 const RARITY_COLORS = {
-  common: '#94a3b8',
-  rare: '#60a5fa',
-  epic: '#a855f7',
-  legendary: '#fbbf24',
+  common: { primary: '#94a3b8', gradientFrom: '#334155', gradientTo: '#1e293b', glow: '0 0 30px #94a3b840', glowStrong: '0 0 60px #94a3b860' },
+  rare: { primary: '#60a5fa', gradientFrom: '#1e3a5f', gradientTo: '#1e3a8a', glow: '0 0 60px #60a5fa80', glowStrong: '0 0 120px #60a5faaa' },
+  epic: { primary: '#a855f7', gradientFrom: '#3b0764', gradientTo: '#581c87', glow: '0 0 80px #a855f7aa', glowStrong: '0 0 160px #a855f7cc' },
+  legendary: { primary: '#fbbf24', gradientFrom: '#1c1400', gradientTo: '#78350f', glow: '0 0 100px #fbbf24bb', glowStrong: '0 0 200px #fbbf24dd' },
 };
 
-export default function LootBoxOpenModal({ box, open, onClose, onOpened, setterId }) {
+function getTiledBgStyle(primaryColor) {
+  const svg = `<svg xmlns='http://www.w3.org/2000/svg' width='40' height='40' viewBox='0 0 40 40'><path d='M20 0L40 20L20 40L0 20Z' fill='${primaryColor}' fill-opacity='0.1'/></svg>`;
+  return {
+    backgroundImage: `url("data:image/svg+xml,${encodeURIComponent(svg)}")`,
+    backgroundRepeat: 'repeat',
+    backgroundSize: '40px 40px',
+  };
+}
+
+function BoxVisual({ rarity, rc, imageUrl, size = 'large' }) {
+  const isLarge = size === 'large';
+  const iconSize = isLarge ? 'w-32 h-32' : 'w-16 h-16';
+  const imgSize = isLarge ? 'w-40 h-40' : 'w-20 h-20';
+
+  return imageUrl ? (
+    <img src={imageUrl} alt={rarity} className={`${imgSize} object-contain`} />
+  ) : (
+    <Package className={`${iconSize} text-white opacity-90`} />
+  );
+}
+
+export default function LootBoxOpenModal({ box, open, onClose, onOpened, setterId, lootSettings }) {
   const [stage, setStage] = useState('opening');
   const [prize, setPrize] = useState(null);
   const [lootWin, setLootWin] = useState(null);
   const backendDone = useRef(false);
   const backendResult = useRef(null);
 
-  // Reset state when box changes
   useEffect(() => {
     if (open && box) {
       setStage('opening');
@@ -28,15 +48,13 @@ export default function LootBoxOpenModal({ box, open, onClose, onOpened, setterI
     }
   }, [open, box?.id]);
 
-  const color = box ? RARITY_COLORS[box.rarity] || RARITY_COLORS.common : RARITY_COLORS.common;
+  const rc = box ? RARITY_COLORS[box.rarity] || RARITY_COLORS.common : RARITY_COLORS.common;
+  const imageUrl = box && lootSettings ? lootSettings[`image_${box.rarity}`] : null;
 
-  const handleOpenNow = () => {
-    setStage('shaking');
-  };
+  const handleOpenNow = () => setStage('shaking');
 
   const handleShakeComplete = () => {
     setStage('revealing');
-    // Fire backend call
     base44.functions.invoke('openLootBox', { loot_box_id: box.id, setter_id: setterId })
       .then(res => {
         backendResult.current = res.data;
@@ -67,6 +85,8 @@ export default function LootBoxOpenModal({ box, open, onClose, onOpened, setterI
 
   if (!open || !box) return null;
 
+  const modalBg = box.rarity === 'legendary' ? 'bg-black/95' : 'bg-black/90';
+
   return (
     <AnimatePresence>
       {open && (
@@ -76,19 +96,19 @@ export default function LootBoxOpenModal({ box, open, onClose, onOpened, setterI
           exit={{ opacity: 0 }}
           className="fixed inset-0 z-[60] flex items-center justify-center"
         >
-          <div className="absolute inset-0 bg-black/90" />
+          <div className={`absolute inset-0 ${modalBg}`} />
           <div className="relative z-10 flex flex-col items-center justify-center w-full px-6">
             {stage === 'opening' && (
-              <OpeningStage color={color} rarity={box.rarity} onOpen={handleOpenNow} onClose={onClose} />
+              <OpeningStage rc={rc} rarity={box.rarity} imageUrl={imageUrl} onOpen={handleOpenNow} onClose={onClose} />
             )}
             {stage === 'shaking' && (
-              <ShakingStage color={color} rarity={box.rarity} onComplete={handleShakeComplete} />
+              <ShakingStage rc={rc} rarity={box.rarity} imageUrl={imageUrl} onComplete={handleShakeComplete} />
             )}
             {stage === 'revealing' && (
-              <RevealingStage color={color} rarity={box.rarity} prize={prize} onComplete={handleRevealComplete} />
+              <RevealingStage rc={rc} rarity={box.rarity} imageUrl={imageUrl} prize={prize} onComplete={handleRevealComplete} />
             )}
             {stage === 'done' && (
-              <DoneStage color={color} rarity={box.rarity} prize={prize} lootWin={lootWin} onClose={onClose} />
+              <DoneStage rc={rc} rarity={box.rarity} prize={prize} lootWin={lootWin} onClose={onClose} />
             )}
           </div>
         </motion.div>
@@ -97,30 +117,82 @@ export default function LootBoxOpenModal({ box, open, onClose, onOpened, setterI
   );
 }
 
-function OpeningStage({ color, rarity, onOpen, onClose }) {
+/* ──── PARTICLES ──── */
+function FloatingParticles({ rarity, rc }) {
+  if (rarity === 'common' || rarity === 'rare') return null;
+
+  const count = rarity === 'legendary' ? 16 : 8;
+  const colorClass = rarity === 'legendary' ? 'bg-amber-400' : 'bg-purple-400';
+  const duration = rarity === 'legendary' ? 1.5 : 2;
+
+  return (
+    <>
+      {Array.from({ length: count }).map((_, i) => {
+        const size = rarity === 'legendary' ? (i % 2 === 0 ? 8 : 4) : 6;
+        const xOffset = rarity === 'legendary' ? -120 + Math.random() * 240 : -80 + Math.random() * 160;
+        return (
+          <motion.div
+            key={i}
+            className={`absolute rounded-full ${colorClass}`}
+            style={{
+              width: size,
+              height: size,
+              bottom: 0,
+              left: '50%',
+              marginLeft: xOffset,
+            }}
+            animate={{ y: rarity === 'legendary' ? -120 : -80, opacity: 0 }}
+            transition={{ duration, repeat: Infinity, delay: i * (duration / count), ease: 'easeOut' }}
+          />
+        );
+      })}
+    </>
+  );
+}
+
+function LegendaryBackGlow() {
+  return (
+    <div className="absolute w-96 h-96 rounded-full bg-amber-400/20 blur-3xl" style={{ top: '50%', left: '50%', transform: 'translate(-50%, -50%)' }} />
+  );
+}
+
+/* ──── OPENING STAGE ──── */
+function OpeningStage({ rc, rarity, imageUrl, onOpen, onClose }) {
+  const pulse = rarity === 'rare' || rarity === 'epic' || rarity === 'legendary';
+  const pulseStrong = rarity === 'epic' || rarity === 'legendary';
+
   return (
     <motion.div
       initial={{ opacity: 0, scale: 0.8 }}
       animate={{ opacity: 1, scale: 1 }}
-      className="flex flex-col items-center gap-8"
+      className="flex flex-col items-center gap-8 relative"
     >
-      <motion.div
-        animate={{ scale: [1.0, 1.08, 1.0] }}
-        transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
-        className="w-[200px] h-[200px] rounded-2xl flex items-center justify-center border-2"
-        style={{
-          borderColor: color,
-          boxShadow: `0 0 40px ${color}40, 0 0 80px ${color}20`,
-          background: `radial-gradient(circle at center, ${color}15, transparent 70%)`,
-        }}
-      >
-        <span className="text-3xl font-black capitalize" style={{ color }}>{rarity}</span>
-      </motion.div>
-      <div className="flex gap-3">
+      {rarity === 'legendary' && <LegendaryBackGlow />}
+      <div className="relative">
+        <motion.div
+          animate={
+            pulse
+              ? { boxShadow: [rc.glow, rc.glowStrong, rc.glow] }
+              : {}
+          }
+          transition={pulse ? { duration: 1.5, repeat: Infinity, ease: 'easeInOut' } : {}}
+          className="w-[200px] h-[200px] rounded-2xl flex flex-col items-center justify-center gap-3 relative"
+          style={{
+            background: `linear-gradient(135deg, ${rc.gradientFrom}, ${rc.gradientTo})`,
+            border: `2px solid ${rc.primary}`,
+            boxShadow: rarity === 'common' ? rc.glow : rc.glowStrong,
+          }}
+        >
+          <BoxVisual rarity={rarity} rc={rc} imageUrl={imageUrl} size="large" />
+          <span className="text-sm font-bold capitalize text-white">{rarity}</span>
+        </motion.div>
+        <FloatingParticles rarity={rarity} rc={rc} />
+      </div>
+      <div className="flex gap-3 relative z-10">
         <button
           onClick={onOpen}
           className="px-8 py-3 rounded-xl text-sm font-bold text-black transition-opacity hover:opacity-90"
-          style={{ backgroundColor: color }}
+          style={{ backgroundColor: rc.primary }}
         >
           Open Now
         </button>
@@ -135,26 +207,33 @@ function OpeningStage({ color, rarity, onOpen, onClose }) {
   );
 }
 
-function ShakingStage({ color, rarity, onComplete }) {
+/* ──── SHAKING STAGE ──── */
+function ShakingStage({ rc, rarity, imageUrl, onComplete }) {
   return (
-    <motion.div
-      initial={{ scale: 1 }}
-      animate={{ x: [0, -12, 12, -10, 10, -6, 6, 0] }}
-      transition={{ duration: 0.6, ease: 'easeInOut' }}
-      onAnimationComplete={onComplete}
-      className="w-[200px] h-[200px] rounded-2xl flex items-center justify-center border-2"
-      style={{
-        borderColor: color,
-        boxShadow: `0 0 60px ${color}60, 0 0 120px ${color}30`,
-        background: `radial-gradient(circle at center, ${color}25, transparent 70%)`,
-      }}
-    >
-      <span className="text-3xl font-black capitalize" style={{ color }}>{rarity}</span>
-    </motion.div>
+    <div className="relative flex items-center justify-center">
+      {rarity === 'legendary' && <LegendaryBackGlow />}
+      <motion.div
+        initial={{ scale: 1 }}
+        animate={{ x: [0, -12, 12, -10, 10, -6, 6, 0] }}
+        transition={{ duration: 0.6, ease: 'easeInOut' }}
+        onAnimationComplete={onComplete}
+        className="w-[200px] h-[200px] rounded-2xl flex flex-col items-center justify-center gap-3 relative"
+        style={{
+          background: `linear-gradient(135deg, ${rc.gradientFrom}, ${rc.gradientTo})`,
+          border: `2px solid ${rc.primary}`,
+          boxShadow: rc.glowStrong,
+        }}
+      >
+        <BoxVisual rarity={rarity} rc={rc} imageUrl={imageUrl} size="large" />
+        <span className="text-sm font-bold capitalize text-white">{rarity}</span>
+      </motion.div>
+      <FloatingParticles rarity={rarity} rc={rc} />
+    </div>
   );
 }
 
-function RevealingStage({ color, rarity, prize, onComplete }) {
+/* ──── REVEALING STAGE ──── */
+function RevealingStage({ rc, rarity, imageUrl, prize, onComplete }) {
   const [boxGone, setBoxGone] = useState(false);
 
   useEffect(() => {
@@ -164,21 +243,31 @@ function RevealingStage({ color, rarity, prize, onComplete }) {
 
   return (
     <div className="relative flex items-center justify-center" style={{ width: 360, height: 400 }}>
+      {/* Tiled background */}
+      {boxGone && (
+        <div className="absolute inset-0 z-0" style={getTiledBgStyle(rc.primary)} />
+      )}
+
       {/* Box shrinking away */}
       {!boxGone && (
         <motion.div
           initial={{ scale: 1.2, opacity: 1 }}
           animate={{ scale: 0, opacity: 0 }}
           transition={{ duration: 0.3, ease: 'easeIn' }}
-          className="absolute w-[200px] h-[200px] rounded-2xl flex items-center justify-center border-2"
-          style={{ borderColor: color, boxShadow: `0 0 60px ${color}60` }}
+          className="absolute w-[200px] h-[200px] rounded-2xl flex flex-col items-center justify-center gap-3"
+          style={{
+            background: `linear-gradient(135deg, ${rc.gradientFrom}, ${rc.gradientTo})`,
+            border: `2px solid ${rc.primary}`,
+            boxShadow: rc.glowStrong,
+          }}
         >
-          <span className="text-3xl font-black capitalize" style={{ color }}>{rarity}</span>
+          <BoxVisual rarity={rarity} rc={rc} imageUrl={imageUrl} size="large" />
+          <span className="text-sm font-bold capitalize text-white">{rarity}</span>
         </motion.div>
       )}
 
       {/* Particle burst */}
-      {boxGone && <ParticleBurst color={color} />}
+      {boxGone && <ParticleBurst rc={rc} rarity={rarity} />}
 
       {/* Prize card */}
       {boxGone && (
@@ -187,22 +276,26 @@ function RevealingStage({ color, rarity, prize, onComplete }) {
           animate={{ scale: 1, opacity: 1 }}
           transition={{ type: 'spring', damping: 12, stiffness: 200 }}
           onAnimationComplete={onComplete}
-          className="absolute w-full max-w-xs bg-slate-900 rounded-2xl border overflow-hidden shadow-2xl"
-          style={{ borderColor: `${color}60`, boxShadow: `0 0 40px ${color}30` }}
+          className="absolute w-full max-w-xs rounded-2xl overflow-hidden shadow-2xl z-10"
+          style={{
+            background: `linear-gradient(135deg, ${rc.gradientFrom}, ${rc.gradientTo})`,
+            border: `2px solid ${rc.primary}`,
+            boxShadow: rc.glowStrong,
+          }}
         >
           {/* Rarity banner */}
-          <div className="py-2.5 text-center font-black text-sm uppercase tracking-widest text-black" style={{ backgroundColor: color }}>
+          <div className="py-2.5 text-center font-black text-sm uppercase tracking-widest text-black" style={{ backgroundColor: rc.primary }}>
             {rarity}
           </div>
           <div className="p-6 flex flex-col items-center text-center gap-3">
             {prize !== null ? (
               <>
                 <p className="text-xl font-bold text-white">{prize.name}</p>
-                <p className="text-sm text-slate-400">{prize.description}</p>
+                <p className="text-sm text-slate-300">{prize.description}</p>
                 {prize.prize_type === 'cash' && prize.cash_value > 0 ? (
-                  <p className="text-4xl font-black mt-2" style={{ color }}>${prize.cash_value}</p>
+                  <p className="text-4xl font-black mt-2" style={{ color: rc.primary }}>${prize.cash_value}</p>
                 ) : (
-                  <Gift className="w-12 h-12 mt-2" style={{ color }} />
+                  <Gift className="w-12 h-12 mt-2" style={{ color: rc.primary }} />
                 )}
               </>
             ) : (
@@ -210,16 +303,16 @@ function RevealingStage({ color, rarity, prize, onComplete }) {
                 <motion.div
                   animate={{ opacity: [0.3, 0.6, 0.3] }}
                   transition={{ duration: 1.2, repeat: Infinity, ease: 'easeInOut' }}
-                  className="h-5 w-40 rounded-full bg-slate-700"
+                  className="h-5 w-40 rounded-full bg-white/10"
                 />
                 <motion.div
                   animate={{ opacity: [0.3, 0.6, 0.3] }}
                   transition={{ duration: 1.2, repeat: Infinity, ease: 'easeInOut', delay: 0.15 }}
-                  className="h-3 w-28 rounded-full bg-slate-700"
+                  className="h-3 w-28 rounded-full bg-white/10"
                 />
               </div>
             )}
-            {prize !== null && <p className="text-xs text-slate-500 mt-1">Prize Unlocked!</p>}
+            {prize !== null && <p className="text-xs text-slate-400 mt-1">Prize Unlocked!</p>}
           </div>
         </motion.div>
       )}
@@ -227,65 +320,74 @@ function RevealingStage({ color, rarity, prize, onComplete }) {
   );
 }
 
-function DoneStage({ color, rarity, prize, onClose }) {
+/* ──── DONE STAGE ──── */
+function DoneStage({ rc, rarity, prize, onClose }) {
   return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      className="w-full max-w-xs bg-slate-900 rounded-2xl border overflow-hidden shadow-2xl"
-      style={{ borderColor: `${color}60`, boxShadow: `0 0 40px ${color}30` }}
-    >
-      <div className="py-2.5 text-center font-black text-sm uppercase tracking-widest text-black" style={{ backgroundColor: color }}>
-        {rarity}
-      </div>
-      <div className="p-6 flex flex-col items-center text-center gap-3">
-        {prize !== null ? (
-          <>
-            <p className="text-xl font-bold text-white">{prize.name}</p>
-            <p className="text-sm text-slate-400">{prize.description}</p>
-            {prize.prize_type === 'cash' && prize.cash_value > 0 ? (
-              <p className="text-4xl font-black mt-2" style={{ color }}>${prize.cash_value}</p>
-            ) : (
-              <Gift className="w-12 h-12 mt-2" style={{ color }} />
-            )}
-          </>
-        ) : (
-          <div className="py-4 w-full flex flex-col items-center gap-3">
-            <motion.div
-              animate={{ opacity: [0.3, 0.6, 0.3] }}
-              transition={{ duration: 1.2, repeat: Infinity, ease: 'easeInOut' }}
-              className="h-5 w-40 rounded-full bg-slate-700"
-            />
-            <motion.div
-              animate={{ opacity: [0.3, 0.6, 0.3] }}
-              transition={{ duration: 1.2, repeat: Infinity, ease: 'easeInOut', delay: 0.15 }}
-              className="h-3 w-28 rounded-full bg-slate-700"
-            />
-          </div>
-        )}
-        <p className="text-xs text-slate-500 mt-1">Prize Unlocked!</p>
-        <button
-          onClick={onClose}
-          className="mt-4 w-full py-3 rounded-xl text-sm font-bold text-black transition-opacity hover:opacity-90"
-          style={{ backgroundColor: color }}
-        >
-          Claim
-        </button>
-      </div>
-    </motion.div>
+    <div className="relative flex items-center justify-center w-full" style={{ minHeight: 400 }}>
+      {/* Tiled background */}
+      <div className="absolute inset-0 z-0" style={getTiledBgStyle(rc.primary)} />
+
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        className="w-full max-w-xs rounded-2xl overflow-hidden shadow-2xl relative z-10"
+        style={{
+          background: `linear-gradient(135deg, ${rc.gradientFrom}, ${rc.gradientTo})`,
+          border: `2px solid ${rc.primary}`,
+          boxShadow: rc.glowStrong,
+        }}
+      >
+        <div className="py-2.5 text-center font-black text-sm uppercase tracking-widest text-black" style={{ backgroundColor: rc.primary }}>
+          {rarity}
+        </div>
+        <div className="p-6 flex flex-col items-center text-center gap-3">
+          {prize !== null ? (
+            <>
+              <p className="text-xl font-bold text-white">{prize.name}</p>
+              <p className="text-sm text-slate-300">{prize.description}</p>
+              {prize.prize_type === 'cash' && prize.cash_value > 0 ? (
+                <p className="text-4xl font-black mt-2" style={{ color: rc.primary }}>${prize.cash_value}</p>
+              ) : (
+                <Gift className="w-12 h-12 mt-2" style={{ color: rc.primary }} />
+              )}
+            </>
+          ) : (
+            <div className="py-4 w-full flex flex-col items-center gap-3">
+              <motion.div
+                animate={{ opacity: [0.3, 0.6, 0.3] }}
+                transition={{ duration: 1.2, repeat: Infinity, ease: 'easeInOut' }}
+                className="h-5 w-40 rounded-full bg-white/10"
+              />
+              <motion.div
+                animate={{ opacity: [0.3, 0.6, 0.3] }}
+                transition={{ duration: 1.2, repeat: Infinity, ease: 'easeInOut', delay: 0.15 }}
+                className="h-3 w-28 rounded-full bg-white/10"
+              />
+            </div>
+          )}
+          <p className="text-xs text-slate-400 mt-1">Prize Unlocked!</p>
+          <button
+            onClick={onClose}
+            className="mt-4 w-full py-3 rounded-xl text-sm font-bold text-black transition-opacity hover:opacity-90"
+            style={{ backgroundColor: rc.primary }}
+          >
+            Claim
+          </button>
+        </div>
+      </motion.div>
+    </div>
   );
 }
 
-function ParticleBurst({ color }) {
-  const particles = Array.from({ length: 12 }, (_, i) => {
-    const angle = (i / 12) * Math.PI * 2 + (Math.random() - 0.5) * 0.5;
-    const dist = 80 + Math.random() * 60;
-    return {
-      id: i,
-      x: Math.cos(angle) * dist,
-      y: Math.sin(angle) * dist,
-      size: 6 + Math.random() * 6,
-    };
+/* ──── PARTICLE BURST ──── */
+function ParticleBurst({ rc, rarity }) {
+  const count = rarity === 'legendary' ? 20 : 12;
+  const dist = rarity === 'legendary' ? 300 : 200;
+
+  const particles = Array.from({ length: count }, (_, i) => {
+    const angle = (i / count) * Math.PI * 2 + (Math.random() - 0.5) * 0.5;
+    const r = dist * 0.6 + Math.random() * dist * 0.4;
+    return { id: i, x: Math.cos(angle) * r, y: Math.sin(angle) * r };
   });
 
   return (
@@ -298,13 +400,13 @@ function ParticleBurst({ color }) {
           transition={{ duration: 0.8, ease: 'easeOut' }}
           className="absolute rounded-full"
           style={{
-            width: p.size,
-            height: p.size,
-            backgroundColor: color,
+            width: 16,
+            height: 16,
+            backgroundColor: rc.primary,
             top: '50%',
             left: '50%',
-            marginTop: -p.size / 2,
-            marginLeft: -p.size / 2,
+            marginTop: -8,
+            marginLeft: -8,
           }}
         />
       ))}

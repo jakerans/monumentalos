@@ -71,7 +71,7 @@ export default function LootTableTab({ prizes, onPrizeUpdated, onPrizeDeleted })
       {['common', 'rare', 'epic', 'legendary'].map(rarity => (
         <div key={rarity} className="bg-slate-800/50 rounded-lg border border-slate-700/50 overflow-hidden">
           <div className={`${rarityBgHeaders[rarity]} px-6 py-3 border-b border-slate-700/50`}>
-            <h3 className="text-lg font-bold text-white capitalize">{rarity}</h3>
+            <h3 className="text-xl font-bold text-white capitalize">{rarity}</h3>
           </div>
           
           {groupedPrizes[rarity].length === 0 ? (
