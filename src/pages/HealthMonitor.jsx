@@ -38,7 +38,7 @@ export default function HealthMonitor() {
       let status = 'ok';
       let statusCode = 200;
       try {
-        const res = await base44.functions.invoke(ep.name, {});
+        const res = await base44.functions.invoke(ep.name, ep.payload || {});
         statusCode = res.status;
         if (statusCode !== 200) status = 'error';
       } catch {
