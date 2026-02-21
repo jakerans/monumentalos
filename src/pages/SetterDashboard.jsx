@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { base44 } from '@/api/base44Client';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import { Search, Filter, Plus, Ban } from 'lucide-react';
@@ -26,6 +26,7 @@ import { useAutoAnimate } from '@formkit/auto-animate/react';
 
 export default function SetterDashboard() {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const [user, setUser] = useState(null);
   const [search, setSearch] = useState('');
   const [clientFilter, setClientFilter] = useState('all');
@@ -453,6 +454,12 @@ export default function SetterDashboard() {
         lifetimeStats={lifetimeStats}
         recentWins={recentWins}
         setterId={user?.id}
+        onOpenBox={(win) => {
+          queryClient.invalidateQueries({ queryKey: ['setter-inventory', user?.id] });
+          if (win?.prize_type === 'cash') {
+            setCelebration({ type: 'booking' });
+          }
+        }}
       />
     </div>
     </PageErrorBoundary>

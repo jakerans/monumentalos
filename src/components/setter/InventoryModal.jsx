@@ -1,8 +1,10 @@
-import React from 'react';
+import React, { useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { format } from 'date-fns';
+import { useQueryClient } from '@tanstack/react-query';
+import LootBoxOpenModal from './LootBoxOpenModal';
 
 const rarityGlow = {
   common: 'shadow-slate-400/50 border-slate-400/30 bg-slate-800/60',
@@ -34,11 +36,50 @@ export default function InventoryModal({
   eligibility = {},
   lifetimeStats = {},
   recentWins = [],
+  setterId,
+  onOpenBox,
 }) {
+  const [openingBox, setOpeningBox] = useState(null);
+  const openAllMode = useRef(false);
+  const queryClient = useQueryClient();
+
   if (!open) return null;
 
   const count = unopenedBoxes.length;
   const countColor = count >= inventoryCap ? 'text-red-500' : count >= yellowWarning ? 'text-amber-400' : 'text-white';
+
+  const handleWinResult = (win) => {
+    queryClient.invalidateQueries({ queryKey: ['setter-inventory', setterId] });
+    if (onOpenBox) onOpenBox(win);
+  };
+
+  const handleOpenModalClose = () => {
+    const currentBoxId = openingBox?.id;
+    setOpeningBox(null);
+    queryClient.invalidateQueries({ queryKey: ['setter-inventory', setterId] });
+
+    // If in open-all mode, advance to next box
+    if (openAllMode.current) {
+      const remaining = unopenedBoxes.filter(b => b.id !== currentBoxId);
+      if (remaining.length > 0) {
+        setTimeout(() => setOpeningBox(remaining[0]), 300);
+      } else {
+        openAllMode.current = false;
+      }
+    }
+  };
+
+  const handleOpenAll = () => {
+    if (unopenedBoxes.length > 0) {
+      openAllMode.current = true;
+      setOpeningBox(unopenedBoxes[0]);
+    }
+  };
+
+  const handleOpenSingle = (box) => {
+    openAllMode.current = false;
+    setOpeningBox(box);
+  };
 
   return (
     <AnimatePresence>
@@ -87,12 +128,22 @@ export default function InventoryModal({
                 count={count}
                 cap={inventoryCap}
                 countColor={countColor}
+                onOpenBox={handleOpenSingle}
+                onOpenAll={handleOpenAll}
               />
 
               {/* Recent Wins */}
               <RecentWinsFeed wins={recentWins} />
             </div>
           </motion.div>
+
+          <LootBoxOpenModal
+            box={openingBox}
+            open={!!openingBox}
+            onClose={handleOpenModalClose}
+            onOpened={handleWinResult}
+            setterId={setterId}
+          />
         </motion.div>
       )}
     </AnimatePresence>
@@ -156,7 +207,7 @@ function StatCard({ label, value }) {
   );
 }
 
-function InventoryGrid({ boxes, count, cap, countColor }) {
+function InventoryGrid({ boxes, count, cap, countColor, onOpenBox, onOpenAll }) {
   return (
     <div>
       <div className="flex items-center justify-between mb-3">
@@ -165,7 +216,7 @@ function InventoryGrid({ boxes, count, cap, countColor }) {
         </h3>
         {count >= 2 && (
           <button
-            onClick={null}
+            onClick={onOpenAll}
             className="px-3 py-1.5 text-xs font-bold rounded-lg text-black hover:opacity-90"
             style={{ backgroundColor: '#D6FF03' }}
           >
@@ -181,7 +232,7 @@ function InventoryGrid({ boxes, count, cap, countColor }) {
       ) : (
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
           {boxes.map(box => (
-            <BoxCard key={box.id} box={box} />
+            <BoxCard key={box.id} box={box} onOpen={onOpenBox} />
           ))}
         </div>
       )}
@@ -189,7 +240,7 @@ function InventoryGrid({ boxes, count, cap, countColor }) {
   );
 }
 
-function BoxCard({ box }) {
+function BoxCard({ box, onOpen }) {
   const isLegendary = box.rarity === 'legendary';
 
   return (
@@ -202,7 +253,7 @@ function BoxCard({ box }) {
         {box.rarity}
       </span>
       <button
-        onClick={null}
+        onClick={() => onOpen(box)}
         className="w-full py-1.5 text-xs font-bold rounded-lg bg-white/10 text-white hover:bg-white/20 transition-colors"
       >
         Open

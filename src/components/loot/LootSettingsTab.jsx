@@ -21,6 +21,7 @@ export default function LootSettingsTab({ settings, onSettingsSaved }) {
     rarity_weight_legendary: 2,
     test_mode_enabled: false,
     test_target_setter_id: '',
+    test_rarity_override: 'common',
   });
 
   useEffect(() => {
@@ -38,6 +39,7 @@ export default function LootSettingsTab({ settings, onSettingsSaved }) {
         rarity_weight_legendary: settings.rarity_weight_legendary || 2,
         test_mode_enabled: settings.test_mode_enabled || false,
         test_target_setter_id: settings.test_target_setter_id || '',
+        test_rarity_override: settings.test_rarity_override || 'common',
       });
     }
   }, [settings]);
@@ -206,17 +208,33 @@ export default function LootSettingsTab({ settings, onSettingsSaved }) {
         </div>
 
         {formData.test_mode_enabled && (
-          <div>
-            <Label className="text-slate-300">Test Target Setter ID</Label>
-            <p className="text-xs text-slate-500 mb-2">Setter account to use when test mode is active</p>
-            <Input
-              type="text"
-              value={formData.test_target_setter_id}
-              onChange={(e) => handleChange('test_target_setter_id', e.target.value)}
-              placeholder="Setter user ID"
-              className="bg-slate-700 border-slate-600"
-            />
-          </div>
+          <>
+            <div>
+              <Label className="text-slate-300">Test Target Setter ID</Label>
+              <p className="text-xs text-slate-500 mb-2">Setter account to use when test mode is active</p>
+              <Input
+                type="text"
+                value={formData.test_target_setter_id}
+                onChange={(e) => handleChange('test_target_setter_id', e.target.value)}
+                placeholder="Setter user ID"
+                className="bg-slate-700 border-slate-600"
+              />
+            </div>
+            <div>
+              <Label className="text-slate-300">Force Rarity Override</Label>
+              <p className="text-xs text-slate-500 mb-2">Rarity to force when test mode is active</p>
+              <select
+                value={formData.test_rarity_override}
+                onChange={(e) => handleChange('test_rarity_override', e.target.value)}
+                className="w-full px-3 py-2 text-sm bg-slate-700 border border-slate-600 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-[#D6FF03]"
+              >
+                <option value="common">Common</option>
+                <option value="rare">Rare</option>
+                <option value="epic">Epic</option>
+                <option value="legendary">Legendary</option>
+              </select>
+            </div>
+          </>
         )}
       </div>
 
