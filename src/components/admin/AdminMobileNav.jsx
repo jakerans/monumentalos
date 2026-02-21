@@ -13,9 +13,9 @@ const financeAdminNav = [
   { key: 'MonthlyBilling', label: 'Billing', icon: Receipt },
   { key: 'AccountingPL', label: 'P&L', icon: BarChart3 },
   { key: 'AccountingExpenses', label: 'Expenses', icon: Wallet },
-  { key: 'AccountingCashFlow', label: 'Cash Flow', icon: TrendingUp },
-  { key: 'AccountingClients', label: 'Client Revenue', icon: Calculator },
-  { key: 'ClientProfitability', label: 'Profitability', icon: TrendingUp },
+  { key: 'AccountingCashFlow', label: 'Cash Flow', icon: ArrowUpDown },
+  { key: 'AccountingClients', label: 'Client Revenue', icon: Users },
+  { key: 'ClientProfitability', label: 'Profitability', icon: PieChart },
   { key: 'EmployeeManagement', label: 'Payroll', icon: UserCog },
 ];
 
