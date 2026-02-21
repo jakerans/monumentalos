@@ -3,7 +3,8 @@ import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
-import { Users, UserPlus, RefreshCw, Settings, DollarSign } from 'lucide-react';
+import { Users, UserPlus, RefreshCw, Settings, DollarSign, Calendar } from 'lucide-react';
+import dayjs from 'dayjs';
 import AdminSidebar from '../components/admin/AdminSidebar';
 import AdminMobileNav from '../components/admin/AdminMobileNav';
 import EmployeeTable from '../components/employee/EmployeeTable';
@@ -215,6 +216,23 @@ export default function EmployeeManagement() {
           </TabsContent>
 
           <TabsContent value="payroll" className="space-y-4">
+            {/* Period context header */}
+            <div className="flex items-center gap-2">
+              <Calendar className="w-3.5 h-3.5 text-slate-400" />
+              <span className="text-[10px] text-slate-400 uppercase tracking-wider font-medium">
+                Payroll Period: {dayjs().subtract(1, 'month').format('MMMM YYYY')}
+              </span>
+            </div>
+
+            {/* Step 1 — Review Setter Bonuses */}
+            <p className="text-[10px] text-slate-400 uppercase tracking-wider">Step 1 — Review Setter Bonuses</p>
+            <SetterBonusSummaryTab defaultPeriod={dayjs().subtract(1, 'month').format('YYYY-MM')} />
+
+            <div className="border-t border-slate-700/50" />
+
+            {/* Step 2 — Run Payroll */}
+            <p className="text-[10px] text-slate-400 uppercase tracking-wider">Step 2 — Run Payroll</p>
+            <p className="text-xs text-slate-500 italic">Setter bonuses from the prior month are loaded automatically.</p>
             <div className="flex justify-end">
               <button
                 onClick={() => setRunPayrollOpen(true)}
@@ -224,11 +242,6 @@ export default function EmployeeManagement() {
                 <DollarSign className="w-4 h-4" />
                 Run Payroll
               </button>
-            </div>
-
-            <div className="border-t border-slate-700/50 pt-4">
-              <p className="text-[10px] text-slate-400 uppercase tracking-wider mb-3">Setter Bonuses</p>
-              <SetterBonusSummaryTab />
             </div>
           </TabsContent>
         </Tabs>

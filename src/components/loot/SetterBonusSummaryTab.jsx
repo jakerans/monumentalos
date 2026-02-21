@@ -11,9 +11,10 @@ const RARITY_BADGE = {
   legendary: 'bg-amber-600 text-white',
 };
 
-export default function SetterBonusSummaryTab() {
+export default function SetterBonusSummaryTab({ defaultPeriod }) {
   const now = new Date();
-  const [period, setPeriod] = useState(`${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`);
+  const currentMonthString = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+  const [period, setPeriod] = useState(defaultPeriod || currentMonthString);
   const [expanded, setExpanded] = useState({});
   const queryClient = useQueryClient();
 
@@ -153,7 +154,7 @@ export default function SetterBonusSummaryTab() {
                 </button>
               )}
 
-              <p className="text-xs text-slate-500 italic">Spiff amounts shown for reference — add manually to your payroll run</p>
+              <p className="text-xs text-slate-500 italic">Spiff totals are automatically included when you run payroll below.</p>
             </div>
           )}
         </div>
