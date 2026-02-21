@@ -8,6 +8,7 @@ import DateRangePicker from '../components/admin/DateRangePicker';
 import ReportKPICards from '../components/report/ReportKPICards';
 import ReportCalculations from '../components/report/ReportCalculations';
 import ReportCharts from '../components/report/ReportCharts';
+import ClientSidebar from '../components/client/ClientSidebar';
 
 export default function ClientReport() {
   const navigate = useNavigate();

@@ -2,11 +2,12 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import { base44 } from '@/api/base44Client';
-import { Calendar, History, Settings, Menu, X, LogOut } from 'lucide-react';
+import { Calendar, History, Settings, Menu, X, LogOut, BarChart2 } from 'lucide-react';
 
 const NAV_ITEMS = [
   { label: 'My Appointments', page: 'ClientPortal', icon: Calendar },
   { label: 'Appointment History', page: 'AppointmentHistory', icon: History },
+  { label: 'Performance Report', page: 'ClientReport', icon: BarChart2 },
   { label: 'Settings', page: 'ClientSettings', icon: Settings },
 ];
 
