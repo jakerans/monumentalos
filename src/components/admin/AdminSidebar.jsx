@@ -95,28 +95,29 @@ export default function AdminSidebar({ user, currentPage, clients = [] }) {
   const [collapsed, setCollapsed] = useState(false);
 
   const isFinanceAdmin = user?.app_role === 'finance_admin';
-  const [activeTab, setActiveTab] = useState(() => detectTab(currentPage));
 
-  const activeNavItems = isFinanceAdmin
-    ? financeAdminItems
-    : (TAB_ITEMS[activeTab] || financeItems);
+  // Track which accordion sections are open
+  const [openSections, setOpenSections] = useState(() => {
+    const initialSection = findSectionWithPage(currentPage);
+    return initialSection ? { [initialSection]: true } : {};
+  });
 
+  // Track which nested groups are expanded (within sections)
   const [expandedGroup, setExpandedGroup] = useState(() => {
-    for (const item of activeNavItems) {
-      if (item.children?.some(c => c.key === currentPage)) return item.key;
+    if (isFinanceAdmin) return null;
+    for (const section of Object.values(SECTIONS)) {
+      for (const item of section.items) {
+        if (item.children?.some(c => c.key === currentPage)) return item.key;
+      }
     }
     return null;
   });
 
-  // Re-expand group when tab changes
-  const handleTabChange = (tabId) => {
-    setActiveTab(tabId);
-    const items = TAB_ITEMS[tabId] || [];
-    let foundGroup = null;
-    for (const item of items) {
-      if (item.children?.some(c => c.key === currentPage)) { foundGroup = item.key; break; }
-    }
-    setExpandedGroup(foundGroup);
+  const toggleSection = (sectionId) => {
+    setOpenSections(prev => ({
+      ...prev,
+      [sectionId]: !prev[sectionId],
+    }));
   };
 
   const w = collapsed ? 'w-16' : 'w-52';
