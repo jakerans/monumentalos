@@ -413,6 +413,20 @@ export default function SetterDashboard() {
           <MyScheduleTab workspaceData={workspaceData} userId={user?.id} unopenedBoxes={unopenedBoxes} />
         ) : (
         <>
+        {/* Floating checklist button */}
+        {!checklistVisible && checklist && !checklistLog?.all_complete && hasClocked && dashTab === 'pipeline' && !workspaceOpen && (
+          <motion.button
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            onClick={() => setChecklistVisible(true)}
+            className="fixed bottom-6 left-6 z-30 flex items-center gap-2 px-4 py-2.5 rounded-full font-bold text-black shadow-lg hover:shadow-xl transition-shadow"
+            style={{ backgroundColor: '#D6FF03' }}
+          >
+            <ClipboardCheck className="w-4 h-4" />
+            <span className="text-sm">{checklistLog?.completed_tasks ? JSON.parse(checklistLog.completed_tasks).length : 0}/{tasks?.length || 0}</span>
+          </motion.button>
+        )}
+
         {/* Hero row: Welcome + AI message on left, Spiff cards on right */}
         <div className="grid grid-cols-1 lg:grid-cols-5 gap-4 mb-4">
           <div className="lg:col-span-3 flex flex-col gap-3">
