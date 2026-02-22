@@ -582,6 +582,20 @@ export default function SetterDashboard() {
         setterId={user?.id}
         lootSettings={invData?.lootSettings || null}
       />
+
+      <AnimatePresence>
+        {workspaceOpen && (
+          <DialWorkspace
+            allLeads={allPipelineLeads}
+            clients={clients}
+            user={user}
+            onClose={() => setWorkspaceOpen(false)}
+            onAddLead={handleAddLead}
+            addLeadOpen={addOpen}
+            setAddLeadOpen={setAddOpen}
+          />
+        )}
+      </AnimatePresence>
     </div>
     </PageErrorBoundary>
   );
