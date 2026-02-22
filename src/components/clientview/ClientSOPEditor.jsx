@@ -1,16 +1,33 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, useRef, memo } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { FileText, Save, Info, Loader2 } from 'lucide-react';
 import { toast } from '@/components/ui/use-toast';
 
-function SOPTextarea({ label, value, onChange, minRows = 8 }) {
+const SOPTextarea = memo(function SOPTextarea({ label, value, onChange, minRows = 8 }) {
+  const [localValue, setLocalValue] = useState(value);
+  const timerRef = useRef(null);
+
+  // Sync from parent when value changes externally (e.g. initial load)
+  useEffect(() => {
+    setLocalValue(value);
+  }, [value]);
+
+  const handleChange = useCallback((e) => {
+    const v = e.target.value;
+    setLocalValue(v);
+    clearTimeout(timerRef.current);
+    timerRef.current = setTimeout(() => onChange(v), 300);
+  }, [onChange]);
+
+  useEffect(() => () => clearTimeout(timerRef.current), []);
+
   return (
     <div>
       <label className="block text-sm font-medium text-white mb-1.5">{label}</label>
       <textarea
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
+        value={localValue}
+        onChange={handleChange}
         rows={minRows}
         className="w-full px-3 py-2.5 text-sm border border-slate-700 rounded-lg bg-slate-800 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-[#D6FF03] resize-y"
         placeholder={`Enter ${label.toLowerCase()}...`}
@@ -18,13 +35,18 @@ function SOPTextarea({ label, value, onChange, minRows = 8 }) {
       <p className="text-[10px] text-slate-500 mt-1">Supports markdown (headers, bold, bullets, numbered lists)</p>
     </div>
   );
-}
+});
 
-export default function ClientSOPEditor({ clientId }) {
+function ClientSOPEditorInner({ clientId }) {
   const [callScript, setCallScript] = useState('');
   const [faqsText, setFaqsText] = useState('');
   const [talkingPoints, setTalkingPoints] = useState('');
   const [generalNotes, setGeneralNotes] = useState('');
+
+  const stableSetCallScript = useCallback((v) => setCallScript(v), []);
+  const stableSetFaqsText = useCallback((v) => setFaqsText(v), []);
+  const stableSetTalkingPoints = useCallback((v) => setTalkingPoints(v), []);
+  const stableSetGeneralNotes = useCallback((v) => setGeneralNotes(v), []);
   const [lastUpdated, setLastUpdated] = useState(null);
   const [initialized, setInitialized] = useState(false);
 
@@ -94,10 +116,10 @@ export default function ClientSOPEditor({ clientId }) {
         </div>
       )}
 
-      <SOPTextarea label="Call Script" value={callScript} onChange={setCallScript} minRows={12} />
-      <SOPTextarea label="FAQs" value={faqsText} onChange={setFaqsText} minRows={8} />
-      <SOPTextarea label="Talking Points" value={talkingPoints} onChange={setTalkingPoints} minRows={8} />
-      <SOPTextarea label="General Notes" value={generalNotes} onChange={setGeneralNotes} minRows={6} />
+      <SOPTextarea label="Call Script" value={callScript} onChange={stableSetCallScript} minRows={12} />
+      <SOPTextarea label="FAQs" value={faqsText} onChange={stableSetFaqsText} minRows={8} />
+      <SOPTextarea label="Talking Points" value={talkingPoints} onChange={stableSetTalkingPoints} minRows={8} />
+      <SOPTextarea label="General Notes" value={generalNotes} onChange={stableSetGeneralNotes} minRows={6} />
 
       <div className="flex items-center justify-between pt-2">
         <div>
