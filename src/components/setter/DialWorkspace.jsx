@@ -249,12 +249,54 @@ function DialWorkspaceInner({ allLeads, clients, user, onClose, onAddLead, addLe
     }
   }, [debouncedQuery]);
 
+  const [sop, setSop] = useState(null);
+  const [sopLoading, setSopLoading] = useState(false);
+  const notesRef = useRef(null);
+  const [notesSaving, setNotesSaving] = useState(false);
+
+  // Refresh selectedLead from allLeads when allLeads updates (after modal actions)
+  useEffect(() => {
+    if (selectedLead) {
+      const updated = allLeads.find(l => l.id === selectedLead.id);
+      if (updated) setSelectedLead(updated);
+    }
+  }, [allLeads]);
+
+  // Fetch SOP when lead is selected
+  useEffect(() => {
+    if (!selectedLead) { setSop(null); return; }
+    setSop(null);
+    setSopLoading(true);
+    base44.functions.invoke('manageClientSOP', { action: 'get', client_id: selectedLead.client_id })
+      .then(res => setSop(res.data?.sop || null))
+      .catch(() => setSop(null))
+      .finally(() => setSopLoading(false));
+  }, [selectedLead?.id, selectedLead?.client_id]);
+
+  const handleSaveNotes = useCallback(async () => {
+    if (!selectedLead || !notesRef.current) return;
+    setNotesSaving(true);
+    try {
+      await base44.entities.Lead.update(selectedLead.id, { notes: notesRef.current.value });
+    } finally {
+      setNotesSaving(false);
+    }
+  }, [selectedLead]);
+
+  const handleMarkContacted = useCallback(async () => {
+    if (!selectedLead) return;
+    await base44.entities.Lead.update(selectedLead.id, { status: 'contacted' });
+    // Optimistically update local lead
+    setSelectedLead(prev => ({ ...prev, status: 'contacted' }));
+  }, [selectedLead]);
+
   const handleSelectLead = useCallback((lead) => {
     setSelectedLead(lead);
   }, []);
 
   const handleBackToSearch = useCallback(() => {
     setSelectedLead(null);
+    setSop(null);
   }, []);
 
   // Mobile block
