@@ -61,6 +61,7 @@ import ClientPortal from './pages/ClientPortal';
 import ClientProfitability from './pages/ClientProfitability';
 import ClientReport from './pages/ClientReport';
 import ClientSettings from './pages/ClientSettings';
+import ClientView from './pages/ClientView';
 import EmployeeManagement from './pages/EmployeeManagement';
 import FinanceAdminDashboard from './pages/FinanceAdminDashboard';
 import HealthMonitor from './pages/HealthMonitor';
@@ -76,7 +77,6 @@ import SetterDashboard from './pages/SetterDashboard';
 import SetterPerformance from './pages/SetterPerformance';
 import SetterStats from './pages/SetterStats';
 import UserManagement from './pages/UserManagement';
-import ClientView from './pages/ClientView';
 import __Layout from './Layout.jsx';
 
 
@@ -95,6 +95,7 @@ export const PAGES = {
     "ClientProfitability": ClientProfitability,
     "ClientReport": ClientReport,
     "ClientSettings": ClientSettings,
+    "ClientView": ClientView,
     "EmployeeManagement": EmployeeManagement,
     "FinanceAdminDashboard": FinanceAdminDashboard,
     "HealthMonitor": HealthMonitor,
@@ -110,7 +111,6 @@ export const PAGES = {
     "SetterPerformance": SetterPerformance,
     "SetterStats": SetterStats,
     "UserManagement": UserManagement,
-    "ClientView": ClientView,
 }
 
 export const pagesConfig = {

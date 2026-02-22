@@ -324,7 +324,7 @@ export default function SetterDashboard() {
 
   // Auto-show checklist logic
   useEffect(() => {
-    if (checklist && hasClocked) {
+    if (checklist && (hasClocked || true)) {
       let tasksParsed = [];
       try { tasksParsed = typeof checklist.tasks === 'string' ? JSON.parse(checklist.tasks) : (Array.isArray(checklist.tasks) ? checklist.tasks : []); } catch { tasksParsed = []; }
       let logTasksParsed = [];
