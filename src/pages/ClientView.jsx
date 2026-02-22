@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback, lazy, Suspense } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
@@ -15,10 +15,11 @@ import ClientBillingEditor from '../components/clientview/ClientBillingEditor';
 import ClientInvoiceHistory from '../components/clientview/ClientInvoiceHistory';
 import LeadDrilldownDialog from '../components/clientview/LeadDrilldownDialog';
 import SpendDrilldownDialog from '../components/clientview/SpendDrilldownDialog';
-import ClientSOPEditor from '../components/clientview/ClientSOPEditor';
 import PageErrorBoundary from '../components/shared/PageErrorBoundary';
 import PageLoader from '../components/shared/PageLoader';
-import { FileText } from 'lucide-react';
+import { FileText, Loader2 } from 'lucide-react';
+
+const ClientSOPEditor = lazy(() => import('../components/clientview/ClientSOPEditor'));
 
 export default function ClientView() {
   const navigate = useNavigate();
@@ -118,9 +119,9 @@ export default function ClientView() {
     sold: { title: 'Jobs Sold', data: soldLeads },
   };
 
-  const handleCardClick = (key) => setDrilldown(key);
-  const handleRefresh = () => { refetchLeads(); refetchSpend(); };
-  const refetchClient = () => queryClient.invalidateQueries({ queryKey: ['client', clientId] });
+  const handleCardClick = useCallback((key) => setDrilldown(key), []);
+  const handleRefresh = useCallback(() => { refetchViewData(); }, [refetchViewData]);
+  const refetchClient = useCallback(() => queryClient.invalidateQueries({ queryKey: ['client', clientId] }), [queryClient, clientId]);
   const canEditBilling = user?.app_role === 'admin' || user?.app_role === 'onboard_admin';
   const isAdmin = user?.app_role === 'admin';
 
@@ -211,7 +212,9 @@ export default function ClientView() {
         </div>
 
         {activeTab === 'sop' && isAdmin ? (
-          <ClientSOPEditor clientId={clientId} />
+          <Suspense fallback={<div className="flex items-center justify-center py-16"><Loader2 className="w-5 h-5 text-slate-400 animate-spin" /><span className="ml-2 text-sm text-slate-400">Loading SOP editor...</span></div>}>
+            <ClientSOPEditor clientId={clientId} />
+          </Suspense>
         ) : (
         <>
         {/* KPI Grid */}
