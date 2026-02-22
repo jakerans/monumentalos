@@ -286,7 +286,16 @@ function AdminPTOQueue({ onScheduleChanged }) {
       {/* Pending Transfers */}
       {pendingTransfers.length > 0 && (
         <div className="space-y-2 pt-2 border-t border-slate-700/30">
-...
+          <div className="flex items-center gap-2">
+            <ArrowRightLeft className="w-3.5 h-3.5 text-amber-400" />
+            <h4 className="text-xs font-semibold text-amber-400">Pending Transfers</h4>
+            <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-amber-500/20 text-amber-400">{pendingTransfers.length}</span>
+          </div>
+          {pendingTransfers.map(r => (
+            <PendingTransferCard key={r.id} request={r} onAction={handleTransferAction} />
+          ))}
+        </div>
+      )}
     </div>
   );
 }
