@@ -28,6 +28,7 @@ export default function AdminDashboard() {
   const navigate = useNavigate();
   const [user, setUser] = useState(null);
   const [goalsOpen, setGoalsOpen] = useState(false);
+  const [showChecklist, setShowChecklist] = useState(false);
   const effectsOn = getEffectsEnabled();
   const now = new Date();
 
