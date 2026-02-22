@@ -26,6 +26,7 @@ import EarningsTab from '../components/setter/EarningsTab';
 import DialWorkspace from '../components/setter/DialWorkspace';
 import PageErrorBoundary from '../components/shared/PageErrorBoundary';
 import PageLoader from '../components/shared/PageLoader';
+import DailyChecklist from '../components/setter/DailyChecklist';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAutoAnimate } from '@formkit/auto-animate/react';
 
