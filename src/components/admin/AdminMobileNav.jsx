@@ -5,7 +5,7 @@ import { base44 } from '@/api/base44Client';
 import {
   LayoutDashboard, Users, Receipt, Calculator, Headset,
   Menu, X, LogOut, ArrowRightLeft, BarChart3, Wallet,
-  Landmark, Gift, Activity, Eye, PieChart, Target, LineChart, Building, Cog, DollarSign, ArrowUpDown, Calendar,
+  Landmark, Gift, Activity, Eye, PieChart, Target, LineChart, Building, Cog, DollarSign, ArrowUpDown, Calendar, ClipboardCheck,
 } from 'lucide-react';
 
 const financeAdminNav = [
@@ -49,6 +49,7 @@ const adminSections = [
       { key: 'UserManagement', label: 'Users', icon: Building },
       { key: 'BankAccountSettings', label: 'Bank Accounts', icon: Landmark },
       { key: 'LeadFieldSettings', label: 'Settings', icon: Cog },
+      { key: 'ShiftChecklistSettings', label: 'Shift Checklist', icon: ClipboardCheck },
       { key: 'HealthMonitor', label: 'Health Monitor', icon: Activity },
       { key: 'PreviewEffects', label: 'Preview Effects', icon: Eye },
     ],
