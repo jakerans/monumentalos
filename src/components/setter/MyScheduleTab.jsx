@@ -194,3 +194,5 @@ function MyScheduleTab({ workspaceData, userId, unopenedBoxes }) {
     </div>
   );
 }
+
+export default React.memo(MyScheduleTab);
