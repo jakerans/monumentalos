@@ -1,124 +1,63 @@
-import React, { useState, useEffect, useCallback, useRef, memo } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { base44 } from '@/api/base44Client';
-import { useQuery, useMutation } from '@tanstack/react-query';
 import { FileText, Save, Info, Loader2 } from 'lucide-react';
 import { toast } from '@/components/ui/use-toast';
 
 /**
- * Each textarea manages its OWN local state so typing never waits
- * on the parent to re-render. The parent value is only read on mount /
- * when the parent pushes a brand-new value (key-based reset).
+ * Pure-DOM SOP editor. React never re-renders during typing.
+ * All textarea values are read directly from DOM on save.
  */
-const sopTextareaStyle = {
-  width: '100%',
-  padding: '10px 12px',
-  fontSize: '14px',
-  lineHeight: '1.5',
-  border: '1px solid rgb(51, 65, 85)',
-  borderRadius: '8px',
-  backgroundColor: 'rgb(30, 41, 59)',
-  color: 'white',
-  resize: 'vertical',
-  outline: 'none',
-  fontFamily: 'inherit',
-  boxSizing: 'border-box',
-};
-
-const SOPTextarea = memo(function SOPTextarea({ label, initialValue, onCommit, minRows = 8 }) {
-  const localRef = useRef(initialValue || '');
-  const textareaRef = useRef(null);
-
-  // Sync on parent reset
-  useEffect(() => {
-    localRef.current = initialValue || '';
-    if (textareaRef.current) {
-      textareaRef.current.value = initialValue || '';
-    }
-  }, [initialValue]);
-
-  return (
-    <div>
-      <label style={{ display: 'block', fontSize: '14px', fontWeight: 500, color: 'white', marginBottom: '6px' }}>{label}</label>
-      <textarea
-        ref={textareaRef}
-        defaultValue={initialValue || ''}
-        onChange={(e) => { localRef.current = e.target.value; }}
-        onBlur={() => onCommit(localRef.current)}
-        rows={minRows}
-        style={sopTextareaStyle}
-        placeholder={`Enter ${label.toLowerCase()}...`}
-      />
-      <p style={{ fontSize: '10px', color: 'rgb(100, 116, 139)', marginTop: '4px' }}>Supports markdown (headers, bold, bullets, numbered lists)</p>
-    </div>
-  );
-});
-
-function ClientSOPEditorInner({ clientId }) {
-  // Use refs for the "committed" values so we never re-render children on every keystroke
-  const callScriptRef = useRef('');
-  const faqsRef = useRef('');
-  const talkingPointsRef = useRef('');
-  const generalNotesRef = useRef('');
-
+export default function ClientSOPEditor({ clientId }) {
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
   const [lastUpdated, setLastUpdated] = useState(null);
-  const [initialized, setInitialized] = useState(false);
-  // A counter we bump to force textarea reset when data loads
-  const [resetKey, setResetKey] = useState(0);
-  const [initValues, setInitValues] = useState({ cs: '', faq: '', tp: '', gn: '' });
+  const [isNew, setIsNew] = useState(false);
 
-  const { data, isLoading } = useQuery({
-    queryKey: ['client-sop', clientId],
-    queryFn: async () => {
-      const res = await base44.functions.invoke('manageClientSOP', { action: 'get', client_id: clientId });
-      return res.data?.sop || null;
-    },
-    enabled: !!clientId,
-    staleTime: 60 * 1000,
-  });
+  const csRef = useRef(null);
+  const faqRef = useRef(null);
+  const tpRef = useRef(null);
+  const gnRef = useRef(null);
 
   useEffect(() => {
-    if (data && !initialized) {
-      const cs = data.call_script || '';
-      const faq = data.faqs || '';
-      const tp = data.talking_points || '';
-      const gn = data.general_notes || '';
-      callScriptRef.current = cs;
-      faqsRef.current = faq;
-      talkingPointsRef.current = tp;
-      generalNotesRef.current = gn;
-      setInitValues({ cs, faq, tp, gn });
-      setLastUpdated(data.last_updated || null);
-      setInitialized(true);
-      setResetKey(k => k + 1);
-    } else if (data === null && !initialized) {
-      setInitialized(true);
+    if (!clientId) return;
+    let cancelled = false;
+    async function load() {
+      const res = await base44.functions.invoke('manageClientSOP', { action: 'get', client_id: clientId });
+      if (cancelled) return;
+      const sop = res.data?.sop;
+      if (sop) {
+        if (csRef.current) csRef.current.value = sop.call_script || '';
+        if (faqRef.current) faqRef.current.value = sop.faqs || '';
+        if (tpRef.current) tpRef.current.value = sop.talking_points || '';
+        if (gnRef.current) gnRef.current.value = sop.general_notes || '';
+        setLastUpdated(sop.last_updated || null);
+        setIsNew(false);
+      } else {
+        setIsNew(true);
+      }
+      setLoading(false);
     }
-  }, [data, initialized]);
+    load();
+    return () => { cancelled = true; };
+  }, [clientId]);
 
-  const saveMutation = useMutation({
-    mutationFn: async () => {
-      const res = await base44.functions.invoke('manageClientSOP', {
-        action: 'save',
-        client_id: clientId,
-        call_script: callScriptRef.current,
-        faqs: faqsRef.current,
-        talking_points: talkingPointsRef.current,
-        general_notes: generalNotesRef.current,
-      });
-      return res.data;
-    },
-    onSuccess: (res) => {
-      setLastUpdated(res.sop?.last_updated || new Date().toISOString());
-      toast({ title: 'SOP Saved', description: 'Client SOP has been updated.' });
-    },
-  });
+  const handleSave = async () => {
+    setSaving(true);
+    const res = await base44.functions.invoke('manageClientSOP', {
+      action: 'save',
+      client_id: clientId,
+      call_script: csRef.current?.value || '',
+      faqs: faqRef.current?.value || '',
+      talking_points: tpRef.current?.value || '',
+      general_notes: gnRef.current?.value || '',
+    });
+    setLastUpdated(res.data?.sop?.last_updated || new Date().toISOString());
+    setIsNew(false);
+    setSaving(false);
+    toast({ title: 'SOP Saved', description: 'Client SOP has been updated.' });
+  };
 
-  const commitCS = useCallback((v) => { callScriptRef.current = v; }, []);
-  const commitFAQ = useCallback((v) => { faqsRef.current = v; }, []);
-  const commitTP = useCallback((v) => { talkingPointsRef.current = v; }, []);
-  const commitGN = useCallback((v) => { generalNotesRef.current = v; }, []);
-
-  if (isLoading || !initialized) {
+  if (loading) {
     return (
       <div className="flex items-center justify-center py-16">
         <Loader2 className="w-5 h-5 text-slate-400 animate-spin" />
@@ -126,8 +65,6 @@ function ClientSOPEditorInner({ clientId }) {
       </div>
     );
   }
-
-  const isNew = data === null;
 
   return (
     <div className="space-y-5">
@@ -143,10 +80,10 @@ function ClientSOPEditorInner({ clientId }) {
         </div>
       )}
 
-      <SOPTextarea key={`cs-${resetKey}`} label="Call Script" initialValue={initValues.cs} onCommit={commitCS} minRows={12} />
-      <SOPTextarea key={`faq-${resetKey}`} label="FAQs" initialValue={initValues.faq} onCommit={commitFAQ} minRows={8} />
-      <SOPTextarea key={`tp-${resetKey}`} label="Talking Points" initialValue={initValues.tp} onCommit={commitTP} minRows={8} />
-      <SOPTextarea key={`gn-${resetKey}`} label="General Notes" initialValue={initValues.gn} onCommit={commitGN} minRows={6} />
+      <SOPField label="Call Script" inputRef={csRef} rows={12} />
+      <SOPField label="FAQs" inputRef={faqRef} rows={8} />
+      <SOPField label="Talking Points" inputRef={tpRef} rows={8} />
+      <SOPField label="General Notes" inputRef={gnRef} rows={6} />
 
       <div className="flex items-center justify-between pt-2">
         <div>
@@ -157,12 +94,12 @@ function ClientSOPEditorInner({ clientId }) {
           )}
         </div>
         <button
-          onClick={() => saveMutation.mutate()}
-          disabled={saveMutation.isPending}
+          onClick={handleSave}
+          disabled={saving}
           className="inline-flex items-center gap-2 px-4 py-2 text-sm font-bold rounded-lg text-black hover:opacity-90 disabled:opacity-50 transition-opacity"
           style={{ backgroundColor: '#D6FF03' }}
         >
-          {saveMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+          {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
           Save SOP
         </button>
       </div>
@@ -170,5 +107,18 @@ function ClientSOPEditorInner({ clientId }) {
   );
 }
 
-const ClientSOPEditor = memo(ClientSOPEditorInner);
-export default ClientSOPEditor;
+function SOPField({ label, inputRef, rows }) {
+  return (
+    <div>
+      <label className="block text-sm font-medium text-white mb-1.5">{label}</label>
+      <textarea
+        ref={inputRef}
+        defaultValue=""
+        rows={rows}
+        className="w-full px-3 py-2.5 text-sm border border-slate-700 rounded-lg bg-slate-800 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-[#D6FF03] resize-y"
+        placeholder={`Enter ${label.toLowerCase()}...`}
+      />
+      <p className="text-[10px] text-slate-500 mt-1">Supports markdown</p>
+    </div>
+  );
+}
