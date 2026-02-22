@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useCallback, lazy, Suspense } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
@@ -17,9 +17,7 @@ import LeadDrilldownDialog from '../components/clientview/LeadDrilldownDialog';
 import SpendDrilldownDialog from '../components/clientview/SpendDrilldownDialog';
 import PageErrorBoundary from '../components/shared/PageErrorBoundary';
 import PageLoader from '../components/shared/PageLoader';
-import { FileText, Loader2 } from 'lucide-react';
-
-const ClientSOPEditor = lazy(() => import('../components/clientview/ClientSOPEditor'));
+import { FileText } from 'lucide-react';
 
 export default function ClientView() {
   const navigate = useNavigate();
@@ -33,8 +31,6 @@ export default function ClientView() {
 
   const urlParams = new URLSearchParams(window.location.search);
   const clientId = urlParams.get('clientId');
-  const initialTab = urlParams.get('tab') || 'overview';
-  const [activeTab, setActiveTab] = useState(initialTab);
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -178,45 +174,31 @@ export default function ClientView() {
               } · {client?.status || 'active'}
             </p>
           </div>
-          {activeTab === 'overview' && (
-            <DateRangePicker
+          <DateRangePicker
               startDate={startDate}
               endDate={endDate}
               onStartChange={setStartDate}
               onEndChange={setEndDate}
             />
-          )}
         </div>
 
         {/* Tab bar */}
         <div className="flex items-center gap-1 border-b border-slate-700/50 pb-0">
           <button
-            onClick={() => setActiveTab('overview')}
-            className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
-              activeTab === 'overview' ? 'border-[#D6FF03] text-[#D6FF03]' : 'border-transparent text-slate-400 hover:text-white'
-            }`}
+            className="px-4 py-2 text-sm font-medium border-b-2 transition-colors border-[#D6FF03] text-[#D6FF03]"
           >
             Overview
           </button>
           {isAdmin && (
             <button
-              onClick={() => setActiveTab('sop')}
-              className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors flex items-center gap-1.5 ${
-                activeTab === 'sop' ? 'border-[#D6FF03] text-[#D6FF03]' : 'border-transparent text-slate-400 hover:text-white'
-              }`}
+              onClick={() => navigate(createPageUrl('ClientSOP') + `?clientId=${clientId}&clientName=${encodeURIComponent(client?.name || '')}`)}
+              className="px-4 py-2 text-sm font-medium border-b-2 transition-colors flex items-center gap-1.5 border-transparent text-slate-400 hover:text-white"
             >
               <FileText className="w-3.5 h-3.5" />
               SOP
             </button>
           )}
         </div>
-
-        {activeTab === 'sop' && isAdmin ? (
-          <Suspense fallback={<div className="flex items-center justify-center py-16"><Loader2 className="w-5 h-5 text-slate-400 animate-spin" /><span className="ml-2 text-sm text-slate-400">Loading SOP editor...</span></div>}>
-            <ClientSOPEditor clientId={clientId} />
-          </Suspense>
-        ) : (
-        <>
         {/* KPI Grid */}
         <ClientKPIGrid metrics={metrics} onCardClick={handleCardClick} />
 
@@ -287,8 +269,6 @@ export default function ClientView() {
             spendRecords={spendInRange}
             onUpdated={handleRefresh}
           />
-        )}
-        </>
         )}
       </main>
     </div>
