@@ -19,29 +19,29 @@ function fmtDateShort(dateStr) {
   return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
 }
 
-function PayPeriodHeader({ data }) {
+function MonthHeader({ data }) {
   const isHourly = data.employee.classification === 'hourly' ||
     (data.employee.classification === 'contractor' && data.employee.contractor_billing_type === 'hourly');
-  const hoursDiff = data.hours_this_period - data.hours_last_period;
+  const hoursDiff = data.hours_this_month - data.hours_last_month;
   const up = hoursDiff >= 0;
 
   return (
     <div className="flex items-center justify-between flex-wrap gap-3 p-4 rounded-xl border border-slate-700/50 bg-slate-800/60">
       <div>
-        <p className="text-xs text-slate-500 uppercase tracking-wider font-medium">Pay Period</p>
-        <p className="text-lg font-bold text-white">{fmtDateShort(data.period_start)} – {fmtDateShort(data.period_end)}</p>
+        <p className="text-xs text-slate-500 uppercase tracking-wider font-medium">Monthly Earnings</p>
+        <p className="text-lg font-bold text-white">{data.month_label}</p>
       </div>
       <div className="flex items-center gap-3">
         <span className="px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider rounded-full bg-[#D6FF03]/10 text-[#D6FF03] border border-[#D6FF03]/20">
-          {FREQ_LABELS[data.payroll_frequency] || data.payroll_frequency}
+          Paid {FREQ_LABELS[data.payroll_frequency] || data.payroll_frequency}
         </span>
         {isHourly ? (
           <div className="text-right">
-            <p className="text-lg font-bold text-white">{data.hours_this_period.toFixed(1)} <span className="text-sm text-slate-400 font-normal">hrs</span></p>
-            {data.hours_last_period > 0 && (
+            <p className="text-lg font-bold text-white">{data.hours_this_month.toFixed(1)} <span className="text-sm text-slate-400 font-normal">hrs</span></p>
+            {data.hours_last_month > 0 && (
               <p className={`text-xs font-medium flex items-center gap-0.5 justify-end ${up ? 'text-green-400' : 'text-red-400'}`}>
                 {up ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
-                {Math.abs(hoursDiff).toFixed(1)} hrs vs last
+                {Math.abs(hoursDiff).toFixed(1)} hrs from {data.hours_last_month.toFixed(1)} last month
               </p>
             )}
           </div>
@@ -60,9 +60,9 @@ function EarningsBreakdown({ data }) {
   const isHourly = emp.classification === 'hourly';
   const isContractorHourly = emp.classification === 'contractor' && emp.contractor_billing_type === 'hourly';
 
-  let baseExplain = 'Flat per cycle';
-  if (isHourly) baseExplain = `$${emp.hourly_rate}/hr × ${data.hours_this_period.toFixed(1)} hrs`;
-  else if (isContractorHourly) baseExplain = `$${emp.contractor_rate}/hr × ${data.hours_this_period.toFixed(1)} hrs`;
+  let baseExplain = 'Monthly salary';
+  if (isHourly) baseExplain = `$${emp.hourly_rate}/hr × ${data.hours_this_month.toFixed(1)} hrs this month`;
+  else if (isContractorHourly) baseExplain = `$${emp.contractor_rate}/hr × ${data.hours_this_month.toFixed(1)} hrs this month`;
 
   return (
     <div className="rounded-xl border border-slate-700/50 bg-slate-800/60 p-4 space-y-3">
@@ -70,8 +70,8 @@ function EarningsBreakdown({ data }) {
       <Row icon={<Trophy className="w-4 h-4 text-amber-400" />} label="Spiff Bonuses" amount={data.pending_spiff_bonus}
         sub={data.pending_spiff_bonus === 0 ? 'No bonuses pending' : `${data.spiff_details.filter(s => s.met).length} bonus${data.spiff_details.filter(s => s.met).length !== 1 ? 'es' : ''} earned`}
         muted={data.pending_spiff_bonus === 0} />
-      <Row icon={<Gift className="w-4 h-4 text-purple-400" />} label="Loot Box Cash" amount={data.loot_cash_this_period}
-        muted={data.loot_cash_this_period === 0} />
+      <Row icon={<Gift className="w-4 h-4 text-purple-400" />} label="Loot Box Cash" amount={data.loot_cash_this_month}
+        muted={data.loot_cash_this_month === 0} />
       <div className="border-t border-slate-700/50 pt-3 flex items-center justify-between">
         <span className="text-sm font-bold text-white">Estimated Total</span>
         <span className="text-xl font-black" style={{ color: '#D6FF03' }}>{fmtMoney(data.estimated_total)}</span>
@@ -147,7 +147,7 @@ function EarningsTab({ data, loading }) {
 
   return (
     <div className="space-y-4 max-w-2xl">
-      <PayPeriodHeader data={data} />
+      <MonthHeader data={data} />
       <EarningsBreakdown data={data} />
 
       {/* Active Spiffs */}
