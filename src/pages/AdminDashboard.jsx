@@ -14,7 +14,6 @@ import GoalManagementModal from '../components/admin/GoalManagementModal';
 import PLComparisonRow from '../components/admin/PLComparisonRow.jsx';
 import StatCompareCard from '../components/admin/StatCompareCard.jsx';
 import { Settings, Trophy } from 'lucide-react';
-import ShiftChecklistEditor from '../components/admin/ShiftChecklistEditor';
 import InfoTooltip from '../components/shared/InfoTooltip';
 import PageErrorBoundary from '../components/shared/PageErrorBoundary';
 import PageLoader from '../components/shared/PageLoader';
@@ -191,7 +190,6 @@ export default function AdminDashboard() {
             </div>
           </motion.div>
 
-          {/* No goal prompt — only show dashboard content when checklist editor is hidden */}
           {/* No goal prompt */}
           {!currentGoal && (
             <div className="bg-slate-800/50 border border-slate-700/50 rounded-lg px-5 py-4 flex items-center justify-between">
