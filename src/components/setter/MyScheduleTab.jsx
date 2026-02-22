@@ -89,7 +89,7 @@ function getMonday(date) {
   return d.toISOString().split('T')[0];
 }
 
-export default function MyScheduleTab({ workspaceData, userId, unopenedBoxes }) {
+function MyScheduleTab({ workspaceData, userId, unopenedBoxes }) {
   const [ptoModalOpen, setPtoModalOpen] = useState(false);
   const weekSchedule = workspaceData?.weekSchedule || [];
   const nextWeekSchedule = workspaceData?.nextWeekSchedule || [];

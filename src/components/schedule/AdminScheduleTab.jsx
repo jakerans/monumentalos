@@ -23,7 +23,7 @@ function formatDateRange(mondayStr) {
   return `${fmt(mon)} – ${fmt(sun)}`;
 }
 
-export default function AdminScheduleTab() {
+function AdminScheduleTab() {
   const [weekOffset, setWeekOffset] = useState(0);
   const [genOpen, setGenOpen] = useState(false);
 
@@ -112,3 +112,5 @@ export default function AdminScheduleTab() {
     </div>
   );
 }
+
+export default React.memo(AdminScheduleTab);

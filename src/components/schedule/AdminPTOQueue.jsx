@@ -20,7 +20,7 @@ function formatDate(dateStr) {
   return d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
 }
 
-function AdminPTOCard({ request, onResolved }) {
+const AdminPTOCard = React.memo(function AdminPTOCard({ request, onResolved }) {
   const [acting, setActing] = useState(false);
   const [showDeny, setShowDeny] = useState(false);
   const [denyNotes, setDenyNotes] = useState('');
@@ -161,7 +161,9 @@ function AdminPTOCard({ request, onResolved }) {
   );
 }
 
-function PendingTransferCard({ request, onAction }) {
+});
+
+const PendingTransferCard = React.memo(function PendingTransferCard({ request, onAction }) {
   const [acting, setActing] = useState(false);
 
   const offerInfo = formatOfferLabel(request.offer_details);
@@ -227,7 +229,9 @@ function PendingTransferCard({ request, onAction }) {
   );
 }
 
-export default function AdminPTOQueue({ onScheduleChanged }) {
+});
+
+function AdminPTOQueue({ onScheduleChanged }) {
   const queryClient = useQueryClient();
 
   const { data, isLoading } = useQuery({

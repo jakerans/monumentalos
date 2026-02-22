@@ -3,7 +3,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { ChevronDown, ChevronUp, Gift, Clock, Trophy } from 'lucide-react';
 import SpiffCard from './SpiffCard';
 
-export default function SpiffTracker({ spiffs, leads, user }) {
+function SpiffTracker({ spiffs, leads, user }) {
   const now = new Date();
   const [activeIndex, setActiveIndex] = useState(0);
 
@@ -192,3 +192,5 @@ export default function SpiffTracker({ spiffs, leads, user }) {
     </div>
   );
 }
+
+export default React.memo(SpiffTracker);

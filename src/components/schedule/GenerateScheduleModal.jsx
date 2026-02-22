@@ -28,7 +28,7 @@ function addDays(dateStr, days) {
   return d.toISOString().split('T')[0];
 }
 
-export default function GenerateScheduleModal({ open, onOpenChange, setters, onGenerated }) {
+function GenerateScheduleModal({ open, onOpenChange, setters, onGenerated }) {
   const [setterId, setSetterId] = useState('all');
   const [shiftStart, setShiftStart] = useState('09:00');
   const [shiftEnd, setShiftEnd] = useState('17:00');
@@ -160,3 +160,5 @@ export default function GenerateScheduleModal({ open, onOpenChange, setters, onG
     </Dialog>
   );
 }
+
+export default React.memo(GenerateScheduleModal);

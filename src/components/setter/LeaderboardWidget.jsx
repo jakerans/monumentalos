@@ -79,7 +79,7 @@ function PodiumDisplay({ leaderboard, myRank }) {
   );
 }
 
-export default function LeaderboardWidget({ user, spiffs, leads, leaderboardProfiles }) {
+function LeaderboardWidget({ user, spiffs, leads, leaderboardProfiles }) {
   const [open, setOpen] = useState(false);
 
   // Use pre-fetched profiles if available, otherwise fetch (backward compat)
@@ -487,6 +487,8 @@ export default function LeaderboardWidget({ user, spiffs, leads, leaderboardProf
     </>
   );
 }
+
+export default React.memo(LeaderboardWidget);
 
 const LeaderboardRow = forwardRef(({ s, i, userId, lastMonthBoard }, ref) => {
   const isMe = s.user_id === userId;

@@ -125,7 +125,7 @@ function ScheduleCell({ schedule, onUpdated }) {
   );
 }
 
-export default function ScheduleGrid({ schedules, setters, weekStart, onUpdated }) {
+function ScheduleGrid({ schedules, setters, weekStart, onUpdated }) {
   const dates = getDatesForWeek(weekStart);
   const todayStr = new Date().toISOString().split('T')[0];
 
@@ -177,3 +177,5 @@ export default function ScheduleGrid({ schedules, setters, weekStart, onUpdated 
     </div>
   );
 }
+
+export default React.memo(ScheduleGrid);

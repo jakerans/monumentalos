@@ -3,7 +3,7 @@ import LeadCard from './LeadCard';
 import { motion } from 'framer-motion';
 import { useAutoAnimate } from '@formkit/auto-animate/react';
 
-export default function PipelineColumn({ title, count, color, leads, clients, onAction, onSelect }) {
+function PipelineColumn({ title, count, color, leads, clients, onAction, onSelect }) {
   const clientMap = React.useMemo(() => {
     const map = {};
     (clients || []).forEach(c => { map[c.id] = c.name; });
@@ -59,3 +59,5 @@ export default function PipelineColumn({ title, count, color, leads, clients, on
     </motion.div>
   );
 }
+
+export default React.memo(PipelineColumn);

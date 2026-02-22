@@ -20,7 +20,7 @@ function formatShiftTime(hhmm) {
   return `${h12}:${String(m).padStart(2, '0')} ${ampm}`;
 }
 
-export default function ClockWidget({ workspaceData, onClockAction, userId }) {
+function ClockWidget({ workspaceData, onClockAction, userId }) {
   const [elapsed, setElapsed] = useState(0);
   const [loading, setLoading] = useState(false);
 
@@ -154,3 +154,5 @@ export default function ClockWidget({ workspaceData, onClockAction, userId }) {
     </motion.div>
   );
 }
+
+export default React.memo(ClockWidget);

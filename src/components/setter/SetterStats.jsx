@@ -9,7 +9,7 @@ function pctChange(current, prior) {
   return Math.round(((current - prior) / prior) * 100);
 }
 
-export default function SetterStats({ preStats = {}, leads, user }) {
+function SetterStats({ preStats = {}, leads, user }) {
   // Support both new preStats path and legacy leads+user path
   const stats = preStats.mtdBooked !== undefined ? buildFromPreStats(preStats) : buildFromLeads(leads, user);
 
@@ -44,6 +44,8 @@ export default function SetterStats({ preStats = {}, leads, user }) {
     </div>
   );
 }
+
+export default React.memo(SetterStats);
 
 function buildFromPreStats(s) {
   return [

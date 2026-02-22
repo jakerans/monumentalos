@@ -31,6 +31,7 @@ export default function SetterDashboard() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [user, setUser] = useState(null);
+  const [searchInput, setSearchInput] = useState('');
   const [search, setSearch] = useState('');
   const [clientFilter, setClientFilter] = useState('all');
   const [selectedLead, setSelectedLead] = useState(null);
@@ -50,6 +51,12 @@ export default function SetterDashboard() {
   const [dashTab, setDashTab] = useState('pipeline');
   const prevRankRef = useRef(null);
   const [animateRef] = useAutoAnimate({ duration: 350, easing: 'ease-out' });
+
+  // Debounce search
+  useEffect(() => {
+    const timer = setTimeout(() => setSearch(searchInput), 300);
+    return () => clearTimeout(timer);
+  }, [searchInput]);
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -290,10 +297,10 @@ export default function SetterDashboard() {
     return matchSearch && matchClient;
   });
 
-  const newLeads = applyLocalFilter(pipelineData.newLeads);
-  const inProgressLeads = applyLocalFilter(pipelineData.inProgressLeads);
-  const bookedLeads = applyLocalFilter(pipelineData.bookedLeads);
-  const dqLeads = applyLocalFilter(pipelineData.dqLeads);
+  const newLeads = useMemo(() => applyLocalFilter(pipelineData.newLeads), [search, clientFilter, pipelineData.newLeads]);
+  const inProgressLeads = useMemo(() => applyLocalFilter(pipelineData.inProgressLeads), [search, clientFilter, pipelineData.inProgressLeads]);
+  const bookedLeads = useMemo(() => applyLocalFilter(pipelineData.bookedLeads), [search, clientFilter, pipelineData.bookedLeads]);
+  const dqLeads = useMemo(() => applyLocalFilter(pipelineData.dqLeads), [search, clientFilter, pipelineData.dqLeads]);
 
   return (
     <PageErrorBoundary>
@@ -372,8 +379,8 @@ export default function SetterDashboard() {
             <input
               type="text"
               placeholder="Search leads by name, phone, or email..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
+              value={searchInput}
+              onChange={(e) => setSearchInput(e.target.value)}
               className="w-full pl-9 pr-3 py-2 text-sm border border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#D6FF03] bg-slate-800 text-white placeholder-slate-500"
             />
           </div>
