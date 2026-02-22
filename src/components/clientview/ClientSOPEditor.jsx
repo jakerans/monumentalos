@@ -9,34 +9,46 @@ import { toast } from '@/components/ui/use-toast';
  * on the parent to re-render. The parent value is only read on mount /
  * when the parent pushes a brand-new value (key-based reset).
  */
+const sopTextareaStyle = {
+  width: '100%',
+  padding: '10px 12px',
+  fontSize: '14px',
+  lineHeight: '1.5',
+  border: '1px solid rgb(51, 65, 85)',
+  borderRadius: '8px',
+  backgroundColor: 'rgb(30, 41, 59)',
+  color: 'white',
+  resize: 'vertical',
+  outline: 'none',
+  fontFamily: 'inherit',
+  boxSizing: 'border-box',
+};
+
 const SOPTextarea = memo(function SOPTextarea({ label, initialValue, onCommit, minRows = 8 }) {
-  const ref = useRef(null);
-  const [val, setVal] = useState(initialValue || '');
+  const localRef = useRef(initialValue || '');
+  const textareaRef = useRef(null);
 
-  // If parent resets (e.g. after load), sync
+  // Sync on parent reset
   useEffect(() => {
-    setVal(initialValue || '');
+    localRef.current = initialValue || '';
+    if (textareaRef.current) {
+      textareaRef.current.value = initialValue || '';
+    }
   }, [initialValue]);
-
-  // Commit to parent on blur so save always has latest
-  const handleBlur = useCallback(() => {
-    onCommit(val);
-  }, [val, onCommit]);
 
   return (
     <div>
-      <label className="block text-sm font-medium text-white mb-1.5">{label}</label>
+      <label style={{ display: 'block', fontSize: '14px', fontWeight: 500, color: 'white', marginBottom: '6px' }}>{label}</label>
       <textarea
-        ref={ref}
-        value={val}
-        onChange={(e) => setVal(e.target.value)}
-        onBlur={handleBlur}
+        ref={textareaRef}
+        defaultValue={initialValue || ''}
+        onChange={(e) => { localRef.current = e.target.value; }}
+        onBlur={() => onCommit(localRef.current)}
         rows={minRows}
-        style={{ '--tw-ring-color': '#D6FF03' }}
-        className="w-full px-3 py-2.5 text-sm border border-slate-700 rounded-lg bg-slate-800 text-white placeholder-slate-500 focus:outline-none focus:ring-2 resize-y"
+        style={sopTextareaStyle}
         placeholder={`Enter ${label.toLowerCase()}...`}
       />
-      <p className="text-[10px] text-slate-500 mt-1">Supports markdown (headers, bold, bullets, numbered lists)</p>
+      <p style={{ fontSize: '10px', color: 'rgb(100, 116, 139)', marginTop: '4px' }}>Supports markdown (headers, bold, bullets, numbered lists)</p>
     </div>
   );
 });
