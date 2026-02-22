@@ -325,8 +325,10 @@ export default function SetterDashboard() {
   // Auto-show checklist logic
   useEffect(() => {
     if (checklist && hasClocked) {
-      const tasksParsed = Array.isArray(checklist.tasks) ? checklist.tasks : [];
-      const logTasksParsed = checklistLog?.completed_tasks ? JSON.parse(checklistLog.completed_tasks) : [];
+      let tasksParsed = [];
+      try { tasksParsed = typeof checklist.tasks === 'string' ? JSON.parse(checklist.tasks) : (Array.isArray(checklist.tasks) ? checklist.tasks : []); } catch { tasksParsed = []; }
+      let logTasksParsed = [];
+      try { logTasksParsed = checklistLog?.completed_tasks ? (typeof checklistLog.completed_tasks === 'string' ? JSON.parse(checklistLog.completed_tasks) : (Array.isArray(checklistLog.completed_tasks) ? checklistLog.completed_tasks : [])) : []; } catch { logTasksParsed = []; }
       const allDone = tasksParsed.length > 0 && logTasksParsed.length === tasksParsed.length;
       
       if (!allDone) {
