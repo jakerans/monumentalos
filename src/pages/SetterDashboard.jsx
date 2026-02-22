@@ -662,6 +662,18 @@ export default function SetterDashboard() {
           />
         )}
       </AnimatePresence>
+
+      <AnimatePresence>
+        {checklistVisible && checklist && (
+          <DailyChecklist
+            checklist={checklist}
+            log={checklistLog}
+            user={user}
+            onTaskComplete={handleChecklistTaskComplete}
+            onDismiss={() => setChecklistVisible(false)}
+          />
+        )}
+      </AnimatePresence>
     </div>
     </PageErrorBoundary>
   );
