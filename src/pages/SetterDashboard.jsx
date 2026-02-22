@@ -312,6 +312,16 @@ export default function SetterDashboard() {
     setDetailOpen(true);
   };
 
+  const handleChecklistTaskComplete = async (taskData) => {
+    await base44.functions.invoke('manageShiftChecklist', {
+      action: 'complete_task',
+      setter_id: user.id,
+      checklist_id: checklist.id,
+      ...taskData
+    });
+    refetchChecklist();
+  };
+
   // Auto-show checklist logic
   useEffect(() => {
     if (checklist && hasClocked) {
