@@ -168,6 +168,10 @@ export default function SetterDashboard() {
   const lifetimeStats = invData?.lifetimeStats || {};
   const recentWins = invData?.recentWins || [];
 
+  const checklist = checklistData?.checklist;
+  const checklistLog = checklistData?.log;
+  const hasClocked = workspaceData?.clockedIn || false;
+
   const pipelineData = dashData?.pipeline || { newLeads: [], inProgressLeads: [], bookedLeads: [], dqLeads: [] };
   const preStats = dashData?.stats || {};
   const spiffs = dashData?.spiffs || [];
