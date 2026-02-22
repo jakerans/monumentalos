@@ -372,7 +372,7 @@ export default function SetterDashboard() {
 
       <main className="flex-1 max-w-7xl w-full mx-auto px-3 sm:px-6 lg:pl-24 lg:pr-8 py-4 sm:py-6">
         {/* Clock Widget */}
-        <div className="mb-4">
+        <div className="mb-4" data-tour="clock-widget">
           <ClockWidget
             workspaceData={workspaceData}
             onClockAction={() => refetchWorkspace()}
@@ -392,6 +392,7 @@ export default function SetterDashboard() {
           </button>
           <button
             onClick={() => setDashTab('schedule')}
+            data-tour="schedule-tab"
             className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
               dashTab === 'schedule' ? 'border-[#D6FF03] text-[#D6FF03]' : 'border-transparent text-slate-400 hover:text-white'
             }`}
@@ -400,6 +401,7 @@ export default function SetterDashboard() {
           </button>
           <button
             onClick={() => setDashTab('earnings')}
+            data-tour="earnings-tab"
             className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors flex items-center gap-1.5 ${
               dashTab === 'earnings' ? 'border-[#D6FF03] text-[#D6FF03]' : 'border-transparent text-slate-400 hover:text-white'
             }`}
@@ -421,6 +423,7 @@ export default function SetterDashboard() {
             initial={{ opacity: 0, scale: 0.8 }}
             animate={{ opacity: 1, scale: 1 }}
             onClick={() => setChecklistVisible(true)}
+            data-tour="checklist-button"
             className="fixed bottom-6 left-6 z-30 flex items-center gap-2 px-4 py-2.5 rounded-full font-bold text-black shadow-lg hover:shadow-xl transition-shadow"
             style={{ backgroundColor: '#D6FF03' }}
           >
@@ -458,7 +461,9 @@ export default function SetterDashboard() {
             <SpiffTracker spiffs={spiffs} user={user} />
           </div>
         </div>
-        <SetterStats preStats={preStats} />
+        <div data-tour="setter-stats">
+          <SetterStats preStats={preStats} />
+        </div>
 
         {/* Search & Filter Bar */}
         <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 mb-4 sm:mb-6">
@@ -502,6 +507,7 @@ export default function SetterDashboard() {
             </button>
             <button
               onClick={() => setWorkspaceOpen(true)}
+              data-tour="dial-workspace-btn"
               className="hidden lg:flex items-center gap-1.5 px-3 py-2 text-xs sm:text-sm text-black rounded-lg font-bold transition-colors hover:opacity-90"
               style={{ backgroundColor: '#D6FF03' }}
             >
@@ -511,13 +517,14 @@ export default function SetterDashboard() {
         </div>
 
         {/* Pipeline Columns */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.2, duration: 0.4 }}
-          ref={animateRef}
-          className={`grid grid-cols-1 gap-4 sm:gap-6 ${showDQ ? 'md:grid-cols-4' : 'md:grid-cols-3'}`}
-        >
+         <motion.div
+           initial={{ opacity: 0 }}
+           animate={{ opacity: 1 }}
+           transition={{ delay: 0.2, duration: 0.4 }}
+           ref={animateRef}
+           data-tour="pipeline-columns"
+           className={`grid grid-cols-1 gap-4 sm:gap-6 ${showDQ ? 'md:grid-cols-4' : 'md:grid-cols-3'}`}
+         >
           <PipelineColumn
             title="New Leads"
             count={newLeads.length}

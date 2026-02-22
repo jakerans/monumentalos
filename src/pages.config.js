@@ -76,8 +76,8 @@ import PreviewEffects from './pages/PreviewEffects';
 import SetterDashboard from './pages/SetterDashboard';
 import SetterPerformance from './pages/SetterPerformance';
 import SetterStats from './pages/SetterStats';
-import UserManagement from './pages/UserManagement';
 import ShiftChecklistSettings from './pages/ShiftChecklistSettings';
+import UserManagement from './pages/UserManagement';
 import __Layout from './Layout.jsx';
 
 
@@ -111,8 +111,8 @@ export const PAGES = {
     "SetterDashboard": SetterDashboard,
     "SetterPerformance": SetterPerformance,
     "SetterStats": SetterStats,
-    "UserManagement": UserManagement,
     "ShiftChecklistSettings": ShiftChecklistSettings,
+    "UserManagement": UserManagement,
 }
 
 export const pagesConfig = {
