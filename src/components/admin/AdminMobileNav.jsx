@@ -3,9 +3,9 @@ import { Link, useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import { base44 } from '@/api/base44Client';
 import {
-  LayoutDashboard, Users, Receipt, Calculator, Headset, UserCog,
+  LayoutDashboard, Users, Receipt, Calculator, Headset,
   Menu, X, LogOut, ArrowRightLeft, BarChart3, Wallet,
-  Landmark, Gift, Activity, Eye, PieChart, Target, LineChart, Building, Cog, DollarSign, ArrowUpDown,
+  Landmark, Gift, Activity, Eye, PieChart, Target, LineChart, Building, Cog, DollarSign, ArrowUpDown, Calendar,
 } from 'lucide-react';
 
 const financeAdminNav = [
@@ -16,7 +16,7 @@ const financeAdminNav = [
   { key: 'AccountingCashFlow', label: 'Cash Flow', icon: ArrowUpDown },
   { key: 'AccountingClients', label: 'Client Revenue', icon: Users },
   { key: 'ClientProfitability', label: 'Profitability', icon: PieChart },
-  { key: 'EmployeeManagement', label: 'Payroll', icon: UserCog },
+  { key: 'EmployeeManagement', label: 'Employees', icon: Users },
 ];
 
 const adminSections = [
@@ -30,13 +30,14 @@ const adminSections = [
       { key: 'AccountingCashFlow', label: 'Cash Flow', icon: ArrowUpDown },
       { key: 'AccountingClients', label: 'Client Revenue', icon: Users },
       { key: 'ClientProfitability', label: 'Profitability', icon: PieChart },
-      { key: 'EmployeeManagement', label: 'Payroll', icon: UserCog },
+      { key: 'EmployeeManagement', label: 'Employees', icon: Users },
     ],
   },
   {
     label: 'OPERATIONS',
     items: [
       { key: 'ClientPerformance', label: 'Client Overview', icon: Target },
+      { key: 'EmployeeManagement', label: 'Scheduling', icon: Calendar },
       { key: 'SetterPerformance', label: 'Setter Management', icon: Headset },
       { key: 'SetterStats', label: 'Setter Reporting', icon: LineChart },
       { key: 'LootAdmin', label: 'Loot System', icon: Gift },

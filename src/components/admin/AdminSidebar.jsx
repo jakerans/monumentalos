@@ -4,10 +4,10 @@ import { createPageUrl } from '@/utils';
 import { base44 } from '@/api/base44Client';
 import { motion } from 'framer-motion';
 import {
-  Zap, ZapOff, LayoutDashboard, Users, Receipt, Calculator, Headset, UserCog,
+  Zap, ZapOff, LayoutDashboard, Users, Receipt, Calculator, Headset,
   ChevronLeft, ChevronRight, ChevronDown, BarChart3, Wallet, TrendingUp,
   Settings, Landmark, Gift, DollarSign, Briefcase, Activity, Eye,
-  PieChart, Target, LineChart, Building, Cog, ArrowUpDown,
+  PieChart, Target, LineChart, Building, Cog, ArrowUpDown, Calendar,
 } from 'lucide-react';
 import { useEffectsToggle } from '../shared/useEffectsToggle';
 import AdminUserMenu from './AdminUserMenu';
@@ -26,7 +26,7 @@ const ADMIN_SECTIONS = {
       { key: 'AccountingCashFlow', label: 'Cash Flow', icon: ArrowUpDown },
       { key: 'AccountingClients', label: 'Client Revenue', icon: Users },
       { key: 'ClientProfitability', label: 'Profitability', icon: PieChart },
-      { key: 'EmployeeManagement', label: 'Payroll', icon: UserCog },
+      { key: 'EmployeeManagement', label: 'Employees', icon: Users },
     ],
   },
   operations: {
@@ -35,6 +35,7 @@ const ADMIN_SECTIONS = {
     icon: Briefcase,
     items: [
       { key: 'ClientPerformance', label: 'Client Overview', icon: Target },
+      { key: 'EmployeeManagement', label: 'Scheduling', icon: Calendar },
       { key: 'SetterPerformance', label: 'Setter Management', icon: Headset },
       { key: 'SetterStats', label: 'Setter Reporting', icon: LineChart },
       { key: 'LootAdmin', label: 'Loot System', icon: Gift },
@@ -67,7 +68,7 @@ const FINANCE_ADMIN_SECTIONS = {
       { key: 'AccountingCashFlow', label: 'Cash Flow', icon: ArrowUpDown },
       { key: 'AccountingClients', label: 'Client Revenue', icon: Users },
       { key: 'ClientProfitability', label: 'Profitability', icon: PieChart },
-      { key: 'EmployeeManagement', label: 'Payroll', icon: UserCog },
+      { key: 'EmployeeManagement', label: 'Employees', icon: Users },
     ],
   },
 };
