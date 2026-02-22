@@ -312,6 +312,19 @@ export default function SetterDashboard() {
     setDetailOpen(true);
   };
 
+  // Auto-show checklist logic
+  useEffect(() => {
+    if (checklist && hasClocked) {
+      const tasksParsed = Array.isArray(checklist.tasks) ? checklist.tasks : [];
+      const logTasksParsed = checklistLog?.completed_tasks ? JSON.parse(checklistLog.completed_tasks) : [];
+      const allDone = tasksParsed.length > 0 && logTasksParsed.length === tasksParsed.length;
+      
+      if (!allDone) {
+        setChecklistVisible(true);
+      }
+    }
+  }, [checklist, hasClocked, checklistLog?.all_complete]);
+
   // Track rank changes for #1 celebration
   const myCurrentRank = leaderboardData.myRank;
   useEffect(() => {
