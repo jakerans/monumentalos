@@ -17,9 +17,6 @@ export default function AICoachSettingsTab() {
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
   const fileInputRef = useRef(null);
-  const toneRef = useRef(null);
-  const rulesRef = useRef(null);
-  const contextRef = useRef(null);
 
   const [tone, setTone] = useState('');
   const [rules, setRules] = useState('');
@@ -62,10 +59,10 @@ export default function AICoachSettingsTab() {
   const handleSave = async () => {
     setSaving(true);
     const payload = {
-      ai_coach_tone: toneRef.current?.value || '',
-      ai_coach_rules: rulesRef.current?.value || '',
-      ai_coach_context: contextRef.current?.value || '',
-      ai_coach_instructions: contextRef.current?.value || '',
+      ai_coach_tone: tone,
+      ai_coach_rules: rules,
+      ai_coach_context: context,
+      ai_coach_instructions: context,
       ai_coach_sop_urls: sopUrls,
       ai_coach_sop_names: sopNames,
     };
@@ -116,8 +113,8 @@ export default function AICoachSettingsTab() {
           <div className="space-y-3">
             <p className="text-xs text-slate-400">How should the AI coach sound?</p>
             <textarea
-              ref={toneRef}
-              defaultValue={tone}
+              value={tone}
+              onChange={(e) => setTone(e.target.value)}
               placeholder="e.g. Motivational and high-energy, like a sports coach. Use slang. Keep it short and punchy."
               className="w-full px-3 py-2.5 bg-slate-900 border border-slate-700 rounded-lg text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-[#D6FF03] min-h-[120px]"
             />
@@ -125,11 +122,7 @@ export default function AICoachSettingsTab() {
               {['Motivational & high-energy', 'Direct & no-nonsense', 'Friendly & supportive', 'Competitive & fired-up'].map(preset => (
                 <button
                   key={preset}
-                  onClick={() => {
-                    if (toneRef.current) {
-                      toneRef.current.value = toneRef.current.value ? `${toneRef.current.value}. ${preset}.` : preset;
-                    }
-                  }}
+                  onClick={() => setTone(prev => prev ? `${prev}. ${preset}.` : preset)}
                   className="px-2 py-1 text-[11px] rounded-md bg-slate-800 border border-slate-700 text-slate-400 hover:text-white hover:border-[#D6FF03]/40 transition-colors"
                 >
                   + {preset}
@@ -142,8 +135,8 @@ export default function AICoachSettingsTab() {
           <div className="space-y-3">
             <p className="text-xs text-slate-400">Hard rules the AI must follow. These override everything else.</p>
             <textarea
-              ref={rulesRef}
-              defaultValue={rules}
+              value={rules}
+              onChange={(e) => setRules(e.target.value)}
               placeholder={"e.g.\n- Never tell setters to make a specific number of calls\n- Always mention speed-to-lead\n- Keep messages under 3 sentences"}
               className="w-full px-3 py-2.5 bg-slate-900 border border-slate-700 rounded-lg text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-[#D6FF03] min-h-[140px]"
             />
@@ -153,8 +146,8 @@ export default function AICoachSettingsTab() {
           <div className="space-y-3">
             <p className="text-xs text-slate-400">Company-specific context the AI should know.</p>
             <textarea
-              ref={contextRef}
-              defaultValue={context}
+              value={context}
+              onChange={(e) => setContext(e.target.value)}
               placeholder="e.g. We're a home services lead gen agency. Our setters call leads within 5 minutes."
               className="w-full px-3 py-2.5 bg-slate-900 border border-slate-700 rounded-lg text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-[#D6FF03] min-h-[140px]"
             />
