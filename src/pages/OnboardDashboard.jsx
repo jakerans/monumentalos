@@ -68,6 +68,18 @@ export default function OnboardDashboard() {
   const mmUsers = dashData?.mmUsers || [];
   const kpis = dashData?.kpis || null;
 
+  // Fetch SOP existence map for client list (lazy — only when clients tab is active)
+  const { data: sopData } = useQuery({
+    queryKey: ['client-sop-map'],
+    queryFn: async () => {
+      const res = await base44.functions.invoke('manageClientSOP', { action: 'check_bulk' });
+      return res.data?.sop_map || {};
+    },
+    enabled: tab === 'clients',
+    staleTime: 2 * 60 * 1000,
+  });
+  const sopMap = sopData || {};
+
   const refetchAll = refetchDash;
 
   const handleCreateProject = async (projectData, template) => {
@@ -222,6 +234,7 @@ export default function OnboardDashboard() {
               clients={clients}
               onInviteUser={(client) => setInviteClient(client)}
               onEditClient={(client) => setEditClient(client)}
+              sopMap={sopMap}
             />
             <InviteClientUserModal
               open={!!inviteClient}
