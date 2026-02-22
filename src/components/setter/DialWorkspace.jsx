@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useRef, useCallback, useMemo, memo } from 'react';
 import { base44 } from '@/api/base44Client';
-import { Phone, Search, X, ArrowLeft, Plus, Database, Loader2 } from 'lucide-react';
+import { Phone, Search, X, ArrowLeft, Plus, Database, Loader2, FileText, HelpCircle, MessageSquare, Calendar, Mail, Copy, Check, Clock, User, AlertTriangle, ExternalLink } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import ReactMarkdown from 'react-markdown';
 
 const STATUS_COLORS = {
   new: 'bg-blue-500/20 text-blue-400',
