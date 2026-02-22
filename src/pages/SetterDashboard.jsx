@@ -3,7 +3,7 @@ import { base44 } from '@/api/base44Client';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
-import { Search, Filter, Plus, Ban, DollarSign } from 'lucide-react';
+import { Search, Filter, Plus, Ban, DollarSign, Phone } from 'lucide-react';
 import { toast } from '@/components/ui/use-toast';
 import SetterNav from '../components/setter/SetterNav';
 import SetterStats from '../components/setter/SetterStats';
