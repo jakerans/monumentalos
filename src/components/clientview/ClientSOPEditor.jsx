@@ -32,7 +32,8 @@ const SOPTextarea = memo(function SOPTextarea({ label, initialValue, onCommit, m
         onChange={(e) => setVal(e.target.value)}
         onBlur={handleBlur}
         rows={minRows}
-        className="w-full px-3 py-2.5 text-sm border border-slate-700 rounded-lg bg-slate-800 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-[#D6FF03] resize-y"
+        style={{ '--tw-ring-color': '#D6FF03' }}
+        className="w-full px-3 py-2.5 text-sm border border-slate-700 rounded-lg bg-slate-800 text-white placeholder-slate-500 focus:outline-none focus:ring-2 resize-y"
         placeholder={`Enter ${label.toLowerCase()}...`}
       />
       <p className="text-[10px] text-slate-500 mt-1">Supports markdown (headers, bold, bullets, numbered lists)</p>
