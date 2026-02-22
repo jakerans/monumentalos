@@ -251,26 +251,20 @@ Deno.serve(async (req) => {
           }
         }
 
-        // Deduct PTO for the day off
+        // Deduct PTO — single operation combining day off + any PTO offer
+        const totalDeduction = (request.days_deducted || 1) +
+          (coverSetterId && request.offer_type === 'pto_days' && request.offer_quantity > 0 ? request.offer_quantity : 0);
         const ptoBanks = await sr.entities.PaidDayOffBank.filter({ setter_id: setterId }, '-created_date', 1);
         if (ptoBanks.length > 0) {
           const bank = ptoBanks[0];
           await sr.entities.PaidDayOffBank.update(bank.id, {
-            days_used: (bank.days_used || 0) + (request.days_deducted || 1),
+            days_used: (bank.days_used || 0) + totalDeduction,
             last_updated: new Date().toISOString(),
           });
         }
 
         // Inventory transfer on approval — only if there's a cover setter
         if (coverSetterId && request.offer_type === 'pto_days' && request.offer_quantity > 0) {
-          // Deduct offer from requester's bank (additional to days_deducted above)
-          const reqBanks = await sr.entities.PaidDayOffBank.filter({ setter_id: setterId }, '-created_date', 1);
-          if (reqBanks.length > 0) {
-            await sr.entities.PaidDayOffBank.update(reqBanks[0].id, {
-              days_used: (reqBanks[0].days_used || 0) + request.offer_quantity,
-              last_updated: new Date().toISOString(),
-            });
-          }
           // Credit cover setter's bank
           const coverBanks = await sr.entities.PaidDayOffBank.filter({ setter_id: coverSetterId }, '-created_date', 1);
           if (coverBanks.length > 0) {
