@@ -15,7 +15,8 @@ Deno.serve(async (req) => {
     }
 
     if (action === 'save_template') {
-      if (user.role !== 'admin') return Response.json({ error: 'Forbidden' }, { status: 403 });
+      const role = user.app_role || user.role;
+      if (role !== 'admin') return Response.json({ error: 'Forbidden' }, { status: 403 });
       const { checklist_id, name, header_note, tasks, is_active } = body;
       const tasksStr = typeof tasks === 'string' ? tasks : JSON.stringify(tasks);
       const payload = {
