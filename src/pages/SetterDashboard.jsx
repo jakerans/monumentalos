@@ -53,6 +53,7 @@ export default function SetterDashboard() {
   const [droppedBox, setDroppedBox] = useState(null);
   const [dashTab, setDashTab] = useState('pipeline');
   const [workspaceOpen, setWorkspaceOpen] = useState(false);
+  const [checklistVisible, setChecklistVisible] = useState(false);
   const prevRankRef = useRef(null);
   const [animateRef] = useAutoAnimate({ duration: 350, easing: 'ease-out' });
 
