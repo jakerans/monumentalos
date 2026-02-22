@@ -15,10 +15,10 @@ import ClientBillingEditor from '../components/clientview/ClientBillingEditor';
 import ClientInvoiceHistory from '../components/clientview/ClientInvoiceHistory';
 import LeadDrilldownDialog from '../components/clientview/LeadDrilldownDialog';
 import SpendDrilldownDialog from '../components/clientview/SpendDrilldownDialog';
-const ClientSOPEditor = React.lazy(() => import('@/components/clientview/ClientSOPEditor'));
+import ClientSOPEditor from '../components/clientview/ClientSOPEditor';
 import PageErrorBoundary from '../components/shared/PageErrorBoundary';
 import PageLoader from '../components/shared/PageLoader';
-import { FileText, Loader2 } from 'lucide-react';
+import { FileText } from 'lucide-react';
 
 export default function ClientView() {
   const navigate = useNavigate();
@@ -211,9 +211,7 @@ export default function ClientView() {
         </div>
 
         {activeTab === 'sop' && isAdmin ? (
-          <React.Suspense fallback={<div className="flex items-center justify-center py-16"><Loader2 className="w-5 h-5 text-slate-400 animate-spin" /><span className="ml-2 text-sm text-slate-400">Loading SOP editor...</span></div>}>
-            <ClientSOPEditor clientId={clientId} />
-          </React.Suspense>
+          <ClientSOPEditor clientId={clientId} />
         ) : (
         <>
         {/* KPI Grid */}
