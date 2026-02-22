@@ -45,7 +45,7 @@ export default function ClientList({ clients, onInviteUser, onEditClient, sopMap
               <div className="flex items-center gap-2">
                 <span className="font-medium text-slate-200 text-sm">{client.name}</span>
                 <Link
-                  to={createPageUrl('ClientSOP') + `?clientId=${client.id}&clientName=${encodeURIComponent(client.name)}`}
+                  to={createPageUrl('ClientView') + `?clientId=${client.id}&tab=sop`}
                   className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-medium transition-colors ${
                     sopMap?.[client.id]
                       ? 'bg-green-500/10 text-green-400 hover:bg-green-500/20'
@@ -104,7 +104,7 @@ export default function ClientList({ clients, onInviteUser, onEditClient, sopMap
                   <div className="flex items-center gap-2">
                     <span className="font-medium text-slate-200">{client.name}</span>
                     <Link
-                      to={createPageUrl('ClientSOP') + `?clientId=${client.id}&clientName=${encodeURIComponent(client.name)}`}
+                      to={createPageUrl('ClientView') + `?clientId=${client.id}&tab=sop`}
                       className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-medium transition-colors ${
                         sopMap?.[client.id]
                           ? 'bg-green-500/10 text-green-400 hover:bg-green-500/20'

@@ -1,63 +1,80 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useCallback, memo } from 'react';
 import { base44 } from '@/api/base44Client';
+import { useQuery, useMutation } from '@tanstack/react-query';
 import { FileText, Save, Info, Loader2 } from 'lucide-react';
 import { toast } from '@/components/ui/use-toast';
 
-/**
- * Pure-DOM SOP editor. React never re-renders during typing.
- * All textarea values are read directly from DOM on save.
- */
-export default function ClientSOPEditor({ clientId }) {
-  const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
-  const [lastUpdated, setLastUpdated] = useState(null);
-  const [isNew, setIsNew] = useState(false);
+const SOPTextarea = memo(function SOPTextarea({ label, value, onChange, minRows = 8 }) {
+  return (
+    <div>
+      <label className="block text-sm font-medium text-white mb-1.5">{label}</label>
+      <textarea
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        rows={minRows}
+        className="w-full px-3 py-2.5 text-sm border border-slate-700 rounded-lg bg-slate-800 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-[#D6FF03] resize-y"
+        placeholder={`Enter ${label.toLowerCase()}...`}
+      />
+      <p className="text-[10px] text-slate-500 mt-1">Supports markdown (headers, bold, bullets, numbered lists)</p>
+    </div>
+  );
+});
 
-  const csRef = useRef(null);
-  const faqRef = useRef(null);
-  const tpRef = useRef(null);
-  const gnRef = useRef(null);
+function ClientSOPEditorInner({ clientId }) {
+  const [callScript, setCallScript] = useState('');
+  const [faqsText, setFaqsText] = useState('');
+  const [talkingPoints, setTalkingPoints] = useState('');
+  const [generalNotes, setGeneralNotes] = useState('');
+  const [lastUpdated, setLastUpdated] = useState(null);
+  const [initialized, setInitialized] = useState(false);
+
+  const { data, isLoading } = useQuery({
+    queryKey: ['client-sop', clientId],
+    queryFn: async () => {
+      const res = await base44.functions.invoke('manageClientSOP', { action: 'get', client_id: clientId });
+      return res.data?.sop || null;
+    },
+    enabled: !!clientId,
+    staleTime: 60 * 1000,
+  });
 
   useEffect(() => {
-    if (!clientId) return;
-    let cancelled = false;
-    async function load() {
-      const res = await base44.functions.invoke('manageClientSOP', { action: 'get', client_id: clientId });
-      if (cancelled) return;
-      const sop = res.data?.sop;
-      if (sop) {
-        if (csRef.current) csRef.current.value = sop.call_script || '';
-        if (faqRef.current) faqRef.current.value = sop.faqs || '';
-        if (tpRef.current) tpRef.current.value = sop.talking_points || '';
-        if (gnRef.current) gnRef.current.value = sop.general_notes || '';
-        setLastUpdated(sop.last_updated || null);
-        setIsNew(false);
-      } else {
-        setIsNew(true);
-      }
-      setLoading(false);
+    if (data && !initialized) {
+      setCallScript(data.call_script || '');
+      setFaqsText(data.faqs || '');
+      setTalkingPoints(data.talking_points || '');
+      setGeneralNotes(data.general_notes || '');
+      setLastUpdated(data.last_updated || null);
+      setInitialized(true);
+    } else if (data === null && !initialized) {
+      setInitialized(true);
     }
-    load();
-    return () => { cancelled = true; };
-  }, [clientId]);
+  }, [data, initialized]);
 
-  const handleSave = async () => {
-    setSaving(true);
-    const res = await base44.functions.invoke('manageClientSOP', {
-      action: 'save',
-      client_id: clientId,
-      call_script: csRef.current?.value || '',
-      faqs: faqRef.current?.value || '',
-      talking_points: tpRef.current?.value || '',
-      general_notes: gnRef.current?.value || '',
-    });
-    setLastUpdated(res.data?.sop?.last_updated || new Date().toISOString());
-    setIsNew(false);
-    setSaving(false);
-    toast({ title: 'SOP Saved', description: 'Client SOP has been updated.' });
-  };
+  const saveMutation = useMutation({
+    mutationFn: async () => {
+      const res = await base44.functions.invoke('manageClientSOP', {
+        action: 'save',
+        client_id: clientId,
+        call_script: callScript,
+        faqs: faqsText,
+        talking_points: talkingPoints,
+        general_notes: generalNotes,
+      });
+      return res.data;
+    },
+    onSuccess: (res) => {
+      setLastUpdated(res.sop?.last_updated || new Date().toISOString());
+      toast({ title: 'SOP Saved', description: 'Client SOP has been updated.' });
+    },
+  });
 
-  if (loading) {
+  const onCallScriptChange = useCallback((v) => setCallScript(v), []);
+  const onFaqsChange = useCallback((v) => setFaqsText(v), []);
+  const onTalkingPointsChange = useCallback((v) => setTalkingPoints(v), []);
+  const onGeneralNotesChange = useCallback((v) => setGeneralNotes(v), []);
+
+  if (isLoading || !initialized) {
     return (
       <div className="flex items-center justify-center py-16">
         <Loader2 className="w-5 h-5 text-slate-400 animate-spin" />
@@ -65,6 +82,8 @@ export default function ClientSOPEditor({ clientId }) {
       </div>
     );
   }
+
+  const isNew = data === null;
 
   return (
     <div className="space-y-5">
@@ -80,10 +99,10 @@ export default function ClientSOPEditor({ clientId }) {
         </div>
       )}
 
-      <SOPField label="Call Script" inputRef={csRef} rows={12} />
-      <SOPField label="FAQs" inputRef={faqRef} rows={8} />
-      <SOPField label="Talking Points" inputRef={tpRef} rows={8} />
-      <SOPField label="General Notes" inputRef={gnRef} rows={6} />
+      <SOPTextarea label="Call Script" value={callScript} onChange={onCallScriptChange} minRows={12} />
+      <SOPTextarea label="FAQs" value={faqsText} onChange={onFaqsChange} minRows={8} />
+      <SOPTextarea label="Talking Points" value={talkingPoints} onChange={onTalkingPointsChange} minRows={8} />
+      <SOPTextarea label="General Notes" value={generalNotes} onChange={onGeneralNotesChange} minRows={6} />
 
       <div className="flex items-center justify-between pt-2">
         <div>
@@ -94,12 +113,12 @@ export default function ClientSOPEditor({ clientId }) {
           )}
         </div>
         <button
-          onClick={handleSave}
-          disabled={saving}
+          onClick={() => saveMutation.mutate()}
+          disabled={saveMutation.isPending}
           className="inline-flex items-center gap-2 px-4 py-2 text-sm font-bold rounded-lg text-black hover:opacity-90 disabled:opacity-50 transition-opacity"
           style={{ backgroundColor: '#D6FF03' }}
         >
-          {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+          {saveMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
           Save SOP
         </button>
       </div>
@@ -107,18 +126,5 @@ export default function ClientSOPEditor({ clientId }) {
   );
 }
 
-function SOPField({ label, inputRef, rows }) {
-  return (
-    <div>
-      <label className="block text-sm font-medium text-white mb-1.5">{label}</label>
-      <textarea
-        ref={inputRef}
-        defaultValue=""
-        rows={rows}
-        className="w-full px-3 py-2.5 text-sm border border-slate-700 rounded-lg bg-slate-800 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-[#D6FF03] resize-y"
-        placeholder={`Enter ${label.toLowerCase()}...`}
-      />
-      <p className="text-[10px] text-slate-500 mt-1">Supports markdown</p>
-    </div>
-  );
-}
+const ClientSOPEditor = memo(ClientSOPEditorInner);
+export default ClientSOPEditor;
