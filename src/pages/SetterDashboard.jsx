@@ -287,9 +287,6 @@ export default function SetterDashboard() {
     prevRankRef.current = myCurrentRank;
   }, [myCurrentRank]);
 
-  if (!user) return null;
-  if (dashLoading) return <PageLoader message="Loading pipeline..." />;
-
   // Memoized pipeline filtering
   const filterFn = React.useCallback((leads) => leads.filter(l => {
     const matchSearch = !search || l.name?.toLowerCase().includes(search.toLowerCase()) || l.phone?.includes(search) || l.email?.toLowerCase().includes(search.toLowerCase());
