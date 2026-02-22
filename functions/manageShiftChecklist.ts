@@ -10,8 +10,9 @@ Deno.serve(async (req) => {
     const { action } = body;
 
     if (action === 'get_active') {
-      const checklists = await base44.asServiceRole.entities.ShiftChecklist.filter({ is_active: true }, '-updated_at', 1);
-      return Response.json({ checklist: checklists[0] || null });
+      const allChecklists = await base44.asServiceRole.entities.ShiftChecklist.list('-updated_at', 100);
+      const active = allChecklists.find(c => c.is_active === true || c.is_active === 'true');
+      return Response.json({ checklist: active || null });
     }
 
     if (action === 'save_template') {
