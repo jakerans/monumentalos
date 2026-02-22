@@ -7,7 +7,7 @@ import {
   Zap, ZapOff, LayoutDashboard, Users, Receipt, Calculator, Headset,
   ChevronLeft, ChevronRight, ChevronDown, BarChart3, Wallet, TrendingUp,
   Settings, Landmark, Gift, DollarSign, Briefcase, Activity, Eye,
-  PieChart, Target, LineChart, Building, Cog, ArrowUpDown, Calendar,
+  PieChart, Target, LineChart, Building, Cog, ArrowUpDown, Calendar, ClipboardCheck,
 } from 'lucide-react';
 import { useEffectsToggle } from '../shared/useEffectsToggle';
 import AdminUserMenu from './AdminUserMenu';
@@ -49,6 +49,7 @@ const ADMIN_SECTIONS = {
       { key: 'UserManagement', label: 'Users', icon: Building },
       { key: 'BankAccountSettings', label: 'Bank Accounts', icon: Landmark },
       { key: 'LeadFieldSettings', label: 'Settings', icon: Cog },
+      { key: 'ShiftChecklistSettings', label: 'Shift Checklist', icon: ClipboardCheck },
       { key: 'HealthMonitor', label: 'Health Monitor', icon: Activity },
       { key: 'PreviewEffects', label: 'Preview Effects', icon: Eye },
     ],
