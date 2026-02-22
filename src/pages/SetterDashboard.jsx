@@ -121,6 +121,24 @@ export default function SetterDashboard() {
   });
 
   // Inventory data
+  
+  // Daily checklist data
+  const { data: checklistData, refetch: refetchChecklist } = useQuery({
+    queryKey: ['shift-checklist', user?.id],
+    queryFn: async () => {
+      const [templateRes, logRes] = await Promise.all([
+        base44.functions.invoke('manageShiftChecklist', { action: 'get_active' }),
+        user?.id ? base44.functions.invoke('manageShiftChecklist', { action: 'get_today_log', setter_id: user.id }) : Promise.resolve({ data: { log: null } })
+      ]);
+      return {
+        checklist: templateRes.data?.checklist,
+        log: logRes.data?.log
+      };
+    },
+    enabled: !!user?.id,
+    staleTime: 30 * 1000,
+  });
+
   // Earnings data
   const { data: earningsData, isLoading: earningsLoading } = useQuery({
     queryKey: ['setter-earnings', user?.id],
