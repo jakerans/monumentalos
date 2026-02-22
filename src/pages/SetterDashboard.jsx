@@ -586,7 +586,7 @@ export default function SetterDashboard() {
       <AnimatePresence>
         {workspaceOpen && (
           <DialWorkspace
-            allLeads={allPipelineLeads}
+            allLeads={dashData?.allLeads || []}
             clients={clients}
             user={user}
             onClose={() => setWorkspaceOpen(false)}
