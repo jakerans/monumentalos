@@ -425,7 +425,7 @@ export default function SetterDashboard() {
             style={{ backgroundColor: '#D6FF03' }}
           >
             <ClipboardCheck className="w-4 h-4" />
-            <span className="text-sm">{checklistLog?.completed_tasks ? JSON.parse(checklistLog.completed_tasks).length : 0}/{tasks?.length || 0}</span>
+            <span className="text-sm">{(() => { try { const parsed = typeof checklistLog?.completed_tasks === 'string' ? JSON.parse(checklistLog.completed_tasks) : (Array.isArray(checklistLog?.completed_tasks) ? checklistLog.completed_tasks : []); let taskList = []; try { taskList = typeof checklist?.tasks === 'string' ? JSON.parse(checklist.tasks) : (Array.isArray(checklist?.tasks) ? checklist.tasks : []); } catch {}; return `${parsed.length}/${taskList.length}`; } catch { return '0/0'; } })()}</span>
           </motion.button>
         )}
 
