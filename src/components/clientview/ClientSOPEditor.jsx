@@ -1,10 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, memo } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { FileText, Save, Info, Loader2 } from 'lucide-react';
 import { toast } from '@/components/ui/use-toast';
 
-function SOPTextarea({ label, value, onChange, minRows = 8 }) {
+const SOPTextarea = memo(function SOPTextarea({ label, value, onChange, minRows = 8 }) {
   return (
     <div>
       <label className="block text-sm font-medium text-white mb-1.5">{label}</label>
@@ -18,9 +18,9 @@ function SOPTextarea({ label, value, onChange, minRows = 8 }) {
       <p className="text-[10px] text-slate-500 mt-1">Supports markdown (headers, bold, bullets, numbered lists)</p>
     </div>
   );
-}
+});
 
-export default function ClientSOPEditor({ clientId }) {
+function ClientSOPEditorInner({ clientId }) {
   const [callScript, setCallScript] = useState('');
   const [faqsText, setFaqsText] = useState('');
   const [talkingPoints, setTalkingPoints] = useState('');
@@ -69,6 +69,11 @@ export default function ClientSOPEditor({ clientId }) {
     },
   });
 
+  const onCallScriptChange = useCallback((v) => setCallScript(v), []);
+  const onFaqsChange = useCallback((v) => setFaqsText(v), []);
+  const onTalkingPointsChange = useCallback((v) => setTalkingPoints(v), []);
+  const onGeneralNotesChange = useCallback((v) => setGeneralNotes(v), []);
+
   if (isLoading || !initialized) {
     return (
       <div className="flex items-center justify-center py-16">
@@ -94,10 +99,10 @@ export default function ClientSOPEditor({ clientId }) {
         </div>
       )}
 
-      <SOPTextarea label="Call Script" value={callScript} onChange={setCallScript} minRows={12} />
-      <SOPTextarea label="FAQs" value={faqsText} onChange={setFaqsText} minRows={8} />
-      <SOPTextarea label="Talking Points" value={talkingPoints} onChange={setTalkingPoints} minRows={8} />
-      <SOPTextarea label="General Notes" value={generalNotes} onChange={setGeneralNotes} minRows={6} />
+      <SOPTextarea label="Call Script" value={callScript} onChange={onCallScriptChange} minRows={12} />
+      <SOPTextarea label="FAQs" value={faqsText} onChange={onFaqsChange} minRows={8} />
+      <SOPTextarea label="Talking Points" value={talkingPoints} onChange={onTalkingPointsChange} minRows={8} />
+      <SOPTextarea label="General Notes" value={generalNotes} onChange={onGeneralNotesChange} minRows={6} />
 
       <div className="flex items-center justify-between pt-2">
         <div>
