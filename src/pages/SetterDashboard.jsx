@@ -593,6 +593,11 @@ export default function SetterDashboard() {
             onAddLead={handleAddLead}
             addLeadOpen={addOpen}
             setAddLeadOpen={setAddOpen}
+            onAction={({ type, lead }) => {
+              if (type === 'first_call') { setFirstCallLead(lead); setFirstCallOpen(true); }
+              else if (type === 'book') { setBookingLead(lead); setBookingOpen(true); }
+              else if (type === 'disqualify') { setDqLead(lead); setDqOpen(true); }
+            }}
           />
         )}
       </AnimatePresence>
