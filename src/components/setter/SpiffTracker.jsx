@@ -3,39 +3,11 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { ChevronDown, ChevronUp, Gift, Clock, Trophy } from 'lucide-react';
 import SpiffCard from './SpiffCard';
 
-function SpiffTracker({ spiffs, leads, user }) {
+function SpiffTracker({ spiffs, user }) {
   const now = new Date();
   const [activeIndex, setActiveIndex] = useState(0);
 
-  const getDateRange = (spiff) => {
-    if (spiff.is_daily && spiff.due_date) {
-      return { rangeStart: new Date(spiff.due_date + 'T00:00:00'), rangeEnd: new Date(spiff.due_date + 'T23:59:59') };
-    }
-    return { rangeStart: new Date(now.getFullYear(), now.getMonth(), 1), rangeEnd: now };
-  };
-
-  const getProgress = (spiff) => {
-    const { rangeStart, rangeEnd } = getDateRange(spiff);
-    const inRange = (d) => d ? new Date(d) >= rangeStart && new Date(d) <= rangeEnd : false;
-
-    if (spiff.qualifier === 'appointments') {
-      if (spiff.scope === 'team_company') {
-        return leads.filter(l => inRange(l.date_appointment_set)).length;
-      }
-      const setterId = spiff.scope === 'individual' ? spiff.assigned_setter_id : user?.id;
-      return leads.filter(l => l.booked_by_setter_id === setterId && inRange(l.date_appointment_set)).length;
-    }
-    if (spiff.qualifier === 'stl') {
-      if (spiff.scope === 'team_company') {
-        const stlLeads = leads.filter(l => l.speed_to_lead_minutes != null && inRange(l.created_date));
-        return stlLeads.length > 0 ? Math.round(stlLeads.reduce((s, l) => s + l.speed_to_lead_minutes, 0) / stlLeads.length) : null;
-      }
-      const setterId = spiff.scope === 'individual' ? spiff.assigned_setter_id : user?.id;
-      const stlLeads = leads.filter(l => l.setter_id === setterId && l.speed_to_lead_minutes != null && inRange(l.created_date));
-      return stlLeads.length > 0 ? Math.round(stlLeads.reduce((s, l) => s + l.speed_to_lead_minutes, 0) / stlLeads.length) : null;
-    }
-    return 0;
-  };
+  const getSpiffProgress = (sp) => sp.is_daily && sp._dailyProgress !== undefined ? sp._dailyProgress : (sp._progress ?? 0);
 
   // Filter to relevant spiffs for this setter — active only (expired/completed hidden from rotation)
   const mySpiffs = spiffs.filter(sp => {
@@ -46,7 +18,7 @@ function SpiffTracker({ spiffs, leads, user }) {
     if (!sp.due_date) return true;
     const dueDate = new Date(sp.due_date + 'T23:59:59');
     if (dueDate < now) {
-      const progress = getProgress(sp);
+      const progress = getSpiffProgress(sp);
       const isSTL = sp.qualifier === 'stl';
       const met = isSTL ? (progress != null && progress <= sp.goal_value) : (progress >= sp.goal_value);
       return met;
@@ -80,7 +52,7 @@ function SpiffTracker({ spiffs, leads, user }) {
   if (mySpiffs.length === 0 && pastSpiffs.length === 0) return null;
 
   const sp = mySpiffs.length > 0 ? (mySpiffs[activeIndex] || mySpiffs[0]) : null;
-  const progress = sp ? getProgress(sp) : 0;
+  const progress = sp ? getSpiffProgress(sp) : 0;
   const isSTL = sp ? sp.qualifier === 'stl' : false;
   const pct = sp ? (isSTL
     ? (progress != null && sp.goal_value > 0 ? Math.min((sp.goal_value / Math.max(progress, 1)) * 100, 100) : 0)

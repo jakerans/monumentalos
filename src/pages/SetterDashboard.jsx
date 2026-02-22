@@ -376,7 +376,7 @@ export default function SetterDashboard() {
                 <h1 className="text-2xl sm:text-3xl font-black text-white tracking-tight">
                   Welcome back, <span style={{ color: '#D6FF03' }}>{user?.full_name?.split(' ')[0] || 'Champ'}</span>
                 </h1>
-                <DailySpiffBanner spiffs={spiffs} leads={allPipelineLeads} user={user} />
+                <DailySpiffBanner spiffs={spiffs} user={user} />
               </div>
               <p className="text-sm text-slate-400 mt-0.5">
                 {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
@@ -390,7 +390,7 @@ export default function SetterDashboard() {
             />
           </div>
           <div className="lg:col-span-2">
-            <SpiffTracker spiffs={spiffs} leads={allPipelineLeads} user={user} />
+            <SpiffTracker spiffs={spiffs} user={user} />
           </div>
         </div>
         <SetterStats preStats={preStats} />
@@ -532,7 +532,6 @@ export default function SetterDashboard() {
       <LeaderboardWidget
         user={user}
         spiffs={spiffs}
-        leads={allPipelineLeads}
         leaderboardProfiles={leaderboardData.profiles}
       />
 

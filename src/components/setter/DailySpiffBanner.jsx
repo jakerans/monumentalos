@@ -53,7 +53,7 @@ function Particles({ type = 'fire', count = 8 }) {
   );
 }
 
-export default function DailySpiffBanner({ spiffs, leads, user }) {
+export default function DailySpiffBanner({ spiffs, user }) {
   const today = new Date().toISOString().split('T')[0];
   const now = new Date();
   const dayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
@@ -68,31 +68,10 @@ export default function DailySpiffBanner({ spiffs, leads, user }) {
 
   if (dailySpiffs.length === 0) return null;
 
-  // Check if any daily spiff is met today
-  const getDailyProgress = (spiff) => {
-    if (spiff.qualifier === 'appointments') {
-      if (spiff.scope === 'team_company') {
-        return leads.filter(l => l.date_appointment_set && new Date(l.date_appointment_set) >= dayStart).length;
-      }
-      const setterId = spiff.scope === 'individual' ? spiff.assigned_setter_id : user?.id;
-      return leads.filter(l => l.booked_by_setter_id === setterId && l.date_appointment_set && new Date(l.date_appointment_set) >= dayStart).length;
-    }
-    if (spiff.qualifier === 'stl') {
-      if (spiff.scope === 'team_company') {
-        const stlLeads = leads.filter(l => l.speed_to_lead_minutes != null && new Date(l.created_date) >= dayStart);
-        return stlLeads.length > 0 ? Math.round(stlLeads.reduce((s, l) => s + l.speed_to_lead_minutes, 0) / stlLeads.length) : null;
-      }
-      const setterId = spiff.scope === 'individual' ? spiff.assigned_setter_id : user?.id;
-      const stlLeads = leads.filter(l => l.setter_id === setterId && l.speed_to_lead_minutes != null && new Date(l.created_date) >= dayStart);
-      return stlLeads.length > 0 ? Math.round(stlLeads.reduce((s, l) => s + l.speed_to_lead_minutes, 0) / stlLeads.length) : null;
-    }
-    return 0;
-  };
-
   // Check if ALL daily spiffs are met
   const allMet = dailySpiffs.every(sp => {
     if (sp.status === 'completed') return true;
-    const progress = getDailyProgress(sp);
+    const progress = sp._dailyProgress ?? sp._progress ?? 0;
     const isSTL = sp.qualifier === 'stl';
     return isSTL ? (progress != null && progress <= sp.goal_value) : (progress >= sp.goal_value);
   });

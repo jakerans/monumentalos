@@ -79,7 +79,7 @@ function PodiumDisplay({ leaderboard, myRank }) {
   );
 }
 
-function LeaderboardWidget({ user, spiffs, leads, leaderboardProfiles }) {
+function LeaderboardWidget({ user, spiffs, leaderboardProfiles }) {
   const [open, setOpen] = useState(false);
 
   // Use pre-fetched profiles if available, otherwise fetch (backward compat)
@@ -120,28 +120,6 @@ function LeaderboardWidget({ user, spiffs, leads, leaderboardProfiles }) {
     : { border: 'border-slate-600', text: '#D6FF03', sub: 'text-slate-400', trophy: 'text-amber-400', tabShadow: 'none', panelShadow: 'none', innerGlow: 'none', innerGlowBottom: 'none', pulseGlow: false };
 
   // Spiff calculations
-  const now = new Date();
-  const mtdStart = new Date(now.getFullYear(), now.getMonth(), 1);
-
-  const getSpiffProgress = (spiff) => {
-    if (spiff.qualifier === 'appointments') {
-      if (spiff.scope === 'team_company') {
-        return leads.filter(l => l.date_appointment_set && new Date(l.date_appointment_set) >= mtdStart).length;
-      }
-      const setterId = spiff.scope === 'individual' ? spiff.assigned_setter_id : user.id;
-      return leads.filter(l => l.booked_by_setter_id === setterId && l.date_appointment_set && new Date(l.date_appointment_set) >= mtdStart).length;
-    }
-    if (spiff.qualifier === 'stl') {
-      if (spiff.scope === 'team_company') {
-        const stlLeads = leads.filter(l => l.speed_to_lead_minutes != null && new Date(l.created_date) >= mtdStart);
-        return stlLeads.length > 0 ? Math.round(stlLeads.reduce((s, l) => s + l.speed_to_lead_minutes, 0) / stlLeads.length) : null;
-      }
-      const setterId = spiff.scope === 'individual' ? spiff.assigned_setter_id : user.id;
-      const stlLeads = leads.filter(l => l.setter_id === setterId && l.speed_to_lead_minutes != null && new Date(l.created_date) >= mtdStart);
-      return stlLeads.length > 0 ? Math.round(stlLeads.reduce((s, l) => s + l.speed_to_lead_minutes, 0) / stlLeads.length) : null;
-    }
-    return 0;
-  };
 
   const relevantSpiffs = (spiffs || []).filter(sp => {
     if (sp.scope === 'individual') return sp.assigned_setter_id === user.id;
@@ -367,7 +345,7 @@ function LeaderboardWidget({ user, spiffs, leads, leaderboardProfiles }) {
               </div>
               <div className="space-y-2.5">
                 {relevantSpiffs.map(sp => {
-                  const progress = getSpiffProgress(sp);
+                  const progress = sp._progress ?? 0;
                   const isSTL = sp.qualifier === 'stl';
                   const pct = isSTL
                     ? (progress != null && sp.goal_value > 0 ? Math.min((sp.goal_value / Math.max(progress, 1)) * 100, 100) : 0)
