@@ -12,7 +12,8 @@ import LeadFieldAITab from '../components/admin/LeadFieldAITab';
 import AICoachSettingsTab from '../components/admin/AICoachSettingsTab';
 import AIExpenseSettingsTab from '../components/admin/AIExpenseSettingsTab';
 import BankAccountsTab from '../components/admin/BankAccountsTab';
-import { Settings, List, Sparkles, MessageSquare, Receipt, Landmark } from 'lucide-react';
+import QuickLinkManager from '../components/admin/QuickLinkManager';
+import { Settings, List, Sparkles, MessageSquare, Receipt, Landmark, Link } from 'lucide-react';
 
 const TABS = [
   { id: 'lead_options', label: 'Lead Field Options', icon: List },
@@ -20,6 +21,7 @@ const TABS = [
   { id: 'ai_coach', label: 'AI Setter Coach', icon: MessageSquare },
   { id: 'ai_expense', label: 'AI Expenses', icon: Receipt },
   { id: 'bank_accounts', label: 'Bank Accounts', icon: Landmark },
+  { id: 'quick_links', label: 'Quick Links', icon: Link },
 ];
 
 export default function LeadFieldSettings() {
@@ -111,7 +113,10 @@ export default function LeadFieldSettings() {
           {tab === 'bank_accounts' && (
             <BankAccountsTab />
           )}
-        </main>
+          {tab === 'quick_links' && (
+            <QuickLinkManager />
+          )}
+          </main>
         <AdminMobileNav currentPage="LeadFieldSettings" clients={clients || []} user={user} />
       </div>
     </PageErrorBoundary>
