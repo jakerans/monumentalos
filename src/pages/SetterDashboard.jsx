@@ -299,6 +299,9 @@ export default function SetterDashboard() {
   const bookedLeads = useMemo(() => filterFn(pipelineData.bookedLeads), [filterFn, pipelineData.bookedLeads]);
   const dqLeads = useMemo(() => filterFn(pipelineData.dqLeads), [filterFn, pipelineData.dqLeads]);
 
+  if (!user) return null;
+  if (dashLoading) return <PageLoader message="Loading pipeline..." />;
+
   return (
     <PageErrorBoundary>
     <div className="min-h-screen bg-[#0B0F1A] flex flex-col">
