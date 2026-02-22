@@ -142,3 +142,9 @@ function ClientSOPEditorInner({ clientId }) {
     </div>
   );
 }
+
+const ClientSOPEditorMemo = memo(ClientSOPEditorInner);
+
+export default function ClientSOPEditor({ clientId }) {
+  return <ClientSOPEditorMemo clientId={clientId} />;
+}
