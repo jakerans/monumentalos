@@ -156,7 +156,7 @@ export default function SetterDashboard() {
   const leaderboardData = dashData?.leaderboard || { profiles: [], myRank: null };
   const aiContext = dashData?.aiContext || {};
 
-  // All pipeline leads combined (for mutation lookups)
+  // All pipeline leads combined (for mutation lookups and dial workspace)
   const allPipelineLeads = useMemo(() => [
     ...pipelineData.newLeads,
     ...pipelineData.inProgressLeads,
