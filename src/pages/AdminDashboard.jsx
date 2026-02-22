@@ -205,6 +205,7 @@ export default function AdminDashboard() {
             </div>
           </motion.div>
 
+          {/* No goal prompt — only show dashboard content when checklist editor is hidden */}
           {/* No goal prompt */}
           {!currentGoal && (
             <div className="bg-slate-800/50 border border-slate-700/50 rounded-lg px-5 py-4 flex items-center justify-between">
