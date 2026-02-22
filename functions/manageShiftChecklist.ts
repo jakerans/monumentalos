@@ -10,17 +10,9 @@ Deno.serve(async (req) => {
     const { action } = body;
 
     if (action === 'get_active') {
-      try {
-        const allChecklists = await base44.asServiceRole.entities.ShiftChecklist.list('-updated_at', 100);
-        console.log('GET_ACTIVE: total checklists found:', allChecklists.length);
-        console.log('GET_ACTIVE: checklists:', JSON.stringify(allChecklists.map(c => ({ id: c.id, name: c.name, is_active: c.is_active, type_of_active: typeof c.is_active }))));
-        const active = allChecklists.find(c => c.is_active === true || c.is_active === 'true');
-        console.log('GET_ACTIVE: active match:', active ? active.id : 'NONE');
-        return Response.json({ checklist: active || null });
-      } catch (err) {
-        console.log('GET_ACTIVE ERROR:', err.message);
-        return Response.json({ checklist: null, debug_error: err.message });
-      }
+      const allChecklists = await base44.asServiceRole.entities.ShiftChecklist.filter({}, '-updated_at', 100);
+      const active = allChecklists.find(c => c.is_active === true || c.is_active === 'true' || c.is_active === 1);
+      return Response.json({ checklist: active || allChecklists[0] || null });
     }
 
     if (action === 'save_template') {
