@@ -324,8 +324,7 @@ export default function SetterDashboard() {
 
   // Auto-show checklist logic
   useEffect(() => {
-    console.log('CHECKLIST AUTO-SHOW DEBUG — checklist:', checklist, 'hasClocked:', hasClocked, 'checklistLog:', checklistLog, 'checklistVisible:', checklistVisible);
-    if (checklist && (hasClocked || true)) {
+    if (checklist && hasClocked) {
       let tasksParsed = [];
       try { tasksParsed = typeof checklist.tasks === 'string' ? JSON.parse(checklist.tasks) : (Array.isArray(checklist.tasks) ? checklist.tasks : []); } catch { tasksParsed = []; }
       let logTasksParsed = [];
@@ -334,7 +333,6 @@ export default function SetterDashboard() {
       
       if (!allDone) {
         setChecklistVisible(true);
-        console.log('CHECKLIST: Setting visible to TRUE');
       }
     }
   }, [checklist, hasClocked, checklistLog?.all_complete]);
