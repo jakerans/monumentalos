@@ -55,8 +55,6 @@ function Particles({ type = 'fire', count = 8 }) {
 
 export default function DailySpiffBanner({ spiffs, user }) {
   const today = new Date().toISOString().split('T')[0];
-  const now = new Date();
-  const dayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
 
   // Find daily spiffs relevant to this user — only show if due_date is today
   const dailySpiffs = (spiffs || []).filter(sp => {
