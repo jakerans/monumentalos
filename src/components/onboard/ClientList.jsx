@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
-import { Copy, Check, UserPlus, Search, Pencil } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { createPageUrl } from '@/utils';
+import { Copy, Check, UserPlus, Search, Pencil, FileText } from 'lucide-react';
 import { useAutoAnimate } from '@formkit/auto-animate/react';
 
-export default function ClientList({ clients, onInviteUser, onEditClient }) {
+export default function ClientList({ clients, onInviteUser, onEditClient, sopMap }) {
   const [search, setSearch] = useState('');
   const [copiedId, setCopiedId] = useState(null);
 
@@ -40,7 +42,21 @@ export default function ClientList({ clients, onInviteUser, onEditClient }) {
         ) : filtered.map(client => (
           <div key={client.id} className="px-3 py-3 space-y-2">
             <div className="flex items-center justify-between">
-              <span className="font-medium text-slate-200 text-sm">{client.name}</span>
+              <div className="flex items-center gap-2">
+                <span className="font-medium text-slate-200 text-sm">{client.name}</span>
+                <Link
+                  to={createPageUrl('ClientView') + `?clientId=${client.id}&tab=sop`}
+                  className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-medium transition-colors ${
+                    sopMap?.[client.id]
+                      ? 'bg-green-500/10 text-green-400 hover:bg-green-500/20'
+                      : 'bg-slate-700/50 text-slate-500 hover:bg-slate-700'
+                  }`}
+                  title={sopMap?.[client.id] ? 'SOP exists — click to edit' : 'No SOP — click to create'}
+                >
+                  <FileText className="w-2.5 h-2.5" />
+                  SOP
+                </Link>
+              </div>
               <span className={`text-[10px] font-medium px-2 py-0.5 rounded-full ${
                 client.status === 'active' ? 'bg-green-500/15 text-green-400' : 'bg-slate-700 text-slate-400'
               }`}>{client.status || 'active'}</span>
@@ -85,7 +101,21 @@ export default function ClientList({ clients, onInviteUser, onEditClient }) {
             {filtered.map(client => (
               <tr key={client.id} className="hover:bg-slate-700/30">
                 <td className="px-4 py-3">
-                  <span className="font-medium text-slate-200">{client.name}</span>
+                  <div className="flex items-center gap-2">
+                    <span className="font-medium text-slate-200">{client.name}</span>
+                    <Link
+                      to={createPageUrl('ClientView') + `?clientId=${client.id}&tab=sop`}
+                      className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-medium transition-colors ${
+                        sopMap?.[client.id]
+                          ? 'bg-green-500/10 text-green-400 hover:bg-green-500/20'
+                          : 'bg-slate-700/50 text-slate-500 hover:bg-slate-700'
+                      }`}
+                      title={sopMap?.[client.id] ? 'SOP exists — click to edit' : 'No SOP — click to create'}
+                    >
+                      <FileText className="w-2.5 h-2.5" />
+                      SOP
+                    </Link>
+                  </div>
                 </td>
                 <td className="px-4 py-3">
                   <div className="flex items-center gap-1.5">
