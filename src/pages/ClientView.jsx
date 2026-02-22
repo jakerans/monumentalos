@@ -15,7 +15,7 @@ import ClientBillingEditor from '../components/clientview/ClientBillingEditor';
 import ClientInvoiceHistory from '../components/clientview/ClientInvoiceHistory';
 import LeadDrilldownDialog from '../components/clientview/LeadDrilldownDialog';
 import SpendDrilldownDialog from '../components/clientview/SpendDrilldownDialog';
-const ClientSOPEditor = React.lazy(() => import('../components/clientview/ClientSOPEditor'));
+const ClientSOPEditor = React.lazy(() => import('@/components/clientview/ClientSOPEditor'));
 import PageErrorBoundary from '../components/shared/PageErrorBoundary';
 import PageLoader from '../components/shared/PageLoader';
 import { FileText, Loader2 } from 'lucide-react';
