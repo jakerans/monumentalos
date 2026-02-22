@@ -6,6 +6,7 @@ import { base44 } from '@/api/base44Client';
 import { motion } from 'framer-motion';
 import { Zap, ZapOff, Package, Phone, MessageSquare, Globe, ExternalLink, Mail, Video, Headphones, BookOpen, FileText, Link } from 'lucide-react';
 import { useEffectsToggle } from '../shared/useEffectsToggle';
+import SetterTourGuide from './SetterTourGuide';
 
 const ICON_MAP = {
   Phone, MessageSquare, Globe, ExternalLink, Mail, Video, Headphones, BookOpen, FileText, Link
@@ -44,7 +45,7 @@ export default function SetterNav({ user, unopenedCount = 0, yellowWarning = 8, 
           </div>
 
           {/* Quick Links — hidden on mobile */}
-          <div className="hidden sm:flex items-center gap-1">
+          <div className="hidden sm:flex items-center gap-1" data-tour="quick-links">
             {quickLinks.map(link => {
               const IconComponent = ICON_MAP[link.icon] || ExternalLink;
               return (
@@ -78,9 +79,11 @@ export default function SetterNav({ user, unopenedCount = 0, yellowWarning = 8, 
                 <option value="client">Client</option>
               </select>
             )}
+            <SetterTourGuide />
             <button
               onClick={onOpenInventory}
               title="Inventory"
+              data-tour="inventory-btn"
               className="relative p-1.5 rounded-md text-slate-400 hover:text-white hover:bg-white/5 transition-colors"
             >
               <Package className="w-4 h-4" />
