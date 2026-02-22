@@ -80,6 +80,11 @@ export default function MyPTORequests({ setterId }) {
                   {r.cover_setter_name && (
                     <p className="text-[10px] text-slate-500">Cover: {r.cover_setter_name}</p>
                   )}
+                  {r.offer_type && r.offer_type !== 'none' && (
+                    <p className="text-[10px] text-slate-500">
+                      Offered: {r.offer_type === 'pto_days' ? `${r.offer_quantity} PTO day${r.offer_quantity !== 1 ? 's' : ''}` : `${r.offer_quantity} loot box${r.offer_quantity !== 1 ? 'es' : ''}`}
+                    </p>
+                  )}
                 </div>
               </div>
               <div className="flex items-center gap-2">

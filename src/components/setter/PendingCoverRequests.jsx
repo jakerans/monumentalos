@@ -2,7 +2,28 @@ import React, { useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { toast } from '@/components/ui/use-toast';
-import { Shield, Check, X, Loader2 } from 'lucide-react';
+import { Shield, Check, X, Loader2, Gift } from 'lucide-react';
+
+const RARITY_TEXT = {
+  common: 'text-slate-400',
+  rare: 'text-blue-400',
+  epic: 'text-purple-400',
+  legendary: 'text-amber-400',
+};
+
+function formatOfferDetails(offer) {
+  if (!offer) return null;
+  if (offer.type === 'pto_days') {
+    return `🎁 Offering ${offer.quantity} PTO day${offer.quantity !== 1 ? 's' : ''}`;
+  }
+  if (offer.type === 'loot_boxes' && offer.loot_boxes) {
+    const counts = {};
+    offer.loot_boxes.forEach(b => { counts[b.rarity] = (counts[b.rarity] || 0) + 1; });
+    const parts = Object.entries(counts).map(([r, c]) => `${c}x ${r.charAt(0).toUpperCase() + r.slice(1)}`);
+    return { text: `🎁 Offering ${offer.quantity} loot box${offer.quantity !== 1 ? 'es' : ''}`, breakdown: parts, boxes: offer.loot_boxes };
+  }
+  return null;
+}
 
 function formatShiftTime(hhmm) {
   if (!hhmm) return '';
@@ -64,7 +85,9 @@ export default function PendingCoverRequests({ setterId, onActionComplete }) {
         </h3>
       </div>
 
-      {pending.map(r => (
+      {pending.map(r => {
+        const offer = formatOfferDetails(r.offer_details);
+        return (
         <div key={r.id} className="flex items-center justify-between px-3 py-2.5 rounded-lg border border-slate-700/40 bg-slate-800/60">
           <div className="min-w-0">
             <p className="text-sm text-white font-medium">{r.requester_name}</p>
@@ -74,6 +97,20 @@ export default function PendingCoverRequests({ setterId, onActionComplete }) {
                 <span className="ml-2 text-slate-500">{formatShiftTime(r.shift_start)} – {formatShiftTime(r.shift_end)}</span>
               )}
             </p>
+            {offer && typeof offer === 'string' && (
+              <p className="text-xs text-green-400 mt-0.5">{offer}</p>
+            )}
+            {offer && typeof offer === 'object' && (
+              <div className="mt-0.5">
+                <p className="text-xs text-green-400">{offer.text}</p>
+                <p className="text-[10px] text-slate-500">
+                  {offer.breakdown.map((part, i) => {
+                    const rarity = offer.boxes[0]?.rarity || 'common';
+                    return <span key={i}>{i > 0 ? ', ' : ''}<span className={RARITY_TEXT[part.split(' ')[1]?.toLowerCase()] || ''}>{part}</span></span>;
+                  })}
+                </p>
+              </div>
+            )}
           </div>
           <div className="flex items-center gap-1.5 flex-shrink-0">
             <button
@@ -94,7 +131,8 @@ export default function PendingCoverRequests({ setterId, onActionComplete }) {
             </button>
           </div>
         </div>
-      ))}
+        );
+      })}
     </div>
   );
 }

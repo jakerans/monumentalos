@@ -2,7 +2,21 @@ import React, { useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { toast } from '@/components/ui/use-toast';
-import { Palmtree, Check, X, Loader2, UserCheck, ChevronDown } from 'lucide-react';
+import { Palmtree, Check, X, Loader2, UserCheck, ChevronDown, Gift } from 'lucide-react';
+
+const RARITY_TEXT = { common: 'text-slate-400', rare: 'text-blue-400', epic: 'text-purple-400', legendary: 'text-amber-400' };
+
+function formatOfferLabel(offer) {
+  if (!offer) return null;
+  if (offer.type === 'pto_days') return `Offer: ${offer.quantity} PTO day${offer.quantity !== 1 ? 's' : ''}`;
+  if (offer.type === 'loot_boxes' && offer.loot_boxes) {
+    const counts = {};
+    offer.loot_boxes.forEach(b => { counts[b.rarity] = (counts[b.rarity] || 0) + 1; });
+    const parts = Object.entries(counts).map(([r, c]) => `${c}x ${r.charAt(0).toUpperCase() + r.slice(1)}`);
+    return { label: `Offer: ${offer.quantity} loot box${offer.quantity !== 1 ? 'es' : ''}`, parts, boxes: offer.loot_boxes };
+  }
+  return null;
+}
 
 function formatDate(dateStr) {
   if (!dateStr) return '';
@@ -76,6 +90,22 @@ function AdminPTOCard({ request, onResolved }) {
           ) : (
             <p className="text-xs text-amber-400 mt-0.5">No cover assigned</p>
           )}
+          {(() => {
+            const offerInfo = formatOfferLabel(request.offer_details);
+            if (!offerInfo) return null;
+            if (typeof offerInfo === 'string') {
+              return <p className="text-[10px] text-green-400/80 flex items-center gap-1 mt-0.5"><Gift className="w-3 h-3" /> {offerInfo}</p>;
+            }
+            return (
+              <div className="mt-0.5 flex items-center gap-1">
+                <Gift className="w-3 h-3 text-green-400/80" />
+                <span className="text-[10px] text-green-400/80">{offerInfo.label}</span>
+                <span className="text-[10px] text-slate-500 ml-1">
+                  ({offerInfo.parts.map((p, i) => <span key={i}>{i > 0 ? ', ' : ''}<span className={RARITY_TEXT[p.split(' ')[1]?.toLowerCase()] || ''}>{p}</span></span>)})
+                </span>
+              </div>
+            );
+          })()}
           {request.notes && <p className="text-[10px] text-slate-500 mt-0.5">{request.notes}</p>}
         </div>
 

@@ -51,17 +51,52 @@ Deno.serve(async (req) => {
       return Response.json({ available_covers });
 
     } else if (action === 'create_request') {
-      const { setter_id, request_date, cover_setter_id, notes } = body;
+      const { setter_id, request_date, cover_setter_id, notes,
+              offer_type: rawOfferType, offer_quantity: rawOfferQty, offer_loot_box_ids: rawBoxIds } = body;
       if (!setter_id || !request_date) {
         return Response.json({ error: 'Missing setter_id or request_date' }, { status: 400 });
       }
 
-      // Check PTO balance
+      const offerType = rawOfferType || 'none';
+      let offerQuantity = rawOfferQty || 0;
+      let offerBoxIdsStr = '';
+
+      // Check PTO balance — need enough for the day off plus any PTO offer
       const ptoBanks = await sr.entities.PaidDayOffBank.filter({ setter_id }, '-created_date', 1);
       const bank = ptoBanks.length > 0 ? ptoBanks[0] : null;
       const available = bank ? (bank.days_earned || 0) - (bank.days_used || 0) : 0;
-      if (available < 1) {
-        return Response.json({ error: 'Insufficient PTO balance', insufficient_pto: true }, { status: 400 });
+
+      if (offerType === 'pto_days') {
+        if (!offerQuantity || offerQuantity < 1) {
+          return Response.json({ error: 'offer_quantity must be at least 1 for pto_days', insufficient_pto: true }, { status: 400 });
+        }
+        const totalNeeded = 1 + offerQuantity;
+        if (available < totalNeeded) {
+          return Response.json({ error: 'Insufficient PTO balance for request plus offer', insufficient_pto: true }, { status: 400 });
+        }
+      } else {
+        if (available < 1) {
+          return Response.json({ error: 'Insufficient PTO balance', insufficient_pto: true }, { status: 400 });
+        }
+      }
+
+      if (offerType === 'loot_boxes') {
+        const boxIds = Array.isArray(rawBoxIds) ? rawBoxIds : [];
+        if (boxIds.length === 0) {
+          return Response.json({ error: 'offer_loot_box_ids must be a non-empty array', invalid_boxes: true }, { status: 400 });
+        }
+        // Validate each box
+        const allBoxes = await sr.entities.LootBox.filter({ setter_id }, '-awarded_date', 500);
+        const boxMap = {};
+        allBoxes.forEach(b => { boxMap[b.id] = b; });
+        for (const bid of boxIds) {
+          const box = boxMap[bid];
+          if (!box || box.status !== 'unopened' || box.setter_id !== setter_id) {
+            return Response.json({ error: 'One or more selected loot boxes are invalid', invalid_boxes: true }, { status: 400 });
+          }
+        }
+        offerQuantity = boxIds.length;
+        offerBoxIdsStr = boxIds.join(',');
       }
 
       // Check for duplicate
@@ -76,8 +111,9 @@ Deno.serve(async (req) => {
         request_date,
         notes: notes || '',
         days_deducted: 1,
-        offer_type: 'none',
-        offer_quantity: 0,
+        offer_type: offerType,
+        offer_quantity: offerQuantity,
+        offer_loot_box_ids: offerBoxIdsStr,
       };
 
       if (cover_setter_id) {
@@ -215,7 +251,7 @@ Deno.serve(async (req) => {
           }
         }
 
-        // Deduct PTO
+        // Deduct PTO for the day off
         const ptoBanks = await sr.entities.PaidDayOffBank.filter({ setter_id: setterId }, '-created_date', 1);
         if (ptoBanks.length > 0) {
           const bank = ptoBanks[0];
@@ -223,6 +259,40 @@ Deno.serve(async (req) => {
             days_used: (bank.days_used || 0) + (request.days_deducted || 1),
             last_updated: new Date().toISOString(),
           });
+        }
+
+        // Inventory transfer on approval — only if there's a cover setter
+        if (coverSetterId && request.offer_type === 'pto_days' && request.offer_quantity > 0) {
+          // Deduct offer from requester's bank (additional to days_deducted above)
+          const reqBanks = await sr.entities.PaidDayOffBank.filter({ setter_id: setterId }, '-created_date', 1);
+          if (reqBanks.length > 0) {
+            await sr.entities.PaidDayOffBank.update(reqBanks[0].id, {
+              days_used: (reqBanks[0].days_used || 0) + request.offer_quantity,
+              last_updated: new Date().toISOString(),
+            });
+          }
+          // Credit cover setter's bank
+          const coverBanks = await sr.entities.PaidDayOffBank.filter({ setter_id: coverSetterId }, '-created_date', 1);
+          if (coverBanks.length > 0) {
+            await sr.entities.PaidDayOffBank.update(coverBanks[0].id, {
+              days_earned: (coverBanks[0].days_earned || 0) + request.offer_quantity,
+              last_updated: new Date().toISOString(),
+            });
+          } else {
+            await sr.entities.PaidDayOffBank.create({
+              setter_id: coverSetterId,
+              days_earned: request.offer_quantity,
+              days_used: 0,
+              last_updated: new Date().toISOString(),
+            });
+          }
+        }
+
+        if (coverSetterId && request.offer_type === 'loot_boxes' && request.offer_loot_box_ids) {
+          const boxIds = request.offer_loot_box_ids.split(',').filter(Boolean);
+          for (const boxId of boxIds) {
+            await sr.entities.LootBox.update(boxId, { setter_id: coverSetterId });
+          }
         }
 
         return Response.json({ success: true, status: 'approved' });
@@ -289,13 +359,35 @@ Deno.serve(async (req) => {
       // Get schedule info for the request dates
       const allSchedules = await sr.entities.SetterSchedule.filter({}, '-date', 2000);
 
+      // Resolve loot box details for offers
+      const allBoxIds = [];
+      pending.forEach(r => {
+        if (r.offer_type === 'loot_boxes' && r.offer_loot_box_ids) {
+          r.offer_loot_box_ids.split(',').filter(Boolean).forEach(id => allBoxIds.push(id));
+        }
+      });
+      let boxMap = {};
+      if (allBoxIds.length > 0) {
+        const allBoxes = await sr.entities.LootBox.filter({}, '-awarded_date', 2000);
+        allBoxes.forEach(b => { boxMap[b.id] = b; });
+      }
+
       const enriched = pending.map(r => {
         const requesterSchedule = allSchedules.find(s => s.setter_id === r.setter_id && s.date === r.request_date);
+        let offer_details = null;
+        if (r.offer_type === 'pto_days' && r.offer_quantity > 0) {
+          offer_details = { type: 'pto_days', quantity: r.offer_quantity };
+        } else if (r.offer_type === 'loot_boxes' && r.offer_loot_box_ids) {
+          const ids = r.offer_loot_box_ids.split(',').filter(Boolean);
+          const loot_boxes = ids.map(id => ({ id, rarity: boxMap[id]?.rarity || 'common' }));
+          offer_details = { type: 'loot_boxes', quantity: ids.length, loot_boxes };
+        }
         return {
           ...r,
           requester_name: nameMap[r.setter_id] || 'Unknown',
           shift_start: requesterSchedule?.shift_start || null,
           shift_end: requesterSchedule?.shift_end || null,
+          offer_details,
         };
       });
 
@@ -315,11 +407,35 @@ Deno.serve(async (req) => {
       ])];
       const nameMap = await getUserNameMap(allUserIds);
 
-      const enriched = allReqs.map(r => ({
-        ...r,
-        setter_name: nameMap[r.setter_id] || 'Unknown',
-        cover_setter_name: r.cover_setter_id ? (nameMap[r.cover_setter_id] || null) : null,
-      }));
+      // Resolve loot box details for offers
+      const allBoxIds = [];
+      allReqs.forEach(r => {
+        if (r.offer_type === 'loot_boxes' && r.offer_loot_box_ids) {
+          r.offer_loot_box_ids.split(',').filter(Boolean).forEach(id => allBoxIds.push(id));
+        }
+      });
+      let boxMap = {};
+      if (allBoxIds.length > 0) {
+        const allBoxes = await sr.entities.LootBox.filter({}, '-awarded_date', 2000);
+        allBoxes.forEach(b => { boxMap[b.id] = b; });
+      }
+
+      const enriched = allReqs.map(r => {
+        let offer_details = null;
+        if (r.offer_type === 'pto_days' && r.offer_quantity > 0) {
+          offer_details = { type: 'pto_days', quantity: r.offer_quantity };
+        } else if (r.offer_type === 'loot_boxes' && r.offer_loot_box_ids) {
+          const ids = r.offer_loot_box_ids.split(',').filter(Boolean);
+          const loot_boxes = ids.map(id => ({ id, rarity: boxMap[id]?.rarity || 'common' }));
+          offer_details = { type: 'loot_boxes', quantity: ids.length, loot_boxes };
+        }
+        return {
+          ...r,
+          setter_name: nameMap[r.setter_id] || 'Unknown',
+          cover_setter_name: r.cover_setter_id ? (nameMap[r.cover_setter_id] || null) : null,
+          offer_details,
+        };
+      });
 
       return Response.json({ queue: enriched });
 

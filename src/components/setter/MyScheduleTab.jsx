@@ -89,7 +89,7 @@ function getMonday(date) {
   return d.toISOString().split('T')[0];
 }
 
-export default function MyScheduleTab({ workspaceData, userId }) {
+export default function MyScheduleTab({ workspaceData, userId, unopenedBoxes }) {
   const [ptoModalOpen, setPtoModalOpen] = useState(false);
   const weekSchedule = workspaceData?.weekSchedule || [];
   const nextWeekSchedule = workspaceData?.nextWeekSchedule || [];
@@ -188,6 +188,8 @@ export default function MyScheduleTab({ workspaceData, userId }) {
         setterId={userId}
         existingRequestDates={existingRequestDates}
         onCreated={refetchMyRequests}
+        ptoBalance={ptoBank}
+        unopenedBoxes={unopenedBoxes}
       />
     </div>
   );
