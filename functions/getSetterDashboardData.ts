@@ -239,6 +239,7 @@ Deno.serve(async (req) => {
       },
       clients: settableClients.map(c => ({ id: c.id, name: c.name, booking_link: c.booking_link, billing_type: c.billing_type })),
       clientMap,
+      allLeads,
     });
   } catch (error) {
     return Response.json({ error: error.message }, { status: 500 });
