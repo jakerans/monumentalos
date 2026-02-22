@@ -335,6 +335,7 @@ export default function SetterDashboard() {
       
       if (!allDone) {
         setChecklistVisible(true);
+        console.log('CHECKLIST: Setting visible to TRUE');
       }
     }
   }, [checklist, hasClocked, checklistLog?.all_complete]);
