@@ -13,7 +13,7 @@ import MTDGoalProgress from '../components/admin/MTDGoalProgress';
 import GoalManagementModal from '../components/admin/GoalManagementModal';
 import PLComparisonRow from '../components/admin/PLComparisonRow.jsx';
 import StatCompareCard from '../components/admin/StatCompareCard.jsx';
-import { Settings, Trophy, ClipboardCheck } from 'lucide-react';
+import { Settings, Trophy } from 'lucide-react';
 import ShiftChecklistEditor from '../components/admin/ShiftChecklistEditor';
 import InfoTooltip from '../components/shared/InfoTooltip';
 import PageErrorBoundary from '../components/shared/PageErrorBoundary';
@@ -28,7 +28,6 @@ export default function AdminDashboard() {
   const navigate = useNavigate();
   const [user, setUser] = useState(null);
   const [goalsOpen, setGoalsOpen] = useState(false);
-  const [showChecklist, setShowChecklist] = useState(false);
   const effectsOn = getEffectsEnabled();
   const now = new Date();
 
@@ -101,33 +100,20 @@ export default function AdminDashboard() {
                 {now.toLocaleString('default', { month: 'long', year: 'numeric' })} overview
               </p>
             </div>
-            <div className="flex items-center gap-2 flex-wrap">
-              <button
-                onClick={() => setShowChecklist(s => !s)}
-                className={`px-4 py-2 text-xs font-bold rounded-lg flex items-center gap-1.5 border transition-colors ${showChecklist ? 'border-[#D6FF03] text-[#D6FF03] bg-[#D6FF03]/10' : 'border-slate-600 text-slate-300 hover:bg-slate-800'}`}
-              >
-                <ClipboardCheck className="w-3.5 h-3.5" /> Shift Checklist
-              </button>
-              <motion.button
-                whileHover={effectsOn ? { scale: 1.05 } : {}}
-                whileTap={effectsOn ? { scale: 0.95 } : {}}
-                onClick={() => setGoalsOpen(true)}
-                className={`px-4 py-2 text-xs font-bold rounded-lg flex items-center gap-1.5 shadow-sm hover:opacity-90 transition-opacity text-black ${effectsOn ? 'glow-pulse' : ''}`}
-                style={{backgroundColor:'#D6FF03'}}
-              >
-                <Settings className="w-3.5 h-3.5" /> Manage Goals
-              </motion.button>
-            </div>
+            <motion.button
+              whileHover={effectsOn ? { scale: 1.05 } : {}}
+              whileTap={effectsOn ? { scale: 0.95 } : {}}
+              onClick={() => setGoalsOpen(true)}
+              className={`px-4 py-2 text-xs font-bold rounded-lg flex items-center gap-1.5 shadow-sm hover:opacity-90 transition-opacity text-black ${effectsOn ? 'glow-pulse' : ''}`}
+              style={{backgroundColor:'#D6FF03'}}
+            >
+              <Settings className="w-3.5 h-3.5" /> Manage Goals
+            </motion.button>
           </motion.div>
         </div>
 
         {/* Content area */}
         <div className="flex-1 max-w-[1400px] mx-auto w-full px-4 sm:px-6 lg:px-8 py-6 space-y-5">
-          {showChecklist && (
-            <div className="bg-slate-800/30 border border-slate-700/50 rounded-xl p-6">
-              <ShiftChecklistEditor />
-            </div>
-          )}
           {/* Cash Health Panel — priority */}
           <CashHealthPanel data={cashHealth} />
 
