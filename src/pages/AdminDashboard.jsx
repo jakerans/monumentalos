@@ -102,6 +102,12 @@ export default function AdminDashboard() {
               </p>
             </div>
             <div className="flex items-center gap-2 flex-wrap">
+              <button
+                onClick={() => setShowChecklist(s => !s)}
+                className={`px-4 py-2 text-xs font-bold rounded-lg flex items-center gap-1.5 border transition-colors ${showChecklist ? 'border-[#D6FF03] text-[#D6FF03] bg-[#D6FF03]/10' : 'border-slate-600 text-slate-300 hover:bg-slate-800'}`}
+              >
+                <ClipboardCheck className="w-3.5 h-3.5" /> Shift Checklist
+              </button>
               <motion.button
                 whileHover={effectsOn ? { scale: 1.05 } : {}}
                 whileTap={effectsOn ? { scale: 0.95 } : {}}
