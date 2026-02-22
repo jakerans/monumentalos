@@ -290,17 +290,17 @@ export default function SetterDashboard() {
   if (!user) return null;
   if (dashLoading) return <PageLoader message="Loading pipeline..." />;
 
-  // Apply local search/client filters on pre-filtered pipeline data
-  const applyLocalFilter = (leads) => leads.filter(l => {
+  // Memoized pipeline filtering
+  const filterFn = React.useCallback((leads) => leads.filter(l => {
     const matchSearch = !search || l.name?.toLowerCase().includes(search.toLowerCase()) || l.phone?.includes(search) || l.email?.toLowerCase().includes(search.toLowerCase());
     const matchClient = clientFilter === 'all' || l.client_id === clientFilter;
     return matchSearch && matchClient;
-  });
+  }), [search, clientFilter]);
 
-  const newLeads = useMemo(() => applyLocalFilter(pipelineData.newLeads), [search, clientFilter, pipelineData.newLeads]);
-  const inProgressLeads = useMemo(() => applyLocalFilter(pipelineData.inProgressLeads), [search, clientFilter, pipelineData.inProgressLeads]);
-  const bookedLeads = useMemo(() => applyLocalFilter(pipelineData.bookedLeads), [search, clientFilter, pipelineData.bookedLeads]);
-  const dqLeads = useMemo(() => applyLocalFilter(pipelineData.dqLeads), [search, clientFilter, pipelineData.dqLeads]);
+  const newLeads = useMemo(() => filterFn(pipelineData.newLeads), [filterFn, pipelineData.newLeads]);
+  const inProgressLeads = useMemo(() => filterFn(pipelineData.inProgressLeads), [filterFn, pipelineData.inProgressLeads]);
+  const bookedLeads = useMemo(() => filterFn(pipelineData.bookedLeads), [filterFn, pipelineData.bookedLeads]);
+  const dqLeads = useMemo(() => filterFn(pipelineData.dqLeads), [filterFn, pipelineData.dqLeads]);
 
   return (
     <PageErrorBoundary>
