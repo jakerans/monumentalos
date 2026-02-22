@@ -18,7 +18,7 @@ import SpendDrilldownDialog from '../components/clientview/SpendDrilldownDialog'
 const ClientSOPEditor = React.lazy(() => import('../components/clientview/ClientSOPEditor'));
 import PageErrorBoundary from '../components/shared/PageErrorBoundary';
 import PageLoader from '../components/shared/PageLoader';
-import { FileText, Loader2 as Loader2Icon } from 'lucide-react';
+import { FileText, Loader2 } from 'lucide-react';
 
 export default function ClientView() {
   const navigate = useNavigate();
