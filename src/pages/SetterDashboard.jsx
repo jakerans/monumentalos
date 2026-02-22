@@ -23,6 +23,7 @@ import LootBoxOpenModal from '../components/setter/LootBoxOpenModal';
 import ClockWidget from '../components/setter/ClockWidget';
 import MyScheduleTab from '../components/setter/MyScheduleTab';
 import EarningsTab from '../components/setter/EarningsTab';
+import DialWorkspace from '../components/setter/DialWorkspace';
 import PageErrorBoundary from '../components/shared/PageErrorBoundary';
 import PageLoader from '../components/shared/PageLoader';
 import { motion } from 'framer-motion';
