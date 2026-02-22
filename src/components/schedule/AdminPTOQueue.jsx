@@ -159,8 +159,6 @@ const AdminPTOCard = React.memo(function AdminPTOCard({ request, onResolved }) {
       )}
     </div>
   );
-}
-
 });
 
 const PendingTransferCard = React.memo(function PendingTransferCard({ request, onAction }) {
@@ -227,8 +225,6 @@ const PendingTransferCard = React.memo(function PendingTransferCard({ request, o
       </div>
     </div>
   );
-}
-
 });
 
 function AdminPTOQueue({ onScheduleChanged }) {
