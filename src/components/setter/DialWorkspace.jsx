@@ -253,6 +253,7 @@ function DialWorkspaceInner({ allLeads, clients, user, onClose, onAddLead, addLe
   const [sopLoading, setSopLoading] = useState(false);
   const notesRef = useRef(null);
   const [notesSaving, setNotesSaving] = useState(false);
+  const sopClientIdRef = useRef(null);
 
   // Refresh selectedLead from allLeads when allLeads updates (after modal actions)
   useEffect(() => {
@@ -262,16 +263,22 @@ function DialWorkspaceInner({ allLeads, clients, user, onClose, onAddLead, addLe
     }
   }, [allLeads]);
 
-  // Fetch SOP when lead is selected
+  // Fetch SOP only when the client actually changes
   useEffect(() => {
-    if (!selectedLead) { setSop(null); return; }
+    if (!selectedLead) {
+      sopClientIdRef.current = null;
+      setSop(null);
+      return;
+    }
+    if (selectedLead.client_id === sopClientIdRef.current) return;
+    sopClientIdRef.current = selectedLead.client_id;
     setSop(null);
     setSopLoading(true);
     base44.functions.invoke('manageClientSOP', { action: 'get', client_id: selectedLead.client_id })
       .then(res => setSop(res.data?.sop || null))
       .catch(() => setSop(null))
       .finally(() => setSopLoading(false));
-  }, [selectedLead?.id, selectedLead?.client_id]);
+  }, [selectedLead?.client_id]);
 
   const handleSaveNotes = useCallback(async () => {
     if (!selectedLead || !notesRef.current) return;
