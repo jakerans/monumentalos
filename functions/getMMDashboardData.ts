@@ -57,21 +57,28 @@ Deno.serve(async (req) => {
       fetchAllFiltered(sr.Employee, { user_id: user.id, status: 'active' }, '-created_date'),
     ]);
 
+    const now = new Date();
+
     // Performance pay plans
     let perfPlans = [];
     let perfRecords = [];
     if (employees.length > 0) {
-      perfPlans = await base44.asServiceRole.entities.PerformancePay.filter({
-        employee_id: employees[0].id,
-        status: 'active',
-      });
-      // Fetch last month's record for hover summary
-      const lm = new Date(now.getFullYear(), now.getMonth() - 1, 1);
-      const lastPeriod = `${lm.getFullYear()}-${String(lm.getMonth() + 1).padStart(2, '0')}`;
-      perfRecords = await base44.asServiceRole.entities.PerformancePayRecord.filter({
-        employee_id: employees[0].id,
-        period: lastPeriod,
-      });
+      try {
+        perfPlans = await base44.asServiceRole.entities.PerformancePay.filter({
+          employee_id: employees[0].id,
+          status: 'active',
+        });
+        // Fetch last month's record for hover summary
+        const lm = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+        const lastPeriod = `${lm.getFullYear()}-${String(lm.getMonth() + 1).padStart(2, '0')}`;
+        perfRecords = await base44.asServiceRole.entities.PerformancePayRecord.filter({
+          employee_id: employees[0].id,
+          period: lastPeriod,
+        });
+      } catch (_e) {
+        perfPlans = [];
+        perfRecords = [];
+      }
     }
 
     // Pending onboard count
@@ -84,7 +91,6 @@ Deno.serve(async (req) => {
     ).length;
 
     // Live billable revenue for perf plans
-    const now = new Date();
     const mtdStart = new Date(now.getFullYear(), now.getMonth(), 1);
     const mtdStr = mtdStart.toISOString();
 
