@@ -1,16 +1,36 @@
-import React, { useState, useEffect, useCallback, memo } from 'react';
+import React, { useState, useEffect, useCallback, useRef, memo } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { FileText, Save, Info, Loader2 } from 'lucide-react';
 import { toast } from '@/components/ui/use-toast';
 
-const SOPTextarea = memo(function SOPTextarea({ label, value, onChange, minRows = 8 }) {
+/**
+ * Each textarea manages its OWN local state so typing never waits
+ * on the parent to re-render. The parent value is only read on mount /
+ * when the parent pushes a brand-new value (key-based reset).
+ */
+const SOPTextarea = memo(function SOPTextarea({ label, initialValue, onCommit, minRows = 8 }) {
+  const ref = useRef(null);
+  const [val, setVal] = useState(initialValue || '');
+
+  // If parent resets (e.g. after load), sync
+  useEffect(() => {
+    setVal(initialValue || '');
+  }, [initialValue]);
+
+  // Commit to parent on blur so save always has latest
+  const handleBlur = useCallback(() => {
+    onCommit(val);
+  }, [val, onCommit]);
+
   return (
     <div>
       <label className="block text-sm font-medium text-white mb-1.5">{label}</label>
       <textarea
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
+        ref={ref}
+        value={val}
+        onChange={(e) => setVal(e.target.value)}
+        onBlur={handleBlur}
         rows={minRows}
         className="w-full px-3 py-2.5 text-sm border border-slate-700 rounded-lg bg-slate-800 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-[#D6FF03] resize-y"
         placeholder={`Enter ${label.toLowerCase()}...`}
@@ -21,12 +41,17 @@ const SOPTextarea = memo(function SOPTextarea({ label, value, onChange, minRows 
 });
 
 function ClientSOPEditorInner({ clientId }) {
-  const [callScript, setCallScript] = useState('');
-  const [faqsText, setFaqsText] = useState('');
-  const [talkingPoints, setTalkingPoints] = useState('');
-  const [generalNotes, setGeneralNotes] = useState('');
+  // Use refs for the "committed" values so we never re-render children on every keystroke
+  const callScriptRef = useRef('');
+  const faqsRef = useRef('');
+  const talkingPointsRef = useRef('');
+  const generalNotesRef = useRef('');
+
   const [lastUpdated, setLastUpdated] = useState(null);
   const [initialized, setInitialized] = useState(false);
+  // A counter we bump to force textarea reset when data loads
+  const [resetKey, setResetKey] = useState(0);
+  const [initValues, setInitValues] = useState({ cs: '', faq: '', tp: '', gn: '' });
 
   const { data, isLoading } = useQuery({
     queryKey: ['client-sop', clientId],
@@ -40,12 +65,18 @@ function ClientSOPEditorInner({ clientId }) {
 
   useEffect(() => {
     if (data && !initialized) {
-      setCallScript(data.call_script || '');
-      setFaqsText(data.faqs || '');
-      setTalkingPoints(data.talking_points || '');
-      setGeneralNotes(data.general_notes || '');
+      const cs = data.call_script || '';
+      const faq = data.faqs || '';
+      const tp = data.talking_points || '';
+      const gn = data.general_notes || '';
+      callScriptRef.current = cs;
+      faqsRef.current = faq;
+      talkingPointsRef.current = tp;
+      generalNotesRef.current = gn;
+      setInitValues({ cs, faq, tp, gn });
       setLastUpdated(data.last_updated || null);
       setInitialized(true);
+      setResetKey(k => k + 1);
     } else if (data === null && !initialized) {
       setInitialized(true);
     }
@@ -56,10 +87,10 @@ function ClientSOPEditorInner({ clientId }) {
       const res = await base44.functions.invoke('manageClientSOP', {
         action: 'save',
         client_id: clientId,
-        call_script: callScript,
-        faqs: faqsText,
-        talking_points: talkingPoints,
-        general_notes: generalNotes,
+        call_script: callScriptRef.current,
+        faqs: faqsRef.current,
+        talking_points: talkingPointsRef.current,
+        general_notes: generalNotesRef.current,
       });
       return res.data;
     },
@@ -69,10 +100,10 @@ function ClientSOPEditorInner({ clientId }) {
     },
   });
 
-  const onCallScriptChange = useCallback((v) => setCallScript(v), []);
-  const onFaqsChange = useCallback((v) => setFaqsText(v), []);
-  const onTalkingPointsChange = useCallback((v) => setTalkingPoints(v), []);
-  const onGeneralNotesChange = useCallback((v) => setGeneralNotes(v), []);
+  const commitCS = useCallback((v) => { callScriptRef.current = v; }, []);
+  const commitFAQ = useCallback((v) => { faqsRef.current = v; }, []);
+  const commitTP = useCallback((v) => { talkingPointsRef.current = v; }, []);
+  const commitGN = useCallback((v) => { generalNotesRef.current = v; }, []);
 
   if (isLoading || !initialized) {
     return (
@@ -99,10 +130,10 @@ function ClientSOPEditorInner({ clientId }) {
         </div>
       )}
 
-      <SOPTextarea label="Call Script" value={callScript} onChange={onCallScriptChange} minRows={12} />
-      <SOPTextarea label="FAQs" value={faqsText} onChange={onFaqsChange} minRows={8} />
-      <SOPTextarea label="Talking Points" value={talkingPoints} onChange={onTalkingPointsChange} minRows={8} />
-      <SOPTextarea label="General Notes" value={generalNotes} onChange={onGeneralNotesChange} minRows={6} />
+      <SOPTextarea key={`cs-${resetKey}`} label="Call Script" initialValue={initValues.cs} onCommit={commitCS} minRows={12} />
+      <SOPTextarea key={`faq-${resetKey}`} label="FAQs" initialValue={initValues.faq} onCommit={commitFAQ} minRows={8} />
+      <SOPTextarea key={`tp-${resetKey}`} label="Talking Points" initialValue={initValues.tp} onCommit={commitTP} minRows={8} />
+      <SOPTextarea key={`gn-${resetKey}`} label="General Notes" initialValue={initValues.gn} onCommit={commitGN} minRows={6} />
 
       <div className="flex items-center justify-between pt-2">
         <div>
