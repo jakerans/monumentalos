@@ -1,14 +1,28 @@
-import React from 'react';
+import React, { useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
 import { createPageUrl } from '@/utils';
 import { base44 } from '@/api/base44Client';
 import { motion } from 'framer-motion';
-import { Zap, ZapOff, Package } from 'lucide-react';
+import { Zap, ZapOff, Package, Phone, MessageSquare, Globe, ExternalLink, Mail, Video, Headphones, BookOpen, FileText, Link } from 'lucide-react';
 import { useEffectsToggle } from '../shared/useEffectsToggle';
+
+const ICON_MAP = {
+  Phone, MessageSquare, Globe, ExternalLink, Mail, Video, Headphones, BookOpen, FileText, Link
+};
 
 export default function SetterNav({ user, unopenedCount = 0, yellowWarning = 8, inventoryCap = 10, onOpenInventory }) {
   const { effectsOn, toggle: toggleEffects } = useEffectsToggle();
   const navigate = useNavigate();
+
+  const { data: quickLinks = [] } = useQuery({
+    queryKey: ['quick-links-nav'],
+    queryFn: async () => {
+      const res = await base44.functions.invoke('getQuickLinks');
+      return res.data?.links || [];
+    },
+    staleTime: 5 * 60 * 1000,
+  });
 
   return (
     <motion.nav
@@ -28,6 +42,27 @@ export default function SetterNav({ user, unopenedCount = 0, yellowWarning = 8, 
               Monumental<span style={{color:'#D6FF03'}}>OS</span>
             </motion.h1>
           </div>
+
+          {/* Quick Links — hidden on mobile */}
+          <div className="hidden sm:flex items-center gap-1">
+            {quickLinks.map(link => {
+              const IconComponent = ICON_MAP[link.icon] || ExternalLink;
+              return (
+                <button
+                  key={link.id}
+                  onClick={() => window.open(link.url, '_blank')}
+                  title={link.label}
+                  className="relative p-1.5 rounded-md text-slate-400 hover:text-white hover:bg-white/5 transition-colors group"
+                >
+                  <IconComponent className="w-4 h-4" />
+                  <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-slate-900 text-white text-xs rounded whitespace-nowrap pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity z-50 border border-slate-700">
+                    {link.label}
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+
           <div className="flex items-center gap-2 sm:gap-4">
             {user.app_role === 'admin' && (
               <select
