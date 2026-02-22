@@ -77,6 +77,7 @@ import SetterPerformance from './pages/SetterPerformance';
 import SetterStats from './pages/SetterStats';
 import UserManagement from './pages/UserManagement';
 import ClientView from './pages/ClientView';
+import ClientSOP from './pages/ClientSOP';
 import __Layout from './Layout.jsx';
 
 
@@ -111,6 +112,7 @@ export const PAGES = {
     "SetterStats": SetterStats,
     "UserManagement": UserManagement,
     "ClientView": ClientView,
+    "ClientSOP": ClientSOP,
 }
 
 export const pagesConfig = {
