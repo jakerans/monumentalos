@@ -130,6 +130,7 @@ export default function SetterDashboard() {
         base44.functions.invoke('manageShiftChecklist', { action: 'get_active' }),
         user?.id ? base44.functions.invoke('manageShiftChecklist', { action: 'get_today_log', setter_id: user.id }) : Promise.resolve({ data: { log: null } })
       ]);
+      console.log('CHECKLIST DEBUG — template:', templateRes.data, 'log:', logRes.data);
       return {
         checklist: templateRes.data?.checklist,
         log: logRes.data?.log
