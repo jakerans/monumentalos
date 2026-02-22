@@ -123,6 +123,11 @@ export default function AdminDashboard() {
 
         {/* Content area */}
         <div className="flex-1 max-w-[1400px] mx-auto w-full px-4 sm:px-6 lg:px-8 py-6 space-y-5">
+          {showChecklist && (
+            <div className="bg-slate-800/30 border border-slate-700/50 rounded-xl p-6">
+              <ShiftChecklistEditor />
+            </div>
+          )}
           {/* Cash Health Panel — priority */}
           <CashHealthPanel data={cashHealth} />
 
