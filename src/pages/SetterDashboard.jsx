@@ -437,6 +437,13 @@ export default function SetterDashboard() {
             >
               <Plus className="w-3.5 h-3.5 sm:w-4 sm:h-4 inline mr-1" />Add
             </button>
+            <button
+              onClick={() => setWorkspaceOpen(true)}
+              className="hidden lg:flex items-center gap-1.5 px-3 py-2 text-xs sm:text-sm text-black rounded-lg font-bold transition-colors hover:opacity-90"
+              style={{ backgroundColor: '#D6FF03' }}
+            >
+              <Phone className="w-3.5 h-3.5" />Start Dialing
+            </button>
           </div>
         </div>
 
