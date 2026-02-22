@@ -38,6 +38,9 @@ Deno.serve(async (req) => {
     if (box.status === 'opened') {
       return Response.json({ error: 'already_opened' }, { status: 409 });
     }
+    if (box.hold_request_id) {
+      return Response.json({ error: 'This box is held for a pending shift trade and cannot be opened yet', held: true }, { status: 400 });
+    }
 
     // Fetch active prizes for this rarity
     const allPrizesForRarity = await sr.LootPrize.filter({ rarity: box.rarity }, '-drop_weight', 5000);

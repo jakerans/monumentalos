@@ -54,6 +54,26 @@ Deno.serve(async (req) => {
         status: 'completed',
       });
 
+      // Auto-finalize loot box transfers for covered shifts
+      try {
+        const entryDate = entry.date;
+        const allPtoReqs = await sr.entities.PTORequest.filter({ transfer_status: 'pending_shift' }, '-created_date', 200);
+        const matching = allPtoReqs.filter(r =>
+          r.cover_setter_id === setterId &&
+          r.request_date === entryDate &&
+          r.status === 'approved'
+        );
+        for (const ptoReq of matching) {
+          const boxIds = (ptoReq.offer_loot_box_ids || '').split(',').filter(Boolean);
+          for (const boxId of boxIds) {
+            await sr.entities.LootBox.update(boxId, { setter_id: setterId, hold_request_id: null });
+          }
+          await sr.entities.PTORequest.update(ptoReq.id, { transfer_status: 'completed' });
+        }
+      } catch (transferErr) {
+        console.error('Auto-finalize transfer error (non-blocking):', transferErr.message);
+      }
+
       return Response.json({ success: true, action: 'clock_out', entry_id: entry.id, total_hours: totalHours });
 
     } else {

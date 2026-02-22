@@ -26,6 +26,20 @@ function formatDate(dateStr) {
   return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
 }
 
+function TransferStatusLabel({ transferStatus }) {
+  if (!transferStatus || transferStatus === 'none') return null;
+  if (transferStatus === 'pending_shift') {
+    return <p className="text-[10px] text-amber-400">Boxes held — awaiting shift coverage</p>;
+  }
+  if (transferStatus === 'completed') {
+    return <p className="text-[10px] text-green-400">Boxes transferred ✓</p>;
+  }
+  if (transferStatus === 'returned') {
+    return <p className="text-[10px] text-slate-500">Boxes returned</p>;
+  }
+  return null;
+}
+
 export default function MyPTORequests({ setterId }) {
   const queryClient = useQueryClient();
   const [cancellingId, setCancellingId] = useState(null);
@@ -34,8 +48,7 @@ export default function MyPTORequests({ setterId }) {
     queryKey: ['my-pto-requests', setterId],
     queryFn: async () => {
       const res = await base44.functions.invoke('managePTORequest', {
-        action: 'get_my_requests',
-        setter_id: setterId,
+        action: 'get_my_requests', setter_id: setterId,
       });
       return res.data?.requests || [];
     },
@@ -48,8 +61,7 @@ export default function MyPTORequests({ setterId }) {
   const handleCancel = async (requestId) => {
     setCancellingId(requestId);
     const res = await base44.functions.invoke('managePTORequest', {
-      action: 'cancel',
-      request_id: requestId,
+      action: 'cancel', request_id: requestId,
     });
     setCancellingId(null);
     if (res.data?.already_approved) {
@@ -80,11 +92,12 @@ export default function MyPTORequests({ setterId }) {
                   {r.cover_setter_name && (
                     <p className="text-[10px] text-slate-500">Cover: {r.cover_setter_name}</p>
                   )}
-                  {r.offer_type && r.offer_type !== 'none' && (
+                  {r.offer_type === 'loot_boxes' && r.offer_quantity > 0 && (
                     <p className="text-[10px] text-slate-500">
-                      Offered: {r.offer_type === 'pto_days' ? `${r.offer_quantity} PTO day${r.offer_quantity !== 1 ? 's' : ''}` : `${r.offer_quantity} loot box${r.offer_quantity !== 1 ? 'es' : ''}`}
+                      Offered: {r.offer_quantity} loot box{r.offer_quantity !== 1 ? 'es' : ''}
                     </p>
                   )}
+                  <TransferStatusLabel transferStatus={r.transfer_status} />
                 </div>
               </div>
               <div className="flex items-center gap-2">
@@ -92,9 +105,7 @@ export default function MyPTORequests({ setterId }) {
                   {STATUS_LABELS[r.status] || r.status}
                 </span>
                 {canCancel && (
-                  <button
-                    onClick={() => handleCancel(r.id)}
-                    disabled={cancellingId === r.id}
+                  <button onClick={() => handleCancel(r.id)} disabled={cancellingId === r.id}
                     className="p-1 rounded text-slate-500 hover:text-red-400 hover:bg-red-500/10 transition-colors disabled:opacity-50"
                     title="Cancel request"
                   >
