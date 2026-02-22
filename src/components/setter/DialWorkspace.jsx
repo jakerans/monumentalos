@@ -87,7 +87,66 @@ function LeadRow({ lead, clientName, onClick }) {
   );
 }
 
-function DialWorkspaceInner({ allLeads, clients, user, onClose, onAddLead, addLeadOpen, setAddLeadOpen }) {
+const MD_PROSE = {
+  p: ({ children }) => <p className="text-slate-300 text-base leading-relaxed mb-3">{children}</p>,
+  h1: ({ children }) => <h1 className="text-white font-bold text-xl mb-3 mt-4">{children}</h1>,
+  h2: ({ children }) => <h2 className="text-white font-bold text-lg mb-2 mt-4">{children}</h2>,
+  h3: ({ children }) => <h3 className="text-white font-semibold text-base mb-2 mt-3">{children}</h3>,
+  h4: ({ children }) => <h4 className="text-slate-200 font-semibold text-sm mb-2 mt-3">{children}</h4>,
+  ul: ({ children }) => <ul className="list-disc list-inside space-y-1 mb-3 text-slate-300">{children}</ul>,
+  ol: ({ children }) => <ol className="list-decimal list-inside space-y-1 mb-3 text-slate-300">{children}</ol>,
+  li: ({ children }) => <li className="text-slate-300 leading-relaxed">{children}</li>,
+  strong: ({ children }) => <strong className="text-white font-semibold">{children}</strong>,
+  em: ({ children }) => <em className="text-slate-200 italic">{children}</em>,
+};
+
+const MD_SMALL = {
+  ...MD_PROSE,
+  p: ({ children }) => <p className="text-slate-400 text-sm leading-relaxed mb-2">{children}</p>,
+  h1: ({ children }) => <h1 className="text-white font-bold text-base mb-2 mt-3">{children}</h1>,
+  h2: ({ children }) => <h2 className="text-white font-semibold text-sm mb-1.5 mt-3">{children}</h2>,
+  h3: ({ children }) => <h3 className="text-slate-200 font-semibold text-sm mb-1.5 mt-2">{children}</h3>,
+  ul: ({ children }) => <ul className="list-disc list-inside space-y-1 mb-2 text-slate-400">{children}</ul>,
+  ol: ({ children }) => <ol className="list-decimal list-inside space-y-1 mb-2 text-slate-400">{children}</ol>,
+  li: ({ children }) => <li className="text-slate-400 text-sm leading-relaxed">{children}</li>,
+  strong: ({ children }) => <strong className="text-slate-200 font-semibold">{children}</strong>,
+};
+
+function SectionHeader({ icon: Icon, label }) {
+  return (
+    <div className="flex items-center gap-2 mb-3">
+      <Icon className="w-4 h-4 text-slate-400" />
+      <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">{label}</span>
+    </div>
+  );
+}
+
+function CopyButton({ text, className = '' }) {
+  const [copied, setCopied] = useState(false);
+  const handleCopy = () => {
+    navigator.clipboard.writeText(text).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1500);
+    });
+  };
+  return (
+    <button onClick={handleCopy} className={`p-1 rounded text-slate-500 hover:text-slate-300 transition-colors ${className}`}>
+      {copied ? <Check className="w-3.5 h-3.5 text-green-400" /> : <Copy className="w-3.5 h-3.5" />}
+    </button>
+  );
+}
+
+function fmt(dateStr) {
+  if (!dateStr) return '';
+  return new Date(dateStr).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit' });
+}
+
+function fmtDate(dateStr) {
+  if (!dateStr) return '';
+  return new Date(dateStr).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+}
+
+function DialWorkspaceInner({ allLeads, clients, user, onClose, onAddLead, addLeadOpen, setAddLeadOpen, onAction }) {
   const [searchQuery, setSearchQuery] = useState('');
   const [debouncedQuery, setDebouncedQuery] = useState('');
   const [selectedLead, setSelectedLead] = useState(null);
