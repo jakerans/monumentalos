@@ -3,7 +3,7 @@ import { base44 } from '@/api/base44Client';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
-import { Search, Filter, Plus, Ban } from 'lucide-react';
+import { Search, Filter, Plus, Ban, DollarSign } from 'lucide-react';
 import { toast } from '@/components/ui/use-toast';
 import SetterNav from '../components/setter/SetterNav';
 import SetterStats from '../components/setter/SetterStats';
@@ -22,6 +22,7 @@ import InventoryModal from '../components/setter/InventoryModal';
 import LootBoxOpenModal from '../components/setter/LootBoxOpenModal';
 import ClockWidget from '../components/setter/ClockWidget';
 import MyScheduleTab from '../components/setter/MyScheduleTab';
+import EarningsTab from '../components/setter/EarningsTab';
 import PageErrorBoundary from '../components/shared/PageErrorBoundary';
 import PageLoader from '../components/shared/PageLoader';
 import { motion } from 'framer-motion';
@@ -116,6 +117,17 @@ export default function SetterDashboard() {
   });
 
   // Inventory data
+  // Earnings data
+  const { data: earningsData, isLoading: earningsLoading } = useQuery({
+    queryKey: ['setter-earnings', user?.id],
+    queryFn: async () => {
+      const res = await base44.functions.invoke('getSetterEarningsData');
+      return res.data;
+    },
+    enabled: !!user?.id && dashTab === 'earnings',
+    staleTime: 2 * 60 * 1000,
+  });
+
   const { data: invData } = useQuery({
     queryKey: ['setter-inventory', user?.id],
     queryFn: async () => {
@@ -335,9 +347,20 @@ export default function SetterDashboard() {
           >
             My Schedule
           </button>
+          <button
+            onClick={() => setDashTab('earnings')}
+            className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors flex items-center gap-1.5 ${
+              dashTab === 'earnings' ? 'border-[#D6FF03] text-[#D6FF03]' : 'border-transparent text-slate-400 hover:text-white'
+            }`}
+          >
+            <DollarSign className="w-3.5 h-3.5" />
+            My Earnings
+          </button>
         </div>
 
-        {dashTab === 'schedule' ? (
+        {dashTab === 'earnings' ? (
+          <EarningsTab data={earningsData} loading={earningsLoading} />
+        ) : dashTab === 'schedule' ? (
           <MyScheduleTab workspaceData={workspaceData} userId={user?.id} unopenedBoxes={unopenedBoxes} />
         ) : (
         <>
