@@ -47,6 +47,7 @@ export default function AddLeadModal({ open, onOpenChange, clients, onAdd, userI
       client_id: form.client_id,
       lead_source: form.lead_source,
       lead_received_date: new Date().toISOString(),
+      created_date: new Date().toISOString(),
       status: 'new',
     };
 
