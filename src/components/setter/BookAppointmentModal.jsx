@@ -17,11 +17,52 @@ const DEFAULT_TYPES = {
   reno: ['Full Home', 'Addition', 'Basement', 'Room Remodel'],
 };
 
-function getProjectTypesForIndustries(typesByIndustry, industries) {
+const PROJECT_TYPES_BY_INDUSTRY = {
+  painting: [
+    { value: 'interior', label: 'Interior' },
+    { value: 'exterior', label: 'Exterior' },
+    { value: 'cabinets', label: 'Cabinets' },
+    { value: 'garage_floor', label: 'Garage Floor' },
+    { value: 'basement', label: 'Basement' },
+    { value: 'commercial', label: 'Commercial' },
+  ],
+  epoxy: [
+    { value: 'garage_floor', label: 'Garage Floor' },
+    { value: 'basement', label: 'Basement' },
+    { value: 'commercial', label: 'Commercial' },
+  ],
+  'kitchen_bath': [
+    { value: 'kitchen', label: 'Kitchen' },
+    { value: 'bath', label: 'Bath' },
+    { value: 'kitchen_bath', label: 'Kitchen & Bath' },
+    { value: 'full_home', label: 'Full Home' },
+  ],
+  reno: [
+    { value: 'kitchen', label: 'Kitchen' },
+    { value: 'bath', label: 'Bath' },
+    { value: 'kitchen_bath', label: 'Kitchen & Bath' },
+    { value: 'full_home', label: 'Full Home' },
+    { value: 'addition', label: 'Addition' },
+    { value: 'room_remodel', label: 'Room Remodel' },
+  ],
+};
+
+function getProjectTypesForIndustries(industries) {
   if (!industries || industries.length === 0) {
-    return [...new Set(Object.values(typesByIndustry).flat())];
+    const all = Object.values(PROJECT_TYPES_BY_INDUSTRY).flat();
+    const seen = new Set();
+    return all.filter(t => { if (seen.has(t.value)) return false; seen.add(t.value); return true; });
   }
-  return [...new Set(industries.flatMap(ind => typesByIndustry[ind] || []))];
+  const seen = new Set();
+  const result = [];
+  for (const ind of industries) {
+    const key = ind.toLowerCase().replace(/[/ ]/g, '_');
+    const types = PROJECT_TYPES_BY_INDUSTRY[key] || [];
+    for (const t of types) {
+      if (!seen.has(t.value)) { seen.add(t.value); result.push(t); }
+    }
+  }
+  return result;
 }
 
 export default function BookAppointmentModal({ lead, bookingLink, clientIndustries, open, onOpenChange, onBook }) {
@@ -42,19 +83,20 @@ export default function BookAppointmentModal({ lead, bookingLink, clientIndustri
     return { typesByIndustry, sizes };
   }, [settingsData]);
 
-  const projectTypeOptions = useMemo(() => {
-    return getProjectTypesForIndustries(typesByIndustry, clientIndustries);
-  }, [typesByIndustry, clientIndustries]);
   const [date, setDate] = useState('');
   const [time, setTime] = useState('');
-  const [projectType, setProjectType] = useState('');
+  const [projectTypes, setProjectTypes] = useState([]);
   const [projectSize, setProjectSize] = useState('');
   const [loading, setLoading] = useState(false);
+
+  const projectTypeOptions = useMemo(() => {
+    return getProjectTypesForIndustries(clientIndustries);
+  }, [clientIndustries]);
 
   const handleClose = () => {
     setDate('');
     setTime('');
-    setProjectType('');
+    setProjectTypes([]);
     setProjectSize('');
     onOpenChange(false);
   };
@@ -64,7 +106,7 @@ export default function BookAppointmentModal({ lead, bookingLink, clientIndustri
     if (!date || !time) return;
     setLoading(true);
     const appointmentDate = new Date(`${date}T${time}`).toISOString();
-    await onBook(lead.id, appointmentDate, projectType || undefined, projectSize || undefined);
+    await onBook(lead.id, appointmentDate, projectTypes.length > 0 ? projectTypes.join(', ') : undefined, projectSize || undefined);
     setLoading(false);
     handleClose();
   };
@@ -124,17 +166,32 @@ export default function BookAppointmentModal({ lead, bookingLink, clientIndustri
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Project Type</label>
-                <select
-                  value={projectType}
-                  onChange={(e) => setProjectType(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-green-500"
-                >
-                  <option value="">Select type...</option>
-                  {projectTypeOptions.map(t => (
-                    <option key={t} value={t}>{t}</option>
-                  ))}
-                </select>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Project Type(s)</label>
+                <div className="flex flex-wrap gap-1.5">
+                  {projectTypeOptions.map(opt => {
+                    const selected = projectTypes.includes(opt.value);
+                    return (
+                      <button
+                        key={opt.value}
+                        type="button"
+                        onClick={() => {
+                          if (selected) {
+                            setProjectTypes(projectTypes.filter(v => v !== opt.value));
+                          } else {
+                            setProjectTypes([...projectTypes, opt.value]);
+                          }
+                        }}
+                        className={`px-2.5 py-1 rounded-md text-xs font-medium border transition-colors ${
+                          selected
+                            ? 'bg-green-50 border-green-500 text-green-700'
+                            : 'bg-white border-gray-300 text-gray-700 hover:border-gray-400'
+                        }`}
+                      >
+                        {opt.label}
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
 
               <div>
@@ -195,17 +252,32 @@ export default function BookAppointmentModal({ lead, bookingLink, clientIndustri
               <input type="time" value={time} onChange={(e) => setTime(e.target.value)} required className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 text-sm" />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Project Type</label>
-              <select
-                value={projectType}
-                onChange={(e) => setProjectType(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-green-500"
-              >
-                <option value="">Select type...</option>
-                {projectTypeOptions.map(t => (
-                  <option key={t} value={t}>{t}</option>
-                ))}
-              </select>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Project Type(s)</label>
+              <div className="flex flex-wrap gap-1.5">
+                {projectTypeOptions.map(opt => {
+                  const selected = projectTypes.includes(opt.value);
+                  return (
+                    <button
+                      key={opt.value}
+                      type="button"
+                      onClick={() => {
+                        if (selected) {
+                          setProjectTypes(projectTypes.filter(v => v !== opt.value));
+                        } else {
+                          setProjectTypes([...projectTypes, opt.value]);
+                        }
+                      }}
+                      className={`px-2.5 py-1 rounded-md text-xs font-medium border transition-colors ${
+                        selected
+                          ? 'bg-green-50 border-green-500 text-green-700'
+                          : 'bg-white border-gray-300 text-gray-700 hover:border-gray-400'
+                      }`}
+                    >
+                      {opt.label}
+                    </button>
+                  );
+                })}
+              </div>
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Project Size</label>
