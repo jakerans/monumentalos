@@ -197,7 +197,7 @@ function OpeningStage({ rc, rarity, imageUrl, onOpen, onClose }) {
           className="px-8 py-3 rounded-xl text-sm font-bold text-black transition-opacity hover:opacity-90"
           style={{ backgroundColor: rc.primary }}
         >
-          Open Now
+          Open Reward
         </button>
         <button
           onClick={() => onClose(true)}

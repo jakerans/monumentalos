@@ -232,7 +232,7 @@ function InventoryGrid({ boxes, count, cap, countColor, onOpenBox, onOpenAll, lo
     <div>
       <div className="flex items-center justify-between mb-3">
         <h3 className="text-xs text-slate-500 uppercase tracking-wider">
-          Unopened Boxes (<span className={countColor}>{count}</span>/{cap})
+          Unopened Rewards (<span className={countColor}>{count}</span>/{cap})
         </h3>
         {count >= 2 && (
           <button
@@ -247,7 +247,7 @@ function InventoryGrid({ boxes, count, cap, countColor, onOpenBox, onOpenAll, lo
 
       {count === 0 ? (
         <div className="text-center py-8 text-sm text-slate-500">
-          No unopened boxes — keep booking to earn drops!
+          No unopened rewards — keep booking to earn rewards!
         </div>
       ) : (
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
@@ -302,7 +302,7 @@ function RecentWinsFeed({ wins }) {
       <h3 className="text-xs text-slate-500 uppercase tracking-wider mb-2">Recent Wins</h3>
       {wins.length === 0 ? (
         <div className="text-center py-6 text-sm text-slate-500">
-          No wins yet — open a box to get started!
+          No wins yet — open a reward to get started!
         </div>
       ) : (
         <div className="space-y-2 max-h-60 overflow-y-auto">

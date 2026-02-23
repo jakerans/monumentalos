@@ -46,7 +46,7 @@ export default function LootAdmin() {
         awarded_date: new Date().toISOString().split('T')[0],
         source: 'manual_award',
       });
-      toast({ title: 'Box awarded!' });
+      toast({ title: 'Reward awarded!' });
       setShowAwardModal(false);
       setAwardSetterId('');
       setAwardRarity('common');
@@ -98,16 +98,16 @@ export default function LootAdmin() {
       <main className="flex-1 min-w-0 max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
         <div className="flex items-start justify-between gap-4 flex-wrap">
           <div>
-            <h1 className="text-3xl font-bold text-white">Loot System Admin</h1>
-            <p className="text-sm text-slate-400 mt-1">Configure prizes, drop rates, and fulfill pending wins</p>
+            <h1 className="text-3xl font-bold text-white">Rewards Admin</h1>
+            <p className="text-sm text-slate-400 mt-1">Configure prizes, reward rates, and fulfill pending wins</p>
           </div>
           <div className="relative">
             <Button onClick={() => setShowAwardModal(!showAwardModal)} className="bg-purple-600 hover:bg-purple-700 text-white text-xs">
-              Award Test Box
+              Award Test Reward
             </Button>
             {showAwardModal && (
               <div className="absolute right-0 top-full mt-2 w-72 bg-slate-800 border border-slate-700 rounded-xl shadow-2xl z-50 p-4 space-y-3">
-                <h4 className="text-sm font-bold text-white">Award Manual Box</h4>
+                <h4 className="text-sm font-bold text-white">Award Manual Reward</h4>
                 <div>
                   <label className="text-[10px] text-slate-400 uppercase mb-1 block">Rarity</label>
                   <select value={awardRarity} onChange={e => setAwardRarity(e.target.value)}
@@ -125,7 +125,7 @@ export default function LootAdmin() {
                 </div>
                 <div className="flex gap-2">
                   <Button onClick={handleAwardBox} disabled={awarding} className="flex-1 bg-purple-600 hover:bg-purple-700 text-white text-xs">
-                    {awarding ? 'Awarding...' : 'Award Box'}
+                    {awarding ? 'Awarding...' : 'Award Reward'}
                   </Button>
                   <Button variant="ghost" onClick={() => setShowAwardModal(false)} className="text-xs text-slate-400">Cancel</Button>
                 </div>
@@ -136,8 +136,8 @@ export default function LootAdmin() {
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <TabsList className="bg-slate-800/50 border border-slate-700/50">
-            <TabsTrigger value="table">Loot Table</TabsTrigger>
-            <TabsTrigger value="settings">Drop Settings</TabsTrigger>
+            <TabsTrigger value="table">Rewards Table</TabsTrigger>
+            <TabsTrigger value="settings">Reward Settings</TabsTrigger>
             <TabsTrigger value="fulfillment">Fulfillment Queue</TabsTrigger>
             <TabsTrigger value="bonus">Bonus Summary</TabsTrigger>
           </TabsList>
