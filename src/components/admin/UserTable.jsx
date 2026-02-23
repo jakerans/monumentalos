@@ -1,7 +1,7 @@
 import React, { useState, forwardRef } from 'react';
 import { base44 } from '@/api/base44Client';
 import { toast } from '@/components/ui/use-toast';
-import { Pencil, Check, X, Trash2 } from 'lucide-react';
+import { Pencil, Check, X, Trash2, Copy } from 'lucide-react';
 import FlipMove from 'react-flip-move';
 
 const ROLE_LABELS = {
@@ -127,6 +127,7 @@ export default function UserTable({ users, clients = [], onUpdated }) {
             <tr className="bg-slate-900/50 border-b border-slate-700/50">
               <th className="text-left px-4 py-3 text-xs font-semibold text-slate-400">Name</th>
               <th className="text-left px-4 py-3 text-xs font-semibold text-slate-400">Email</th>
+              <th className="text-left px-4 py-3 text-xs font-semibold text-slate-400">User ID</th>
               <th className="text-left px-4 py-3 text-xs font-semibold text-slate-400">Role</th>
               <th className="text-left px-4 py-3 text-xs font-semibold text-slate-400">Client</th>
               <th className="text-left px-4 py-3 text-xs font-semibold text-slate-400">Joined</th>
@@ -139,7 +140,7 @@ export default function UserTable({ users, clients = [], onUpdated }) {
                 <td colSpan={6} className="px-4 py-8 text-center text-xs text-slate-500">No users found</td>
               </tr>
             ) : users.map(u => (
-              <UserRow key={u.id} user={u} editingId={editingId} editRole={editRole} setEditRole={setEditRole} saving={saving} startEdit={startEdit} cancelEdit={cancelEdit} saveRole={saveRole} deletingId={deletingId} setDeletingId={setDeletingId} handleDelete={handleDelete} getRoleBadge={getRoleBadge} getClientName={getClientName} />
+              <UserRow key={u.id} user={u} editingId={editingId} editRole={editRole} setEditRole={setEditRole} saving={saving} startEdit={startEdit} cancelEdit={cancelEdit} saveRole={saveRole} deletingId={deletingId} setDeletingId={setDeletingId} handleDelete={handleDelete} getRoleBadge={getRoleBadge} getClientName={getClientName} toast={toast} />
             ))}
           </FlipMove>
         </table>
@@ -148,10 +149,22 @@ export default function UserTable({ users, clients = [], onUpdated }) {
   );
 }
 
-const UserRow = forwardRef(({ user, editingId, editRole, setEditRole, saving, startEdit, cancelEdit, saveRole, deletingId, setDeletingId, handleDelete, getRoleBadge, getClientName }, ref) => (
+const UserRow = forwardRef(({ user, editingId, editRole, setEditRole, saving, startEdit, cancelEdit, saveRole, deletingId, setDeletingId, handleDelete, getRoleBadge, getClientName, toast }, ref) => {
+  const handleCopyId = () => {
+    navigator.clipboard.writeText(user.id);
+    toast({ title: 'Copied', description: 'User ID copied to clipboard', duration: 2000 });
+  };
+
+  return (
   <tr ref={ref} className="hover:bg-slate-700/20">
     <td className="px-4 py-3 text-xs font-medium text-white">{user.full_name || '—'}</td>
     <td className="px-4 py-3 text-xs text-slate-400">{user.email}</td>
+    <td className="px-4 py-3">
+      <div className="flex items-center gap-1.5">
+        <code className="text-[10px] bg-slate-900/50 px-2 py-1 rounded text-slate-300 font-mono">{user.id}</code>
+        <button onClick={handleCopyId} className="p-1 text-slate-500 hover:text-slate-300 rounded hover:bg-slate-700/30" title="Copy User ID"><Copy className="w-3.5 h-3.5" /></button>
+      </div>
+    </td>
     <td className="px-4 py-3">
       {editingId === user.id ? (
         <div className="flex items-center gap-1">
@@ -182,6 +195,7 @@ const UserRow = forwardRef(({ user, editingId, editRole, setEditRole, saving, st
       ) : (
         <button onClick={() => setDeletingId(user.id)} className="p-1 text-gray-400 hover:text-red-600 rounded hover:bg-red-50 transition-colors"><Trash2 className="w-3.5 h-3.5" /></button>
       )}
-    </td>
-  </tr>
-));
+      </td>
+      </tr>
+      );
+      });
