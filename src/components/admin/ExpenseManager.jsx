@@ -167,6 +167,11 @@ export default function ExpenseManager({ startDate, endDate, onAddExpense }) {
   const handleInlineUpdate = async (id, field, value) => {
     const update = { [field]: field === 'amount' ? Number(value) : value };
     if (field === 'client_id' && !value) update.client_id = undefined;
+    if (field === 'category' || field === 'expense_type') {
+      update.suggested_category = '';
+      update.suggested_type = '';
+      update.ai_approved = true;
+    }
     await base44.entities.Expense.update(id, update);
     toast({ title: 'Updated', variant: 'success' });
     refetch();
