@@ -74,6 +74,7 @@ export default function AddLeadModal({ open, onOpenChange, clients, onAdd, userI
       setForm({ name: '', phone: '', email: '', client_id: '', lead_source: '', industries: [], notes: '', project_type: '', project_size: '' });
       setIsBooked(false);
       setAppointmentDate('');
+      setChatSTL('');
       onOpenChange(false);
     } catch (err) {
       console.error('Lead create failed:', err);
