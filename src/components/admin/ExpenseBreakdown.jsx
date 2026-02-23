@@ -52,10 +52,10 @@ export default function ExpenseBreakdown({ expenses, clients, startDate, endDate
       {/* COGS vs Overhead summary */}
       <div className="px-4 py-2 flex gap-3 border-b border-slate-700/30">
         <div className="px-2 py-1 rounded text-xs font-bold bg-orange-100 text-orange-700">
-          COGS: ${filtered.filter(e => e.expense_type === 'cogs').reduce((s, e) => s + (e.amount || 0), 0).toLocaleString()}
+          COGS: ${filtered.filter(e => e.expense_type === 'cogs').reduce((s, e) => s + (e.is_refunded ? 0 : ((e.amount || 0) - (e.refund_amount || 0))), 0).toLocaleString()}
         </div>
         <div className="px-2 py-1 rounded text-xs font-bold bg-gray-200 text-gray-700">
-          Overhead: ${filtered.filter(e => e.expense_type !== 'cogs').reduce((s, e) => s + (e.amount || 0), 0).toLocaleString()}
+          Overhead: ${filtered.filter(e => e.expense_type !== 'cogs').reduce((s, e) => s + (e.is_refunded ? 0 : ((e.amount || 0) - (e.refund_amount || 0))), 0).toLocaleString()}
         </div>
       </div>
       {/* Category summary */}

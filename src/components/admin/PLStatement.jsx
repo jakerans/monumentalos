@@ -72,20 +72,21 @@ export default function PLStatement({ kpis, expenses, billingRecords, clients, s
     const cogsItems = filtered.filter(e => e.expense_type === 'cogs');
     const overheadItems = filtered.filter(e => e.expense_type !== 'cogs');
 
+    const effAmt = (e) => e.is_refunded ? 0 : ((e.amount || 0) - (e.refund_amount || 0));
     const groupByCategory = (items) => {
       const map = {};
       items.forEach(e => {
         const cat = e.category || 'uncategorized';
-        map[cat] = (map[cat] || 0) + (e.amount || 0);
+        map[cat] = (map[cat] || 0) + effAmt(e);
       });
       return Object.entries(map).sort((a, b) => b[1] - a[1]);
     };
 
     return {
       cogsByCategory: groupByCategory(cogsItems),
-      cogsTotal: cogsItems.reduce((s, e) => s + (e.amount || 0), 0),
+      cogsTotal: cogsItems.reduce((s, e) => s + effAmt(e), 0),
       overheadByCategory: groupByCategory(overheadItems),
-      overheadTotal: overheadItems.reduce((s, e) => s + (e.amount || 0), 0),
+      overheadTotal: overheadItems.reduce((s, e) => s + effAmt(e), 0),
     };
   }, [expenses, startDate, endDate]);
 
