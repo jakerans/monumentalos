@@ -904,6 +904,7 @@ function ExpenseRow({ expense: e, clients, bankAccounts, bankAccountMap, onUpdat
   const bankAccountOptions = [{ value: '', label: '— None —' }, ...(bankAccounts || []).map(a => ({ value: a.id, label: a.name }))];
 
   const hasPendingAI = !e.ai_approved && e.suggested_category;
+  const isRefunded = e.is_refunded || (e.refund_amount && e.refund_amount > 0);
 
   const [draftCategory, setDraftCategory] = useState(
     hasPendingAI ? (e.suggested_category || e.category || 'uncategorized') : (e.category || 'uncategorized')
