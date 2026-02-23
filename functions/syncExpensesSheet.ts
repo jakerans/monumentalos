@@ -146,7 +146,7 @@ Deno.serve(async (req) => {
       if (isDeletedCol !== -1 && (row[isDeletedCol] || '').trim().toUpperCase() === 'TRUE') { skipped++; continue; }
 
       const amount = parseAmount(cell(row, BANK_AMOUNT_COL));
-      if (amount === null || amount >= 0) { skipped++; continue; }
+      if (amount === null) { skipped++; continue; }
 
       const date = parseDate(cell(row, BANK_DATE_COL));
       if (!date) { skipped++; continue; }
@@ -155,9 +155,6 @@ Deno.serve(async (req) => {
       const rawDesc = cell(row, BANK_DESC_COL);
       const expenseAmount = Math.abs(amount);
       const sheetCategory = cell(row, APP_CATEGORY_COL).toLowerCase();
-
-      if (SKIP_CATEGORIES.some(kw => sheetCategory.includes(kw))) { skipped++; continue; }
-      if (SKIP_DESCRIPTIONS.some(kw => rawDesc.toUpperCase().includes(kw.toUpperCase()))) { skipped++; continue; }
 
       const appId = cell(row, APP_ID_COL);
       const matchedBySheetId = sheetRowId && existingSheetIds.has(sheetRowId);
