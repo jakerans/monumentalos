@@ -1,8 +1,9 @@
 import React, { useState, forwardRef } from 'react';
 import { base44 } from '@/api/base44Client';
 import { toast } from '@/components/ui/use-toast';
-import { Pencil, Check, X, Trash2, Copy } from 'lucide-react';
+import { Pencil, Check, X, Trash2, Copy, Link as LinkIcon } from 'lucide-react';
 import FlipMove from 'react-flip-move';
+import ConnectUserModal from './ConnectUserModal';
 
 const ROLE_LABELS = {
   admin: { label: 'Admin', bg: 'bg-purple-100 text-purple-700' },
@@ -29,6 +30,8 @@ export default function UserTable({ users, clients = [], onUpdated }) {
   const [editRole, setEditRole] = useState('');
   const [saving, setSaving] = useState(false);
   const [deletingId, setDeletingId] = useState(null);
+  const [connectOpen, setConnectOpen] = useState(false);
+  const [selectedUserForConnect, setSelectedUserForConnect] = useState(null);
 
   const handleDelete = async (userId) => {
     const u = users.find(x => x.id === userId);
@@ -74,10 +77,16 @@ export default function UserTable({ users, clients = [], onUpdated }) {
     );
   };
 
+  const handleOpenConnect = (user) => {
+    setSelectedUserForConnect(user);
+    setConnectOpen(true);
+  };
+
   return (
-    <div className="bg-slate-800/50 rounded-lg border border-slate-700/50 overflow-hidden">
-      {/* Mobile card view */}
-      <div className="sm:hidden divide-y divide-slate-700/30">
+    <>
+      <div className="bg-slate-800/50 rounded-lg border border-slate-700/50 overflow-hidden">
+        {/* Mobile card view */}
+        <div className="sm:hidden divide-y divide-slate-700/30">
         {users.length === 0 ? (
           <div className="px-4 py-8 text-center text-xs text-slate-500">No users found</div>
         ) : users.map(u => (
@@ -121,7 +130,7 @@ export default function UserTable({ users, clients = [], onUpdated }) {
       </div>
 
       {/* Desktop table view */}
-      <div className="hidden sm:block overflow-x-auto">
+      <div className="hidden sm:block overflow-x-auto scrollbar-hide">
         <table className="w-full text-sm">
           <thead>
             <tr className="bg-slate-900/50 border-b border-slate-700/50">
@@ -137,19 +146,29 @@ export default function UserTable({ users, clients = [], onUpdated }) {
           <FlipMove typeName="tbody" duration={350} easing="cubic-bezier(0.25, 0.46, 0.45, 0.94)" staggerDurationBy={15} enterAnimation="fade" leaveAnimation="fade" className="divide-y divide-slate-700/30">
             {users.length === 0 ? (
               <tr key="empty">
-                <td colSpan={6} className="px-4 py-8 text-center text-xs text-slate-500">No users found</td>
+                <td colSpan={7} className="px-4 py-8 text-center text-xs text-slate-500">No users found</td>
               </tr>
             ) : users.map(u => (
-              <UserRow key={u.id} user={u} editingId={editingId} editRole={editRole} setEditRole={setEditRole} saving={saving} startEdit={startEdit} cancelEdit={cancelEdit} saveRole={saveRole} deletingId={deletingId} setDeletingId={setDeletingId} handleDelete={handleDelete} getRoleBadge={getRoleBadge} getClientName={getClientName} toast={toast} />
+              <UserRow key={u.id} user={u} editingId={editingId} editRole={editRole} setEditRole={setEditRole} saving={saving} startEdit={startEdit} cancelEdit={cancelEdit} saveRole={saveRole} deletingId={deletingId} setDeletingId={setDeletingId} handleDelete={handleDelete} getRoleBadge={getRoleBadge} getClientName={getClientName} toast={toast} onConnect={handleOpenConnect} />
             ))}
           </FlipMove>
         </table>
       </div>
-    </div>
+      </div>
+
+      <ConnectUserModal
+        open={connectOpen}
+        onOpenChange={setConnectOpen}
+        user={selectedUserForConnect}
+        employees={[]}
+        clients={clients}
+        onConnected={onUpdated}
+      />
+    </>
   );
 }
 
-const UserRow = forwardRef(({ user, editingId, editRole, setEditRole, saving, startEdit, cancelEdit, saveRole, deletingId, setDeletingId, handleDelete, getRoleBadge, getClientName, toast }, ref) => {
+const UserRow = forwardRef(({ user, editingId, editRole, setEditRole, saving, startEdit, cancelEdit, saveRole, deletingId, setDeletingId, handleDelete, getRoleBadge, getClientName, toast, onConnect }, ref) => {
   const handleCopyId = () => {
     navigator.clipboard.writeText(user.id);
     toast({ title: 'Copied', description: 'User ID copied to clipboard', duration: 2000 });
@@ -186,15 +205,20 @@ const UserRow = forwardRef(({ user, editingId, editRole, setEditRole, saving, st
     <td className="px-4 py-3 text-xs text-slate-400">{user.app_role === 'client' ? getClientName(user.client_id) : '—'}</td>
     <td className="px-4 py-3 text-xs text-slate-500">{user.created_date ? new Date(user.created_date).toLocaleDateString() : '—'}</td>
     <td className="px-4 py-3 text-right">
-      {deletingId === user.id ? (
-        <div className="flex items-center justify-end gap-1">
-          <span className="text-[10px] text-red-600 font-medium mr-1">Delete?</span>
-          <button onClick={() => handleDelete(user.id)} disabled={saving} className="px-2 py-1 text-[10px] font-medium bg-red-600 text-white rounded hover:bg-red-700 disabled:opacity-50">Yes</button>
-          <button onClick={() => setDeletingId(null)} className="px-2 py-1 text-[10px] font-medium bg-gray-100 text-gray-600 rounded hover:bg-gray-200">No</button>
-        </div>
-      ) : (
-        <button onClick={() => setDeletingId(user.id)} className="p-1 text-gray-400 hover:text-red-600 rounded hover:bg-red-50 transition-colors"><Trash2 className="w-3.5 h-3.5" /></button>
-      )}
+      <div className="flex items-center justify-end gap-1">
+        {deletingId === user.id ? (
+          <>
+            <span className="text-[10px] text-red-600 font-medium mr-1">Delete?</span>
+            <button onClick={() => handleDelete(user.id)} disabled={saving} className="px-2 py-1 text-[10px] font-medium bg-red-600 text-white rounded hover:bg-red-700 disabled:opacity-50">Yes</button>
+            <button onClick={() => setDeletingId(null)} className="px-2 py-1 text-[10px] font-medium bg-gray-100 text-gray-600 rounded hover:bg-gray-200">No</button>
+          </>
+        ) : (
+          <>
+            <button onClick={() => onConnect(user)} className="p-1 text-slate-500 hover:text-blue-400 rounded hover:bg-blue-500/10 transition-colors" title="Connect to Employee/Client"><LinkIcon className="w-3.5 h-3.5" /></button>
+            <button onClick={() => setDeletingId(user.id)} className="p-1 text-gray-400 hover:text-red-600 rounded hover:bg-red-50 transition-colors"><Trash2 className="w-3.5 h-3.5" /></button>
+          </>
+        )}
+      </div>
       </td>
       </tr>
       );
