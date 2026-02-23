@@ -46,6 +46,7 @@ Deno.serve(async (req) => {
     }
 
     // Create a PendingInvite so the role is applied when the user signs up
+    // This applies to all roles including admin
     const inviteData = {
       email: email.trim().toLowerCase(),
       intended_role,
