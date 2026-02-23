@@ -206,6 +206,21 @@ export default function AddLeadModal({ open, onOpenChange, clients, onAdd, userI
                     className="w-full px-3 py-2 border border-slate-700 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#D6FF03] bg-slate-800 text-white"
                   />
                 </div>
+                {form.lead_source === 'msg' && (
+                  <div>
+                    <label className="block text-xs font-medium text-slate-300 mb-1">Chat Speed-to-Lead (minutes)</label>
+                    <input
+                      type="number"
+                      min="0"
+                      step="1"
+                      value={chatSTL}
+                      onChange={(e) => setChatSTL(e.target.value)}
+                      className="w-full px-3 py-2 border border-slate-700 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#D6FF03] bg-slate-800 text-white placeholder-slate-500"
+                      placeholder="How many minutes from first msg to booking?"
+                    />
+                    <p className="text-[10px] text-slate-500 mt-1">Time between lead's first message and appointment booking</p>
+                  </div>
+                )}
                 <div className="grid grid-cols-2 gap-3">
                   <div>
                     <label className="block text-xs font-medium text-slate-300 mb-1">Project Type</label>
