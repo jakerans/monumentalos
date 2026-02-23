@@ -135,7 +135,7 @@ Deno.serve(async (req) => {
             showed.forEach(lead => {
               const ind = (lead.industries && lead.industries[0]) || null;
               const match = ind ? perfPricing.find(p => p.industry === ind) : null;
-              perfAmount += match ? (match.price_per_show || 0) : 0;
+              perfAmount += match ? (match.price_per_show || 0) : (client.price_per_shown_appointment || 0);
             });
           } else {
             const booked = cLeads.filter(l =>
@@ -146,7 +146,7 @@ Deno.serve(async (req) => {
             booked.forEach(lead => {
               const ind = (lead.industries && lead.industries[0]) || null;
               const match = ind ? perfPricing.find(p => p.industry === ind) : null;
-              perfAmount += match ? (match.price_per_set || 0) : 0;
+              perfAmount += match ? (match.price_per_set || 0) : (client.price_per_set_appointment || 0);
             });
           }
           hybridRecords.push({

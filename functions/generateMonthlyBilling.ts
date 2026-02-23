@@ -150,7 +150,7 @@ Deno.serve(async (req) => {
         showed.forEach(lead => {
           const ind = (lead.industries && lead.industries[0]) || null;
           const match = ind ? pricing.find(p => p.industry === ind) : null;
-          calculatedAmount += (match ? (match.price_per_show || 0) : 0);
+          calculatedAmount += (match ? (match.price_per_show || 0) : (client.price_per_shown_appointment || 0));
         });
       } else if (perfType === 'pay_per_set') {
         const booked = cLeads.filter(l =>
@@ -161,7 +161,7 @@ Deno.serve(async (req) => {
         booked.forEach(lead => {
           const ind = (lead.industries && lead.industries[0]) || null;
           const match = ind ? pricing.find(p => p.industry === ind) : null;
-          calculatedAmount += (match ? (match.price_per_set || 0) : 0);
+          calculatedAmount += (match ? (match.price_per_set || 0) : (client.price_per_set_appointment || 0));
         });
       }
 
