@@ -378,13 +378,13 @@ Deno.serve(async (req) => {
           cLeads.filter(l => l.disposition === 'showed' && inMTD(l.appointment_date)).forEach(lead => {
             const ind = (lead.industries && lead.industries[0]) || null;
             const match = ind ? pricing.find(p => p.industry === ind) : null;
-            hybridPerformanceRevenue += match ? (match.price_per_show || 0) : 0;
+            hybridPerformanceRevenue += match ? (match.price_per_show || 0) : (client.price_per_shown_appointment || 0);
           });
         } else if (perfType === 'pay_per_set') {
           cLeads.filter(l => l.date_appointment_set && inMTD(l.date_appointment_set)).forEach(lead => {
             const ind = (lead.industries && lead.industries[0]) || null;
             const match = ind ? pricing.find(p => p.industry === ind) : null;
-            hybridPerformanceRevenue += match ? (match.price_per_set || 0) : 0;
+            hybridPerformanceRevenue += match ? (match.price_per_set || 0) : (client.price_per_set_appointment || 0);
           });
         }
       });
