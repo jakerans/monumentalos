@@ -158,6 +158,7 @@ export default function ExpenseManager({ startDate, endDate, onAddExpense }) {
   const [selected, setSelected] = useState(new Set());
   const [bulkDeleting, setBulkDeleting] = useState(false);
   const [showDistributions, setShowDistributions] = useState(false);
+  const [refundExpense, setRefundExpense] = useState(null);
 
   // Debounce search input
   useEffect(() => {
