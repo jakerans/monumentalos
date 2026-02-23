@@ -309,24 +309,55 @@ export default function ExpenseManager({ startDate, endDate, onAddExpense }) {
 
       {/* Bulk action bar */}
       {selected.size > 0 && (
-        <div className="bg-red-500/10 border border-red-500/30 rounded-lg px-4 py-2.5 space-y-2">
-          <div className="flex items-center gap-3">
-            <span className="text-xs font-medium text-red-400">{selected.size} selected</span>
+        <div className="bg-slate-800/80 border border-slate-600/50 rounded-lg px-4 py-3 space-y-2">
+          <div className="flex items-center gap-2 flex-wrap">
+            <span className="text-xs font-medium text-white">{selected.size} selected</span>
+
+            <button
+              onClick={handleBulkApprove}
+              className="px-3 py-1.5 text-xs font-medium bg-emerald-600 text-white rounded-md hover:bg-emerald-700 flex items-center gap-1.5"
+            >
+              <CheckCircle className="w-3.5 h-3.5" />
+              Approve
+            </button>
+
+            <BulkDropdown
+              label="Set Category"
+              options={Object.entries(CATEGORY_LABELS).map(([k, v]) => ({ value: k, label: v }))}
+              onSelect={(val) => handleBulkUpdate('category', val)}
+              colorMap={CATEGORY_COLORS}
+            />
+
+            <BulkDropdown
+              label="Set Type"
+              options={[
+                { value: 'cogs', label: 'COGS' },
+                { value: 'overhead', label: 'Overhead' },
+                { value: 'distribution', label: 'Distribution' },
+              ]}
+              onSelect={(val) => handleBulkUpdate('expense_type', val)}
+              colorMap={TYPE_COLORS}
+            />
+
             <button
               onClick={handleBulkDelete}
               disabled={bulkDeleting}
-              className="px-3 py-1.5 text-xs font-medium bg-red-600 text-white rounded-md hover:bg-red-700 disabled:opacity-50 flex items-center gap-1"
+              className="px-3 py-1.5 text-xs font-medium bg-red-600/80 text-white rounded-md hover:bg-red-700 disabled:opacity-50 flex items-center gap-1.5 ml-auto"
             >
               {bulkDeleting ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Trash2 className="w-3.5 h-3.5" />}
-              {bulkDeleting ? 'Deleting...' : 'Delete Selected'}
+              Delete
             </button>
-            <button onClick={() => { setSelected(new Set()); setSelectAllMode(null); }} className="text-xs text-slate-400 hover:text-white ml-auto">Clear</button>
+
+            <button onClick={() => { setSelected(new Set()); setSelectAllMode(null); }} className="text-xs text-slate-400 hover:text-white">
+              Clear
+            </button>
           </div>
+
           {selectAllMode === 'page' && totalFiltered > expenses.length && (
             <div className="text-xs text-slate-400">
-              All {expenses.length} on this page selected.{' '}
-              <button onClick={handleSelectAllFiltered} className="text-[#D6FF03] hover:underline font-medium">
-                Select all {totalFiltered} expenses matching filters
+              All {expenses.length} on this page selected.
+              <button onClick={handleSelectAllFiltered} className="ml-1 text-[#D6FF03] hover:underline">
+                Select all {totalFiltered} matching expenses
               </button>
             </div>
           )}
