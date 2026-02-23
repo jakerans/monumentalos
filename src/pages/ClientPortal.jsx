@@ -9,6 +9,7 @@ import LeadDetailsDrawer from '../components/LeadDetailsDrawer';
 import AppointmentCard from '../components/client/AppointmentCard';
 import QuickOutcomeModal from '../components/client/QuickOutcomeModal';
 import OutstandingInvoiceAlert from '../components/client/OutstandingInvoiceAlert';
+import RetainerPortalView from '../components/client/RetainerPortalView';
 import PageErrorBoundary from '../components/shared/PageErrorBoundary';
 import PageLoader from '../components/shared/PageLoader';
 import ClientSidebar from '../components/client/ClientSidebar';
@@ -102,7 +103,7 @@ export default function ClientPortal() {
   return (
     <PageErrorBoundary>
     <div className="min-h-screen bg-[#0B0F1A] flex">
-      <ClientSidebar user={user} currentPage="ClientPortal" />
+      <ClientSidebar user={user} currentPage="ClientPortal" isRetainer={isRetainer} />
 
       {/* Mobile top bar spacer */}
       <div className="md:hidden h-14 shrink-0" />
@@ -129,7 +130,19 @@ export default function ClientPortal() {
         </div>
         {clientId && <OutstandingInvoiceAlert clientId={clientId} />}
 
-        <div className={`grid ${isRetainer ? 'grid-cols-2 md:grid-cols-5' : 'grid-cols-2 md:grid-cols-4'} gap-2 sm:gap-4 mb-6 sm:mb-8`}>
+        {isRetainer ? (
+          <RetainerPortalView
+            kpis={kpis}
+            leads={activeLeads}
+            pagination={pagination}
+            page={page}
+            onPageChange={handlePageChange}
+            onSelectLead={(id) => { setSelectedLeadId(id); setDrawerOpen(true); }}
+            onDisqualify={handleDisqualify}
+          />
+        ) : (
+        <>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-2 sm:gap-4 mb-6 sm:mb-8">
           <div className="bg-slate-800/50 rounded-lg shadow p-3 sm:p-5 border border-slate-700/50">
             <div className="flex items-center gap-1.5 sm:gap-2 mb-1">
               <Calendar className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-blue-400" />
@@ -158,20 +171,11 @@ export default function ClientPortal() {
             </div>
             <p className="text-lg sm:text-3xl font-bold text-red-400">{kpis.needsOutcomeCount}</p>
           </div>
-          {isRetainer && (
-            <div className="bg-slate-800/50 rounded-lg shadow p-3 sm:p-5 border border-slate-700/50">
-              <div className="flex items-center gap-1.5 sm:gap-2 mb-1">
-                <Ban className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-slate-400" />
-                <p className="text-[10px] sm:text-sm font-medium text-slate-400">Disqualified</p>
-              </div>
-              <p className="text-lg sm:text-3xl font-bold text-white">{kpis.disqualifiedCount}</p>
-            </div>
-          )}
         </div>
 
         {/* Mobile card view */}
         <div className="md:hidden space-y-3">
-          <h2 className="text-xl font-bold text-white">{isRetainer ? 'All Leads' : 'My Appointments'}</h2>
+          <h2 className="text-xl font-bold text-white">My Appointments</h2>
           {activeLeads.length === 0 ? (
             <div className="bg-slate-800/50 rounded-lg shadow border border-slate-700/50 p-6 text-center text-slate-500">No active appointments</div>
           ) : (
@@ -181,7 +185,7 @@ export default function ClientPortal() {
                   lead={lead}
                   onSelect={(id) => { setSelectedLeadId(id); setDrawerOpen(true); }}
                   needsOutcome={lead._needsOutcome}
-                  onQuickOutcome={!isRetainer ? setQuickOutcomeLead : undefined}
+                  onQuickOutcome={setQuickOutcomeLead}
                 />
               </div>
             ))
@@ -191,7 +195,7 @@ export default function ClientPortal() {
         {/* Desktop table view */}
         <div className="hidden md:block bg-slate-800/50 rounded-lg shadow border border-slate-700/50">
           <div className="px-6 py-4 border-b border-slate-700/50">
-            <h2 className="text-xl font-bold text-white">{isRetainer ? 'All Leads' : 'My Appointments'}</h2>
+            <h2 className="text-xl font-bold text-white">My Appointments</h2>
           </div>
           <div className="overflow-x-auto">
             <table className="w-full">
@@ -199,18 +203,17 @@ export default function ClientPortal() {
                 <tr>
                   <th className="px-6 py-3 text-left text-xs font-medium text-slate-400 uppercase">Lead Name</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-slate-400 uppercase">Contact</th>
-                  {isRetainer && <th className="px-6 py-3 text-left text-xs font-medium text-slate-400 uppercase">Status</th>}
                   <th className="px-6 py-3 text-left text-xs font-medium text-slate-400 uppercase">Appointment Date</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-slate-400 uppercase">Disposition</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-slate-400 uppercase">Outcome</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-slate-400 uppercase">Revenue</th>
-                  {!isRetainer && <th className="px-6 py-3 text-left text-xs font-medium text-slate-400 uppercase"></th>}
-                  </tr>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-slate-400 uppercase"></th>
+                </tr>
               </thead>
               <tbody className="divide-y divide-slate-700/30">
                 {activeLeads.length === 0 ? (
                   <tr>
-                    <td colSpan={isRetainer ? 7 : 6} className="px-6 py-8 text-center text-slate-500">No active leads</td>
+                    <td colSpan={7} className="px-6 py-8 text-center text-slate-500">No active leads</td>
                   </tr>
                 ) : (
                   activeLeads.map((lead) => {
@@ -229,19 +232,6 @@ export default function ClientPortal() {
                         <div>{lead.email}</div>
                         <div>{lead.phone}</div>
                       </td>
-                      {isRetainer && (
-                        <td className="px-6 py-4">
-                          <span className={`px-2 py-1 text-xs font-medium rounded-full ${
-                            lead.status === 'new' ? 'bg-blue-500/15 text-blue-400' :
-                            lead.status === 'first_call_made' ? 'bg-amber-500/15 text-amber-400' :
-                            lead.status === 'contacted' ? 'bg-cyan-500/15 text-cyan-400' :
-                            lead.status === 'appointment_booked' ? 'bg-green-500/15 text-green-400' :
-                            'bg-slate-700 text-slate-400'
-                          }`}>
-                            {lead.status === 'first_call_made' ? 'First Call' : (lead.status || 'new').replace(/_/g, ' ')}
-                          </span>
-                        </td>
-                      )}
                       <td className="px-6 py-4 text-sm text-slate-400">
                         {lead.appointment_date ? new Date(lead.appointment_date).toLocaleString() : '—'}
                       </td>
@@ -275,19 +265,17 @@ export default function ClientPortal() {
                           <span className="text-sm text-gray-400">—</span>
                         )}
                       </td>
-                      {!isRetainer && (
-                        <td className="px-6 py-4">
-                          {isNeedsOutcome && (
-                            <button
-                              onClick={(e) => { e.stopPropagation(); setQuickOutcomeLead(lead); }}
-                              className="px-3 py-1 text-xs font-bold text-black rounded-full hover:opacity-90 transition-opacity"
-                              style={{ backgroundColor: '#D6FF03' }}
-                            >
-                              Update Outcome
-                            </button>
-                          )}
-                        </td>
-                      )}
+                      <td className="px-6 py-4">
+                        {isNeedsOutcome && (
+                          <button
+                            onClick={(e) => { e.stopPropagation(); setQuickOutcomeLead(lead); }}
+                            className="px-3 py-1 text-xs font-bold text-black rounded-full hover:opacity-90 transition-opacity"
+                            style={{ backgroundColor: '#D6FF03' }}
+                          >
+                            Update Outcome
+                          </button>
+                        )}
+                      </td>
                     </tr>
                     );
                   })
@@ -333,6 +321,8 @@ export default function ClientPortal() {
               </button>
             </div>
           </div>
+        )}
+        </>
         )}
 
         <LeadDetailsDrawer

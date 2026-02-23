@@ -4,14 +4,14 @@ import { createPageUrl } from '@/utils';
 import { base44 } from '@/api/base44Client';
 import { Calendar, History, Settings, Menu, X, LogOut, BarChart2 } from 'lucide-react';
 
-const NAV_ITEMS = [
-  { label: 'My Appointments', page: 'ClientPortal', icon: Calendar },
+const BASE_NAV_ITEMS = [
+  { label: 'My Appointments', retainerLabel: 'My Leads', page: 'ClientPortal', icon: Calendar },
   { label: 'Appointment History', page: 'AppointmentHistory', icon: History },
   { label: 'Performance Report', page: 'ClientReport', icon: BarChart2 },
   { label: 'Settings', page: 'ClientSettings', icon: Settings },
 ];
 
-export default function ClientSidebar({ user, currentPage }) {
+export default function ClientSidebar({ user, currentPage, isRetainer = false }) {
   const navigate = useNavigate();
   const [mobileOpen, setMobileOpen] = useState(false);
 
@@ -26,7 +26,8 @@ export default function ClientSidebar({ user, currentPage }) {
 
       {/* Nav links */}
       <nav className="flex-1 px-3 py-4 space-y-0.5">
-        {NAV_ITEMS.map(({ label, page, icon: Icon }) => {
+        {BASE_NAV_ITEMS.map(({ label, retainerLabel, page, icon: Icon }) => {
+          const displayLabel = isRetainer && retainerLabel ? retainerLabel : label;
           const active = currentPage === page;
           return (
             <Link
@@ -41,7 +42,7 @@ export default function ClientSidebar({ user, currentPage }) {
               style={active ? { backgroundColor: '#D6FF03' } : {}}
             >
               <Icon className="w-4 h-4 shrink-0" />
-              {label}
+              {displayLabel}
             </Link>
           );
         })}
