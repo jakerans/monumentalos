@@ -206,8 +206,9 @@ Deno.serve(async (req) => {
 
     const totalAccruedPayroll = accruedSalary + accruedPerfPay;
 
-    const recordedExpensesMTD = expenses.filter(e => inMTD(e.date) && e.expense_type !== 'distribution').reduce((s, e) => s + (e.amount || 0), 0);
-    const recordedCogsMTD = expenses.filter(e => inMTD(e.date) && e.expense_type === 'cogs').reduce((s, e) => s + (e.amount || 0), 0);
+    const effAmt = (e) => e.is_refunded ? 0 : ((e.amount || 0) - (e.refund_amount || 0));
+    const recordedExpensesMTD = expenses.filter(e => inMTD(e.date) && e.expense_type !== 'distribution').reduce((s, e) => s + effAmt(e), 0);
+    const recordedCogsMTD = expenses.filter(e => inMTD(e.date) && e.expense_type === 'cogs').reduce((s, e) => s + effAmt(e), 0);
 
     const totalAccruedExpenses = Math.max(totalAccruedPayroll, recordedExpensesMTD);
     const accruedGrossProfit = projectedRevenue - Math.max(totalAccruedPayroll * cogsRatio, recordedCogsMTD);
@@ -410,8 +411,8 @@ Deno.serve(async (req) => {
       });
       const collected = paidBillingRecords.filter(b => rangeFn(b.paid_date)).reduce((s, b) => s + (b.paid_amount || b.calculated_amount || 0), 0);
       const rangeExpenses = expenses.filter(e => rangeFn(e.date) && e.expense_type !== 'distribution');
-      const cogs = rangeExpenses.filter(e => e.expense_type === 'cogs').reduce((s, e) => s + (e.amount || 0), 0);
-      const overhead = rangeExpenses.filter(e => e.expense_type === 'overhead').reduce((s, e) => s + (e.amount || 0), 0);
+      const cogs = rangeExpenses.filter(e => e.expense_type === 'cogs').reduce((s, e) => s + effAmt(e), 0);
+      const overhead = rangeExpenses.filter(e => e.expense_type === 'overhead').reduce((s, e) => s + effAmt(e), 0);
       const grossProfit = grossRevenue - cogs;
       const netProfit = collected - cogs - overhead;
       const grossMargin = grossRevenue > 0 ? (grossProfit / grossRevenue) * 100 : 0;
@@ -424,10 +425,10 @@ Deno.serve(async (req) => {
 
     // ========== Stat Compare (Income vs Expenses) ==========
     const mtdIncome = paidBillingRecords.filter(b => inMTD(b.paid_date)).reduce((s, b) => s + (b.paid_amount || b.calculated_amount || 0), 0);
-    const mtdExpenses = expenses.filter(e => inMTD(e.date) && e.expense_type !== 'distribution').reduce((s, e) => s + (e.amount || 0), 0);
+    const mtdExpenses = expenses.filter(e => inMTD(e.date) && e.expense_type !== 'distribution').reduce((s, e) => s + effAmt(e), 0);
     const lmIncome = paidBillingRecords.filter(b => inLM(b.paid_date)).reduce((s, b) => s + (b.paid_amount || b.calculated_amount || 0), 0);
-    const lmExpenses = expenses.filter(e => inLM(e.date) && e.expense_type !== 'distribution').reduce((s, e) => s + (e.amount || 0), 0);
-    const cogsTotal = expenses.filter(e => inMTD(e.date) && e.expense_type === 'cogs').reduce((s, e) => s + (e.amount || 0), 0);
+    const lmExpenses = expenses.filter(e => inLM(e.date) && e.expense_type !== 'distribution').reduce((s, e) => s + effAmt(e), 0);
+    const cogsTotal = expenses.filter(e => inMTD(e.date) && e.expense_type === 'cogs').reduce((s, e) => s + effAmt(e), 0);
     const overheadTotal = mtdExpenses - cogsTotal;
     const chartData14 = (() => {
       const now2 = new Date();
@@ -438,7 +439,7 @@ Deno.serve(async (req) => {
         const dayStr = d.toISOString().split('T')[0];
         const dayLabel = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
         const dayBillingIncome = paidBillingRecords.filter(b => (b.paid_date || '').startsWith(dayStr)).reduce((s, b) => s + (b.paid_amount || b.calculated_amount || 0), 0);
-        const dayExpense = expenses.filter(e => (e.date || '').startsWith(dayStr) && e.expense_type !== 'distribution').reduce((s, e) => s + (e.amount || 0), 0);
+        const dayExpense = expenses.filter(e => (e.date || '').startsWith(dayStr) && e.expense_type !== 'distribution').reduce((s, e) => s + effAmt(e), 0);
         data.push({ label: dayLabel, income: dayBillingIncome, expenses: dayExpense });
       }
       return data;
