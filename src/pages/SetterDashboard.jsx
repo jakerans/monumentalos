@@ -231,6 +231,13 @@ export default function SetterDashboard() {
       newStats.bookedCount = newPipeline.bookedLeads.length;
       newStats.dqCount = newPipeline.dqLeads.length;
 
+      if (targetColumn === 'bookedLeads' && sourceColumn !== 'bookedLeads') {
+        newStats.mtdBooked = (old.stats.mtdBooked || 0) + 1;
+      }
+      if (sourceColumn === 'newLeads' && targetColumn !== 'newLeads') {
+        newStats.mtdCalls = (old.stats.mtdCalls || 0) + 1;
+      }
+
       return { ...old, pipeline: newPipeline, stats: newStats };
     });
   };
