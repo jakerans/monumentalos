@@ -625,7 +625,7 @@ export default function ExpenseManager({ startDate, endDate, onAddExpense }) {
             <div className="w-5 h-5 border-2 border-[#D6FF03]/40 border-t-[#D6FF03] rounded-full animate-spin" />
           </div>
         )}
-        <div className="overflow-x-auto">
+        <div className="overflow-x-hidden">
           <table className="w-full text-xs" style={{ tableLayout: 'fixed' }}>
             <colgroup>
               <col style={{ width: '32px' }} />
