@@ -286,18 +286,25 @@ export default function ExpenseManager({ startDate, endDate, onAddExpense }) {
     });
   };
 
-  const handleBulkUpdate = async (field, value) => {
+  const handleBulkUpdate = (field, value) => {
     const ids = [...selected];
-    if (!window.confirm(`Set ${field === 'category' ? 'category' : 'type'} to "${value}" for ${ids.length} expense${ids.length > 1 ? 's' : ''}?`)) return;
-    const CHUNK = 10;
-    for (let i = 0; i < ids.length; i += CHUNK) {
-      const chunk = ids.slice(i, i + CHUNK);
-      await Promise.all(chunk.map(id => base44.entities.Expense.update(id, { [field]: value })));
-    }
-    toast({ title: `${ids.length} Expense${ids.length > 1 ? 's' : ''} Updated`, variant: 'success' });
-    setSelected(new Set());
-    setSelectAllMode(null);
-    refetch();
+    const fieldLabel = field === 'category' ? 'category' : 'type';
+    setConfirmAction({
+      title: `Update ${fieldLabel}`,
+      description: `Set ${fieldLabel} to "${value}" for ${ids.length} expense${ids.length > 1 ? 's' : ''}?`,
+      variant: 'default',
+      onConfirm: async () => {
+        const CHUNK = 10;
+        for (let i = 0; i < ids.length; i += CHUNK) {
+          const chunk = ids.slice(i, i + CHUNK);
+          await Promise.all(chunk.map(id => base44.entities.Expense.update(id, { [field]: value })));
+        }
+        toast({ title: `${ids.length} Expense${ids.length > 1 ? 's' : ''} Updated`, variant: 'success' });
+        setSelected(new Set());
+        setSelectAllMode(null);
+        refetch();
+      },
+    });
   };
 
   const handleBulkDelete = async () => {
