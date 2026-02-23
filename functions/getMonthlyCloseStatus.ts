@@ -20,9 +20,10 @@ Deno.serve(async (req) => {
     const monthEnd = new Date(year, month, 0).toISOString().split('T')[0];
 
     // Run all queries in parallel
-    const [expByCat, expByType, allBilling, allClients, closedSettings] = await Promise.all([
+    const [expByCat, expByType, allMonthExpenses, allBilling, allClients, closedSettings] = await Promise.all([
       sr.Expense.filter({ category: 'uncategorized' }, '-date', 5000),
       sr.Expense.filter({ expense_type: 'uncategorized' }, '-date', 5000),
+      sr.Expense.filter({}, '-date', 5000),
       sr.MonthlyBilling.filter({ billing_month: targetMonth }, '-billing_month', 1000),
       sr.Client.list(),
       sr.CompanySettings.filter({ key: 'closed_month' }, '-created_date', 200),
