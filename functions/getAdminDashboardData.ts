@@ -143,8 +143,27 @@ Deno.serve(async (req) => {
         cLeads.filter(l => l.date_appointment_set && inMTD(l.date_appointment_set)).forEach(l => { liveAccruals += getLeadPrice(client, l, 'price_per_set'); });
       } else if (bt === 'retainer') {
         liveAccruals += (client.retainer_amount || 0);
+      } else if (bt === 'hybrid') {
+        // Base retainer portion
+        liveAccruals += (client.hybrid_base_retainer || 0);
+        // Performance portion
+        const perfType = client.hybrid_performance_type || 'pay_per_set';
+        const hybridPricing = client.hybrid_performance_pricing || [];
+        if (perfType === 'pay_per_show') {
+          cLeads.filter(l => l.disposition === 'showed' && inMTD(l.appointment_date)).forEach(l => {
+            const ind = (l.industries && l.industries[0]) || null;
+            const match = ind ? hybridPricing.find(p => p.industry === ind) : null;
+            liveAccruals += match ? (match.price_per_show || 0) : (client.price_per_shown_appointment || 0);
+          });
+        } else {
+          cLeads.filter(l => l.date_appointment_set && inMTD(l.date_appointment_set)).forEach(l => {
+            const ind = (l.industries && l.industries[0]) || null;
+            const match = ind ? hybridPricing.find(p => p.industry === ind) : null;
+            liveAccruals += match ? (match.price_per_set || 0) : (client.price_per_set_appointment || 0);
+          });
+        }
       }
-    });
+      });
 
     const projectedRevenue = lastMonthUnpaid + liveAccruals;
     const unbilledRevenue = Math.max(0, projectedRevenue - realizedRevenue);
@@ -405,16 +424,16 @@ Deno.serve(async (req) => {
             cLeads.filter(l => l.disposition === 'showed' && rangeFn(l.appointment_date)).forEach(lead => {
               const ind = (lead.industries && lead.industries[0]) || null;
               const match = ind ? pricing.find(p => p.industry === ind) : null;
-              grossRevenue += match ? (match.price_per_show || 0) : 0;
+              grossRevenue += match ? (match.price_per_show || 0) : (client.price_per_shown_appointment || 0);
             });
           } else if (perfType === 'pay_per_set') {
             cLeads.filter(l => l.date_appointment_set && rangeFn(l.date_appointment_set)).forEach(lead => {
               const ind = (lead.industries && lead.industries[0]) || null;
               const match = ind ? pricing.find(p => p.industry === ind) : null;
-              grossRevenue += match ? (match.price_per_set || 0) : 0;
+              grossRevenue += match ? (match.price_per_set || 0) : (client.price_per_set_appointment || 0);
             });
           }
-        }
+          }
       });
       const collected = paidBillingRecords.filter(b => rangeFn(b.paid_date)).reduce((s, b) => s + (b.paid_amount || b.calculated_amount || 0), 0);
       const rangeExpenses = expenses.filter(e => rangeFn(e.date) && e.expense_type !== 'distribution');

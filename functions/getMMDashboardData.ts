@@ -115,14 +115,33 @@ Deno.serve(async (req) => {
       if (bt === 'pay_per_show') {
         cLeads.filter(l =>
           l.appointment_date && l.appointment_date >= mtdStr &&
-          (l.disposition === 'showed' || l.outcome === 'sold' || l.outcome === 'lost')
+          l.disposition === 'showed'
         ).forEach(l => { billableRevenue += getLeadPrice(client, l, 'price_per_show'); });
       } else if (bt === 'pay_per_set') {
         cLeads.filter(l => l.date_appointment_set && l.date_appointment_set >= mtdStr).forEach(l => { billableRevenue += getLeadPrice(client, l, 'price_per_set'); });
       } else if (bt === 'retainer') {
         billableRevenue += (client.retainer_amount || 0);
+      } else if (bt === 'hybrid') {
+        // Base retainer portion
+        billableRevenue += (client.hybrid_base_retainer || 0);
+        // Performance portion
+        const perfType = client.hybrid_performance_type || 'pay_per_set';
+        const hybridPricing = client.hybrid_performance_pricing || [];
+        if (perfType === 'pay_per_show') {
+          cLeads.filter(l => l.disposition === 'showed' && l.appointment_date >= mtdStr).forEach(l => {
+            const ind = (l.industries && l.industries[0]) || null;
+            const match = ind ? hybridPricing.find(p => p.industry === ind) : null;
+            billableRevenue += match ? (match.price_per_show || 0) : (client.price_per_shown_appointment || 0);
+          });
+        } else {
+          cLeads.filter(l => l.date_appointment_set && l.date_appointment_set >= mtdStr).forEach(l => {
+            const ind = (l.industries && l.industries[0]) || null;
+            const match = ind ? hybridPricing.find(p => p.industry === ind) : null;
+            billableRevenue += match ? (match.price_per_set || 0) : (client.price_per_set_appointment || 0);
+          });
+        }
       }
-    });
+      });
 
     const livePerfPlans = perfPlans.map(plan => {
       if (plan.metric === 'revenue') {
