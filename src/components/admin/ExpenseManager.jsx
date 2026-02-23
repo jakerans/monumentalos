@@ -628,7 +628,7 @@ function SortableHeader({ field, label, current, dir, onClick, align = 'left' })
   );
 }
 
-function ExpenseRow({ expense: e, clients, bankAccounts, bankAccountMap, onUpdate, onDelete, onApproveAI, selected, onToggleSelect }) {
+function ExpenseRow({ expense: e, clients, bankAccounts, bankAccountMap, onUpdate, onDelete, onApproveAI, onAcceptDraft, selected, onToggleSelect }) {
   const categoryOptions = Object.entries(CATEGORY_LABELS).map(([k, v]) => ({ value: k, label: v }));
   const typeOptions = [{ value: 'uncategorized', label: 'Uncategorized' }, { value: 'cogs', label: 'COGS' }, { value: 'overhead', label: 'Overhead' }, { value: 'distribution', label: 'Distribution' }];
   const clientOptions = [{ value: '', label: 'None' }, ...clients.map(c => ({ value: c.id, label: c.name }))];
@@ -636,8 +636,50 @@ function ExpenseRow({ expense: e, clients, bankAccounts, bankAccountMap, onUpdat
 
   const hasPendingAI = !e.ai_approved && e.suggested_category;
 
+  const [draftCategory, setDraftCategory] = useState(
+    hasPendingAI ? (e.suggested_category || e.category || 'uncategorized') : (e.category || 'uncategorized')
+  );
+  const [draftType, setDraftType] = useState(
+    hasPendingAI ? (e.suggested_type || e.expense_type || 'uncategorized') : (e.expense_type || 'uncategorized')
+  );
+  const [draftVendor, setDraftVendor] = useState(e.vendor || '');
+  const [draftClient, setDraftClient] = useState(e.client_id || '');
+  const [accepted, setAccepted] = useState(false);
+
+  useEffect(() => {
+    if (hasPendingAI) {
+      setDraftCategory(e.suggested_category || e.category || 'uncategorized');
+      setDraftType(e.suggested_type || e.expense_type || 'uncategorized');
+    } else {
+      setDraftCategory(e.category || 'uncategorized');
+      setDraftType(e.expense_type || 'uncategorized');
+    }
+    setDraftVendor(e.vendor || '');
+    setDraftClient(e.client_id || '');
+    setAccepted(false);
+  }, [e.id, e.category, e.expense_type, e.vendor, e.client_id, e.suggested_category, e.suggested_type]);
+
+  const handleAccept = () => {
+    const update = {
+      category: draftCategory,
+      expense_type: draftType,
+      vendor: draftVendor,
+      suggested_category: '',
+      suggested_type: '',
+      ai_approved: true,
+    };
+    if (draftClient !== (e.client_id || '')) {
+      update.client_id = draftClient || undefined;
+    }
+    setAccepted(true);
+    onAcceptDraft(e.id, update);
+  };
+
   return (
-    <tr className={`hover:bg-slate-700/20 transition-colors group ${hasPendingAI ? 'bg-yellow-500/8 border-l-2 border-l-yellow-500/50' : ''} ${selected ? 'bg-red-500/5' : ''}`}>
+    <tr className={`hover:bg-slate-700/20 transition-colors group ${
+      accepted ? 'opacity-50' :
+      hasPendingAI ? 'bg-yellow-500/8 border-l-2 border-l-yellow-500/50' : ''
+    } ${selected ? 'bg-red-500/5' : ''}`}>
       <td className="px-2 py-2 text-center">
         <button onClick={onToggleSelect}>
           {selected ? <CheckSquare className="w-3.5 h-3.5 text-red-400" /> : <Square className="w-3.5 h-3.5 text-slate-600 group-hover:text-slate-400" />}
@@ -647,51 +689,55 @@ function ExpenseRow({ expense: e, clients, bankAccounts, bankAccountMap, onUpdat
         <InlineEditCell value={e.date || ''} displayValue={dayjs(e.date).format('MMM D, YYYY')} field="date" expenseId={e.id} onUpdate={onUpdate} type="date" />
       </td>
       <td className="px-3 py-2">
-        <InlineEditCell
-          value={e.category || 'uncategorized'}
-          displayValue={
-            <div>
-              <span className={`px-1.5 py-0.5 text-[10px] font-medium rounded border ${CATEGORY_COLORS[e.category] || CATEGORY_COLORS.other}`}>
-                {CATEGORY_LABELS[e.category] || e.category || 'Uncategorized'}
-              </span>
-              {hasPendingAI && e.suggested_category && (
-                <span className="text-[8px] text-yellow-400/60 block mt-0.5 leading-none">AI: {CATEGORY_LABELS[e.suggested_category] || e.suggested_category}</span>
-              )}
-            </div>
-          }
-          field="category"
-          expenseId={e.id}
-          onUpdate={onUpdate}
-          options={categoryOptions}
-        />
+        {hasPendingAI && !accepted ? (
+          <DraftDropdown
+            value={draftCategory}
+            onChange={setDraftCategory}
+            options={categoryOptions}
+            colorMap={CATEGORY_COLORS}
+            labelMap={CATEGORY_LABELS}
+            isAISuggested={draftCategory === e.suggested_category}
+          />
+        ) : (
+          <InlineEditCell value={e.category || 'uncategorized'} displayValue={<span className={`px-1.5 py-0.5 text-[10px] font-medium rounded border ${CATEGORY_COLORS[e.category] || CATEGORY_COLORS.other}`}>{CATEGORY_LABELS[e.category] || e.category}</span>} field="category" expenseId={e.id} onUpdate={onUpdate} options={categoryOptions} />
+        )}
       </td>
       <td className="px-3 py-2">
-        <InlineEditCell
-          value={e.expense_type || 'uncategorized'}
-          displayValue={
-            <div>
-              <span className={`px-1.5 py-0.5 text-[10px] font-medium rounded border ${TYPE_COLORS[e.expense_type] || TYPE_COLORS.overhead}`}>
-                {TYPE_LABELS[e.expense_type] || e.expense_type || 'Uncat'}
-              </span>
-              {hasPendingAI && e.suggested_type && (
-                <span className="text-[8px] text-yellow-400/60 block mt-0.5 leading-none">AI: {TYPE_LABELS[e.suggested_type] || e.suggested_type}</span>
-              )}
-            </div>
-          }
-          field="expense_type"
-          expenseId={e.id}
-          onUpdate={onUpdate}
-          options={typeOptions}
-        />
+        {hasPendingAI && !accepted ? (
+          <DraftDropdown
+            value={draftType}
+            onChange={setDraftType}
+            options={typeOptions}
+            colorMap={TYPE_COLORS}
+            labelMap={TYPE_LABELS}
+            isAISuggested={draftType === e.suggested_type}
+          />
+        ) : (
+          <InlineEditCell value={e.expense_type || 'uncategorized'} displayValue={<span className={`px-1.5 py-0.5 text-[10px] font-medium rounded border ${TYPE_COLORS[e.expense_type] || TYPE_COLORS.overhead}`}>{TYPE_LABELS[e.expense_type] || e.expense_type}</span>} field="expense_type" expenseId={e.id} onUpdate={onUpdate} options={typeOptions} />
+        )}
       </td>
       <td className="px-3 py-2 text-white">
         <InlineEditCell value={e.description || ''} displayValue={<span className="truncate block">{e.description || '—'}</span>} field="description" expenseId={e.id} onUpdate={onUpdate} />
       </td>
       <td className="px-3 py-2 text-slate-400">
-        <InlineEditCell value={e.vendor || ''} displayValue={<span className="truncate block">{e.vendor || '—'}</span>} field="vendor" expenseId={e.id} onUpdate={onUpdate} />
+        {hasPendingAI && !accepted ? (
+          <DraftTextCell value={draftVendor} onChange={setDraftVendor} />
+        ) : (
+          <InlineEditCell value={e.vendor || ''} displayValue={<span className="truncate block">{e.vendor || '—'}</span>} field="vendor" expenseId={e.id} onUpdate={onUpdate} />
+        )}
       </td>
       <td className="px-3 py-2 text-slate-400">
-        <InlineEditCell value={e.client_id || ''} displayValue={<span className="truncate block">{e.client_name || '—'}</span>} field="client_id" expenseId={e.id} onUpdate={onUpdate} options={clientOptions} />
+        {hasPendingAI && !accepted ? (
+          <DraftDropdown
+            value={draftClient}
+            onChange={setDraftClient}
+            options={clientOptions}
+            colorMap={{}}
+            labelMap={{}}
+          />
+        ) : (
+          <InlineEditCell value={e.client_id || ''} displayValue={<span className="truncate block">{e.client_name || '—'}</span>} field="client_id" expenseId={e.id} onUpdate={onUpdate} options={clientOptions} />
+        )}
       </td>
       <td className="px-3 py-2 text-slate-400">
         <InlineEditCell value={e.bank_account_id || ''} displayValue={<span className="truncate block">{bankAccountMap[e.bank_account_id] || '—'}</span>} field="bank_account_id" expenseId={e.id} onUpdate={onUpdate} options={bankAccountOptions} />
@@ -701,11 +747,12 @@ function ExpenseRow({ expense: e, clients, bankAccounts, bankAccountMap, onUpdat
       </td>
       <td className="px-3 py-2 text-center">
         <div className="flex items-center justify-center gap-1">
-          {hasPendingAI && (
-            <button onClick={() => onApproveAI(e)} title="Approve AI suggestion" className="p-1 text-yellow-500 hover:text-green-400 transition-all">
-              <CheckCircle className="w-3.5 h-3.5" />
+          {hasPendingAI && !accepted && (
+            <button onClick={handleAccept} title="Accept & save" className="p-1 text-emerald-400 hover:text-emerald-300 transition-all">
+              <CheckCircle className="w-4 h-4" />
             </button>
           )}
+          {accepted && <Check className="w-4 h-4 text-emerald-500" />}
           <button onClick={onDelete} className="p-1 text-slate-600 opacity-0 group-hover:opacity-100 hover:text-red-400 transition-all"><Trash2 className="w-3 h-3" /></button>
         </div>
       </td>
