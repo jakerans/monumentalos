@@ -650,7 +650,13 @@ export default function ExpenseManager({ startDate, endDate, onAddExpense }) {
         )}
       </div>
     </div>
-  
+
+    <RefundModal
+      expense={refundExpense}
+      open={!!refundExpense}
+      onClose={() => setRefundExpense(null)}
+      onRefunded={refetch}
+    />
   );
 }
 
