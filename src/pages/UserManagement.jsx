@@ -8,6 +8,7 @@ import AdminSidebar from '../components/admin/AdminSidebar';
 import AdminMobileNav from '../components/admin/AdminMobileNav';
 import UserTable from '../components/admin/UserTable';
 import InviteUserModal from '../components/admin/InviteUserModal';
+import ConnectUserModal from '../components/admin/ConnectUserModal';
 import PageErrorBoundary from '../components/shared/PageErrorBoundary';
 import PageLoader from '../components/shared/PageLoader';
 
@@ -16,6 +17,8 @@ export default function UserManagement() {
   const [user, setUser] = useState(null);
   const [inviteOpen, setInviteOpen] = useState(false);
   const [roleFilter, setRoleFilter] = useState('all');
+  const [connectOpen, setConnectOpen] = useState(false);
+  const [employees, setEmployees] = useState([]);
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -43,9 +46,23 @@ export default function UserManagement() {
     retryDelay: (attempt) => Math.min(1000 * 2 ** attempt, 10000),
   });
 
+  const { data: employeeList } = useQuery({
+    queryKey: ['employees-for-connect'],
+    queryFn: async () => {
+      const res = await base44.entities.Employee.list('', 500);
+      return res;
+    },
+  });
+
   const users = mgmtData?.users || [];
   const clients = mgmtData?.clients || [];
   const refetchUsers = refetchAll;
+
+  React.useEffect(() => {
+    if (employeeList) {
+      setEmployees(employeeList);
+    }
+  }, [employeeList]);
 
   if (!user) return null;
   if (usersLoading) return <PageLoader message="Loading users..." />;

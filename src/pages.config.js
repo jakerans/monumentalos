@@ -67,6 +67,7 @@ import FinanceAdminDashboard from './pages/FinanceAdminDashboard';
 import HealthMonitor from './pages/HealthMonitor';
 import LeadDetails from './pages/LeadDetails';
 import LeadFieldSettings from './pages/LeadFieldSettings';
+import LeadManager from './pages/LeadManager';
 import LootAdmin from './pages/LootAdmin';
 import MMDashboard from './pages/MMDashboard';
 import MMOnboard from './pages/MMOnboard';
@@ -78,7 +79,6 @@ import SetterPerformance from './pages/SetterPerformance';
 import SetterStats from './pages/SetterStats';
 import ShiftChecklistSettings from './pages/ShiftChecklistSettings';
 import UserManagement from './pages/UserManagement';
-import LeadManager from './pages/LeadManager';
 import __Layout from './Layout.jsx';
 
 
@@ -103,6 +103,7 @@ export const PAGES = {
     "HealthMonitor": HealthMonitor,
     "LeadDetails": LeadDetails,
     "LeadFieldSettings": LeadFieldSettings,
+    "LeadManager": LeadManager,
     "LootAdmin": LootAdmin,
     "MMDashboard": MMDashboard,
     "MMOnboard": MMOnboard,
@@ -114,7 +115,6 @@ export const PAGES = {
     "SetterStats": SetterStats,
     "ShiftChecklistSettings": ShiftChecklistSettings,
     "UserManagement": UserManagement,
-    "LeadManager": LeadManager,
 }
 
 export const pagesConfig = {
