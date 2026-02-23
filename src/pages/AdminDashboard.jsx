@@ -18,6 +18,7 @@ import InfoTooltip from '../components/shared/InfoTooltip';
 import PageErrorBoundary from '../components/shared/PageErrorBoundary';
 import PageLoader from '../components/shared/PageLoader';
 import AdminDashboardSkeleton from '../components/admin/AdminDashboardSkeleton';
+import BugReportWidget from '../components/shared/BugReportWidget';
 import { toast } from '@/components/ui/use-toast';
 import { motion } from 'framer-motion';
 import { useAutoAnimate } from '@formkit/auto-animate/react';
@@ -207,6 +208,8 @@ export default function AdminDashboard() {
 
       <GoalManagementModal open={goalsOpen} onOpenChange={setGoalsOpen} goals={goals} onSaved={refetchDash} />
       <AdminMobileNav currentPage="AdminDashboard" clients={clients} user={user} />
+
+      <BugReportWidget user={user} />
     </div>
     </PageErrorBoundary>
   );
