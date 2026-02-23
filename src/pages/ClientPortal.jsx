@@ -42,7 +42,16 @@ export default function ClientPortal() {
           else if (appRole === 'marketing_manager') navigate(createPageUrl('MMDashboard'));
           else if (appRole === 'onboard_admin') navigate(createPageUrl('OnboardDashboard'));
           else navigate(createPageUrl('AdminDashboard'));
+          return;
         }
+
+        // Check if client user has linked client_id — redirect to onboarding if not
+        if (appRole === 'client' && !currentUser.client_id) {
+          navigate(createPageUrl('ClientOnboarding'));
+          return;
+        }
+
+        setUser(currentUser);
       } catch (error) {
         base44.auth.redirectToLogin();
       }
