@@ -44,7 +44,7 @@ Deno.serve(async (req) => {
     let totalSharedCogs = 0;
     let totalSharedOverhead = 0;
     for (const e of sharedExpenses) {
-      const amt = e.amount || 0;
+      const amt = e.is_refunded ? 0 : ((e.amount || 0) - (e.refund_amount || 0));
       if (e.expense_type === 'cogs') totalSharedCogs += amt;
       else if (e.expense_type === 'overhead') totalSharedOverhead += amt;
     }
@@ -84,7 +84,10 @@ Deno.serve(async (req) => {
       }, 0);
 
       const clientExpenses = expensesByClient[client.id] || [];
-      const clientCosts = clientExpenses.reduce((sum, e) => sum + (e.amount || 0), 0);
+      const clientCosts = clientExpenses.reduce((sum, e) => {
+        const amt = e.is_refunded ? 0 : ((e.amount || 0) - (e.refund_amount || 0));
+        return sum + amt;
+      }, 0);
 
       const sharedCogs = perClientSharedCogs;
       const sharedOverhead = perClientSharedOverhead;
