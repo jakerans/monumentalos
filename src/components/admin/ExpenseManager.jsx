@@ -527,6 +527,91 @@ function InlineEditCell({ value, displayValue, field, expenseId, onUpdate, type 
   );
 }
 
+function DraftDropdown({ value, onChange, options, colorMap = {}, labelMap = {}, isAISuggested = false }) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef(null);
+
+  useEffect(() => {
+    if (!open) return;
+    const handler = (ev) => {
+      if (ref.current && !ref.current.contains(ev.target)) setOpen(false);
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, [open]);
+
+  const displayLabel = labelMap[value] || options.find(o => o.value === value)?.label || value;
+  const colorClass = colorMap[value] || 'bg-slate-500/15 text-slate-400 border-slate-500/30';
+
+  return (
+    <div className="relative" ref={ref}>
+      <button onClick={() => setOpen(!open)} className="flex items-center gap-1">
+        <span className={`px-1.5 py-0.5 text-[10px] font-medium rounded border cursor-pointer hover:ring-1 hover:ring-[#D6FF03]/40 transition-all ${colorClass}`}>
+          {displayLabel}
+        </span>
+        {isAISuggested && (
+          <span className="px-1 py-0.5 text-[7px] font-bold bg-yellow-500/20 text-yellow-400 border border-yellow-500/30 rounded leading-none">AI</span>
+        )}
+      </button>
+      {open && (
+        <div className="absolute top-full left-0 mt-1 bg-slate-800 border border-[#D6FF03]/50 rounded-lg shadow-xl z-50 py-1 max-h-48 overflow-y-auto min-w-[140px]">
+          {options.map(o => (
+            <button
+              key={o.value}
+              onMouseDown={(ev) => {
+                ev.preventDefault();
+                onChange(o.value);
+                setOpen(false);
+              }}
+              className={`w-full text-left px-3 py-1.5 text-xs transition-colors flex items-center gap-2 ${
+                o.value === value
+                  ? 'bg-[#D6FF03]/10 text-[#D6FF03] font-medium'
+                  : 'text-slate-300 hover:bg-slate-700/50 hover:text-white'
+              }`}
+            >
+              {colorMap[o.value] ? (
+                <span className={`px-1.5 py-0.5 text-[10px] font-medium rounded border ${colorMap[o.value]}`}>{o.label}</span>
+              ) : (
+                o.label
+              )}
+              {o.value === value && <Check className="w-3 h-3 ml-auto shrink-0" />}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function DraftTextCell({ value, onChange }) {
+  const [editing, setEditing] = useState(false);
+  const inputRef = useRef(null);
+
+  useEffect(() => {
+    if (editing && inputRef.current) inputRef.current.focus();
+  }, [editing]);
+
+  if (!editing) {
+    return (
+      <div onClick={() => setEditing(true)} className="cursor-pointer rounded px-1 -mx-1 hover:bg-slate-600/30 transition-colors">
+        <span className="truncate block">{value || '—'}</span>
+      </div>
+    );
+  }
+
+  return (
+    <input
+      ref={inputRef}
+      type="text"
+      value={value}
+      onChange={(ev) => onChange(ev.target.value)}
+      onBlur={() => setEditing(false)}
+      onKeyDown={(ev) => { if (ev.key === 'Enter' || ev.key === 'Escape') setEditing(false); }}
+      className="w-full min-w-0 px-1 py-0.5 text-xs bg-slate-900 border border-[#D6FF03]/50 rounded text-white outline-none"
+    />
+  );
+}
+
 function SortableHeader({ field, label, current, dir, onClick, align = 'left' }) {
   const active = current === field;
   const Icon = active ? (dir === 'asc' ? ArrowUp : ArrowDown) : ArrowUpDown;
