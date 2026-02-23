@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { UserPlus } from 'lucide-react';
+import { toast } from '@/components/ui/use-toast';
 import {
   Dialog,
   DialogContent,
@@ -40,9 +41,19 @@ export default function AddLeadModal({ open, onOpenChange, clients, onAdd, userI
     setLoading(true);
 
     const leadData = {
-      ...form,
+      name: form.name,
+      client_id: form.client_id,
+      lead_source: form.lead_source,
       lead_received_date: new Date().toISOString(),
     };
+
+    if (form.phone?.trim()) leadData.phone = form.phone.trim();
+    if (form.email?.trim()) leadData.email = form.email.trim();
+    if (form.notes?.trim()) leadData.notes = form.notes.trim();
+    if (form.project_type) leadData.project_type = form.project_type;
+    if (form.project_size) leadData.project_size = form.project_size;
+    if (form.timeline?.trim()) leadData.timeline = form.timeline.trim();
+    if (form.industries?.length > 0) leadData.industries = form.industries;
 
     if (isBooked && appointmentDate) {
       leadData.status = 'appointment_booked';
@@ -52,12 +63,17 @@ export default function AddLeadModal({ open, onOpenChange, clients, onAdd, userI
       if (userId) leadData.booked_by_setter_id = userId;
     }
 
-    await onAdd(leadData);
-    setLoading(false);
-    setForm({ name: '', phone: '', email: '', client_id: '', lead_source: '', industries: [], notes: '', project_type: '', project_size: '', timeline: '' });
-    setIsBooked(false);
-    setAppointmentDate('');
-    onOpenChange(false);
+    try {
+      await onAdd(leadData);
+      setForm({ name: '', phone: '', email: '', client_id: '', lead_source: '', industries: [], notes: '', project_type: '', project_size: '', timeline: '' });
+      setIsBooked(false);
+      setAppointmentDate('');
+      onOpenChange(false);
+    } catch (err) {
+      console.error('Lead create failed:', err);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const update = (field, value) => setForm(f => ({ ...f, [field]: value }));
