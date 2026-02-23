@@ -159,6 +159,24 @@ export default function MonthlyClosePanel() {
                 )}
               </div>
 
+              {/* AI pending review */}
+              <div className="flex items-start gap-3 py-2">
+                {aiPendingCount === 0 ? (
+                  <>
+                    <CheckCircle2 className="w-5 h-5 text-emerald-400 shrink-0 mt-0.5" />
+                    <span className="text-sm text-slate-300">All AI categorizations reviewed</span>
+                  </>
+                ) : (
+                  <>
+                    <AlertTriangle className="w-5 h-5 text-purple-400 shrink-0 mt-0.5" />
+                    <div>
+                      <span className="text-sm text-slate-300">{aiPendingCount} AI-categorized expense{aiPendingCount !== 1 ? 's' : ''} need review</span>
+                      <Link to={createPageUrl('AccountingExpenses')} className="ml-2 text-xs font-medium hover:underline" style={{ color: '#D6FF03' }}>Review now →</Link>
+                    </div>
+                  </>
+                )}
+              </div>
+
               {/* Billing */}
               <div className="flex items-start gap-3 py-2">
                 {missingBillingCount === 0 ? (
