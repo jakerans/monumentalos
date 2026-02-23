@@ -8,7 +8,6 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import IndustryPicker from '../shared/IndustryPicker';
-import { ProjectSizeSelect, ProjectTypeSelect } from '../shared/LeadFieldSelects';
 
 const SOURCE_OPTIONS = [
   { value: 'form', label: 'Form' },
@@ -27,8 +26,6 @@ export default function AddLeadModal({ open, onOpenChange, clients, onAdd, userI
     lead_source: '',
     industries: [],
     notes: '',
-    project_type: '',
-    project_size: '',
   });
   const [isBooked, setIsBooked] = useState(false);
   const [appointmentDate, setAppointmentDate] = useState('');
@@ -54,8 +51,6 @@ export default function AddLeadModal({ open, onOpenChange, clients, onAdd, userI
     if (form.phone?.trim()) leadData.phone = form.phone.trim();
     if (form.email?.trim()) leadData.email = form.email.trim();
     if (form.notes?.trim()) leadData.notes = form.notes.trim();
-    if (form.project_type) leadData.project_type = form.project_type;
-    if (form.project_size) leadData.project_size = form.project_size;
     if (form.industries?.length > 0) leadData.industries = form.industries;
 
     if (isBooked && appointmentDate) {
@@ -71,7 +66,7 @@ export default function AddLeadModal({ open, onOpenChange, clients, onAdd, userI
 
     try {
       await onAdd(leadData);
-      setForm({ name: '', phone: '', email: '', client_id: '', lead_source: '', industries: [], notes: '', project_type: '', project_size: '' });
+      setForm({ name: '', phone: '', email: '', client_id: '', lead_source: '', industries: [], notes: '' });
       setIsBooked(false);
       setAppointmentDate('');
       setChatSTL('');
@@ -221,23 +216,6 @@ export default function AddLeadModal({ open, onOpenChange, clients, onAdd, userI
                     <p className="text-[10px] text-slate-500 mt-1">Time between lead's first message and appointment booking</p>
                   </div>
                 )}
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <label className="block text-xs font-medium text-slate-300 mb-1">Project Type</label>
-                    <ProjectTypeSelect
-                      value={form.project_type}
-                      onChange={(v) => update('project_type', v)}
-                      industries={form.industries}
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-medium text-slate-300 mb-1">Project Size</label>
-                    <ProjectSizeSelect
-                      value={form.project_size}
-                      onChange={(v) => update('project_size', v)}
-                    />
-                  </div>
-                </div>
               </div>
             )}
           </div>
