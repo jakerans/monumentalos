@@ -40,6 +40,7 @@ const adminSections = [
       { key: 'EmployeeManagement', label: 'Scheduling', icon: Calendar },
       { key: 'SetterPerformance', label: 'Setter Management', icon: Headset },
       { key: 'SetterStats', label: 'Setter Reporting', icon: LineChart },
+      { key: 'LeadManager', label: 'Lead Management', icon: Users },
       { key: 'LootAdmin', label: 'Loot System', icon: Gift },
     ],
   },

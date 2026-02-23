@@ -66,6 +66,9 @@ export default function SetterDashboard() {
   const [checklistVisible, setChecklistVisible] = useState(false);
   const [reactivateLead, setReactivateLead] = useState(null);
   const [reactivateOpen, setReactivateOpen] = useState(false);
+  const [deleteRequestLead, setDeleteRequestLead] = useState(null);
+  const [deleteRequestOpen, setDeleteRequestOpen] = useState(false);
+  const [deleteReason, setDeleteReason] = useState('');
   const prevRankRef = useRef(null);
   const [animateRef] = useAutoAnimate({ duration: 350, easing: 'ease-out' });
 
@@ -266,6 +269,33 @@ export default function SetterDashboard() {
       setDqOpen(true);
     } else if (action === 'reactivate') {
       handleReactivate(lead);
+    } else if (action === 'request_delete') {
+      handleRequestDelete(lead);
+    }
+  };
+
+  const handleRequestDelete = (lead) => {
+    setDeleteRequestLead(lead);
+    setDeleteReason('');
+    setDeleteRequestOpen(true);
+  };
+
+  const handleSubmitDeleteRequest = async () => {
+    if (!deleteRequestLead) return;
+    try {
+      await base44.entities.Lead.update(deleteRequestLead.id, {
+        deletion_requested: true,
+        deletion_reason: deleteReason.trim() || 'No reason provided',
+        deletion_requested_by: user.id,
+        deletion_requested_date: new Date().toISOString(),
+      });
+      toast({ title: 'Deletion Requested', description: `Admin will review your request for ${deleteRequestLead.name}.`, variant: 'success' });
+      setDeleteRequestOpen(false);
+      setDeleteRequestLead(null);
+      setDeleteReason('');
+      refetch();
+    } catch (err) {
+      toast({ title: 'Request failed', description: err?.message || 'Unknown error', variant: 'destructive' });
     }
   };
 
@@ -854,6 +884,36 @@ export default function SetterDashboard() {
           <AlertDialogFooter className="mt-2">
             <AlertDialogCancel className="bg-slate-800 border-slate-600 text-slate-300 hover:bg-slate-700">Cancel</AlertDialogCancel>
           </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <AlertDialog open={deleteRequestOpen} onOpenChange={(open) => { if (!open) { setDeleteRequestOpen(false); setDeleteRequestLead(null); } }}>
+        <AlertDialogContent className="bg-slate-900 border-slate-700 text-white max-w-sm">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-white text-base">Request Lead Deletion</AlertDialogTitle>
+            <AlertDialogDescription className="text-slate-400 text-sm">
+              This sends a request to admin to delete <span className="text-white font-medium">{deleteRequestLead?.name}</span>. The lead will remain in the pipeline until approved.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <div className="mt-2">
+            <label className="block text-xs text-slate-400 mb-1">Reason (optional)</label>
+            <textarea
+              value={deleteReason}
+              onChange={(e) => setDeleteReason(e.target.value)}
+              rows={2}
+              className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-sm text-white placeholder-slate-500 resize-none focus:outline-none focus:ring-2 focus:ring-red-500"
+              placeholder="e.g. Test lead, duplicate, wrong client..."
+            />
+          </div>
+          <div className="flex gap-2 mt-3">
+            <button
+              onClick={handleSubmitDeleteRequest}
+              className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 font-medium text-sm transition-colors"
+            >
+              Submit Request
+            </button>
+            <AlertDialogCancel className="bg-slate-800 border-slate-600 text-slate-300 hover:bg-slate-700">Cancel</AlertDialogCancel>
+          </div>
         </AlertDialogContent>
       </AlertDialog>
     </div>

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Phone, Mail, Building2, Calendar, Clock, Briefcase, Ruler, DollarSign, Tag, User, Ban } from 'lucide-react';
+import { Phone, Mail, Building2, Calendar, Clock, Briefcase, Ruler, DollarSign, Tag, User, Ban, Trash2, AlertTriangle } from 'lucide-react';
 import {
   Sheet,
   SheetContent,
@@ -195,8 +195,26 @@ export default function LeadDetailPanel({ lead, clientName, setterName, bookedBy
           <div className="pt-3 border-t border-gray-100">
             <p className="text-[11px] text-gray-400">Created: {new Date(lead.created_date).toLocaleString()}</p>
           </div>
-        </div>
-      </SheetContent>
-    </Sheet>
-  );
-}
+
+          {/* Deletion Request */}
+          {lead.deletion_requested ? (
+            <div className="mt-4 pt-3 border-t border-gray-200">
+              <p className="text-xs text-amber-500 flex items-center gap-1">
+                <AlertTriangle className="w-3 h-3" /> Deletion requested — awaiting admin approval
+              </p>
+            </div>
+          ) : (
+            <div className="mt-4 pt-3 border-t border-gray-200">
+              <button
+                onClick={() => onAction('request_delete', lead)}
+                className="text-xs text-slate-400 hover:text-red-400 transition-colors flex items-center gap-1"
+              >
+                <Trash2 className="w-3 h-3" /> Request Deletion
+              </button>
+            </div>
+          )}
+          </div>
+          </SheetContent>
+          </Sheet>
+          );
+          }
