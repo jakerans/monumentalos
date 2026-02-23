@@ -166,9 +166,36 @@ export default function AddEmployeeModal({ open, onOpenChange, onAdd }) {
 
           <div><label className={labelCls}>Notes</label><textarea className={inputCls + " h-16"} value={form.notes} onChange={e => set('notes', e.target.value)} /></div>
 
+          {form.email?.trim() && (
+            <div className="flex items-start gap-3 p-3 rounded-lg border border-blue-200 bg-blue-50">
+              <input
+                type="checkbox"
+                checked={form.send_invite}
+                onChange={(e) => set('send_invite', e.target.checked)}
+                className="mt-0.5 rounded border-gray-300"
+                id="send-invite-check"
+              />
+              <div>
+                <label htmlFor="send-invite-check" className="text-sm font-medium text-gray-800 cursor-pointer">
+                  Send app invitation
+                </label>
+                <p className="text-[11px] text-gray-500 mt-0.5">
+                  {form.email} will receive an email to create their account and log into the app as <strong>{ROLES.find(r => r.value === form.app_role)?.label || form.app_role}</strong>.
+                </p>
+              </div>
+            </div>
+          )}
+
           <div className="flex justify-end gap-2 pt-2">
             <button type="button" onClick={() => onOpenChange(false)} className="px-4 py-2 text-sm border border-slate-700 text-slate-300 rounded-lg hover:bg-slate-800">Cancel</button>
-            <button type="submit" className="px-4 py-2 text-sm font-bold text-black rounded-lg hover:opacity-90" style={{ backgroundColor: '#D6FF03' }}>Add Employee</button>
+            <button
+              type="submit"
+              disabled={saving}
+              className="w-full py-2 text-sm font-bold rounded-lg text-black hover:opacity-90 disabled:opacity-50 transition-opacity"
+              style={{ backgroundColor: '#D6FF03' }}
+            >
+              {saving ? 'Adding...' : form.send_invite && form.email?.trim() ? 'Add Employee & Send Invite' : 'Add Employee'}
+            </button>
           </div>
         </form>
       </DialogContent>
