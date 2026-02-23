@@ -559,12 +559,42 @@ function ExpenseRow({ expense: e, clients, bankAccounts, bankAccountMap, onUpdat
         <InlineEditCell value={e.date || ''} displayValue={dayjs(e.date).format('MMM D, YYYY')} field="date" expenseId={e.id} onUpdate={onUpdate} type="date" />
       </td>
       <td className="px-3 py-2">
-        <InlineEditCell value={e.category || 'other'} displayValue={<span className={`px-1.5 py-0.5 text-[10px] font-medium rounded border ${CATEGORY_COLORS[e.category] || CATEGORY_COLORS.other}`}>{CATEGORY_LABELS[e.category] || e.category}</span>} field="category" expenseId={e.id} onUpdate={onUpdate} options={categoryOptions} />
-        {hasPendingAI && <span className="text-[8px] text-yellow-400/60 mt-0.5 block">AI: {CATEGORY_LABELS[e.suggested_category] || e.suggested_category}</span>}
+        <InlineEditCell
+          value={e.category || 'uncategorized'}
+          displayValue={
+            <div>
+              <span className={`px-1.5 py-0.5 text-[10px] font-medium rounded border ${CATEGORY_COLORS[e.category] || CATEGORY_COLORS.other}`}>
+                {CATEGORY_LABELS[e.category] || e.category || 'Uncategorized'}
+              </span>
+              {hasPendingAI && e.suggested_category && (
+                <span className="text-[8px] text-yellow-400/60 block mt-0.5 leading-none">AI: {CATEGORY_LABELS[e.suggested_category] || e.suggested_category}</span>
+              )}
+            </div>
+          }
+          field="category"
+          expenseId={e.id}
+          onUpdate={onUpdate}
+          options={categoryOptions}
+        />
       </td>
       <td className="px-3 py-2">
-        <InlineEditCell value={e.expense_type || 'overhead'} displayValue={<span className={`px-1.5 py-0.5 text-[10px] font-medium rounded border ${TYPE_COLORS[e.expense_type] || TYPE_COLORS.overhead}`}>{TYPE_LABELS[e.expense_type] || 'OH'}</span>} field="expense_type" expenseId={e.id} onUpdate={onUpdate} options={typeOptions} />
-        {hasPendingAI && <span className="text-[8px] text-yellow-400/60 mt-0.5 block">AI: {TYPE_LABELS[e.suggested_type] || e.suggested_type}</span>}
+        <InlineEditCell
+          value={e.expense_type || 'uncategorized'}
+          displayValue={
+            <div>
+              <span className={`px-1.5 py-0.5 text-[10px] font-medium rounded border ${TYPE_COLORS[e.expense_type] || TYPE_COLORS.overhead}`}>
+                {TYPE_LABELS[e.expense_type] || e.expense_type || 'Uncat'}
+              </span>
+              {hasPendingAI && e.suggested_type && (
+                <span className="text-[8px] text-yellow-400/60 block mt-0.5 leading-none">AI: {TYPE_LABELS[e.suggested_type] || e.suggested_type}</span>
+              )}
+            </div>
+          }
+          field="expense_type"
+          expenseId={e.id}
+          onUpdate={onUpdate}
+          options={typeOptions}
+        />
       </td>
       <td className="px-3 py-2 text-white">
         <InlineEditCell value={e.description || ''} displayValue={<span className="truncate block">{e.description || '—'}</span>} field="description" expenseId={e.id} onUpdate={onUpdate} />
