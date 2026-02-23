@@ -35,21 +35,30 @@ Deno.serve(async (req) => {
     // Invite the user with basic 'user' role (role will be upgraded via PendingInvite on signup)
     const inviteRole = intended_role === 'admin' ? 'admin' : 'user';
     console.log('Inviting user:', email.trim(), 'with platform role:', inviteRole);
-    await base44.auth.inviteUser(email.trim(), inviteRole);
-    console.log('Invite sent successfully');
+    
+    let inviteSent = false;
+    try {
+      await base44.auth.inviteUser(email.trim(), inviteRole);
+      inviteSent = true;
+      console.log('Invite sent successfully');
+    } catch (inviteError) {
+      console.warn('Email invite failed:', inviteError.message);
+    }
 
     // Create a PendingInvite so the role is applied when the user signs up
-    if (intended_role !== 'admin') {
-      const inviteData = {
-        email: email.trim().toLowerCase(),
-        intended_role,
-        status: 'pending',
-      };
-      if (client_id) {
-        inviteData.client_id = client_id;
-      }
-      await base44.asServiceRole.entities.PendingInvite.create(inviteData);
-      console.log('PendingInvite created');
+    const inviteData = {
+      email: email.trim().toLowerCase(),
+      intended_role,
+      status: 'pending',
+    };
+    if (client_id) {
+      inviteData.client_id = client_id;
+    }
+    await base44.asServiceRole.entities.PendingInvite.create(inviteData);
+    console.log('PendingInvite created');
+
+    if (!inviteSent) {
+      console.warn('Note: Email invitation failed, but user record created. They can sign up normally.');
     }
 
     return Response.json({ success: true, email: email.trim(), intended_role, client_id });
