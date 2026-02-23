@@ -48,6 +48,21 @@ Deno.serve(async (req) => {
     // Mark invite as applied
     await base44.asServiceRole.entities.PendingInvite.update(invite.id, { status: 'applied' });
 
+    // Auto-link Employee record if one exists with matching email
+    try {
+      const matchingEmployees = await base44.asServiceRole.entities.Employee.filter({
+        email: user.email.toLowerCase(),
+      }, '-created_date', 10);
+
+      const unlinkable = matchingEmployees.find(e => !e.user_id);
+      if (unlinkable) {
+        await base44.asServiceRole.entities.Employee.update(unlinkable.id, { user_id: user.id });
+        console.log('Auto-linked Employee', unlinkable.id, 'to User', user.id);
+      }
+    } catch (linkErr) {
+      console.error('Employee auto-link failed (non-fatal):', linkErr.message);
+    }
+
     console.log('Successfully applied role:', invite.intended_role);
 
     return Response.json({
