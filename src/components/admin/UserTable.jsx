@@ -56,7 +56,9 @@ export default function UserTable({ users, clients = [], onUpdated }) {
   const saveRole = async (userId) => {
     const u = users.find(x => x.id === userId);
     setSaving(true);
-    await base44.entities.User.update(userId, { app_role: editRole });
+    await base44.functions.invoke('assignUserRoles', {
+      assignments: [{ user_id: userId, app_role: editRole }]
+    });
     setSaving(false);
     setEditingId(null);
     toast({ title: 'Role Updated', description: `${u?.full_name || 'User'} is now ${editRole}.`, variant: 'success' });
