@@ -568,6 +568,11 @@ export default function ExpenseManager({ startDate, endDate, onAddExpense }) {
                 <span className="text-slate-500">{dayjs(e.date).format('MMM D, YYYY')}{e.vendor ? ` · ${e.vendor}` : ''}</span>
                 <div className="flex items-center gap-1">
                   {hasPendingAI && <button onClick={() => handleApproveAI(e)} className="p-1 text-yellow-500 hover:text-green-400"><CheckCircle className="w-3.5 h-3.5" /></button>}
+                  {(e.is_refunded || e.refund_amount > 0) ? (
+                    <button onClick={() => handleUndoRefund(e)} title="Undo refund" className="p-1 text-amber-400"><Undo2 className="w-3 h-3" /></button>
+                  ) : (
+                    <button onClick={() => setRefundExpense(e)} title="Mark as refunded" className="p-1 text-slate-400 hover:text-emerald-400"><RotateCcw className="w-3 h-3" /></button>
+                  )}
                   <button onClick={() => handleDelete(e.id)} className="p-1 text-slate-600 hover:text-red-400"><Trash2 className="w-3 h-3" /></button>
                 </div>
               </div>
