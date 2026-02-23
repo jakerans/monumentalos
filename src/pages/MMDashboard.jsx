@@ -30,14 +30,30 @@ export default function MMDashboard() {
     const checkAuth = async () => {
       try {
         const currentUser = await base44.auth.me();
-        setUser(currentUser);
         const appRole = currentUser.app_role;
         if (!appRole) { navigate(createPageUrl('AccountPending')); return; }
         if (appRole !== 'marketing_manager' && appRole !== 'admin') {
           if (appRole === 'setter') navigate(createPageUrl('SetterDashboard'));
           else if (appRole === 'client') navigate(createPageUrl('ClientPortal'));
           else navigate(createPageUrl('AdminDashboard'));
+          return;
         }
+
+        // Check if marketing manager has linked Employee record — redirect to onboarding if not
+        if (appRole === 'marketing_manager') {
+          try {
+            const earningsCheck = await base44.functions.invoke('getSetterEarningsData');
+            if (earningsCheck.data?.no_employee_record === true) {
+              navigate(createPageUrl('EmployeeOnboarding'));
+              return;
+            }
+          } catch (err) {
+            // Don't block on check failure — let them through
+            console.error('Employee record check failed:', err);
+          }
+        }
+
+        setUser(currentUser);
       } catch (error) {
         base44.auth.redirectToLogin();
       }

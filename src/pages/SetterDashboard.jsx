@@ -82,7 +82,6 @@ export default function SetterDashboard() {
     const checkAuth = async () => {
       try {
         const currentUser = await base44.auth.me();
-        setUser(currentUser);
         const appRole = currentUser.app_role;
         if (!appRole) { navigate(createPageUrl('AccountPending')); return; }
         if (appRole !== 'setter' && appRole !== 'admin') {
@@ -90,7 +89,24 @@ export default function SetterDashboard() {
           else if (appRole === 'marketing_manager') navigate(createPageUrl('MMDashboard'));
           else if (appRole === 'onboard_admin') navigate(createPageUrl('OnboardDashboard'));
           else navigate(createPageUrl('AdminDashboard'));
+          return;
         }
+
+        // Check if setter has linked Employee record — redirect to onboarding if not
+        if (appRole === 'setter') {
+          try {
+            const earningsCheck = await base44.functions.invoke('getSetterEarningsData');
+            if (earningsCheck.data?.no_employee_record === true) {
+              navigate(createPageUrl('EmployeeOnboarding'));
+              return;
+            }
+          } catch (err) {
+            // Don't block on check failure — let them through
+            console.error('Employee record check failed:', err);
+          }
+        }
+
+        setUser(currentUser);
       } catch (error) {
         base44.auth.redirectToLogin();
       }
