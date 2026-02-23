@@ -3,6 +3,8 @@ import { base44 } from '@/api/base44Client';
 import { Phone, Search, X, ArrowLeft, Plus, Database, Loader2, FileText, HelpCircle, MessageSquare, Calendar, Mail, Copy, Check, Clock, User, AlertTriangle, ExternalLink } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import ReactMarkdown from 'react-markdown';
+import { toast } from '@/components/ui/use-toast';
+import { useQueryClient } from '@tanstack/react-query';
 
 const STATUS_COLORS = {
   new: 'bg-blue-500/20 text-blue-400',
@@ -249,6 +251,7 @@ function DialWorkspaceInner({ allLeads, clients, user, onClose, onAddLead, addLe
     }
   }, [debouncedQuery]);
 
+  const queryClient = useQueryClient();
   const [sop, setSop] = useState(null);
   const [sopLoading, setSopLoading] = useState(false);
   const notesRef = useRef(null);
@@ -285,6 +288,10 @@ function DialWorkspaceInner({ allLeads, clients, user, onClose, onAddLead, addLe
     setNotesSaving(true);
     try {
       await base44.entities.Lead.update(selectedLead.id, { notes: notesRef.current.value });
+      toast({ title: 'Notes saved', variant: 'success' });
+    } catch (err) {
+      console.error('Save notes failed:', err);
+      toast({ title: 'Failed to save notes', variant: 'destructive' });
     } finally {
       setNotesSaving(false);
     }
@@ -292,10 +299,17 @@ function DialWorkspaceInner({ allLeads, clients, user, onClose, onAddLead, addLe
 
   const handleMarkContacted = useCallback(async () => {
     if (!selectedLead) return;
-    await base44.entities.Lead.update(selectedLead.id, { status: 'contacted' });
-    // Optimistically update local lead
-    setSelectedLead(prev => ({ ...prev, status: 'contacted' }));
-  }, [selectedLead]);
+    try {
+      setSelectedLead(prev => ({ ...prev, status: 'contacted' }));
+      await base44.entities.Lead.update(selectedLead.id, { status: 'contacted' });
+      toast({ title: 'Marked Contacted', description: `${selectedLead.name} updated.`, variant: 'success' });
+      queryClient.invalidateQueries({ queryKey: ['setter-dashboard-data'] });
+    } catch (err) {
+      console.error('Mark contacted failed:', err);
+      toast({ title: 'Update failed', description: err?.message || 'Could not update lead', variant: 'destructive' });
+      setSelectedLead(prev => ({ ...prev, status: prev.status }));
+    }
+  }, [selectedLead, queryClient]);
 
   const handleSelectLead = useCallback((lead) => {
     setSelectedLead(lead);

@@ -14,12 +14,13 @@ function timeSince(dateStr) {
   return `${days}d ago`;
 }
 
-const SOURCE_LABELS = { form: 'Form', msg: 'MSG', quiz: 'Quiz', inbound_call: 'Inbound Call' };
+const SOURCE_LABELS = { form: 'Form', msg: 'MSG', quiz: 'Quiz', inbound_call: 'Inbound Call', agency: 'Agency' };
 const SOURCE_COLORS = {
   form: 'bg-indigo-100 text-indigo-700',
   msg: 'bg-sky-100 text-sky-700',
   quiz: 'bg-teal-100 text-teal-700',
   inbound_call: 'bg-orange-100 text-orange-700',
+  agency: 'bg-purple-100 text-purple-700',
 };
 
 const DQ_LABELS = {
