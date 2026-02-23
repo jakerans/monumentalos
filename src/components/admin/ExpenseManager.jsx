@@ -349,6 +349,8 @@ export default function ExpenseManager({ startDate, endDate, onAddExpense }) {
 
   if (isLoading && !data) return <ExpenseTabSkeleton />;
 
+
+
   const pageSwitching = isFetching && !!data;
 
   return (
