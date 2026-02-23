@@ -354,6 +354,7 @@ export default function ExpenseManager({ startDate, endDate, onAddExpense }) {
   const pageSwitching = isFetching && !!data;
 
   return (
+    <>
     <div className="space-y-4">
       {/* Unified toolbar */}
       <ExpenseToolbar
@@ -662,6 +663,7 @@ export default function ExpenseManager({ startDate, endDate, onAddExpense }) {
       onClose={() => setRefundExpense(null)}
       onRefunded={refetch}
     />
+    </>
   );
 }
 
