@@ -7,6 +7,14 @@ const SHEETS_API = 'https://sheets.googleapis.com/v4/spreadsheets';
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
+    const user = await base44.auth.me();
+    if (!user) {
+      return Response.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+    if (user.app_role !== 'admin') {
+      return Response.json({ error: 'Forbidden' }, { status: 403 });
+    }
+
     const accessToken = await base44.asServiceRole.connectors.getAccessToken('googlesheets');
     const gHeaders = { 'Authorization': `Bearer ${accessToken}` };
 
