@@ -56,9 +56,9 @@ Deno.serve(async (req) => {
     ninetyDaysAgo.setDate(ninetyDaysAgo.getDate() - 90);
     const ninetyDaysAgoISO = ninetyDaysAgo.toISOString();
 
-    const [clients, leads, spend, expenses, goals, billingRecords, users, spiffs] = await Promise.all([
+    const [clients, leadsRaw, spend, expenses, goals, billingRecords, users, spiffs] = await Promise.all([
       sr.Client.list(),
-      fetchAllFiltered(sr.Lead, { created_date: { $gte: ninetyDaysAgoISO } }, '-created_date'),
+      fetchAllFiltered(sr.Lead, {}, '-created_date'),
       fetchAll(sr.Spend, '-date'),
       fetchAllFiltered(sr.Expense, { date: { $gte: ninetyDaysAgo.toISOString().split('T')[0] } }, '-date'),
       sr.CompanyGoal.list(),
@@ -66,6 +66,13 @@ Deno.serve(async (req) => {
       sr.User.list(),
       fetchAllFiltered(sr.Spiff, { status: 'active' }, '-created_date'),
     ]);
+
+    // Filter to last 90 days in JS — Base44's $gte silently excludes app-created leads
+    const leads = leadsRaw.filter(l => {
+      const d = l.lead_received_date || l.created_date;
+      if (!d) return true;
+      return new Date(d) >= ninetyDaysAgo;
+    });
 
     const thisMonthStart = new Date(now.getFullYear(), now.getMonth(), 1);
     const lastMonthStart = new Date(now.getFullYear(), now.getMonth() - 1, 1);
