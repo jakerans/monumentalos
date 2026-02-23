@@ -19,7 +19,7 @@ export default function ConnectUserModal({ open, onOpenChange, user, employees, 
   }, [connectType, employees, clients]);
 
   const handleConnect = async () => {
-    if (!selectedId) return;
+    if (!selectedId || !user) return;
     
     setLinking(true);
     try {
