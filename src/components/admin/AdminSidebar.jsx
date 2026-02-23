@@ -52,7 +52,6 @@ const ADMIN_SECTIONS = {
       { key: 'LeadFieldSettings', label: 'Lead Settings', icon: Cog },
       { key: 'ShiftChecklistSettings', label: 'Shift Checklist', icon: ClipboardCheck },
       { key: 'HealthMonitor', label: 'Health Monitor', icon: Activity },
-      { key: 'PreviewEffects', label: 'Preview Effects', icon: Eye },
     ],
   },
 };
