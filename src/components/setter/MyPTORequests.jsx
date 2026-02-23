@@ -94,7 +94,7 @@ export default function MyPTORequests({ setterId }) {
                   )}
                   {r.offer_type === 'loot_boxes' && r.offer_quantity > 0 && (
                     <p className="text-[10px] text-slate-500">
-                      Offered: {r.offer_quantity} loot box{r.offer_quantity !== 1 ? 'es' : ''}
+                      Offered: {r.offer_quantity} booking reward{r.offer_quantity !== 1 ? 's' : ''}
                     </p>
                   )}
                   <TransferStatusLabel transferStatus={r.transfer_status} />

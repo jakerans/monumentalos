@@ -29,15 +29,15 @@ export default function PayrollTourGuide({ onStart, setRunPayrollModalOpen }) {
           element: '[data-tour="setter-bonuses-section"]',
           popover: {
             title: '🎁 Step 1 — Review Setter Bonuses',
-            description: 'Start here. This shows every setter who has pending loot prizes or completed spiffs from last month. Review the amounts before doing anything.',
+            description: 'Start here. This shows every setter who has pending booking reward prizes or completed spiffs from last month. Review the amounts before doing anything.',
             side: 'top',
           },
         },
         {
           element: '[data-tour="approve-for-payroll-btn"]',
           popover: {
-            title: 'Approve Loot Prizes',
-            description: "For each setter with loot prizes, click Approve for Payroll. This queues them — no expense is created yet, nothing is charged. Spiff totals load automatically and don't need approval.",
+            title: 'Approve Booking Reward Prizes',
+            description: "For each setter with booking reward prizes, click Approve for Payroll. This queues them — no expense is created yet, nothing is charged. Spiff totals load automatically and don't need approval.",
             side: 'top',
           },
         },
@@ -73,7 +73,7 @@ export default function PayrollTourGuide({ onStart, setRunPayrollModalOpen }) {
           element: '[data-tour="generate-preview-btn"]',
           popover: {
             title: '👁 Generate Preview',
-            description: 'Click Generate Preview when ready. The app pulls everything together — base pay, MM bonus, setter spiffs, and loot prizes. Nothing is saved yet.',
+            description: 'Click Generate Preview when ready. The app pulls everything together — base pay, MM bonus, setter spiffs, and booking reward prizes. Nothing is saved yet.',
             side: 'top',
           },
         },
