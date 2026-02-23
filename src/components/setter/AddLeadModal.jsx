@@ -175,6 +175,35 @@ export default function AddLeadModal({ open, onOpenChange, clients, onAdd, userI
             />
           </div>
 
+          {/* Optional qualification fields */}
+          <div className="grid grid-cols-3 gap-3">
+            <div>
+              <label className="block text-xs font-medium text-slate-300 mb-1">Project Type</label>
+              <ProjectTypeSelect
+                value={form.project_type}
+                onChange={(v) => update('project_type', v)}
+                industries={form.industries}
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-slate-300 mb-1">Project Size</label>
+              <ProjectSizeSelect
+                value={form.project_size}
+                onChange={(v) => update('project_size', v)}
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-slate-300 mb-1">Timeline</label>
+              <input
+                type="text"
+                value={form.timeline}
+                onChange={(e) => update('timeline', e.target.value)}
+                className="w-full px-3 py-2 border border-slate-700 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#D6FF03] bg-slate-800 text-white placeholder-slate-500"
+                placeholder="e.g. 2-3 months"
+              />
+            </div>
+          </div>
+
           {/* Appointment Booked Toggle */}
           <div className="border border-slate-700 rounded-lg p-3 space-y-3">
             <label className="flex items-center gap-3 cursor-pointer">
