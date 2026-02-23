@@ -3,13 +3,12 @@ import { base44 } from '@/api/base44Client';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Link, useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
-import { Calendar, CheckCircle, Clock, AlertTriangle, Ban, ChevronLeft, ChevronRight } from 'lucide-react';
 import { toast } from '@/components/ui/use-toast';
 import LeadDetailsDrawer from '../components/LeadDetailsDrawer';
-import AppointmentCard from '../components/client/AppointmentCard';
 import QuickOutcomeModal from '../components/client/QuickOutcomeModal';
 import OutstandingInvoiceAlert from '../components/client/OutstandingInvoiceAlert';
 import RetainerPortalView from '../components/client/RetainerPortalView';
+import PerformancePortalView from '../components/client/PerformancePortalView';
 import PageErrorBoundary from '../components/shared/PageErrorBoundary';
 import PageLoader from '../components/shared/PageLoader';
 import ClientSidebar from '../components/client/ClientSidebar';
@@ -141,188 +140,15 @@ export default function ClientPortal() {
             onDisqualify={handleDisqualify}
           />
         ) : (
-        <>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-2 sm:gap-4 mb-6 sm:mb-8">
-          <div className="bg-slate-800/50 rounded-lg shadow p-3 sm:p-5 border border-slate-700/50">
-            <div className="flex items-center gap-1.5 sm:gap-2 mb-1">
-              <Calendar className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-blue-400" />
-              <p className="text-[10px] sm:text-sm font-medium text-slate-400">Scheduled MTD</p>
-            </div>
-            <p className="text-lg sm:text-3xl font-bold text-white">{kpis.scheduledMTD}</p>
-          </div>
-          <div className="bg-slate-800/50 rounded-lg shadow p-3 sm:p-5 border border-slate-700/50">
-            <div className="flex items-center gap-1.5 sm:gap-2 mb-1">
-              <Clock className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-amber-400" />
-              <p className="text-[10px] sm:text-sm font-medium text-slate-400">Upcoming</p>
-            </div>
-            <p className="text-lg sm:text-3xl font-bold text-white">{kpis.upcomingCount}</p>
-          </div>
-          <div className="bg-slate-800/50 rounded-lg shadow p-3 sm:p-5 border border-slate-700/50">
-            <div className="flex items-center gap-1.5 sm:gap-2 mb-1">
-              <CheckCircle className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-green-400" />
-              <p className="text-[10px] sm:text-sm font-medium text-slate-400">Showed</p>
-            </div>
-            <p className="text-lg sm:text-3xl font-bold text-white">{kpis.showedMTD}</p>
-          </div>
-          <div className="bg-slate-800/50 rounded-lg shadow p-3 sm:p-5 border border-red-500/30" style={{ backgroundColor: kpis.needsOutcomeCount > 0 ? 'rgba(239,68,68,0.08)' : undefined }}>
-            <div className="flex items-center gap-1.5 sm:gap-2 mb-1">
-              <AlertTriangle className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-red-400" />
-              <p className="text-[10px] sm:text-sm font-medium text-red-400">Needs Outcome</p>
-            </div>
-            <p className="text-lg sm:text-3xl font-bold text-red-400">{kpis.needsOutcomeCount}</p>
-          </div>
-        </div>
-
-        {/* Mobile card view */}
-        <div className="md:hidden space-y-3">
-          <h2 className="text-xl font-bold text-white">My Appointments</h2>
-          {activeLeads.length === 0 ? (
-            <div className="bg-slate-800/50 rounded-lg shadow border border-slate-700/50 p-6 text-center text-slate-500">No active appointments</div>
-          ) : (
-            activeLeads.map((lead) => (
-              <div key={lead.id} className={lead._needsOutcome ? 'ring-1 ring-red-500/50 rounded-lg' : ''}>
-                <AppointmentCard
-                  lead={lead}
-                  onSelect={(id) => { setSelectedLeadId(id); setDrawerOpen(true); }}
-                  needsOutcome={lead._needsOutcome}
-                  onQuickOutcome={setQuickOutcomeLead}
-                />
-              </div>
-            ))
-          )}
-        </div>
-
-        {/* Desktop table view */}
-        <div className="hidden md:block bg-slate-800/50 rounded-lg shadow border border-slate-700/50">
-          <div className="px-6 py-4 border-b border-slate-700/50">
-            <h2 className="text-xl font-bold text-white">My Appointments</h2>
-          </div>
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead className="bg-slate-900/50">
-                <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-slate-400 uppercase">Lead Name</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-slate-400 uppercase">Contact</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-slate-400 uppercase">Appointment Date</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-slate-400 uppercase">Disposition</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-slate-400 uppercase">Outcome</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-slate-400 uppercase">Revenue</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-slate-400 uppercase"></th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-700/30">
-                {activeLeads.length === 0 ? (
-                  <tr>
-                    <td colSpan={7} className="px-6 py-8 text-center text-slate-500">No active leads</td>
-                  </tr>
-                ) : (
-                  activeLeads.map((lead) => {
-                    const isNeedsOutcome = lead._needsOutcome;
-                    return (
-                    <tr key={lead.id} onClick={() => { setSelectedLeadId(lead.id); setDrawerOpen(true); }} className={`cursor-pointer ${isNeedsOutcome ? 'bg-red-500/10 hover:bg-red-500/15' : 'hover:bg-slate-700/20'}`}>
-                      <td className="px-6 py-4">
-                        <span
-                          className={`font-medium ${isNeedsOutcome ? 'text-red-400' : 'text-blue-600'}`}
-                        >
-                          {lead.name}
-                          {isNeedsOutcome && <span className="ml-1.5 text-[10px] font-bold text-red-400 bg-red-500/15 px-1.5 py-0.5 rounded-full">NEEDS OUTCOME</span>}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 text-sm text-slate-400">
-                        <div>{lead.email}</div>
-                        <div>{lead.phone}</div>
-                      </td>
-                      <td className="px-6 py-4 text-sm text-slate-400">
-                        {lead.appointment_date ? new Date(lead.appointment_date).toLocaleString() : '—'}
-                      </td>
-                      <td className="px-6 py-4">
-                        {lead.disposition ? (
-                          <span className={`px-2 py-1 text-xs font-medium rounded-full ${
-                            lead.disposition === 'showed' ? 'bg-green-100 text-green-800' :
-                            lead.disposition === 'cancelled' ? 'bg-red-100 text-red-800' :
-                            lead.disposition === 'rescheduled' ? 'bg-purple-100 text-purple-800' :
-                            'bg-blue-100 text-blue-800'
-                          }`}>
-                            {lead.disposition}
-                          </span>
-                        ) : <span className="text-slate-600">—</span>}
-                      </td>
-                      <td className="px-6 py-4">
-                        {lead.outcome ? (
-                          <span className={`px-2 py-1 text-xs font-medium rounded-full ${
-                            lead.outcome === 'sold' ? 'bg-green-100 text-green-800' :
-                            lead.outcome === 'lost' ? 'bg-red-100 text-red-800' :
-                            'bg-yellow-100 text-yellow-800'
-                          }`}>
-                            {lead.outcome}
-                          </span>
-                        ) : <span className="text-slate-600">—</span>}
-                      </td>
-                      <td className="px-6 py-4">
-                        {lead.sale_amount > 0 ? (
-                          <span className="text-sm font-bold text-green-700">${lead.sale_amount.toLocaleString()}</span>
-                        ) : (
-                          <span className="text-sm text-gray-400">—</span>
-                        )}
-                      </td>
-                      <td className="px-6 py-4">
-                        {isNeedsOutcome && (
-                          <button
-                            onClick={(e) => { e.stopPropagation(); setQuickOutcomeLead(lead); }}
-                            className="px-3 py-1 text-xs font-bold text-black rounded-full hover:opacity-90 transition-opacity"
-                            style={{ backgroundColor: '#D6FF03' }}
-                          >
-                            Update Outcome
-                          </button>
-                        )}
-                      </td>
-                    </tr>
-                    );
-                  })
-                )}
-              </tbody>
-            </table>
-          </div>
-        </div>
-
-        {/* Pagination */}
-        {pagination.total_pages > 1 && (
-          <div className="flex items-center justify-between mt-4 px-1">
-            <p className="text-xs text-slate-500">
-              Showing {page * PAGE_SIZE + 1}–{Math.min((page + 1) * PAGE_SIZE, pagination.total_count)} of {pagination.total_count}
-            </p>
-            <div className="flex items-center gap-1">
-              <button
-                onClick={() => handlePageChange(page - 1)}
-                disabled={page === 0}
-                className="p-1.5 rounded-md text-slate-400 hover:text-white hover:bg-slate-700 disabled:opacity-30 disabled:cursor-not-allowed"
-              >
-                <ChevronLeft className="w-4 h-4" />
-              </button>
-              {Array.from({ length: pagination.total_pages }, (_, i) => (
-                <button
-                  key={i}
-                  onClick={() => handlePageChange(i)}
-                  className={`w-7 h-7 text-xs font-medium rounded-md ${
-                    i === page
-                      ? 'bg-[#D6FF03] text-black'
-                      : 'text-slate-400 hover:text-white hover:bg-slate-700'
-                  }`}
-                >
-                  {i + 1}
-                </button>
-              )).slice(Math.max(0, page - 2), Math.min(pagination.total_pages, page + 3))}
-              <button
-                onClick={() => handlePageChange(page + 1)}
-                disabled={!pagination.has_more}
-                className="p-1.5 rounded-md text-slate-400 hover:text-white hover:bg-slate-700 disabled:opacity-30 disabled:cursor-not-allowed"
-              >
-                <ChevronRight className="w-4 h-4" />
-              </button>
-            </div>
-          </div>
-        )}
-        </>
+          <PerformancePortalView
+            kpis={kpis}
+            leads={activeLeads}
+            pagination={pagination}
+            page={page}
+            onPageChange={handlePageChange}
+            onSelectLead={(id) => { setSelectedLeadId(id); setDrawerOpen(true); }}
+            onQuickOutcome={setQuickOutcomeLead}
+          />
         )}
 
         <LeadDetailsDrawer
