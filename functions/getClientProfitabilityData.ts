@@ -73,8 +73,6 @@ Deno.serve(async (req) => {
     let totalRevenue = 0;
     let totalCosts = 0;
     let totalNetProfit = 0;
-    let marginSum = 0;
-    let marginCount = 0;
 
     const clientResults = clients.map(client => {
       const clientBillings = billingsByClient[client.id] || [];
@@ -99,10 +97,6 @@ Deno.serve(async (req) => {
       totalRevenue += revenue;
       totalCosts += costs;
       totalNetProfit += netProfit;
-      if (margin !== null) {
-        marginSum += margin;
-        marginCount++;
-      }
 
       return {
         client_id: client.id,
@@ -126,7 +120,7 @@ Deno.serve(async (req) => {
         totalRevenue: Math.round(totalRevenue * 100) / 100,
         totalCosts: Math.round(totalCosts * 100) / 100,
         totalNetProfit: Math.round(totalNetProfit * 100) / 100,
-        avgMargin: marginCount > 0 ? Math.round((marginSum / marginCount) * 100) / 100 : null,
+        avgMargin: totalRevenue > 0 ? Math.round(((totalNetProfit / totalRevenue) * 100) * 100) / 100 : null,
         activeClientCount,
       },
       period: { start_date, end_date },
