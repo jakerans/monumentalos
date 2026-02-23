@@ -50,12 +50,19 @@ Deno.serve(async (req) => {
     ninetyDaysAgo.setDate(ninetyDaysAgo.getDate() - 90);
 
     // Fetch all data in parallel using service role with pagination safety
-    const [allLeads, clients, spiffs, profiles] = await Promise.all([
-      fetchAllFiltered(sr.Lead, { created_date: { $gte: ninetyDaysAgo.toISOString() } }, '-created_date'),
+    const [allLeadsRaw, clients, spiffs, profiles] = await Promise.all([
+      fetchAllFiltered(sr.Lead, {}, '-created_date'),
       sr.Client.list(),
       fetchAllFiltered(sr.Spiff, { status: 'active' }, '-created_date'),
       fetchAllFiltered(sr.SetterProfile, { status: 'active' }, '-created_date'),
     ]);
+
+    // Filter to last 90 days in JS — Base44's $gte filter silently excludes app-created leads
+    const allLeads = allLeadsRaw.filter(l => {
+      const d = l.lead_received_date || l.created_date;
+      if (!d) return true; // Include leads with no date rather than silently dropping them
+      return new Date(d) >= ninetyDaysAgo;
+    });
 
     // --- Helpers ---
     const inMTD = (d) => d && new Date(d) >= mtdStart;
