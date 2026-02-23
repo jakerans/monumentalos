@@ -6,17 +6,20 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import { ProjectSizeSelect, ProjectTypeSelect } from '../shared/LeadFieldSelects';
 
 export default function BookAppointmentModal({ lead, bookingLink, open, onOpenChange, onBook }) {
   const [date, setDate] = useState('');
   const [time, setTime] = useState('');
-  const [notes, setNotes] = useState('');
+  const [projectType, setProjectType] = useState('');
+  const [projectSize, setProjectSize] = useState('');
   const [loading, setLoading] = useState(false);
 
   const handleClose = () => {
     setDate('');
     setTime('');
-    setNotes('');
+    setProjectType('');
+    setProjectSize('');
     onOpenChange(false);
   };
 
@@ -25,7 +28,7 @@ export default function BookAppointmentModal({ lead, bookingLink, open, onOpenCh
     if (!date || !time) return;
     setLoading(true);
     const appointmentDate = new Date(`${date}T${time}`).toISOString();
-    await onBook(lead.id, appointmentDate, notes.trim() || undefined);
+    await onBook(lead.id, appointmentDate, projectType || undefined, projectSize || undefined);
     setLoading(false);
     handleClose();
   };
@@ -84,13 +87,19 @@ export default function BookAppointmentModal({ lead, bookingLink, open, onOpenCh
                 />
               </div>
 
-              <div className="flex-1 flex flex-col">
-                <label className="block text-sm font-medium text-gray-700 mb-1">Notes</label>
-                <textarea
-                  value={notes}
-                  onChange={(e) => setNotes(e.target.value)}
-                  className="flex-1 w-full px-3 py-2 border border-gray-300 rounded-lg text-sm resize-none focus:outline-none focus:ring-2 focus:ring-green-500 placeholder-gray-400"
-                  placeholder="Project details, conversation notes..."
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Project Type</label>
+                <ProjectTypeSelect
+                  value={projectType}
+                  onChange={setProjectType}
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Project Size</label>
+                <ProjectSizeSelect
+                  value={projectSize}
+                  onChange={setProjectSize}
                 />
               </div>
 
@@ -138,8 +147,18 @@ export default function BookAppointmentModal({ lead, bookingLink, open, onOpenCh
               <input type="time" value={time} onChange={(e) => setTime(e.target.value)} required className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 text-sm" />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Notes</label>
-              <textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows={3} className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm resize-none focus:outline-none focus:ring-2 focus:ring-green-500 placeholder-gray-400" placeholder="Project details, conversation notes..." />
+              <label className="block text-sm font-medium text-gray-700 mb-1">Project Type</label>
+              <ProjectTypeSelect
+                value={projectType}
+                onChange={setProjectType}
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Project Size</label>
+              <ProjectSizeSelect
+                value={projectSize}
+                onChange={setProjectSize}
+              />
             </div>
             <div className="flex gap-2 pt-1">
               <button type="submit" disabled={loading || !date || !time} className="flex-1 px-4 py-2.5 bg-green-600 text-white rounded-lg hover:bg-green-700 font-medium text-sm transition-colors disabled:opacity-50 flex items-center justify-center gap-2">
