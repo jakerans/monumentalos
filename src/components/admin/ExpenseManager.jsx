@@ -1013,8 +1013,19 @@ function ExpenseRow({ expense: e, clients, bankAccounts, bankAccountMap, onUpdat
       <td className="px-3 py-2 text-slate-400">
         <InlineEditCell value={e.bank_account_id || ''} displayValue={<span className="truncate block">{bankAccountMap[e.bank_account_id] || '—'}</span>} field="bank_account_id" expenseId={e.id} onUpdate={onUpdate} options={bankAccountOptions} />
       </td>
-      <td className="px-3 py-2 text-right font-bold text-red-400">
-        <InlineEditCell value={e.amount || 0} displayValue={`$${(e.amount || 0).toLocaleString()}`} field="amount" expenseId={e.id} onUpdate={onUpdate} type="number" className="text-right" />
+      <td className="px-3 py-2 text-right font-bold">
+        {isRefunded ? (
+          <div>
+            <span className="text-red-400 line-through text-[10px]">${(e.amount || 0).toLocaleString()}</span>
+            {e.is_refunded ? (
+              <span className="block text-emerald-400 text-[10px]">Fully refunded</span>
+            ) : (
+              <span className="block text-emerald-400 text-xs">${((e.amount || 0) - (e.refund_amount || 0)).toLocaleString()}</span>
+            )}
+          </div>
+        ) : (
+          <InlineEditCell value={e.amount || 0} displayValue={`$${(e.amount || 0).toLocaleString()}`} field="amount" expenseId={e.id} onUpdate={onUpdate} type="number" className="text-right" />
+        )}
       </td>
       <td className="px-3 py-2 text-center">
         <div className="flex items-center justify-center gap-1">
@@ -1024,6 +1035,15 @@ function ExpenseRow({ expense: e, clients, bankAccounts, bankAccountMap, onUpdat
             </button>
           )}
           {accepted && <Check className="w-4 h-4 text-emerald-500" />}
+          {isRefunded ? (
+            <button onClick={() => onUndoRefund(e)} title="Undo refund" className="p-1 text-amber-400 opacity-0 group-hover:opacity-100 hover:text-amber-300 transition-all">
+              <Undo2 className="w-3 h-3" />
+            </button>
+          ) : (
+            <button onClick={() => onRefund(e)} title="Mark as refunded" className="p-1 text-slate-600 opacity-0 group-hover:opacity-100 hover:text-emerald-400 transition-all">
+              <RotateCcw className="w-3 h-3" />
+            </button>
+          )}
           <button onClick={onDelete} className="p-1 text-slate-600 opacity-0 group-hover:opacity-100 hover:text-red-400 transition-all"><Trash2 className="w-3 h-3" /></button>
         </div>
       </td>
