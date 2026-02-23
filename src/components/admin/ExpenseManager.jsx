@@ -523,28 +523,12 @@ function ExpenseRow({ expense: e, clients, bankAccounts, bankAccountMap, onUpdat
         <InlineEditCell value={e.date || ''} displayValue={dayjs(e.date).format('MMM D, YYYY')} field="date" expenseId={e.id} onUpdate={onUpdate} type="date" />
       </td>
       <td className="px-3 py-2">
-        {hasPendingAI ? (
-          <div className="flex items-center gap-1">
-            <span className={`px-1.5 py-0.5 text-[10px] font-medium rounded border italic ${CATEGORY_COLORS[e.suggested_category] || CATEGORY_COLORS.other}`}>
-              {CATEGORY_LABELS[e.suggested_category] || e.suggested_category}
-            </span>
-            <span className="px-1 py-0.5 text-[8px] font-bold bg-yellow-500/20 text-yellow-400 border border-yellow-500/30 rounded">AI</span>
-          </div>
-        ) : (
-          <InlineEditCell value={e.category || 'other'} displayValue={<span className={`px-1.5 py-0.5 text-[10px] font-medium rounded border ${CATEGORY_COLORS[e.category] || CATEGORY_COLORS.other}`}>{CATEGORY_LABELS[e.category] || e.category}</span>} field="category" expenseId={e.id} onUpdate={onUpdate} options={categoryOptions} />
-        )}
+        <InlineEditCell value={e.category || 'other'} displayValue={<span className={`px-1.5 py-0.5 text-[10px] font-medium rounded border ${CATEGORY_COLORS[e.category] || CATEGORY_COLORS.other}`}>{CATEGORY_LABELS[e.category] || e.category}</span>} field="category" expenseId={e.id} onUpdate={onUpdate} options={categoryOptions} />
+        {hasPendingAI && <span className="text-[8px] text-yellow-400/60 mt-0.5 block">AI: {CATEGORY_LABELS[e.suggested_category] || e.suggested_category}</span>}
       </td>
       <td className="px-3 py-2">
-        {hasPendingAI ? (
-          <div className="flex items-center gap-1">
-            <span className={`px-1.5 py-0.5 text-[10px] font-medium rounded border italic ${TYPE_COLORS[e.suggested_type] || TYPE_COLORS.overhead}`}>
-              {TYPE_LABELS[e.suggested_type] || e.suggested_type}
-            </span>
-            <span className="px-1 py-0.5 text-[8px] font-bold bg-yellow-500/20 text-yellow-400 border border-yellow-500/30 rounded">AI</span>
-          </div>
-        ) : (
-          <InlineEditCell value={e.expense_type || 'overhead'} displayValue={<span className={`px-1.5 py-0.5 text-[10px] font-medium rounded border ${TYPE_COLORS[e.expense_type] || TYPE_COLORS.overhead}`}>{TYPE_LABELS[e.expense_type] || 'OH'}</span>} field="expense_type" expenseId={e.id} onUpdate={onUpdate} options={typeOptions} />
-        )}
+        <InlineEditCell value={e.expense_type || 'overhead'} displayValue={<span className={`px-1.5 py-0.5 text-[10px] font-medium rounded border ${TYPE_COLORS[e.expense_type] || TYPE_COLORS.overhead}`}>{TYPE_LABELS[e.expense_type] || 'OH'}</span>} field="expense_type" expenseId={e.id} onUpdate={onUpdate} options={typeOptions} />
+        {hasPendingAI && <span className="text-[8px] text-yellow-400/60 mt-0.5 block">AI: {TYPE_LABELS[e.suggested_type] || e.suggested_type}</span>}
       </td>
       <td className="px-3 py-2 text-white">
         <InlineEditCell value={e.description || ''} displayValue={<span className="truncate block">{e.description || '—'}</span>} field="description" expenseId={e.id} onUpdate={onUpdate} />
