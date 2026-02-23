@@ -25,6 +25,19 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'client_id is required' }, { status: 400 });
     }
 
+    const role = user.app_role;
+    if (role === 'admin' || role === 'onboard_admin') {
+      // Admin and onboard_admin can view any client's history
+    } else if (role === 'client') {
+      // Clients can only view their own data
+      if (user.client_id !== client_id) {
+        return Response.json({ error: 'Forbidden' }, { status: 403 });
+      }
+    } else {
+      // All other roles are forbidden from this endpoint
+      return Response.json({ error: 'Forbidden' }, { status: 403 });
+    }
+
     const sr = base44.asServiceRole.entities;
 
     const [clients, allLeads] = await Promise.all([
