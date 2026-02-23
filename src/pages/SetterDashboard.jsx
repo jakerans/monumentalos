@@ -170,7 +170,7 @@ export default function SetterDashboard() {
 
   const checklist = checklistData?.checklist;
   const checklistLog = checklistData?.log;
-  const hasClocked = workspaceData?.clockedIn || false;
+  const hasClocked = !!workspaceData?.clockStatus;
 
   const pipelineData = dashData?.pipeline || { newLeads: [], inProgressLeads: [], bookedLeads: [], dqLeads: [] };
   const preStats = dashData?.stats || {};
