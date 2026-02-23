@@ -19,6 +19,10 @@ Deno.serve(async (req) => {
     if (!user) {
       return Response.json({ error: 'Unauthorized' }, { status: 401 });
     }
+    const allowed = ['admin', 'finance_admin', 'marketing_manager', 'onboard_admin'];
+    if (!allowed.includes(user.app_role)) {
+      return Response.json({ error: 'Forbidden' }, { status: 403 });
+    }
 
     const { client_id } = await req.json();
     if (!client_id) {
