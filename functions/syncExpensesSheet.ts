@@ -67,12 +67,16 @@ Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
 
-    try {
+    // Allow scheduled automations (no auth header) and admin manual triggers
+    const authHeader = req.headers.get('authorization');
+    if (authHeader) {
+      // Manual trigger — verify the caller is admin
       const user = await base44.auth.me();
-      if (user && user.role !== 'admin' && user.app_role !== 'admin') {
-        return Response.json({ error: 'Forbidden: Admin access required' }, { status: 403 });
+      if (!user || user.app_role !== 'admin') {
+        return Response.json({ error: 'Forbidden' }, { status: 403 });
       }
-    } catch (_) { /* scheduled automation */ }
+    }
+    // If no auth header, this is a scheduled automation — proceed
 
     const accessToken = await base44.asServiceRole.connectors.getAccessToken('googlesheets');
     const gHeaders = { 'Authorization': `Bearer ${accessToken}`, 'Content-Type': 'application/json' };
