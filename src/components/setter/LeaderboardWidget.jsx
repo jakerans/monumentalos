@@ -175,7 +175,6 @@ function LeaderboardWidget({ user, spiffs, leaderboardProfiles }) {
 
         <Trophy className={`w-3.5 h-3.5 lg:w-6 lg:h-6 relative z-10 ${rankConfig.trophy}`} />
         <span className="text-[10px] lg:text-lg font-black leading-none relative z-10" style={{ color: rankConfig.text }}>#{displayRank || '—'}</span>
-        <span className={`hidden lg:block text-[10px] font-medium relative z-10 ${rankConfig.sub}`}>Leaderboard</span>
       </motion.button>
 
       {/* Overlay */}
