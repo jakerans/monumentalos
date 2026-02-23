@@ -66,8 +66,15 @@ const switchViews = [
 
 export default function AdminMobileNav({ currentPage, clients = [], user }) {
   const [open, setOpen] = useState(false);
+  const [deletionCount, setDeletionCount] = useState(0);
   const navigate = useNavigate();
   const isFinanceAdmin = user?.app_role === 'finance_admin';
+
+  // Fetch deletion request count
+  React.useEffect(() => {
+    base44.entities.Lead.filter({ deletion_requested: true }, '-deletion_requested_date', 500)
+      .then(leads => setDeletionCount(leads?.length || 0));
+  }, []);
 
   return (
     <div className="sm:hidden">
@@ -112,6 +119,9 @@ export default function AdminMobileNav({ currentPage, clients = [], user }) {
                      >
                        <Icon className="w-4 h-4" />
                        <span className="text-sm font-medium">{item.label}</span>
+                       {item.key === 'LeadManager' && deletionCount > 0 && (
+                         <span className="ml-auto px-1.5 py-0.5 text-[10px] font-bold bg-red-600 text-white rounded-full">{deletionCount}</span>
+                       )}
                      </Link>
                    );
                  })
