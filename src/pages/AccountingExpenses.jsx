@@ -19,8 +19,6 @@ export default function AccountingExpenses() {
   const [startDate, setStartDate] = useState(dayjs().startOf('month').format('YYYY-MM-DD'));
   const [endDate, setEndDate] = useState(dayjs().format('YYYY-MM-DD'));
   const [expenseOpen, setExpenseOpen] = useState(false);
-  const [payrollOpen, setPayrollOpen] = useState(false);
-  const [syncing, setSyncing] = useState(false);
 
   useEffect(() => {
     const checkAuth = async () => {
