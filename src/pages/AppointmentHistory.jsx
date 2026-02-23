@@ -21,15 +21,21 @@ export default function AppointmentHistory() {
       try {
         const currentUser = await base44.auth.me();
         setUser(currentUser);
-        if (currentUser.app_role !== 'client' && currentUser.app_role !== 'admin') {
-          if (currentUser.app_role === 'setter') window.location.href = '/SetterDashboard';
+        const appRole = currentUser.app_role;
+        if (!appRole) { navigate(createPageUrl('AccountPending')); return; }
+        if (appRole !== 'client' && appRole !== 'admin') {
+          if (appRole === 'setter') navigate(createPageUrl('SetterDashboard'));
+          else if (appRole === 'marketing_manager') navigate(createPageUrl('MMDashboard'));
+          else if (appRole === 'onboard_admin') navigate(createPageUrl('OnboardDashboard'));
+          else if (appRole === 'finance_admin') navigate(createPageUrl('FinanceAdminDashboard'));
+          else navigate(createPageUrl('AccountPending'));
         }
       } catch (error) {
         base44.auth.redirectToLogin();
       }
     };
     checkAuth();
-  }, []);
+  }, [navigate]);
 
   const getClientId = () => {
     if (user?.app_role === 'admin') {

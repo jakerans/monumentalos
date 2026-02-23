@@ -12,10 +12,24 @@ export default function LeadManager() {
   const [user, setUser] = useState(null);
 
   useEffect(() => {
-    base44.auth.me().then(u => {
-      if (!u || u.app_role !== 'admin') navigate(createPageUrl('Login'));
-      else setUser(u);
-    });
+    const checkAuth = async () => {
+      try {
+        const currentUser = await base44.auth.me();
+        const appRole = currentUser.app_role;
+        if (!appRole) { navigate(createPageUrl('AccountPending')); return; }
+        if (appRole !== 'admin') {
+          if (appRole === 'marketing_manager') navigate(createPageUrl('MMDashboard'));
+          else if (appRole === 'setter') navigate(createPageUrl('SetterDashboard'));
+          else if (appRole === 'client') navigate(createPageUrl('ClientPortal'));
+          else if (appRole === 'onboard_admin') navigate(createPageUrl('OnboardDashboard'));
+          else if (appRole === 'finance_admin') navigate(createPageUrl('FinanceAdminDashboard'));
+          else navigate(createPageUrl('AccountPending'));
+          return;
+        }
+        setUser(currentUser);
+      } catch { base44.auth.redirectToLogin(); }
+    };
+    checkAuth();
   }, [navigate]);
 
   if (!user) return null;
