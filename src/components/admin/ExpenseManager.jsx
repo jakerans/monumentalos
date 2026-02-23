@@ -527,6 +527,53 @@ function InlineEditCell({ value, displayValue, field, expenseId, onUpdate, type 
   );
 }
 
+function BulkDropdown({ label, options, onSelect, colorMap = {} }) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef(null);
+
+  useEffect(() => {
+    if (!open) return;
+    const handler = (ev) => {
+      if (ref.current && !ref.current.contains(ev.target)) setOpen(false);
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, [open]);
+
+  return (
+    <div className="relative" ref={ref}>
+      <button
+        onClick={() => setOpen(!open)}
+        className="px-3 py-1.5 text-xs font-medium border border-slate-600 text-slate-300 rounded-md hover:bg-slate-700 hover:text-white flex items-center gap-1.5"
+      >
+        {label}
+        <ChevronDown className="w-3 h-3" />
+      </button>
+      {open && (
+        <div className="absolute top-full left-0 mt-1 bg-slate-800 border border-slate-600 rounded-lg shadow-xl z-50 py-1 max-h-48 overflow-y-auto min-w-[160px]">
+          {options.map(o => (
+            <button
+              key={o.value}
+              onMouseDown={(ev) => {
+                ev.preventDefault();
+                setOpen(false);
+                onSelect(o.value);
+              }}
+              className="w-full text-left px-3 py-1.5 text-xs text-slate-300 hover:bg-slate-700/50 hover:text-white flex items-center gap-2"
+            >
+              {colorMap[o.value] ? (
+                <span className={`px-1.5 py-0.5 text-[10px] font-medium rounded border ${colorMap[o.value]}`}>{o.label}</span>
+              ) : (
+                o.label
+              )}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 function DraftDropdown({ value, onChange, options, colorMap = {}, labelMap = {}, isAISuggested = false }) {
   const [open, setOpen] = useState(false);
   const ref = useRef(null);
