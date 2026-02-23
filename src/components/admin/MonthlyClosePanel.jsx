@@ -86,6 +86,7 @@ export default function MonthlyClosePanel() {
   };
 
   const uncategorizedCount = data?.uncategorizedCount ?? 0;
+  const aiPendingCount = data?.aiPendingCount ?? 0;
   const missingBillingCount = data?.missingBillingCount ?? 0;
   const activeClientCount = data?.activeClientCount ?? 0;
   const isAlreadyClosed = data?.isAlreadyClosed ?? false;
