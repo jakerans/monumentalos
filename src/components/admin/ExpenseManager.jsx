@@ -457,8 +457,18 @@ function InlineEditCell({ value, displayValue, field, expenseId, onUpdate, type 
 
   useEffect(() => { setLocalVal(value); }, [value]);
   useEffect(() => {
-    if (editing && inputRef.current) inputRef.current.focus();
-  }, [editing]);
+    if (!editing) return;
+    if (inputRef.current && !options) inputRef.current.focus();
+    if (options) {
+      const handler = (ev) => {
+        if (inputRef.current && !inputRef.current.contains(ev.target)) {
+          setEditing(false);
+        }
+      };
+      document.addEventListener('mousedown', handler);
+      return () => document.removeEventListener('mousedown', handler);
+    }
+  }, [editing, options]);
 
   const save = () => {
     if (localVal !== value) onUpdate(expenseId, field, localVal);
@@ -477,9 +487,35 @@ function InlineEditCell({ value, displayValue, field, expenseId, onUpdate, type 
 
   if (options) {
     return (
-      <select ref={inputRef} value={localVal} onChange={ev => { const v = ev.target.value; setLocalVal(v); onUpdate(expenseId, field, v); setEditing(false); }} onBlur={() => setEditing(false)} className="w-full min-w-0 px-1 py-0.5 text-xs bg-slate-900 border border-[#D6FF03]/50 rounded text-white outline-none">
-        {options.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
-      </select>
+      <div className="relative" ref={inputRef}>
+        <div className="absolute top-0 left-0 bg-slate-800 border border-[#D6FF03]/50 rounded-lg shadow-xl z-50 py-1 max-h-48 overflow-y-auto min-w-[140px]">
+          {options.map(o => (
+            <button
+              key={o.value}
+              onMouseDown={(ev) => {
+                ev.preventDefault();
+                setLocalVal(o.value);
+                onUpdate(expenseId, field, o.value);
+                setEditing(false);
+              }}
+              className={`w-full text-left px-3 py-1.5 text-xs transition-colors flex items-center gap-2 ${
+                o.value === localVal
+                  ? 'bg-[#D6FF03]/10 text-[#D6FF03] font-medium'
+                  : 'text-slate-300 hover:bg-slate-700/50 hover:text-white'
+              }`}
+            >
+              {field === 'category' && CATEGORY_COLORS[o.value] ? (
+                <span className={`px-1.5 py-0.5 text-[10px] font-medium rounded border ${CATEGORY_COLORS[o.value]}`}>{o.label}</span>
+              ) : field === 'expense_type' && TYPE_COLORS[o.value] ? (
+                <span className={`px-1.5 py-0.5 text-[10px] font-medium rounded border ${TYPE_COLORS[o.value]}`}>{o.label}</span>
+              ) : (
+                o.label
+              )}
+              {o.value === localVal && <Check className="w-3 h-3 ml-auto shrink-0" />}
+            </button>
+          ))}
+        </div>
+      </div>
     );
   }
 
