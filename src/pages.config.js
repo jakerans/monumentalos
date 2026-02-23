@@ -79,6 +79,7 @@ import SetterPerformance from './pages/SetterPerformance';
 import SetterStats from './pages/SetterStats';
 import ShiftChecklistSettings from './pages/ShiftChecklistSettings';
 import UserManagement from './pages/UserManagement';
+import EmployeeOnboarding from './pages/EmployeeOnboarding';
 import __Layout from './Layout.jsx';
 
 
@@ -115,6 +116,7 @@ export const PAGES = {
     "SetterStats": SetterStats,
     "ShiftChecklistSettings": ShiftChecklistSettings,
     "UserManagement": UserManagement,
+    "EmployeeOnboarding": EmployeeOnboarding,
 }
 
 export const pagesConfig = {
