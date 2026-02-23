@@ -41,7 +41,7 @@ const adminSections = [
       { key: 'SetterPerformance', label: 'Setter Management', icon: Headset },
       { key: 'SetterStats', label: 'Setter Reporting', icon: LineChart },
       { key: 'LeadManager', label: 'Lead Management', icon: Users },
-      { key: 'LootAdmin', label: 'Loot System', icon: Gift },
+      { key: 'LootAdmin', label: 'Rewards Admin', icon: Gift },
     ],
   },
   {
