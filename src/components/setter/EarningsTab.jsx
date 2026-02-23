@@ -70,7 +70,7 @@ function EarningsBreakdown({ data }) {
       <Row icon={<Trophy className="w-4 h-4 text-amber-400" />} label="Spiff Bonuses" amount={data.pending_spiff_bonus}
         sub={data.pending_spiff_bonus === 0 ? 'No bonuses pending' : `${data.spiff_details.filter(s => s.met).length} bonus${data.spiff_details.filter(s => s.met).length !== 1 ? 'es' : ''} earned`}
         muted={data.pending_spiff_bonus === 0} />
-      <Row icon={<Gift className="w-4 h-4 text-purple-400" />} label="Loot Box Cash" amount={data.loot_cash_this_month}
+      <Row icon={<Gift className="w-4 h-4 text-purple-400" />} label="Booking Reward Cash" amount={data.loot_cash_this_month}
         muted={data.loot_cash_this_month === 0} />
       <div className="border-t border-slate-700/50 pt-3 flex items-center justify-between">
         <span className="text-sm font-bold text-white">Estimated Total</span>
@@ -158,12 +158,12 @@ function EarningsTab({ data, loading }) {
         <ActiveSpiffs spiffs={data.spiff_details} />
       </div>
 
-      {/* Loot Box Winnings */}
+      {/* Booking Reward Winnings */}
       {data.loot_cash_this_month > 0 && (
         <div className="flex items-center gap-2 px-3 py-2 rounded-lg border border-purple-500/20 bg-purple-500/5">
           <Gift className="w-4 h-4 text-purple-400 flex-shrink-0" />
           <p className="text-xs text-slate-400">
-            <span className="text-white font-medium">{fmtMoney(data.loot_cash_this_month)}</span> won from {data.loot_wins_this_month} loot box{data.loot_wins_this_month !== 1 ? 'es' : ''} this month.
+            <span className="text-white font-medium">{fmtMoney(data.loot_cash_this_month)}</span> won from {data.loot_wins_this_month} booking reward{data.loot_wins_this_month !== 1 ? 's' : ''} this month.
           </p>
         </div>
       )}

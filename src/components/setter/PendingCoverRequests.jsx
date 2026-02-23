@@ -16,7 +16,7 @@ function formatOfferDetails(offer) {
   const counts = {};
   offer.loot_boxes.forEach(b => { counts[b.rarity] = (counts[b.rarity] || 0) + 1; });
   const parts = Object.entries(counts).map(([r, c]) => ({ rarity: r, label: `${c}x ${r.charAt(0).toUpperCase() + r.slice(1)}` }));
-  return { text: `🎁 Offering ${offer.quantity} loot box${offer.quantity !== 1 ? 'es' : ''}`, parts };
+  return { text: `🎁 Offering ${offer.quantity} booking reward${offer.quantity !== 1 ? 's' : ''}`, parts };
 }
 
 function formatShiftTime(hhmm) {
