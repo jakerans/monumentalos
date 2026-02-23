@@ -137,6 +137,44 @@ export default function ExpenseManager({ startDate, endDate, onAddExpense }) {
     setSelectAllMode('all');
   };
 
+  const handleApproveAllAI = async () => {
+    if (!window.confirm(`Approve all ${aiPendingCount} AI-categorized expenses? This marks them as reviewed.`)) return;
+    const res = await base44.functions.invoke('bulkApproveAIExpenses', {});
+    const d = res.data;
+    toast({ title: 'AI Categories Approved', description: `${d.approved || 0} expenses marked as reviewed`, variant: 'success' });
+    refetch();
+  };
+
+  const handleBulkApprove = async () => {
+    const ids = [...selected];
+    if (!window.confirm(`Approve ${ids.length} expense${ids.length > 1 ? 's' : ''}?`)) return;
+    const CHUNK = 10;
+    for (let i = 0; i < ids.length; i += CHUNK) {
+      const chunk = ids.slice(i, i + CHUNK);
+      await Promise.all(chunk.map(id =>
+        base44.entities.Expense.update(id, { ai_approved: true, suggested_category: '', suggested_type: '' })
+      ));
+    }
+    toast({ title: `${ids.length} Expense${ids.length > 1 ? 's' : ''} Approved`, variant: 'success' });
+    setSelected(new Set());
+    setSelectAllMode(null);
+    refetch();
+  };
+
+  const handleBulkUpdate = async (field, value) => {
+    const ids = [...selected];
+    if (!window.confirm(`Set ${field === 'category' ? 'category' : 'type'} to "${value}" for ${ids.length} expense${ids.length > 1 ? 's' : ''}?`)) return;
+    const CHUNK = 10;
+    for (let i = 0; i < ids.length; i += CHUNK) {
+      const chunk = ids.slice(i, i + CHUNK);
+      await Promise.all(chunk.map(id => base44.entities.Expense.update(id, { [field]: value })));
+    }
+    toast({ title: `${ids.length} Expense${ids.length > 1 ? 's' : ''} Updated`, variant: 'success' });
+    setSelected(new Set());
+    setSelectAllMode(null);
+    refetch();
+  };
+
   const handleBulkDelete = async () => {
     if (selected.size === 0) return;
     if (!window.confirm(`Delete ${selected.size} expense${selected.size > 1 ? 's' : ''}? This cannot be undone.`)) return;
