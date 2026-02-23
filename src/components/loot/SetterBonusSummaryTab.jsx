@@ -39,7 +39,7 @@ export default function SetterBonusSummaryTab({ defaultPeriod }) {
         fulfillment_date: today,
       });
     }
-    toast({ title: 'Loot prizes approved for payroll' });
+    toast({ title: 'Booking reward prizes approved for payroll' });
     queryClient.invalidateQueries({ queryKey: ['setter-bonus-summary'] });
   };
 
@@ -83,7 +83,7 @@ export default function SetterBonusSummaryTab({ defaultPeriod }) {
               🎁 Spiffs: {setter.spiff_total > 0 ? `$${setter.spiff_total}` : 'None'}
             </span>
             <span className="text-[11px] px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300">
-              📦 Loot: {setter.loot_total > 0 ? `$${setter.loot_total}` : 'None'}
+              📦 Rewards: {setter.loot_total > 0 ? `$${setter.loot_total}` : 'None'}
             </span>
           </div>
 
@@ -114,7 +114,7 @@ export default function SetterBonusSummaryTab({ defaultPeriod }) {
 
               {setter.loot_items.length > 0 && (
                 <div>
-                  <p className="text-[10px] text-slate-500 uppercase tracking-wider mb-1">Loot Box Wins</p>
+                  <p className="text-[10px] text-slate-500 uppercase tracking-wider mb-1">Booking Reward Wins</p>
                   <div className="space-y-1">
                     {setter.loot_items.map(item => (
                       <div key={item.id} className="flex items-center justify-between py-1">
@@ -146,7 +146,7 @@ export default function SetterBonusSummaryTab({ defaultPeriod }) {
                 </button>
               )}
 
-              <p className="text-xs text-slate-500 italic">Spiff totals and approved loot prizes are automatically included when you run payroll.</p>
+              <p className="text-xs text-slate-500 italic">Spiff totals and approved booking reward prizes are automatically included when you run payroll.</p>
             </div>
           )}
         </div>
