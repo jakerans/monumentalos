@@ -58,14 +58,14 @@ function PLCell({ label, current, prior, format = 'dollar', invertColor = false,
 
 export default function PLComparisonRow({ current, prior }) {
   const items = [
-    { label: 'Gross Revenue', cur: current.grossRevenue, pri: prior.grossRevenue, tooltip: 'Total billed revenue this month (invoices created), regardless of payment status.' },
-    { label: 'Cash Collected', cur: current.collected, pri: prior.collected, tooltip: 'Actual cash received from paid invoices this month.' },
-    { label: 'COGS', cur: current.cogs, pri: prior.cogs, invertColor: true, tooltip: 'Cost of Goods Sold — direct costs like ad spend and COGS-classified payroll. Lower is better.' },
-    { label: 'Overhead', cur: current.overhead, pri: prior.overhead, invertColor: true, tooltip: 'Fixed operating costs — overhead-classified payroll, software, office, etc. Lower is better.' },
-    { label: 'Gross Profit', cur: current.grossProfit, pri: prior.grossProfit, tooltip: 'Revenue minus COGS. Shows profitability before overhead costs.' },
-    { label: 'Net Profit', cur: current.netProfit, pri: prior.netProfit, tooltip: 'Revenue minus all expenses (COGS + Overhead). Your bottom line.' },
-    { label: 'Gross Margin', cur: current.grossMargin, pri: prior.grossMargin, format: 'pct', tooltip: 'Gross Profit as a percentage of Gross Revenue. Higher is better.' },
-    { label: 'Net Margin', cur: current.netMargin, pri: prior.netMargin, format: 'pct', tooltip: 'Net Profit as a percentage of Gross Revenue. The ultimate profitability metric.' },
+    { label: 'Gross Revenue', cur: current.grossRevenue, pri: prior.grossRevenue, tooltip: 'Total revenue earned this month based on work delivered — showed appointments, booked appointments, and retainer fees. This is what you earned, whether or not clients have paid yet.' },
+    { label: 'Cash Collected', cur: current.collected, pri: prior.collected, tooltip: 'Actual money that hit your bank account this month from client payments. This is what you can actually spend.' },
+    { label: 'COGS', cur: current.cogs, pri: prior.cogs, invertColor: true, tooltip: 'Your direct costs to deliver the service — setter payroll, contractor fees, and any costs directly tied to running client campaigns. Lower means more of your revenue becomes profit.' },
+    { label: 'Overhead', cur: current.overhead, pri: prior.overhead, invertColor: true, tooltip: 'Your fixed costs that exist regardless of how many clients you have — things like software subscriptions, your own salary, office expenses, and any non-COGS payroll.' },
+    { label: 'Gross Profit', cur: current.grossProfit, pri: prior.grossProfit, tooltip: "What's left after paying the direct costs of running campaigns. This is your agency's margin before your own salary, software, and other overhead." },
+    { label: 'Net Profit', cur: current.netProfit, pri: prior.netProfit, tooltip: "Your true bottom line — what's left after ALL expenses are paid. This is the money that stays in the business or goes in your pocket." },
+    { label: 'Gross Margin', cur: current.grossMargin, pri: prior.grossMargin, format: 'pct', tooltip: 'For every dollar of revenue, how many cents are left after direct costs? A 60% margin means you keep 60 cents on every dollar before overhead.' },
+    { label: 'Net Margin', cur: current.netMargin, pri: prior.netMargin, format: 'pct', tooltip: 'For every dollar of revenue, how many cents actually become profit after everything is paid? This is the number that tells you if the agency is healthy.' },
   ];
 
   return (

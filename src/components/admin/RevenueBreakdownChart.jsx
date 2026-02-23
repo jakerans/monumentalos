@@ -51,7 +51,7 @@ export default function RevenueBreakdownChart({ data }) {
       <div className="flex items-center gap-2 mb-3">
         <DollarSign className="w-4 h-4 text-emerald-400" />
         <h3 className="text-sm font-bold text-white">Revenue by Billing Type (MTD)</h3>
-        <InfoTooltip text="Breaks down month-to-date revenue by billing model: Pay Per Show, Pay Per Set, and Retainer. Helps see which billing type drives the most revenue." />
+        <InfoTooltip text="Shows where your revenue is coming from this month — which billing types (retainer, pay-per-set, pay-per-show, hybrid) are generating the most money. Useful for seeing how dependent you are on any one model." />
       </div>
 
       {totalRevenue === 0 ? (

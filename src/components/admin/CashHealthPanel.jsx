@@ -68,7 +68,7 @@ export default function CashHealthPanel({ data }) {
       <div className="flex items-center gap-2 mb-3">
         <Banknote className="w-4 h-4 text-emerald-400" />
         <h3 className="text-sm font-bold text-white">Cash Health (MTD)</h3>
-        <InfoTooltip text="Real-time snapshot of your cash position this month. Tracks projected vs realized revenue, unbilled amounts, accrued expenses, and accounts receivable health." />
+        <InfoTooltip text="How much money you should have coming in this month vs what's actually hit your bank. Updates as your team books appointments and clients pay invoices." />
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-2">
         <Stat
@@ -79,7 +79,7 @@ export default function CashHealthPanel({ data }) {
           icon={TrendingUp}
           iconColor="text-blue-400"
           iconBg="bg-blue-500/10"
-          tooltip="Total expected revenue: outstanding invoices (AR) plus live accruals from performance billing not yet invoiced."
+          tooltip="Money you're expecting but haven't collected yet. Includes last month's unpaid client invoices plus what your painting clients owe this month based on appointments set or showed — before you've even sent the invoice."
         />
         <Stat
           index={1}
@@ -98,7 +98,7 @@ export default function CashHealthPanel({ data }) {
           icon={ArrowRightLeft}
           iconColor="text-amber-400"
           iconBg="bg-amber-500/10"
-          tooltip="Revenue that's projected but not yet collected. Includes unpaid invoices and accrued performance billing."
+          tooltip="The gap between what you're owed and what's actually in your bank. If this number is big, either invoices are late or you haven't billed for this month's work yet."
         />
         <Stat
           index={3}
@@ -108,7 +108,7 @@ export default function CashHealthPanel({ data }) {
           icon={AlertCircle}
           iconColor="text-orange-400"
           iconBg="bg-orange-500/10"
-          tooltip="Pro-rated payroll & contractor costs based on how far into the month we are. Gives a real-time expense estimate before payroll runs."
+          tooltip="Your estimated payroll and contractor costs so far this month, scaled to how far into the month we are. Helps you see what you'll owe before payday actually hits."
         />
         <Stat
           index={4}
@@ -118,7 +118,7 @@ export default function CashHealthPanel({ data }) {
           icon={Percent}
           iconColor="text-indigo-400"
           iconBg="bg-indigo-500/10"
-          tooltip="Gross margin calculated using projected revenue minus accrued COGS expenses. Updates daily as the month progresses."
+          tooltip="What percentage of your projected revenue is left after direct costs (like payroll for your setters and contractors). A live look at profitability that updates daily as the month progresses."
         />
         <Stat
           index={5}
@@ -128,7 +128,7 @@ export default function CashHealthPanel({ data }) {
           icon={Shield}
           iconColor="text-cyan-400"
           iconBg="bg-cyan-500/10"
-          tooltip="How much of your fixed overhead (payroll + contractors) is covered by retainer revenue alone. 100%+ means retainers cover all fixed costs."
+          tooltip="Can your retainer clients alone cover your fixed costs (payroll, contractors, software)? 100% or higher means your retainer revenue pays all the bills — everything from performance clients is pure upside."
         />
         <ARLight status={d.arHealth} />
       </div>
