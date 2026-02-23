@@ -690,6 +690,32 @@ export default function ExpenseManager({ startDate, endDate, onAddExpense }) {
       onClose={() => setRefundExpense(null)}
       onRefunded={refetch}
     />
+    <AlertDialog open={!!confirmAction} onOpenChange={(open) => { if (!open) setConfirmAction(null); }}>
+      <AlertDialogContent className="bg-slate-900 border border-slate-700 text-white">
+        <AlertDialogHeader>
+          <AlertDialogTitle>{confirmAction?.title}</AlertDialogTitle>
+          <AlertDialogDescription className="text-slate-400">{confirmAction?.description}</AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel className="bg-slate-800 border-slate-700 text-slate-300 hover:bg-slate-700">Cancel</AlertDialogCancel>
+          <AlertDialogAction
+            onClick={async () => {
+              if (confirmAction?.onConfirm) await confirmAction.onConfirm();
+              setConfirmAction(null);
+            }}
+            className={
+              confirmAction?.variant === 'destructive'
+                ? 'bg-red-600 hover:bg-red-700 text-white'
+                : confirmAction?.variant === 'success'
+                ? 'bg-emerald-600 hover:bg-emerald-700 text-white'
+                : ''
+            }
+          >
+            Confirm
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
     </>
   );
 }
