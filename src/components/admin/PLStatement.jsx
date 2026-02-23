@@ -68,7 +68,7 @@ export default function PLStatement({ kpis, expenses, billingRecords, clients, s
 
   // Expense breakdowns
   const expenseBreakdowns = useMemo(() => {
-    const filtered = (expenses || []).filter(e => e.date && e.expense_type !== 'distribution' && ir(e.date));
+    const filtered = (expenses || []).filter(e => e.date && e.expense_type !== 'distribution' && e.category !== 'distribution' && ir(e.date));
     const cogsItems = filtered.filter(e => e.expense_type === 'cogs');
     const overheadItems = filtered.filter(e => e.expense_type !== 'cogs');
 

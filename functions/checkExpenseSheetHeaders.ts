@@ -36,15 +36,15 @@ Deno.serve(async (req) => {
     const expected = {
       0:  'A — Row ID (bank feed unique ID)',
       1:  'B — Date',
-      3:  'D — Description',
-      6:  'G — Amount (negative = expense)',
-      14: 'O — Bank Account identifier',
-      16: 'Q — App ID (written by sync)',
-      17: 'R — App Category (written by sync)',
-      18: 'S — App Expense Type (written by sync)',
-      19: 'T — App Client ID (written by sync)',
-      20: 'U — App Vendor (written by sync)',
-      21: 'V — App Synced flag (written by sync)',
+      2:  'C — Description',
+      3:  'D — Amount (negative = expense)',
+      4:  'E — Bank Account identifier',
+      5:  'F — App ID (written by sync)',
+      6:  'G — Category (written by sync)',
+      7:  'H — Expense Type (written by sync)',
+      8:  'I — Client ID (written by sync)',
+      9:  'J — Vendor (written by sync)',
+      10: 'K — Synced flag (written by sync)',
     };
 
     const issues = [];

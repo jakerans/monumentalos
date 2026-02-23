@@ -73,7 +73,7 @@ Deno.serve(async (req) => {
     const base44 = createClientFromRequest(req);
     const user = await base44.auth.me();
 
-    if (!user || (user.role !== 'admin' && user.app_role !== 'admin')) {
+    if (!user || user.app_role !== 'admin') {
       return Response.json({ error: 'Forbidden: Admin access required' }, { status: 403 });
     }
 
