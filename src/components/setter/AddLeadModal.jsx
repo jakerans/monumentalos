@@ -64,6 +64,9 @@ export default function AddLeadModal({ open, onOpenChange, clients, onAdd, userI
       leadData.date_appointment_set = new Date().toISOString();
       leadData.disposition = 'scheduled';
       if (userId) leadData.booked_by_setter_id = userId;
+      if (form.lead_source === 'msg' && chatSTL) {
+        leadData.speed_to_lead_minutes = parseFloat(chatSTL);
+      }
     }
 
     try {
