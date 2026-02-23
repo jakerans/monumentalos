@@ -1,14 +1,50 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Calendar, Check, ExternalLink } from 'lucide-react';
+import { useQuery } from '@tanstack/react-query';
+import { base44 } from '@/api/base44Client';
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { ProjectSizeSelect, ProjectTypeSelect } from '../shared/LeadFieldSelects';
 
-export default function BookAppointmentModal({ lead, bookingLink, open, onOpenChange, onBook }) {
+const DEFAULT_SIZES = ['Partial Project', 'Full Project'];
+const DEFAULT_TYPES = {
+  painting: ['Interior', 'Exterior', 'Cabinets'],
+  epoxy: ['Garage Floor', 'Basement', 'Commercial'],
+  kitchen_bath: ['Kitchen', 'Bath', 'Kitchen & Bath'],
+  reno: ['Full Home', 'Addition', 'Basement', 'Room Remodel'],
+};
+
+function getProjectTypesForIndustries(typesByIndustry, industries) {
+  if (!industries || industries.length === 0) {
+    return [...new Set(Object.values(typesByIndustry).flat())];
+  }
+  return [...new Set(industries.flatMap(ind => typesByIndustry[ind] || []))];
+}
+
+export default function BookAppointmentModal({ lead, bookingLink, clientIndustries, open, onOpenChange, onBook }) {
+  const { data: settingsData } = useQuery({
+    queryKey: ['lead-field-options-global'],
+    queryFn: async () => {
+      const results = await base44.entities.CompanySettings.filter({ key: 'lead_options' });
+      return results[0] || null;
+    },
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const { typesByIndustry, sizes } = useMemo(() => {
+    const typesByIndustry = settingsData?.project_types_by_industry && Object.keys(settingsData.project_types_by_industry).length
+      ? { ...DEFAULT_TYPES, ...settingsData.project_types_by_industry }
+      : DEFAULT_TYPES;
+    const sizes = settingsData?.project_sizes?.length ? settingsData.project_sizes : DEFAULT_SIZES;
+    return { typesByIndustry, sizes };
+  }, [settingsData]);
+
+  const projectTypeOptions = useMemo(() => {
+    return getProjectTypesForIndustries(typesByIndustry, clientIndustries);
+  }, [typesByIndustry, clientIndustries]);
   const [date, setDate] = useState('');
   const [time, setTime] = useState('');
   const [projectType, setProjectType] = useState('');
@@ -89,18 +125,30 @@ export default function BookAppointmentModal({ lead, bookingLink, open, onOpenCh
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Project Type</label>
-                <ProjectTypeSelect
+                <select
                   value={projectType}
-                  onChange={setProjectType}
-                />
+                  onChange={(e) => setProjectType(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-green-500"
+                >
+                  <option value="">Select type...</option>
+                  {projectTypeOptions.map(t => (
+                    <option key={t} value={t}>{t}</option>
+                  ))}
+                </select>
               </div>
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Project Size</label>
-                <ProjectSizeSelect
+                <select
                   value={projectSize}
-                  onChange={setProjectSize}
-                />
+                  onChange={(e) => setProjectSize(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-green-500"
+                >
+                  <option value="">Select size...</option>
+                  {sizes.map(s => (
+                    <option key={s} value={s}>{s}</option>
+                  ))}
+                </select>
               </div>
 
               <div className="bg-gray-50 rounded-lg p-2 border border-gray-200">
@@ -148,17 +196,29 @@ export default function BookAppointmentModal({ lead, bookingLink, open, onOpenCh
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Project Type</label>
-              <ProjectTypeSelect
+              <select
                 value={projectType}
-                onChange={setProjectType}
-              />
+                onChange={(e) => setProjectType(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-green-500"
+              >
+                <option value="">Select type...</option>
+                {projectTypeOptions.map(t => (
+                  <option key={t} value={t}>{t}</option>
+                ))}
+              </select>
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Project Size</label>
-              <ProjectSizeSelect
+              <select
                 value={projectSize}
-                onChange={setProjectSize}
-              />
+                onChange={(e) => setProjectSize(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-green-500"
+              >
+                <option value="">Select size...</option>
+                {sizes.map(s => (
+                  <option key={s} value={s}>{s}</option>
+                ))}
+              </select>
             </div>
             <div className="flex gap-2 pt-1">
               <button type="submit" disabled={loading || !date || !time} className="flex-1 px-4 py-2.5 bg-green-600 text-white rounded-lg hover:bg-green-700 font-medium text-sm transition-colors disabled:opacity-50 flex items-center justify-center gap-2">
