@@ -101,57 +101,59 @@ export default function PerformancePortalView({ kpis, leads, pagination, page, o
       )}
 
       {/* Upcoming Appointments */}
-      <div>
-        <h2 className="text-lg font-bold text-white">Upcoming Appointments</h2>
-        <p className="text-xs text-slate-400">{upcomingLeads.length} scheduled</p>
-      </div>
+      <div data-tour="performance-upcoming">
+        <div className="mb-3">
+          <h2 className="text-lg font-bold text-white">Upcoming Appointments</h2>
+          <p className="text-xs text-slate-400">{upcomingLeads.length} scheduled</p>
+        </div>
 
-      {/* Mobile */}
-      <div className="md:hidden space-y-3">
-        {upcomingLeads.length === 0 ? (
-          <div className="bg-slate-800/50 rounded-lg shadow border border-slate-700/50 p-6 text-center text-slate-500">No upcoming appointments scheduled</div>
-        ) : upcomingLeads.map(lead => (
-          <AppointmentCard
-            key={lead.id}
-            lead={lead}
-            onSelect={() => onSelectLead(lead.id)}
-            needsOutcome={false}
-          />
-        ))}
-      </div>
+        {/* Mobile */}
+        <div className="md:hidden space-y-3 mb-3">
+          {upcomingLeads.length === 0 ? (
+            <div className="bg-slate-800/50 rounded-lg shadow border border-slate-700/50 p-6 text-center text-slate-500">No upcoming appointments scheduled</div>
+          ) : upcomingLeads.map(lead => (
+            <AppointmentCard
+              key={lead.id}
+              lead={lead}
+              onSelect={() => onSelectLead(lead.id)}
+              needsOutcome={false}
+            />
+          ))}
+        </div>
 
-      {/* Desktop */}
-      <div className="hidden md:block bg-slate-800/50 rounded-lg shadow border border-slate-700/50 overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead className="bg-slate-900/50">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-slate-400 uppercase">Lead Name</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-slate-400 uppercase">Contact</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-slate-400 uppercase">Appointment Date</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-slate-400 uppercase">Disposition</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-slate-400 uppercase">Outcome</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-700/30">
-              {upcomingLeads.length === 0 ? (
-                <tr><td colSpan={5} className="px-6 py-8 text-center text-slate-500">No upcoming appointments scheduled</td></tr>
-              ) : upcomingLeads.map(lead => (
-                <tr key={lead.id} onClick={() => onSelectLead(lead.id)} className="cursor-pointer hover:bg-slate-700/20">
-                  <td className="px-6 py-4 font-medium text-white">{lead.name}</td>
-                  <td className="px-6 py-4 text-sm text-slate-400">
-                    <div>{lead.email}</div>
-                    <div>{lead.phone}</div>
-                  </td>
-                  <td className="px-6 py-4 text-sm text-slate-400">
-                    {lead.appointment_date ? new Date(lead.appointment_date).toLocaleString() : '—'}
-                  </td>
-                  <td className="px-6 py-4"><DispositionBadge value={lead.disposition} /></td>
-                  <td className="px-6 py-4"><OutcomeBadge value={lead.outcome} /></td>
+        {/* Desktop */}
+        <div className="hidden md:block bg-slate-800/50 rounded-lg shadow border border-slate-700/50 overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead className="bg-slate-900/50">
+                <tr>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-slate-400 uppercase">Lead Name</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-slate-400 uppercase">Contact</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-slate-400 uppercase">Appointment Date</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-slate-400 uppercase">Disposition</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-slate-400 uppercase">Outcome</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody className="divide-y divide-slate-700/30">
+                {upcomingLeads.length === 0 ? (
+                  <tr><td colSpan={5} className="px-6 py-8 text-center text-slate-500">No upcoming appointments scheduled</td></tr>
+                ) : upcomingLeads.map(lead => (
+                  <tr key={lead.id} onClick={() => onSelectLead(lead.id)} className="cursor-pointer hover:bg-slate-700/20">
+                    <td className="px-6 py-4 font-medium text-white">{lead.name}</td>
+                    <td className="px-6 py-4 text-sm text-slate-400">
+                      <div>{lead.email}</div>
+                      <div>{lead.phone}</div>
+                    </td>
+                    <td className="px-6 py-4 text-sm text-slate-400">
+                      {lead.appointment_date ? new Date(lead.appointment_date).toLocaleString() : '—'}
+                    </td>
+                    <td className="px-6 py-4"><DispositionBadge value={lead.disposition} /></td>
+                    <td className="px-6 py-4"><OutcomeBadge value={lead.outcome} /></td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
 
