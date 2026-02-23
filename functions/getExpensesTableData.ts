@@ -48,7 +48,7 @@ Deno.serve(async (req) => {
       const effectiveAmt = e.is_refunded ? 0 : (rawAmt - (e.refund_amount || 0));
       total += effectiveAmt;
       if (e.expense_type === 'cogs') cogsTotal += effectiveAmt;
-      else if (e.expense_type === 'overhead') overheadTotal += effectiveAmt;
+      else overheadTotal += effectiveAmt;
       const cat = e.category || 'other';
       byCategoryMap[cat] = (byCategoryMap[cat] || 0) + effectiveAmt;
     }

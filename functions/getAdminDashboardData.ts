@@ -438,7 +438,7 @@ Deno.serve(async (req) => {
       const collected = paidBillingRecords.filter(b => rangeFn(b.paid_date)).reduce((s, b) => s + (b.paid_amount || b.calculated_amount || 0), 0);
       const rangeExpenses = expenses.filter(e => rangeFn(e.date) && e.expense_type !== 'distribution');
       const cogs = rangeExpenses.filter(e => e.expense_type === 'cogs').reduce((s, e) => s + effAmt(e), 0);
-      const overhead = rangeExpenses.filter(e => e.expense_type === 'overhead').reduce((s, e) => s + effAmt(e), 0);
+      const overhead = rangeExpenses.filter(e => e.expense_type !== 'cogs').reduce((s, e) => s + effAmt(e), 0);
       const grossProfit = grossRevenue - cogs;
       const netProfit = collected - cogs - overhead;
       const grossMargin = grossRevenue > 0 ? (grossProfit / grossRevenue) * 100 : 0;
