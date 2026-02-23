@@ -97,6 +97,14 @@ export default function InviteUserModal({ open, onOpenChange, clients = [], onIn
             </div>
           )}
 
+          {role === 'admin' && (
+            <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
+              <p className="text-xs text-blue-900">
+                <strong>Note:</strong> Admin invitations are sent via the backend. After they sign up, they'll automatically have admin access.
+              </p>
+            </div>
+          )}
+
           {error && <p className="text-xs text-red-600">{error}</p>}
           {success && <p className="text-xs text-green-600">{success}</p>}
 
