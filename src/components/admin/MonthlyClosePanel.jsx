@@ -230,7 +230,7 @@ export default function MonthlyClosePanel() {
             ) : (
               <button
                 onClick={() => handleToggle('close')}
-                disabled={acting}
+                disabled={acting || uncategorizedCount > 0 || aiPendingCount > 0}
                 className="w-full px-4 py-2.5 text-sm font-bold rounded-lg hover:opacity-90 transition-opacity disabled:opacity-50"
                 style={{ backgroundColor: '#D6FF03', color: '#000' }}
               >
