@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { base44 } from '@/api/base44Client';
-import { CircleDot, UserX, DollarSign } from 'lucide-react';
+import { CircleDot, UserX, DollarSign, Link as LinkIcon, Loader } from 'lucide-react';
 import AddPerformancePayModal from './AddPerformancePayModal';
 import { getPayDisplay, getCyclesPerYear } from './payUtils';
 
@@ -13,6 +13,7 @@ export default function EmployeeDetailPanel({ employee, payrollSettings, open, o
   const [form, setForm] = useState({});
   const [perfPayOpen, setPerfPayOpen] = useState(false);
   const [dismissConfirm, setDismissConfirm] = useState(false);
+  const [linkingUserId, setLinkingUserId] = useState(false);
 
   React.useEffect(() => {
     if (employee) {
@@ -60,6 +61,20 @@ export default function EmployeeDetailPanel({ employee, payrollSettings, open, o
     }
   };
 
+  const handleLinkUserId = async () => {
+    setLinkingUserId(true);
+    try {
+      const res = await base44.functions.invoke('linkUserToEmployee', { employee_id: employee.id });
+      if (res.data.success) {
+        onUpdated();
+      }
+    } catch (err) {
+      console.error('Error linking user:', err);
+    } finally {
+      setLinkingUserId(false);
+    }
+  };
+
   const inputCls = "w-full px-3 py-1.5 text-sm bg-slate-800 border border-slate-700 rounded-md text-white focus:outline-none focus:ring-1 focus:ring-[#D6FF03]";
   const labelCls = "text-[10px] font-medium text-slate-400 uppercase mb-0.5 block";
 
@@ -92,6 +107,7 @@ export default function EmployeeDetailPanel({ employee, payrollSettings, open, o
                   {employee.phone && <div><p className={labelCls}>Phone</p><p className="text-sm text-slate-300">{employee.phone}</p></div>}
                   {employee.start_date && <div><p className={labelCls}>Start Date</p><p className="text-sm text-slate-300">{employee.start_date}</p></div>}
                   <div><p className={labelCls}>Performance Pay</p><p className="text-sm">{employee.has_performance_pay ? <span className="text-purple-400 font-medium">Active</span> : <span className="text-slate-500">None</span>}</p></div>
+                  <div><p className={labelCls}>User ID</p><p className="text-sm text-slate-300 font-mono">{employee.user_id ? <span className="text-green-400">{employee.user_id}</span> : <span className="text-slate-500">—</span>}</p></div>
                 </div>
                 {employee.notes && <div><p className={labelCls}>Notes</p><p className="text-sm text-slate-400">{employee.notes}</p></div>}
               </div>
@@ -142,6 +158,12 @@ export default function EmployeeDetailPanel({ employee, payrollSettings, open, o
             <div className="space-y-2 pt-2 border-t border-slate-700">
               {!editing ? (
                 <>
+                  {!employee.user_id && (
+                    <button onClick={handleLinkUserId} disabled={linkingUserId} className="w-full px-4 py-2 text-sm font-medium rounded-lg border border-blue-500/50 text-blue-400 hover:bg-blue-500/10 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2">
+                      {linkingUserId ? <Loader className="w-3.5 h-3.5 animate-spin" /> : <LinkIcon className="w-3.5 h-3.5" />}
+                      Link User ID
+                    </button>
+                  )}
                   <button onClick={() => setEditing(true)} className="w-full px-4 py-2 text-sm font-bold text-black rounded-lg hover:opacity-90" style={{ backgroundColor: '#D6FF03' }}>Edit Employee</button>
                   <button onClick={togglePerfPay} className="w-full px-4 py-2 text-sm font-medium rounded-lg border border-purple-500/50 text-purple-400 hover:bg-purple-500/10 flex items-center justify-center gap-2">
                     <DollarSign className="w-3.5 h-3.5" />
