@@ -63,6 +63,7 @@ import ClientReport from './pages/ClientReport';
 import ClientSettings from './pages/ClientSettings';
 import ClientView from './pages/ClientView';
 import EmployeeManagement from './pages/EmployeeManagement';
+import EmployeeOnboarding from './pages/EmployeeOnboarding';
 import FinanceAdminDashboard from './pages/FinanceAdminDashboard';
 import HealthMonitor from './pages/HealthMonitor';
 import LeadDetails from './pages/LeadDetails';
@@ -79,7 +80,6 @@ import SetterPerformance from './pages/SetterPerformance';
 import SetterStats from './pages/SetterStats';
 import ShiftChecklistSettings from './pages/ShiftChecklistSettings';
 import UserManagement from './pages/UserManagement';
-import EmployeeOnboarding from './pages/EmployeeOnboarding';
 import __Layout from './Layout.jsx';
 
 
@@ -100,6 +100,7 @@ export const PAGES = {
     "ClientSettings": ClientSettings,
     "ClientView": ClientView,
     "EmployeeManagement": EmployeeManagement,
+    "EmployeeOnboarding": EmployeeOnboarding,
     "FinanceAdminDashboard": FinanceAdminDashboard,
     "HealthMonitor": HealthMonitor,
     "LeadDetails": LeadDetails,
@@ -116,7 +117,6 @@ export const PAGES = {
     "SetterStats": SetterStats,
     "ShiftChecklistSettings": ShiftChecklistSettings,
     "UserManagement": UserManagement,
-    "EmployeeOnboarding": EmployeeOnboarding,
 }
 
 export const pagesConfig = {

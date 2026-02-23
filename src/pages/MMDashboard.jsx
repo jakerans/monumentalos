@@ -42,8 +42,8 @@ export default function MMDashboard() {
         // Check if marketing manager has linked Employee record — redirect to onboarding if not
         if (appRole === 'marketing_manager') {
           try {
-            const earningsCheck = await base44.functions.invoke('getSetterEarningsData');
-            if (earningsCheck.data?.no_employee_record === true) {
+            const linkCheck = await base44.functions.invoke('checkEmployeeLinked');
+            if (linkCheck.data?.linked === false) {
               navigate(createPageUrl('EmployeeOnboarding'));
               return;
             }
