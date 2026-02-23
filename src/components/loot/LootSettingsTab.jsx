@@ -97,7 +97,7 @@ export default function LootSettingsTab({ settings, onSettingsSaved }) {
 
           <div>
             <Label className="text-slate-200">Base Drop Rate (%)</Label>
-            <p className="text-xs text-slate-400 mb-2">Chance of a box dropping on any single booking</p>
+            <p className="text-xs text-slate-400 mb-2">Chance of a reward dropping on any single booking</p>
             <Input
               type="number"
               value={formData.base_drop_rate}
@@ -135,7 +135,7 @@ export default function LootSettingsTab({ settings, onSettingsSaved }) {
 
           <div>
             <Label className="text-slate-200">Inventory Cap</Label>
-            <p className="text-xs text-slate-400 mb-2">Maximum unopened boxes a setter can hold</p>
+            <p className="text-xs text-slate-400 mb-2">Maximum unopened rewards a setter can hold</p>
             <Input
               type="number"
               value={formData.inventory_cap}
@@ -146,7 +146,7 @@ export default function LootSettingsTab({ settings, onSettingsSaved }) {
 
           <div>
             <Label className="text-slate-200">Inventory Yellow Warning</Label>
-            <p className="text-xs text-slate-400 mb-2">Box count that triggers yellow warning badge</p>
+            <p className="text-xs text-slate-400 mb-2">Reward count that triggers yellow warning badge</p>
             <Input
               type="number"
               value={formData.inventory_yellow_warning}
@@ -260,8 +260,8 @@ export default function LootSettingsTab({ settings, onSettingsSaved }) {
 
         {/* Box Images */}
         <div className="bg-slate-800/50 rounded-lg border border-slate-700/50 p-6 space-y-4">
-          <h3 className="text-white font-bold mb-4">Box Images</h3>
-          <p className="text-xs text-slate-400 mb-4">Custom images displayed on loot box cards. Leave blank to use default icon.</p>
+          <h3 className="text-white font-bold mb-4">Reward Images</h3>
+          <p className="text-xs text-slate-400 mb-4">Custom images displayed on booking reward cards. Leave blank to use default icon.</p>
 
           {['common', 'rare', 'epic', 'legendary'].map(rarity => (
             <div key={rarity} className="space-y-2">
@@ -270,7 +270,7 @@ export default function LootSettingsTab({ settings, onSettingsSaved }) {
                   className="w-2.5 h-2.5 rounded-full inline-block"
                   style={{ backgroundColor: RARITY_DOT_COLORS[rarity] }}
                 />
-                <Label className="text-slate-200 capitalize">{rarity} Box Image</Label>
+                <Label className="text-slate-200 capitalize">{rarity} Reward Image</Label>
               </div>
               <div>
                 <div className="flex items-center gap-2 mb-1">

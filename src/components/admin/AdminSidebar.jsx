@@ -39,7 +39,7 @@ const ADMIN_SECTIONS = {
       { key: 'EmployeeManagement', label: 'Scheduling', icon: Calendar },
       { key: 'SetterPerformance', label: 'Setter Management', icon: Headset },
       { key: 'SetterStats', label: 'Setter Reporting', icon: LineChart },
-      { key: 'LootAdmin', label: 'Loot System', icon: Gift },
+      { key: 'LootAdmin', label: 'Rewards Admin', icon: Gift },
     ],
   },
   settings: {

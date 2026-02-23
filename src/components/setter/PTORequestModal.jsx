@@ -210,7 +210,7 @@ export default function PTORequestModal({ open, onOpenChange, setterId, existing
                     <p className="text-xs text-slate-500">No unopened booking rewards available to offer.</p>
                   ) : (
                     <>
-                      <p className="text-[10px] text-slate-400">Select boxes to offer ({selectedBoxIds.length} selected)</p>
+                      <p className="text-[10px] text-slate-400">Select rewards to offer ({selectedBoxIds.length} selected)</p>
                       <div className="grid grid-cols-3 gap-1.5 max-h-32 overflow-y-auto">
                         {boxes.map(b => {
                           const sel = selectedBoxIds.includes(b.id);
