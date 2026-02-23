@@ -3,6 +3,8 @@ import { Link, useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import { base44 } from '@/api/base44Client';
 import { Calendar, History, Settings, Menu, X, LogOut, BarChart2 } from 'lucide-react';
+import ClientRetainerTourGuide from './ClientRetainerTourGuide';
+import ClientPerformanceTourGuide from './ClientPerformanceTourGuide';
 
 const BASE_NAV_ITEMS = [
   { label: 'My Appointments', retainerLabel: 'My Leads', page: 'ClientPortal', icon: Calendar },
@@ -34,6 +36,8 @@ export default function ClientSidebar({ user, currentPage, isRetainer = false })
               key={page}
               to={createPageUrl(page)}
               onClick={() => setMobileOpen(false)}
+              {...(page === 'AppointmentHistory' ? { 'data-tour': 'client-nav-history' } : {})}
+              {...(page === 'ClientReport' ? { 'data-tour': 'client-nav-report' } : {})}
               className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
                 active
                   ? 'text-black font-semibold'
@@ -47,6 +51,11 @@ export default function ClientSidebar({ user, currentPage, isRetainer = false })
           );
         })}
       </nav>
+
+      {/* Tour guide */}
+      <div className="px-3 py-2 border-t border-slate-700/50">
+        {isRetainer ? <ClientRetainerTourGuide /> : <ClientPerformanceTourGuide />}
+      </div>
 
       {/* User + logout */}
       <div className="px-3 py-4 border-t border-slate-700/50 space-y-1">

@@ -54,7 +54,7 @@ export default function RetainerPortalView({ kpis, leads, pagination, page, onPa
   return (
     <div className="space-y-4 sm:space-y-6">
       {/* KPI Cards */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2 sm:gap-3">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2 sm:gap-3" data-tour="retainer-kpis">
         {kpiCards.map(({ label, value, icon: Icon, color }) => (
           <div key={label} className="bg-slate-800/50 rounded-lg shadow p-3 sm:p-5 border border-slate-700/50">
             <div className="flex items-center gap-1.5 sm:gap-2 mb-1">
@@ -68,7 +68,7 @@ export default function RetainerPortalView({ kpis, leads, pagination, page, onPa
 
       {/* Needs Attention Banner */}
       {(kpis.needsAttentionCount ?? 0) > 0 && (
-        <div className="bg-amber-500/10 border border-amber-500/30 rounded-lg p-3 sm:p-4 flex items-start gap-3">
+        <div className="bg-amber-500/10 border border-amber-500/30 rounded-lg p-3 sm:p-4 flex items-start gap-3" data-tour="retainer-attention-banner">
           <AlertTriangle className="w-5 h-5 text-amber-400 shrink-0 mt-0.5" />
           <div>
             <p className="text-sm font-semibold text-amber-300">{kpis.needsAttentionCount} lead{kpis.needsAttentionCount > 1 ? 's' : ''} need your attention</p>
@@ -78,13 +78,13 @@ export default function RetainerPortalView({ kpis, leads, pagination, page, onPa
       )}
 
       {/* Lead Queue Header + Filters */}
-      <div>
+      <div data-tour="retainer-lead-queue">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3">
           <div>
             <h2 className="text-xl font-bold text-white">Lead Queue</h2>
             <p className="text-xs text-slate-500">{pagination.total_count} active lead{pagination.total_count !== 1 ? 's' : ''}</p>
           </div>
-          <div className="flex items-center gap-2 flex-wrap">
+          <div className="flex items-center gap-2 flex-wrap" data-tour="retainer-filters">
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}

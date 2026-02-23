@@ -12,7 +12,7 @@ export default function PerformancePortalView({ kpis, leads, pagination, page, o
   return (
     <div className="space-y-4 sm:space-y-6">
       {/* KPI Cards */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-2 sm:gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-2 sm:gap-4" data-tour="performance-kpis">
         <KPICard icon={CalendarCheck} color="rgb(96,165,250)" label="Booked This Month" value={kpis.scheduledMTD} />
         <KPICard icon={TrendingUp} color="rgb(74,222,128)" label="Show Rate" value={showRate} />
         <KPICard icon={CheckCircle} color="rgb(52,211,153)" label="Showed" value={kpis.showedMTD} />
@@ -27,17 +27,17 @@ export default function PerformancePortalView({ kpis, leads, pagination, page, o
 
       {/* Action Queue */}
       {needsOutcomeLeads.length > 0 && (
-        <>
-          <div>
+        <div data-tour="performance-action-queue">
+          <div className="mb-3">
             <h2 className="text-lg font-bold text-white">Confirm Outcomes</h2>
             <p className="text-xs text-red-400">{needsOutcomeLeads.length} appointment{needsOutcomeLeads.length !== 1 ? 's' : ''} need your input</p>
           </div>
-          <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-3 text-xs text-red-300">
+          <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-3 text-xs text-red-300 mb-3">
             These appointments have already occurred. Please confirm whether the homeowner showed up and report the outcome.
           </div>
 
           {/* Mobile */}
-          <div className="md:hidden space-y-3">
+          <div className="md:hidden space-y-3 mb-3">
             {needsOutcomeLeads.map(lead => (
               <div key={lead.id} className="ring-1 ring-red-500/50 rounded-lg">
                 <AppointmentCard
@@ -64,7 +64,7 @@ export default function PerformancePortalView({ kpis, leads, pagination, page, o
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-700/30">
-                  {needsOutcomeLeads.map(lead => (
+                  {needsOutcomeLeads.map((lead, idx) => (
                     <tr
                       key={lead.id}
                       onClick={() => onSelectLead(lead.id)}
@@ -81,6 +81,7 @@ export default function PerformancePortalView({ kpis, leads, pagination, page, o
                       <td className="px-6 py-4"><OutcomeBadge value={lead.outcome} /></td>
                       <td className="px-6 py-4">
                         <button
+                          {...(idx === 0 ? { 'data-tour': 'performance-outcome-btn' } : {})}
                           onClick={(e) => { e.stopPropagation(); onQuickOutcome(lead); }}
                           className="px-3 py-1 text-xs font-bold text-black rounded-full hover:opacity-90 transition-opacity"
                           style={{ backgroundColor: '#D6FF03' }}
@@ -96,7 +97,7 @@ export default function PerformancePortalView({ kpis, leads, pagination, page, o
           </div>
 
           <div className="border-t border-slate-700/50 my-4" />
-        </>
+        </div>
       )}
 
       {/* Upcoming Appointments */}
