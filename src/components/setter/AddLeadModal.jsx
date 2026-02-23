@@ -32,6 +32,7 @@ export default function AddLeadModal({ open, onOpenChange, clients, onAdd, userI
   });
   const [isBooked, setIsBooked] = useState(false);
   const [appointmentDate, setAppointmentDate] = useState('');
+  const [chatSTL, setChatSTL] = useState('');
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e) => {
