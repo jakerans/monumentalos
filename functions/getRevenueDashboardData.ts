@@ -54,8 +54,9 @@ function computeMonthlyPL(months, clients, leads, billingRecords, expenses) {
     });
     const collected = billingRecords.filter(b => b.status === 'paid' && ir(b.paid_date)).reduce((s, b) => s + (b.paid_amount || b.calculated_amount || 0), 0);
     const mExp = expenses.filter(e => ir(e.date) && e.expense_type !== 'distribution' && e.category !== 'distribution');
-    const cogs = mExp.filter(e => e.expense_type === 'cogs').reduce((s, e) => s + (e.amount || 0), 0);
-    const overhead = mExp.filter(e => e.expense_type !== 'cogs').reduce((s, e) => s + (e.amount || 0), 0);
+    const effAmt = (e) => e.is_refunded ? 0 : ((e.amount || 0) - (e.refund_amount || 0));
+    const cogs = mExp.filter(e => e.expense_type === 'cogs').reduce((s, e) => s + effAmt(e), 0);
+    const overhead = mExp.filter(e => e.expense_type !== 'cogs').reduce((s, e) => s + effAmt(e), 0);
     return {
       name: m.label, Revenue: Math.round(grossRevenue), Collected: Math.round(collected),
       COGS: Math.round(cogs), Overhead: Math.round(overhead),
@@ -69,8 +70,9 @@ function computeCashFlow(months, billingRecords, expenses) {
   return months.map(m => {
     const ir = (d) => inMonth(d, m.start, m.end);
     const inflows = billingRecords.filter(b => b.status === 'paid' && ir(b.paid_date)).reduce((s, b) => s + (b.paid_amount || b.calculated_amount || 0), 0);
-    const opEx = expenses.filter(e => ir(e.date) && e.expense_type !== 'distribution' && e.category !== 'distribution').reduce((s, e) => s + (e.amount || 0), 0);
-    const distributions = expenses.filter(e => ir(e.date) && (e.expense_type === 'distribution' || e.category === 'distribution')).reduce((s, e) => s + (e.amount || 0), 0);
+    const effAmt2 = (e) => e.is_refunded ? 0 : ((e.amount || 0) - (e.refund_amount || 0));
+    const opEx = expenses.filter(e => ir(e.date) && e.expense_type !== 'distribution' && e.category !== 'distribution').reduce((s, e) => s + effAmt2(e), 0);
+    const distributions = expenses.filter(e => ir(e.date) && (e.expense_type === 'distribution' || e.category === 'distribution')).reduce((s, e) => s + effAmt2(e), 0);
     const net = inflows - opEx - distributions;
     cumulative += net;
     return { name: m.label, Inflows: Math.round(inflows), 'Operating Expenses': Math.round(opEx), Distributions: Math.round(distributions), 'Net Cash Flow': Math.round(net), Cumulative: Math.round(cumulative) };
@@ -104,8 +106,9 @@ function computePeriodKPIs(clients, leads, billingRecords, expenses, startDate, 
   });
   const collected = billingRecords.filter(b => b.status === 'paid' && ir(b.paid_date)).reduce((s, b) => s + (b.paid_amount || b.calculated_amount || 0), 0);
   const re = expenses.filter(e => ir(e.date) && e.expense_type !== 'distribution' && e.category !== 'distribution');
-  const cogs = re.filter(e => e.expense_type === 'cogs').reduce((s, e) => s + (e.amount || 0), 0);
-  const overhead = re.filter(e => e.expense_type !== 'cogs').reduce((s, e) => s + (e.amount || 0), 0);
+  const effAmt = (e) => e.is_refunded ? 0 : ((e.amount || 0) - (e.refund_amount || 0));
+  const cogs = re.filter(e => e.expense_type === 'cogs').reduce((s, e) => s + effAmt(e), 0);
+  const overhead = re.filter(e => e.expense_type !== 'cogs').reduce((s, e) => s + effAmt(e), 0);
   const grossProfit = grossRevenue - cogs;
   const netProfit = collected - cogs - overhead;
   return { grossRevenue, collected, outstanding: grossRevenue - collected, cogs, overhead, grossProfit, netProfit, grossMargin: grossRevenue > 0 ? (grossProfit / grossRevenue) * 100 : 0, netMargin: collected > 0 ? (netProfit / collected) * 100 : 0 };

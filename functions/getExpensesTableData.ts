@@ -44,12 +44,13 @@ Deno.serve(async (req) => {
     let total = 0, cogsTotal = 0, overheadTotal = 0;
     const byCategoryMap = {};
     for (const e of rangeExpenses) {
-      const amt = e.amount || 0;
-      total += amt;
-      if (e.expense_type === 'cogs') cogsTotal += amt;
-      else if (e.expense_type === 'overhead') overheadTotal += amt;
+      const rawAmt = e.amount || 0;
+      const effectiveAmt = e.is_refunded ? 0 : (rawAmt - (e.refund_amount || 0));
+      total += effectiveAmt;
+      if (e.expense_type === 'cogs') cogsTotal += effectiveAmt;
+      else if (e.expense_type === 'overhead') overheadTotal += effectiveAmt;
       const cat = e.category || 'other';
-      byCategoryMap[cat] = (byCategoryMap[cat] || 0) + amt;
+      byCategoryMap[cat] = (byCategoryMap[cat] || 0) + effectiveAmt;
     }
     const byCategory = Object.entries(byCategoryMap)
       .map(([category, amount]) => ({ category, amount }))
