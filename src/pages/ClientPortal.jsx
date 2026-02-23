@@ -125,7 +125,7 @@ export default function ClientPortal() {
             Welcome{user?.full_name ? `, ${user.full_name.split(' ')[0]}` : ''}!
           </h2>
           <p className="text-sm text-slate-400 mt-1">
-            Here's your appointment overview for {new Date().toLocaleString('default', { month: 'long', year: 'numeric' })}.
+            Here's your {isRetainer ? 'lead' : 'appointment'} overview for {new Date().toLocaleString('default', { month: 'long', year: 'numeric' })}.
           </p>
         </div>
         {clientId && <OutstandingInvoiceAlert clientId={clientId} />}
