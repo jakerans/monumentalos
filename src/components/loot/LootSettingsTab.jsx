@@ -97,7 +97,7 @@ export default function LootSettingsTab({ settings, onSettingsSaved }) {
 
           <div>
             <Label className="text-slate-200">Base Drop Rate (%)</Label>
-            <p className="text-xs text-slate-400 mb-2">Chance of a reward dropping on any single booking</p>
+            <p className="text-xs text-slate-400 mb-2">Chance of a booking reward dropping on any single booking</p>
             <Input
               type="number"
               value={formData.base_drop_rate}
@@ -135,7 +135,7 @@ export default function LootSettingsTab({ settings, onSettingsSaved }) {
 
           <div>
             <Label className="text-slate-200">Inventory Cap</Label>
-            <p className="text-xs text-slate-400 mb-2">Maximum unopened rewards a setter can hold</p>
+            <p className="text-xs text-slate-400 mb-2">Maximum unopened booking rewards a setter can hold</p>
             <Input
               type="number"
               value={formData.inventory_cap}
@@ -146,7 +146,7 @@ export default function LootSettingsTab({ settings, onSettingsSaved }) {
 
           <div>
             <Label className="text-slate-200">Inventory Yellow Warning</Label>
-            <p className="text-xs text-slate-400 mb-2">Reward count that triggers yellow warning badge</p>
+            <p className="text-xs text-slate-400 mb-2">Booking reward count that triggers yellow warning badge</p>
             <Input
               type="number"
               value={formData.inventory_yellow_warning}
@@ -280,8 +280,8 @@ export default function LootSettingsTab({ settings, onSettingsSaved }) {
                       <Info className="w-3.5 h-3.5 text-slate-500 cursor-help" />
                     </TooltipTrigger>
                     <TooltipContent side="right" className="max-w-xs text-xs">
-                      Recommended: 400×400px PNG or WebP with transparent background. Max 2MB. Upload to any image host (Imgur, Cloudinary, etc.) and paste the direct image URL here. The image will be displayed on the box card — use a square format for best results.
-                    </TooltipContent>
+                       Recommended: 400×400px PNG or WebP with transparent background. Max 2MB. Upload to any image host (Imgur, Cloudinary, etc.) and paste the direct image URL here. The image will be displayed on the reward card — use a square format for best results.
+                     </TooltipContent>
                   </Tooltip>
                 </div>
                 <div className="flex items-center gap-3">
@@ -309,8 +309,8 @@ export default function LootSettingsTab({ settings, onSettingsSaved }) {
                       <Info className="w-3.5 h-3.5 text-slate-500 cursor-help" />
                     </TooltipTrigger>
                     <TooltipContent side="right" className="max-w-xs text-xs">
-                      Recommended: 400×400px PNG or WebP with transparent background. Max 2MB. This image is shown on the prize reveal card after a box is opened. Leave blank to fall back to the closed image.
-                    </TooltipContent>
+                       Recommended: 400×400px PNG or WebP with transparent background. Max 2MB. This image is shown on the prize reveal card after a reward is opened. Leave blank to fall back to the closed image.
+                     </TooltipContent>
                   </Tooltip>
                 </div>
                 <div className="flex items-center gap-3">

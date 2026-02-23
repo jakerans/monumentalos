@@ -247,7 +247,7 @@ function InventoryGrid({ boxes, count, cap, countColor, onOpenBox, onOpenAll, lo
 
       {count === 0 ? (
         <div className="text-center py-8 text-sm text-slate-500">
-          No unopened rewards — keep booking to earn rewards!
+          No unopened rewards — keep booking to earn booking rewards!
         </div>
       ) : (
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">

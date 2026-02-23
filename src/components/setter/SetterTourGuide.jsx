@@ -89,7 +89,7 @@ export default function SetterTourGuide() {
           element: '[data-tour="inventory-btn"]',
           popover: {
             title: '📦 Rewards Inventory',
-            description: 'When you book appointments, you earn booking rewards. Open them here to win prizes — cash bonuses, PTO days, and more. Don\'t let your inventory fill up or you\'ll stop earning rewards.',
+            description: 'When you book appointments, you earn booking rewards. Open them here to win prizes — cash bonuses, PTO days, and more. Don\'t let your inventory fill up or you\'ll stop earning booking rewards.',
             side: 'bottom',
           },
         },

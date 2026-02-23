@@ -307,8 +307,8 @@ export default function SpiffManager({ leads, users }) {
                     )}
                     <span>Goal: {sp.qualifier === 'stl' ? `≤${sp.goal_value}m` : sp.goal_value}</span>
                     {sp.loot_box_enabled && (
-                      <span className="text-purple-400 font-medium">🎁 Loot Box: {sp.loot_box_rarity?.charAt(0).toUpperCase() + sp.loot_box_rarity?.slice(1)}</span>
-                    )}
+                       <span className="text-purple-400 font-medium">🎁 Reward: {sp.loot_box_rarity?.charAt(0).toUpperCase() + sp.loot_box_rarity?.slice(1)}</span>
+                     )}
                     </div>
                     </div>
                     <button onClick={() => deleteMutation.mutate(sp.id)} className="text-slate-600 hover:text-red-400 p-1">
@@ -474,13 +474,13 @@ export default function SpiffManager({ leads, users }) {
                 <div className={`absolute top-0.5 w-4 h-4 rounded-full bg-white shadow transition-transform ${form.loot_box_enabled ? 'translate-x-5' : 'translate-x-0.5'}`} />
               </button>
               <div>
-                <span className="text-xs text-white font-medium">Award Loot Box on Completion</span>
-                <p className="text-[10px] text-slate-500">Winning setters receive a guaranteed loot box</p>
+                <span className="text-xs text-white font-medium">Award Booking Reward on Completion</span>
+                <p className="text-[10px] text-slate-500">Winning setters receive a guaranteed booking reward</p>
               </div>
             </div>
             {form.loot_box_enabled && (
               <div>
-                <label className="text-[10px] text-slate-400 uppercase mb-1 block">Loot Box Rarity</label>
+                <label className="text-[10px] text-slate-400 uppercase mb-1 block">Reward Rarity</label>
                 <select value={form.loot_box_rarity} onChange={e => setForm({ ...form, loot_box_rarity: e.target.value })}
                   className="w-full px-3 py-2 text-sm bg-slate-900 border border-slate-700 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-[#D6FF03]">
                   <option value="common">Common</option>

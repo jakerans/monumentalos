@@ -172,7 +172,7 @@ const PendingTransferCard = React.memo(function PendingTransferCard({ request, o
       action: 'finalize_transfer', request_id: request.id,
     });
     setActing(false);
-    toast({ title: `Loot boxes transferred to ${request.cover_setter_name}` });
+    toast({ title: `Booking rewards transferred to ${request.cover_setter_name}` });
     onAction();
   };
 
@@ -182,7 +182,7 @@ const PendingTransferCard = React.memo(function PendingTransferCard({ request, o
       action: 'return_held_boxes', request_id: request.id,
     });
     setActing(false);
-    toast({ title: `Loot boxes returned to ${request.setter_name}` });
+    toast({ title: `Booking rewards returned to ${request.setter_name}` });
     onAction();
   };
 

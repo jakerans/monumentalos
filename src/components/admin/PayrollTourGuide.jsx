@@ -65,7 +65,7 @@ export default function PayrollTourGuide({ onStart, setRunPayrollModalOpen }) {
           element: '[data-tour="check-number-toggle"]',
           popover: {
             title: '⚠️ Most Important Step',
-            description: 'First check of the month loads all prior month bonuses — MM performance pay, setter spiffs, and loot prizes. Second check is base pay only. Wrong selection means missed bonuses or paying them twice.',
+            description: 'First check of the month loads all prior month bonuses — MM performance pay, setter spiffs, and reward prizes. Second check is base pay only. Wrong selection means missed bonuses or paying them twice.',
             side: 'bottom',
           },
         },
@@ -105,7 +105,7 @@ export default function PayrollTourGuide({ onStart, setRunPayrollModalOpen }) {
           element: '[data-tour="confirm-run-btn"]',
           popover: {
             title: '🛑 Point of No Return',
-            description: "⚠️ Do NOT click this during the guide. When you click Confirm & Run Payroll for real, expenses are created, records are marked paid, and loot wins are logged. Only do this when everything looks right.",
+            description: "⚠️ Do NOT click this during the guide. When you click Confirm & Run Payroll for real, expenses are created, records are marked paid, and reward wins are logged. Only do this when everything looks right.",
             side: 'top',
           },
         },
