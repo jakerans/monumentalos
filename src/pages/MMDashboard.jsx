@@ -224,6 +224,7 @@ export default function MMDashboard() {
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.35 }}
+          data-tour="mm-date-range"
           className="flex items-center justify-between mb-3"
         >
           <DateRangePicker
@@ -233,11 +234,14 @@ export default function MMDashboard() {
             onEndChange={setDateEnd}
           />
         </motion.div>
-        <MMTopStats stats={topStats} allLeads={allLeads} allSpend={allSpend} periodRange={periodRange} />
+        <div data-tour="mm-top-stats">
+          <MMTopStats stats={topStats} allLeads={allLeads} allSpend={allSpend} periodRange={periodRange} />
+        </div>
 
         {/* Chart toggle + chart */}
         <div className="flex items-center mb-3">
           <button
+            data-tour="mm-chart-toggle"
             onClick={() => setShowChart(!showChart)}
             className={`px-3 py-1.5 text-xs font-medium rounded-md border transition-colors ${
               showChart ? 'bg-[#D6FF03]/10 border-[#D6FF03]/30 text-[#D6FF03]' : 'border-slate-700 text-slate-400 hover:text-white hover:bg-slate-800'
@@ -265,7 +269,7 @@ export default function MMDashboard() {
           style={{ height: 'auto', minHeight: 'min(calc(100vh - 180px), 500px)' }}
         >
           {/* Main table — always visible */}
-          <div className="flex-1 min-w-0">
+          <div className="flex-1 min-w-0" data-tour="mm-client-table">
             <ClientTable
               clientMetrics={clientMetrics}
               onSelectClient={setSelectedClient}
@@ -273,7 +277,7 @@ export default function MMDashboard() {
           </div>
 
           {/* Right panel — AI recap or Client quick view */}
-          <div className="hidden lg:flex lg:flex-col w-80 flex-shrink-0 gap-3 overflow-y-auto">
+          <div className="hidden lg:flex lg:flex-col w-80 flex-shrink-0 gap-3 overflow-y-auto" data-tour="mm-right-panel">
             {selectedClient ? (
               <ClientQuickView
                 client={selectedClient}

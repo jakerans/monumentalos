@@ -5,6 +5,7 @@ import { base44 } from '@/api/base44Client';
 import { LayoutDashboard, LogOut, ClipboardCheck, Zap, ZapOff } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useEffectsToggle } from '../shared/useEffectsToggle';
+import MMTourGuide from './MMTourGuide';
 
 export default function MMNav({ user, clients, pendingOnboardCount = 0 }) {
   const { effectsOn, toggle: toggleEffects } = useEffectsToggle();
@@ -42,6 +43,7 @@ export default function MMNav({ user, clients, pendingOnboardCount = 0 }) {
             >
               <Link
                 to={createPageUrl('MMOnboard')}
+                data-tour="mm-onboard-link"
                 className="relative inline-flex items-center gap-1 sm:gap-1.5 px-2 sm:px-3 py-1 sm:py-1.5 text-[10px] sm:text-xs font-semibold rounded-md text-black hover:opacity-90 transition-colors shadow-sm glow-pulse"
                 style={{backgroundColor:'#D6FF03'}}
               >
@@ -57,6 +59,7 @@ export default function MMNav({ user, clients, pendingOnboardCount = 0 }) {
             </motion.div>
           </div>
           <div className="flex items-center gap-1.5 sm:gap-3 shrink-0">
+            <MMTourGuide />
             {user?.app_role === 'admin' && (
               <select
                 onChange={(e) => {
@@ -64,6 +67,7 @@ export default function MMNav({ user, clients, pendingOnboardCount = 0 }) {
                   else if (e.target.value === 'setter') navigate(createPageUrl('SetterDashboard'));
                 }}
                 defaultValue="mm"
+                data-tour="mm-view-switcher"
                 className="px-1.5 sm:px-2 py-1 text-[10px] sm:text-xs bg-slate-800/80 border border-slate-700/50 text-slate-300 rounded-md transition-all hover:border-slate-600 max-w-[80px] sm:max-w-none"
               >
                 <option value="mm">MM</option>
