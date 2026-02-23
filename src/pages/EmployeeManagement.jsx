@@ -111,8 +111,10 @@ export default function EmployeeManagement() {
   };
 
   const handleAdd = async (data) => {
-    await base44.entities.Employee.create(data);
+    const created = await base44.entities.Employee.create(data);
+    toast({ title: 'Employee Added', description: `${data.full_name} has been added to the roster.`, variant: 'success' });
     refetch();
+    return created;
   };
 
   const handleSelectEmp = (emp) => {
