@@ -96,6 +96,7 @@ export default function ExpenseToolbar({ onRefresh, onAddExpense, uncategorizedC
           <button
             onClick={handleCategorize}
             disabled={categorizing}
+            data-tour="expense-ai-btn"
             className="px-3 py-1.5 text-xs font-medium bg-purple-600 text-white rounded-md hover:bg-purple-700 disabled:opacity-50 flex items-center gap-1.5"
           >
             {categorizing ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Sparkles className="w-3.5 h-3.5" />}
@@ -113,7 +114,7 @@ export default function ExpenseToolbar({ onRefresh, onAddExpense, uncategorizedC
         </button>
 
         {/* Overflow menu */}
-        <div className="relative ml-auto" ref={menuRef}>
+        <div className="relative ml-auto" ref={menuRef} data-tour="expense-overflow-menu">
           <button
             onClick={() => setMenuOpen(v => !v)}
             className="p-1.5 rounded-md text-slate-400 hover:text-white hover:bg-slate-700/50"

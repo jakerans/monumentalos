@@ -222,10 +222,12 @@ export default function ExpenseManager({ startDate, endDate, onAddExpense }) {
       </div>
 
       {/* Duplicate finder */}
-      <DuplicateExpenseFinder onCleanupDone={refetch} />
+      <div data-tour="expense-duplicate-cleaner">
+        <DuplicateExpenseFinder onCleanupDone={refetch} />
+      </div>
 
       {/* Category breakdown */}
-      <div className="bg-slate-800/50 rounded-lg border border-slate-700/50 p-4">
+      <div className="bg-slate-800/50 rounded-lg border border-slate-700/50 p-4" data-tour="expense-category-breakdown">
         <h3 className="text-xs font-bold text-slate-400 uppercase mb-3">By Category</h3>
         <div className="space-y-2">
           {byCategory.map(({ category, amount }) => (
@@ -276,7 +278,7 @@ export default function ExpenseManager({ startDate, endDate, onAddExpense }) {
       )}
 
       {/* Search + Filters + Add */}
-      <div className="space-y-2">
+      <div className="space-y-2" data-tour="expense-filters">
         <div className="relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-500" />
           <input
@@ -372,7 +374,7 @@ export default function ExpenseManager({ startDate, endDate, onAddExpense }) {
       </div>
 
       {/* Desktop table */}
-      <div className={`hidden sm:block bg-slate-800/50 rounded-lg border border-slate-700/50 overflow-hidden relative ${pageSwitching ? 'opacity-60' : ''}`}>
+      <div className={`hidden sm:block bg-slate-800/50 rounded-lg border border-slate-700/50 overflow-hidden relative ${pageSwitching ? 'opacity-60' : ''}`} data-tour="expense-table">
         {pageSwitching && (
           <div className="absolute inset-0 z-10 flex items-center justify-center bg-slate-900/30">
             <div className="w-5 h-5 border-2 border-[#D6FF03]/40 border-t-[#D6FF03] rounded-full animate-spin" />

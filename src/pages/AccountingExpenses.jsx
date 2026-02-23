@@ -59,15 +59,18 @@ export default function AccountingExpenses() {
       <div className="min-h-screen bg-[#0B0F1A] flex">
         <AdminSidebar user={user} currentPage="AccountingExpenses" clients={clients} />
         <main className="flex-1 min-w-0 max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-5">
-          <MonthlyClosePanel />
+          <div data-tour="expense-monthly-close">
+            <MonthlyClosePanel />
+          </div>
 
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div>
               <h1 className="text-2xl font-bold text-white">Expenses</h1>
               <p className="text-sm text-slate-400">Manage, categorize, and sync expenses</p>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2" data-tour="expense-date-range">
               <DateRangePicker startDate={startDate} endDate={endDate} onStartChange={setStartDate} onEndChange={setEndDate} />
+              <ExpensesTourGuide />
             </div>
           </div>
 
