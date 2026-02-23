@@ -29,22 +29,11 @@ export default function InviteUserModal({ open, onOpenChange, clients = [], onIn
 
     setSaving(true);
     try {
-      // Admins and onboard_admins get platform 'admin' role for full permissions
-      const platformRole = (role === 'admin' || role === 'onboard_admin') ? 'admin' : 'user';
-      await base44.users.inviteUser(email.trim(), platformRole);
-
-      // Create a PendingInvite so the app-level role is applied on signup
-      if (role !== 'admin') {
-        const inviteData = {
-          email: email.trim().toLowerCase(),
-          intended_role: role,
-          status: 'pending',
-        };
-        if (role === 'client' && clientId) {
-          inviteData.client_id = clientId;
-        }
-        await base44.entities.PendingInvite.create(inviteData);
-      }
+      await base44.functions.invoke('inviteClientUser', {
+        email: email.trim(),
+        intended_role: role,
+        client_id: (role === 'client' && clientId) ? clientId : undefined,
+      });
 
       toast({ title: 'Invitation Sent', description: `${email} has been invited as ${role}.`, variant: 'success' });
       setSuccess(`Invitation sent to ${email}`);

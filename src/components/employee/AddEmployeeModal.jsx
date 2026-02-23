@@ -67,17 +67,11 @@ export default function AddEmployeeModal({ open, onOpenChange, onAdd }) {
 
       if (shouldInvite && form.email?.trim()) {
         try {
-          const role = form.app_role || 'setter';
-          const platformRole = (role === 'admin' || role === 'onboard_admin') ? 'admin' : 'user';
-          await base44.users.inviteUser(form.email.trim(), platformRole);
-
-          if (role !== 'admin') {
-            await base44.entities.PendingInvite.create({
-              email: form.email.trim().toLowerCase(),
+            const role = form.app_role || 'setter';
+            await base44.functions.invoke('inviteClientUser', {
+              email: form.email.trim(),
               intended_role: role,
-              status: 'pending',
             });
-          }
 
           toast({ title: 'Invitation Sent', description: `${form.email} will receive a login invite.`, variant: 'success' });
         } catch (invErr) {
