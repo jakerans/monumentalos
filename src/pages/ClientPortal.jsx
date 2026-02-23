@@ -7,6 +7,7 @@ import { Calendar, CheckCircle, Clock, AlertTriangle, Ban, ChevronLeft, ChevronR
 import { toast } from '@/components/ui/use-toast';
 import LeadDetailsDrawer from '../components/LeadDetailsDrawer';
 import AppointmentCard from '../components/client/AppointmentCard';
+import QuickOutcomeModal from '../components/client/QuickOutcomeModal';
 import OutstandingInvoiceAlert from '../components/client/OutstandingInvoiceAlert';
 import PageErrorBoundary from '../components/shared/PageErrorBoundary';
 import PageLoader from '../components/shared/PageLoader';
@@ -22,6 +23,7 @@ export default function ClientPortal() {
 
   const [selectedLeadId, setSelectedLeadId] = useState(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const [quickOutcomeLead, setQuickOutcomeLead] = useState(null);
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -179,6 +181,7 @@ export default function ClientPortal() {
                   lead={lead}
                   onSelect={(id) => { setSelectedLeadId(id); setDrawerOpen(true); }}
                   needsOutcome={lead._needsOutcome}
+                  onQuickOutcome={!isRetainer ? setQuickOutcomeLead : undefined}
                 />
               </div>
             ))
@@ -201,8 +204,8 @@ export default function ClientPortal() {
                   <th className="px-6 py-3 text-left text-xs font-medium text-slate-400 uppercase">Disposition</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-slate-400 uppercase">Outcome</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-slate-400 uppercase">Revenue</th>
-
-                </tr>
+                  {!isRetainer && <th className="px-6 py-3 text-left text-xs font-medium text-slate-400 uppercase"></th>}
+                  </tr>
               </thead>
               <tbody className="divide-y divide-slate-700/30">
                 {activeLeads.length === 0 ? (
@@ -272,7 +275,19 @@ export default function ClientPortal() {
                           <span className="text-sm text-gray-400">—</span>
                         )}
                       </td>
-
+                      {!isRetainer && (
+                        <td className="px-6 py-4">
+                          {isNeedsOutcome && (
+                            <button
+                              onClick={(e) => { e.stopPropagation(); setQuickOutcomeLead(lead); }}
+                              className="px-3 py-1 text-xs font-bold text-black rounded-full hover:opacity-90 transition-opacity"
+                              style={{ backgroundColor: '#D6FF03' }}
+                            >
+                              Update Outcome
+                            </button>
+                          )}
+                        </td>
+                      )}
                     </tr>
                     );
                   })
@@ -325,6 +340,13 @@ export default function ClientPortal() {
           open={drawerOpen}
           onOpenChange={setDrawerOpen}
           onLeadUpdated={refetch}
+        />
+
+        <QuickOutcomeModal
+          open={!!quickOutcomeLead}
+          onOpenChange={(v) => { if (!v) setQuickOutcomeLead(null); }}
+          lead={quickOutcomeLead}
+          onUpdated={() => { refetch(); setQuickOutcomeLead(null); }}
         />
       </main>
     </div>
