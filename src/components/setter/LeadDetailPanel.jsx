@@ -110,6 +110,17 @@ export default function LeadDetailPanel({ lead, clientName, setterName, bookedBy
             </div>
           )}
 
+          {lead.status === 'disqualified' && (
+            <div className="flex gap-2">
+              <button
+                onClick={() => { onAction('reactivate', lead); onOpenChange(false); }}
+                className="flex-1 text-sm px-3 py-2 bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 font-medium"
+              >
+                ↩ Reactivate Lead
+              </button>
+            </div>
+          )}
+
           {/* Contact Info */}
           <div>
             <h3 className="text-xs font-semibold text-gray-500 uppercase mb-2.5">Contact</h3>

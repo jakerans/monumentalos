@@ -125,6 +125,14 @@ export default function LeadCard({ lead, clientName, onAction, onSelect, urgency
             </button>
           </>
         )}
+        {lead.status === 'disqualified' && (
+          <button
+            onClick={(e) => { e.stopPropagation(); onAction('reactivate', lead); }}
+            className="flex-1 text-xs px-2 py-1.5 bg-blue-500/10 border border-blue-500/30 text-blue-400 rounded-lg hover:bg-blue-500/20 font-medium flex items-center justify-center gap-1"
+          >
+            ↩ Reactivate
+          </button>
+        )}
         {lead.status === 'appointment_booked' && lead.appointment_date && (
           <span className="text-[11px] text-green-400 font-medium">
             📅 {new Date(lead.appointment_date).toLocaleDateString()} {new Date(lead.appointment_date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}

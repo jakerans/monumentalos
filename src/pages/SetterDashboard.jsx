@@ -253,7 +253,23 @@ export default function SetterDashboard() {
     } else if (action === 'disqualify') {
       setDqLead(lead);
       setDqOpen(true);
+    } else if (action === 'reactivate') {
+      handleReactivate(lead);
     }
+  };
+
+  const handleReactivate = (lead) => {
+    const reactivateUpdates = {
+      status: lead.first_call_made_date ? 'first_call_made' : 'new',
+      dq_reason: '',
+      disqualified_by_setter_id: '',
+      disqualified_date: '',
+    };
+    optimisticLeadUpdate(lead.id, reactivateUpdates);
+    toast({ title: 'Lead Reactivated', description: `${lead.name} moved back to ${lead.first_call_made_date ? 'In Progress' : 'New Leads'}.`, variant: 'success' });
+    base44.entities.Lead.update(lead.id, reactivateUpdates)
+      .then(() => refetch())
+      .catch((err) => { console.error('Reactivate failed:', err); toast({ title: 'Sync error — refreshing...', variant: 'destructive' }); refetch(); });
   };
 
   const handleDisqualify = (leadId, dqReason) => {
