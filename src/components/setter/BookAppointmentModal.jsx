@@ -11,12 +11,14 @@ export default function BookAppointmentModal({ lead, bookingLink, open, onOpenCh
   const [step, setStep] = useState('booking'); // 'booking' | 'details'
   const [date, setDate] = useState('');
   const [time, setTime] = useState('');
+  const [notes, setNotes] = useState('');
   const [loading, setLoading] = useState(false);
 
   const handleClose = () => {
     setStep('booking');
     setDate('');
     setTime('');
+    setNotes('');
     onOpenChange(false);
   };
 
@@ -29,7 +31,7 @@ export default function BookAppointmentModal({ lead, bookingLink, open, onOpenCh
     if (!date || !time) return;
     setLoading(true);
     const appointmentDate = new Date(`${date}T${time}`).toISOString();
-    await onBook(lead.id, appointmentDate);
+    await onBook(lead.id, appointmentDate, notes.trim() || undefined);
     setLoading(false);
     handleClose();
   };
@@ -121,6 +123,16 @@ export default function BookAppointmentModal({ lead, bookingLink, open, onOpenCh
                 onChange={(e) => setTime(e.target.value)}
                 required
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 text-sm"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Notes</label>
+              <textarea
+                value={notes}
+                onChange={(e) => setNotes(e.target.value)}
+                rows={3}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 text-sm resize-none"
+                placeholder="Paste conversation notes, project details, etc."
               />
             </div>
             <div className="bg-gray-50 rounded-lg p-3 border border-gray-200">

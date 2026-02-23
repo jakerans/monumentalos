@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { Users, CalendarCheck, DollarSign, AlertTriangle, TrendingUp, Clock } from 'lucide-react';
+import { Users, CalendarCheck, DollarSign, AlertTriangle, TrendingUp, Target } from 'lucide-react';
 import SparklineCard from '../shared/SparklineCard';
 import dayjs from 'dayjs';
 
@@ -54,17 +54,11 @@ export default function MMTopStats({ stats, allLeads = [], allSpend = [], period
     const priorSpendItems = allSpend.filter(s => s.date >= prStartDate && s.date < pStartDate);
     const priorSpendTotal = priorSpendItems.reduce((s, r) => s + (r.amount || 0), 0);
 
-    const stlLeads = allLeads.filter(l => l.speed_to_lead_minutes != null && l.created_date >= pStartStr && l.created_date <= pEndStr);
-    const priorStlLeads = allLeads.filter(l => l.speed_to_lead_minutes != null && l.created_date >= prStartStr && l.created_date < pStartStr);
-    const priorAvgSTL = priorStlLeads.length > 0 ? priorStlLeads.reduce((s, l) => s + l.speed_to_lead_minutes, 0) / priorStlLeads.length : null;
-
     return {
       apptsSpark: buildDailySparkline(curApptLeads, 'date_appointment_set', pStart, pEnd),
       priorAppts: priorApptLeads.length,
       spendSpark: buildDailySparkline(curSpendItems, 'date', pStart, pEnd, 'amount'),
       priorSpend: priorSpendTotal,
-      stlSpark: stlLeads.length >= 2 ? stlLeads.slice(-20).map(l => ({ v: l.speed_to_lead_minutes })) : [],
-      priorAvgSTL,
     };
   }, [hasPeriod, allLeads, allSpend, pStart, pEnd, prStart]);
 
@@ -72,7 +66,6 @@ export default function MMTopStats({ stats, allLeads = [], allSpend = [], period
   const apptsChange = pctChange(stats.apptsSet, sparklines.priorAppts);
   const spendChange = pctChange(stats.spend, sparklines.priorSpend);
   const cpaChange = stats.avgCPA > 0 && priorCPA > 0 ? pctChange(stats.avgCPA, priorCPA) : null;
-  const stlChange = stats.avgSTL != null && sparklines.priorAvgSTL != null ? pctChange(stats.avgSTL, sparklines.priorAvgSTL) : null;
 
   const items = [
     { label: 'Active Clients', value: stats.activeClients, icon: Users, color: 'text-blue-400', bg: 'bg-blue-500/10', spark: '#60a5fa' },
@@ -91,9 +84,8 @@ export default function MMTopStats({ stats, allLeads = [], allSpend = [], period
       comparison: cpaChange != null ? { prior: `$${Math.round(priorCPA)}`, change: Math.round(cpaChange), invertColor: true } : null,
     },
     {
-      label: 'Avg STL (min)', value: stats.avgSTL === null ? '—' : stats.avgSTL.toFixed(0), icon: Clock, color: 'text-cyan-400', bg: 'bg-cyan-500/10', spark: '#22d3ee',
-      sparkData: sparklines.stlSpark,
-      comparison: stlChange != null ? { prior: `${Math.round(sparklines.priorAvgSTL)}m`, change: Math.round(stlChange), invertColor: true } : null,
+      label: 'Target Hit Rate', value: stats.targetHitRate === null ? '—' : `${stats.targetHitRate}%`, icon: Target, color: stats.targetHitRate >= 70 ? 'text-green-400' : stats.targetHitRate >= 40 ? 'text-amber-400' : 'text-red-400', bg: stats.targetHitRate >= 70 ? 'bg-green-500/10' : stats.targetHitRate >= 40 ? 'bg-amber-500/10' : 'bg-red-500/10',
+      subtitle: stats.clientsWithGoals > 0 ? `${stats.wontHitCount} of ${stats.clientsWithGoals} won't hit` : 'No goals set',
     },
     { label: 'Alerts', value: stats.alertCount, icon: AlertTriangle, color: stats.alertCount > 0 ? 'text-red-400' : 'text-slate-500', bg: stats.alertCount > 0 ? 'bg-red-500/10' : 'bg-slate-800', spark: '#f87171' },
   ];
