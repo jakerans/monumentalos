@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { base44 } from '@/api/base44Client';
+import { toast } from '@/components/ui/use-toast';
 
 const ROLES = [
   { value: 'admin', label: 'Admin' },
