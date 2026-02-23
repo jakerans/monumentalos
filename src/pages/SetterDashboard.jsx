@@ -229,6 +229,7 @@ export default function SetterDashboard() {
       newStats.newCount = newPipeline.newLeads.length;
       newStats.inProgressCount = newPipeline.inProgressLeads.length;
       newStats.bookedCount = newPipeline.bookedLeads.length;
+      newStats.dqCount = newPipeline.dqLeads.length;
 
       return { ...old, pipeline: newPipeline, stats: newStats };
     });
@@ -247,7 +248,7 @@ export default function SetterDashboard() {
     }
   };
 
-  const handleDisqualify = async (leadId, dqReason) => {
+  const handleDisqualify = (leadId, dqReason) => {
     const lead = allPipelineLeads.find(l => l.id === leadId);
     const dqUpdates = {
       status: 'disqualified',
@@ -262,7 +263,7 @@ export default function SetterDashboard() {
       .catch((err) => { console.error('DQ failed:', err); toast({ title: 'Sync error — refreshing...', variant: 'destructive' }); refetch(); });
   };
 
-  const handleFirstCallResult = async (leadId, result, dqReason) => {
+  const handleFirstCallResult = (leadId, result, dqReason) => {
     const lead = allPipelineLeads.find(l => l.id === leadId);
     const leadName = lead?.name || 'Lead';
 
