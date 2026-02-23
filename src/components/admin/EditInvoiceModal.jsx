@@ -32,7 +32,6 @@ export default function EditInvoiceModal({ record, clientName, open, onOpenChang
       rate: Number(rate),
       calculated_amount: isRetainer ? Number(manualAmount) : Number(quantity) * Number(rate),
       manual_amount: isRetainer ? Number(manualAmount) : undefined,
-      calculated_amount: isRetainer ? Number(manualAmount) : Number(quantity) * Number(rate),
       notes,
       status,
     };
