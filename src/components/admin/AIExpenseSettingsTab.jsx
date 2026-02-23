@@ -129,7 +129,7 @@ export default function AIExpenseSettingsTab() {
           <textarea
             value={instructions}
             onChange={e => setInstructions(e.target.value)}
-            rows={4}
+            rows={12}
             placeholder="e.g. 'Always categorize Meta/Facebook charges as ad_spend. Stripe fees should be software.'"
             className="w-full px-3 py-2 text-xs bg-slate-900 border border-slate-700 rounded-md text-white placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-[#D6FF03]/50 resize-none"
           />
