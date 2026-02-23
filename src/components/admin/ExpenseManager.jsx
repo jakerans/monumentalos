@@ -246,11 +246,32 @@ export default function ExpenseManager({ startDate, endDate, onAddExpense }) {
 
       {/* Uncategorized alert banner */}
       {uncategorizedCount > 0 && (
-        <div className="bg-amber-500/10 border border-amber-500/30 rounded-lg p-3 flex items-center gap-2">
-          <AlertTriangle className="w-4 h-4 text-amber-400 shrink-0" />
-          <span className="text-sm text-amber-300">
-            <strong>{uncategorizedCount}</strong> expense{uncategorizedCount !== 1 ? 's' : ''} need categorization
-          </span>
+        <div className="bg-amber-500/10 border border-amber-500/30 rounded-lg p-3 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <AlertTriangle className="w-4 h-4 text-amber-400 shrink-0" />
+            <span className="text-sm text-amber-300">
+              <strong>{uncategorizedCount}</strong> expense{uncategorizedCount !== 1 ? 's' : ''} need categorization
+            </span>
+          </div>
+        </div>
+      )}
+
+      {/* AI pending review banner */}
+      {aiPendingCount > 0 && (
+        <div className="bg-purple-500/10 border border-purple-500/30 rounded-lg p-3 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Sparkles className="w-4 h-4 text-purple-400 shrink-0" />
+            <span className="text-sm text-purple-300">
+              <strong>{aiPendingCount}</strong> expense{aiPendingCount !== 1 ? 's' : ''} AI-categorized — review needed
+            </span>
+          </div>
+          <button
+            onClick={handleApproveAllAI}
+            className="px-3 py-1.5 text-xs font-medium bg-purple-600 text-white rounded-md hover:bg-purple-700 flex items-center gap-1.5 shrink-0"
+          >
+            <CheckCircle className="w-3.5 h-3.5" />
+            Approve All
+          </button>
         </div>
       )}
 
