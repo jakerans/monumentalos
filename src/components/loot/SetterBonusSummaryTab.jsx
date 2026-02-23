@@ -114,7 +114,7 @@ export default function SetterBonusSummaryTab({ defaultPeriod }) {
 
               {setter.loot_items.length > 0 && (
                 <div>
-                  <p className="text-[10px] text-slate-500 uppercase tracking-wider mb-1">Booking Reward Wins</p>
+                  <p className="text-[10px] text-slate-500 uppercase tracking-wider mb-1">Booking Rewards</p>
                   <div className="space-y-1">
                     {setter.loot_items.map(item => (
                       <div key={item.id} className="flex items-center justify-between py-1">
