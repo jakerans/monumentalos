@@ -948,6 +948,7 @@ function ExpenseRow({ expense: e, clients, bankAccounts, bankAccountMap, onUpdat
   return (
     <tr className={`hover:bg-slate-700/20 transition-colors group ${
       accepted ? 'opacity-50' :
+      isRefunded ? 'opacity-50' :
       hasPendingAI ? 'bg-yellow-500/8 border-l-2 border-l-yellow-500/50' : ''
     } ${selected ? 'bg-red-500/5' : ''}`}>
       <td className="px-2 py-2 text-center">
