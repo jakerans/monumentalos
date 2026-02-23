@@ -82,25 +82,34 @@ export default function PTORequestModal({ open, onOpenChange, setterId, existing
       payload.offer_loot_box_ids = selectedBoxIds;
     }
 
-    const res = await base44.functions.invoke('managePTORequest', payload);
-    setSubmitting(false);
+    try {
+      const res = await base44.functions.invoke('managePTORequest', payload);
 
-    if (res.data?.insufficient_pto) {
-      setError("You don't have enough PTO days available.");
-      return;
-    }
-    if (res.data?.invalid_boxes) {
-      setError('One or more selected loot boxes are no longer available.');
-      return;
-    }
-    if (res.data?.duplicate) {
-      setError('You already have a request for this date.');
-      return;
-    }
-    if (res.data?.success) {
-      toast({ title: 'PTO Request Submitted', description: selectedCover ? 'Awaiting cover acceptance.' : 'Sent to admin for review.' });
-      onOpenChange(false);
-      onCreated();
+      if (res.data?.insufficient_pto) {
+        setError("You don't have enough PTO days available.");
+      } else if (res.data?.invalid_boxes) {
+        setError('One or more selected loot boxes are no longer available.');
+      } else if (res.data?.duplicate) {
+        setError('You already have a request for this date.');
+      } else if (res.data?.success) {
+        toast({ title: 'PTO Request Submitted', description: selectedCover ? 'Awaiting cover acceptance.' : 'Sent to admin for review.' });
+        onOpenChange(false);
+        onCreated();
+      } else {
+        setError('Something went wrong. Please try again.');
+      }
+    } catch (err) {
+      console.error('PTO submit failed:', err);
+      const msg = err?.message || '';
+      if (msg.includes('Insufficient') || msg.includes('insufficient')) {
+        setError("You don't have enough PTO days available.");
+      } else if (msg.includes('duplicate') || msg.includes('already exists')) {
+        setError('You already have a request for this date.');
+      } else {
+        setError('Failed to submit PTO request. Please try again.');
+      }
+    } finally {
+      setSubmitting(false);
     }
   };
 
