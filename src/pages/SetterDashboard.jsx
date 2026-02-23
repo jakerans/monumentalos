@@ -312,7 +312,7 @@ export default function SetterDashboard() {
     }
   };
 
-  const handleBookAppointment = async (leadId, appointmentDate) => {
+  const handleBookAppointment = async (leadId, appointmentDate, bookingNotes) => {
     const lead = allPipelineLeads.find(l => l.id === leadId);
     const bookUpdates = {
       status: 'appointment_booked',
@@ -320,6 +320,7 @@ export default function SetterDashboard() {
       date_appointment_set: new Date().toISOString(),
       disposition: 'scheduled',
       booked_by_setter_id: user.id,
+      ...(bookingNotes ? { notes: bookingNotes } : {}),
     };
     optimisticLeadUpdate(leadId, bookUpdates);
     toast({ title: '🗓️ Appointment Booked!', description: `${lead?.name || 'Lead'} is scheduled.`, variant: 'success', duration: 5000 });

@@ -204,10 +204,11 @@ export default function MMDashboard() {
       cpaChange = ((avgCPA - priorCPA) / priorCPA) * 100;
     }
 
-    const stlClients = clientMetrics.filter(c => c.stl !== null);
-    const avgSTL = stlClients.length > 0 ? stlClients.reduce((s, c) => s + c.stl, 0) / stlClients.length : null;
+    const clientsWithGoals = clientMetrics.filter(c => c.effectiveGoalStatus && c.effectiveGoalStatus !== 'no_goal');
+    const wontHitCount = clientsWithGoals.filter(c => c.effectiveGoalStatus === 'behind_wont_meet').length;
+    const targetHitRate = clientsWithGoals.length > 0 ? Math.round(((clientsWithGoals.length - wontHitCount) / clientsWithGoals.length) * 100) : null;
     const alertCount = clientMetrics.filter(c => c.alerts.length > 0).length;
-    return { activeClients, apptsSet, spend, avgCPA, cpaChange, avgSTL, alertCount, periodLabel: periodRange.label };
+    return { activeClients, apptsSet, spend, avgCPA, cpaChange, targetHitRate, clientsWithGoals: clientsWithGoals.length, wontHitCount, alertCount, periodLabel: periodRange.label };
   }, [clientMetrics, periodRange, allLeads, allSpend]);
 
   if (!user) return null;
