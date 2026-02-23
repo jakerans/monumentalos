@@ -40,13 +40,13 @@ Deno.serve(async (req) => {
     const activeClientCount = clients.length;
 
     // Step 2 — Shared costs (expenses with no client_id)
-    const sharedExpenses = periodExpenses.filter(e => !e.client_id);
+    const sharedExpenses = periodExpenses.filter(e => !e.client_id && e.expense_type !== 'distribution' && e.category !== 'distribution');
     let totalSharedCogs = 0;
     let totalSharedOverhead = 0;
     for (const e of sharedExpenses) {
       const amt = e.is_refunded ? 0 : ((e.amount || 0) - (e.refund_amount || 0));
       if (e.expense_type === 'cogs') totalSharedCogs += amt;
-      else if (e.expense_type === 'overhead') totalSharedOverhead += amt;
+      else totalSharedOverhead += amt;
     }
 
     const perClientSharedCogs = activeClientCount > 0 ? totalSharedCogs / activeClientCount : 0;
