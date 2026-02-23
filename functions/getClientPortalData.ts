@@ -55,6 +55,7 @@ Deno.serve(async (req) => {
     const isRetainer = clientInfo.billing_type === 'retainer';
     const now = new Date();
     const thisMonthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+    const staleThreshold = new Date(now.getTime() - 24 * 60 * 60 * 1000);
 
     // Helper
     const inRange = (dateStr, start, end) => {
@@ -69,7 +70,7 @@ Deno.serve(async (req) => {
       return lead.status === 'appointment_booked' || lead.status === 'completed';
     });
 
-    // ---- Compute KPIs ----
+    // ---- Compute KPIs (shared) ----
     const scheduledMTD = visibleLeads.filter(l => inRange(l.date_appointment_set, thisMonthStart, now)).length;
 
     const upcomingLeads = visibleLeads.filter(l =>
@@ -91,6 +92,7 @@ Deno.serve(async (req) => {
 
     const dqLeads = isRetainer ? visibleLeads.filter(l => l.status === 'disqualified') : [];
 
+    // Base KPIs (always present for backward compat)
     const kpis = {
       scheduledMTD,
       upcomingCount: upcomingLeads.length,
@@ -98,6 +100,20 @@ Deno.serve(async (req) => {
       needsOutcomeCount: needsOutcomeLeads.length,
       disqualifiedCount: dqLeads.length,
     };
+
+    // ---- Retainer-specific KPIs ----
+    if (isRetainer) {
+      kpis.newCount = visibleLeads.filter(l => l.status === 'new').length;
+      kpis.contactedCount = visibleLeads.filter(l => l.status === 'first_call_made' || l.status === 'contacted').length;
+      kpis.bookedCount = visibleLeads.filter(l => l.status === 'appointment_booked').length;
+      kpis.completedCount = visibleLeads.filter(l =>
+        (l.outcome === 'sold' || l.outcome === 'lost') &&
+        inRange(l.created_date, thisMonthStart, now)
+      ).length;
+      kpis.needsAttentionCount = visibleLeads.filter(l =>
+        l.status === 'new' && l.created_date && new Date(l.created_date) < staleThreshold
+      ).length;
+    }
 
     // ---- Build the requested page of active leads ----
     let sectionLeads;
@@ -110,13 +126,33 @@ Deno.serve(async (req) => {
           (!lead.disposition || lead.disposition === 'scheduled' || lead.disposition === 'rescheduled');
         const isNeedsOutcome = needsOutcomeIds.has(lead.id);
         return isUpcoming || isNeedsOutcome;
-      }).sort((a, b) => {
-        const aNO = needsOutcomeIds.has(a.id) ? 0 : 1;
-        const bNO = needsOutcomeIds.has(b.id) ? 0 : 1;
-        if (aNO !== bNO) return aNO - bNO;
-        if (a.appointment_date && b.appointment_date) return new Date(a.appointment_date) - new Date(b.appointment_date);
-        return new Date(b.created_date) - new Date(a.created_date);
       });
+
+      if (isRetainer) {
+        // Retainer priority sort: new → first_call_made → contacted → appointment_booked
+        const statusOrder = { new: 0, first_call_made: 1, contacted: 2, appointment_booked: 3 };
+        sectionLeads.sort((a, b) => {
+          const orderA = statusOrder[a.status] ?? 99;
+          const orderB = statusOrder[b.status] ?? 99;
+          if (orderA !== orderB) return orderA - orderB;
+          // Within appointment_booked, sort by appointment_date ascending
+          if (a.status === 'appointment_booked' && b.status === 'appointment_booked') {
+            const da = a.appointment_date ? new Date(a.appointment_date) : new Date('9999');
+            const db = b.appointment_date ? new Date(b.appointment_date) : new Date('9999');
+            return da - db;
+          }
+          // Everything else: newest first
+          return new Date(b.created_date) - new Date(a.created_date);
+        });
+      } else {
+        sectionLeads.sort((a, b) => {
+          const aNO = needsOutcomeIds.has(a.id) ? 0 : 1;
+          const bNO = needsOutcomeIds.has(b.id) ? 0 : 1;
+          if (aNO !== bNO) return aNO - bNO;
+          if (a.appointment_date && b.appointment_date) return new Date(a.appointment_date) - new Date(b.appointment_date);
+          return new Date(b.created_date) - new Date(a.created_date);
+        });
+      }
     } else {
       sectionLeads = visibleLeads;
     }
@@ -125,10 +161,11 @@ Deno.serve(async (req) => {
     const skip = page * page_size;
     const pageLeads = sectionLeads.slice(skip, skip + page_size);
 
-    // Mark which leads need outcome
+    // Mark metadata flags on leads
     const pageLeadsWithMeta = pageLeads.map(l => ({
       ...l,
       _needsOutcome: needsOutcomeIds.has(l.id),
+      _isStale: isRetainer && l.status === 'new' && l.created_date && new Date(l.created_date) < staleThreshold,
     }));
 
     return Response.json({
