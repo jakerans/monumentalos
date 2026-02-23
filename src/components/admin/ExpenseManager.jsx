@@ -84,7 +84,8 @@ export default function ExpenseManager({ startDate, endDate, onAddExpense }) {
     keepPreviousData: true,
   });
 
-  const kpis = data?.kpis || { total: 0, cogsTotal: 0, overheadTotal: 0 };
+  const kpis = data?.kpis || { total: 0, cogsTotal: 0, overheadTotal: 0, uncategorizedCount: 0 };
+  const uncategorizedCount = kpis.uncategorizedCount || 0;
   const byCategory = data?.byCategory || [];
   const expenses = data?.expenses || [];
   const totalFiltered = data?.totalFiltered || 0;
@@ -189,19 +190,24 @@ export default function ExpenseManager({ startDate, endDate, onAddExpense }) {
 
   return (
     <div className="space-y-4">
-      {/* Sync + AI buttons + distributions toggle */}
-      <div className="flex items-center justify-between gap-4 flex-wrap">
-        <ExpenseToolbar onRefresh={refetch} />
-        <label className="flex items-center gap-2 cursor-pointer select-none">
-          <span className="text-xs text-slate-400">Show Distributions</span>
-          <button
-            onClick={() => { setShowDistributions(v => !v); setPage(0); }}
-            className={`relative w-9 h-5 rounded-full transition-colors ${showDistributions ? 'bg-emerald-600' : 'bg-slate-600'}`}
-          >
-            <span className={`absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white transition-transform ${showDistributions ? 'translate-x-4' : ''}`} />
-          </button>
-        </label>
-      </div>
+      {/* Unified toolbar */}
+      <ExpenseToolbar
+        onRefresh={refetch}
+        onAddExpense={onAddExpense}
+        uncategorizedCount={uncategorizedCount}
+        showDistributions={showDistributions}
+        onToggleDistributions={() => { setShowDistributions(v => !v); setPage(0); }}
+      />
+
+      {/* Uncategorized alert banner */}
+      {uncategorizedCount > 0 && (
+        <div className="bg-amber-500/10 border border-amber-500/30 rounded-lg p-3 flex items-center gap-2">
+          <AlertTriangle className="w-4 h-4 text-amber-400 shrink-0" />
+          <span className="text-sm text-amber-300">
+            <strong>{uncategorizedCount}</strong> expense{uncategorizedCount !== 1 ? 's' : ''} need categorization
+          </span>
+        </div>
+      )}
 
       {/* Summary cards */}
       <div className="grid grid-cols-3 gap-3">
@@ -306,9 +312,6 @@ export default function ExpenseManager({ startDate, endDate, onAddExpense }) {
             {totalFiltered} expense{totalFiltered !== 1 ? 's' : ''}
             {filterCat !== 'all' || filterType !== 'all' || debouncedSearch ? ` · $${filteredTotal.toLocaleString()}` : ''}
           </span>
-          <button onClick={onAddExpense} className="px-3 py-1.5 text-xs font-medium bg-red-600 text-white rounded-md hover:bg-red-700 flex items-center gap-1">
-            <Plus className="w-3.5 h-3.5" /> Add Expense
-          </button>
         </div>
       </div>
 
