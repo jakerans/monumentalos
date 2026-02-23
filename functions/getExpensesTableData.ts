@@ -123,9 +123,14 @@ Deno.serve(async (req) => {
     console.log(`[getExpensesTableData] range=${rangeExpenses.length} filtered=${totalFiltered} page=${expenses.length} skip=${skip}`);
 
     const uncategorizedCount = rangeExpenses.filter(e => e.category === 'uncategorized' || !e.category).length;
+    const aiPendingCount = rangeExpenses.filter(e =>
+      e.category && e.category !== 'uncategorized' &&
+      e.suggested_category &&
+      e.ai_approved === false
+    ).length;
 
     return Response.json({
-      kpis: { total, cogsTotal, overheadTotal, uncategorizedCount },
+      kpis: { total, cogsTotal, overheadTotal, uncategorizedCount, aiPendingCount },
       byCategory,
       expenses,
       totalFiltered,

@@ -174,6 +174,8 @@ Return a JSON object with a "results" array. Each item must have: expense_id, su
     let updated = 0;
     for (const r of validResults) {
       const updateData = {
+        category: r.suggested_category,
+        expense_type: r.suggested_type,
         suggested_category: r.suggested_category,
         suggested_type: r.suggested_type,
         ai_approved: false,
