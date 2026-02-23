@@ -14,7 +14,7 @@ const outcomeStyle = {
   pending: 'bg-yellow-100 text-yellow-800',
 };
 
-export default function AppointmentCard({ lead, onSelect }) {
+export default function AppointmentCard({ lead, onSelect, needsOutcome, onQuickOutcome }) {
   return (
     <div
       onClick={() => onSelect(lead.id)}
@@ -55,6 +55,17 @@ export default function AppointmentCard({ lead, onSelect }) {
         <div className="mt-3 pt-3 border-t border-slate-700/50">
           <span className="text-sm font-bold text-green-400">${lead.sale_amount.toLocaleString()}</span>
           <span className="text-xs text-slate-500 ml-1">revenue</span>
+        </div>
+      )}
+      {needsOutcome && onQuickOutcome && (
+        <div className="mt-3 pt-3 border-t border-slate-700/50">
+          <button
+            onClick={(e) => { e.stopPropagation(); onQuickOutcome(lead); }}
+            className="px-3 py-1 text-xs font-bold text-black rounded-full hover:opacity-90 transition-opacity"
+            style={{ backgroundColor: '#D6FF03' }}
+          >
+            Update Outcome
+          </button>
         </div>
       )}
     </div>
