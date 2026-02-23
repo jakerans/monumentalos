@@ -1,170 +1,202 @@
-import React, { useState, useMemo } from 'react';
-import { base44 } from '@/api/base44Client';
+import React, { useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { Search, Trash2, Check, X, AlertCircle } from 'lucide-react';
+import { base44 } from '@/api/base44Client';
 import { toast } from '@/components/ui/use-toast';
-import {
-  AlertDialog,
-  AlertDialogContent,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogCancel,
-} from '@/components/ui/alert-dialog';
+import { AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogTitle, AlertDialogFooter, AlertDialogCancel } from '@/components/ui/alert-dialog';
+import { Trash2, AlertTriangle, Loader2, Search } from 'lucide-react';
+
+function formatDate(dateStr) {
+  if (!dateStr) return '-';
+  return new Date(dateStr).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+}
 
 export default function LeadManager() {
   const queryClient = useQueryClient();
-  const [searchInput, setSearchInput] = useState('');
-  const [search, setSearch] = useState('');
-  const [deleteLeadConfirm, setDeleteLeadConfirm] = useState(null);
-  const [denyReqConfirm, setDenyReqConfirm] = useState(null);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [selectedClient, setSelectedClient] = useState('all');
+  const [selectedStatus, setSelectedStatus] = useState('all');
+  const [deletingId, setDeletingId] = useState(null);
+  const [deletingLead, setDeletingLead] = useState(null);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
-  // Deletion requests
-  const { data: deletionRequests = [], refetch: refetchRequests } = useQuery({
+  // Fetch deletion requests
+  const { data: deletionRequests = [], isLoading: loadingDeletions } = useQuery({
     queryKey: ['deletion-requests'],
     queryFn: async () => {
-      const res = await base44.entities.Lead.filter({ deletion_requested: true });
-      return res || [];
+      const leads = await base44.entities.Lead.filter({ deletion_requested: true }, '-deletion_requested_date', 500);
+      return leads || [];
     },
     staleTime: 30 * 1000,
   });
 
-  // Users for lookup
-  const { data: users = [] } = useQuery({
-    queryKey: ['all-users'],
+  // Fetch all leads for search/browse
+  const { data: allLeads = [], isLoading: loadingLeads } = useQuery({
+    queryKey: ['all-leads-browse'],
     queryFn: async () => {
-      const res = await base44.functions.invoke('listTeamUsers');
-      return res.data?.users || [];
-    },
-    staleTime: 5 * 60 * 1000,
-  });
-
-  // All leads for search
-  const { data: allLeads = [] } = useQuery({
-    queryKey: ['search-leads', search],
-    queryFn: async () => {
-      if (!search || search.length < 2) return [];
-      const res = await base44.functions.invoke('searchAllLeads', { query: search });
-      return res.data?.results || [];
+      const leads = await base44.entities.Lead.filter({}, '-created_date', 200);
+      return leads || [];
     },
     staleTime: 30 * 1000,
   });
 
-  // Clients for lookup
+  // Fetch clients
   const { data: clients = [] } = useQuery({
-    queryKey: ['all-clients'],
+    queryKey: ['clients-for-leads'],
     queryFn: async () => {
-      const res = await base44.entities.Client.list();
-      return res || [];
+      const c = await base44.entities.Client.list();
+      return c || [];
     },
-    staleTime: 5 * 60 * 1000,
+    staleTime: 60 * 1000,
   });
 
-  const clientMap = useMemo(() => {
-    const map = {};
-    clients.forEach(c => { map[c.id] = c.name; });
-    return map;
-  }, [clients]);
+  // Fetch users for displaying names
+  const { data: users = [] } = useQuery({
+    queryKey: ['users-for-leads'],
+    queryFn: async () => {
+      const u = await base44.entities.User.list();
+      return u || [];
+    },
+    staleTime: 60 * 1000,
+  });
 
-  const getUserName = (userId) => {
-    if (!userId) return '—';
-    const u = users.find(x => x.id === userId);
-    return u?.full_name || 'Unknown';
+  const getClientName = (clientId) => {
+    const client = clients.find(c => c.id === clientId);
+    return client?.name || '-';
   };
 
-  // Debounce search
-  React.useEffect(() => {
-    const timer = setTimeout(() => setSearch(searchInput), 300);
-    return () => clearTimeout(timer);
-  }, [searchInput]);
+  const getUserName = (userId) => {
+    const user = users.find(u => u.id === userId);
+    return user?.full_name || user?.email || '-';
+  };
 
-  const handleApproveDeletion = async (leadId, leadName) => {
+  const handleApproveDeletion = async (lead) => {
+    setDeletingId(lead.id);
     try {
-      await base44.entities.Lead.delete(leadId);
-      toast({ title: 'Lead Deleted', description: `${leadName} has been permanently deleted.`, variant: 'success' });
-      refetchRequests();
+      await base44.entities.Lead.delete(lead.id);
+      toast({ title: 'Lead deleted', description: `${lead.name} has been permanently deleted.` });
+      queryClient.invalidateQueries({ queryKey: ['deletion-requests'] });
+      queryClient.invalidateQueries({ queryKey: ['all-leads-browse'] });
     } catch (err) {
-      toast({ title: 'Delete failed', description: err?.message || 'Unknown error', variant: 'destructive' });
+      toast({ title: 'Error', description: err.message, variant: 'destructive' });
+    } finally {
+      setDeletingId(null);
     }
   };
 
-  const handleDenyDeletion = async (leadId) => {
-    if (!denyReqConfirm) return;
+  const handleDenyDeletion = async (lead) => {
+    setDeletingId(lead.id);
     try {
-      await base44.entities.Lead.update(leadId, {
+      await base44.entities.Lead.update(lead.id, {
         deletion_requested: false,
         deletion_reason: '',
         deletion_requested_by: '',
         deletion_requested_date: '',
       });
-      toast({ title: 'Request Denied', description: 'Deletion request has been cleared.', variant: 'info' });
-      setDenyReqConfirm(null);
-      refetchRequests();
+      toast({ title: 'Request denied', description: 'Deletion request has been cleared.' });
+      queryClient.invalidateQueries({ queryKey: ['deletion-requests'] });
     } catch (err) {
-      toast({ title: 'Update failed', description: err?.message || 'Unknown error', variant: 'destructive' });
+      toast({ title: 'Error', description: err.message, variant: 'destructive' });
+    } finally {
+      setDeletingId(null);
     }
   };
 
-  const handleDeleteLead = async (leadId, leadName) => {
-    if (!deleteLeadConfirm) return;
+  const handleDirectDelete = async (lead) => {
+    setDeletingId(lead.id);
     try {
-      await base44.entities.Lead.delete(leadId);
-      toast({ title: 'Lead Deleted', description: `${leadName} has been permanently deleted.`, variant: 'success' });
-      setDeleteLeadConfirm(null);
-      queryClient.invalidateQueries({ queryKey: ['search-leads'] });
+      await base44.entities.Lead.delete(lead.id);
+      toast({ title: 'Lead deleted', description: `${lead.name} has been permanently deleted.` });
+      queryClient.invalidateQueries({ queryKey: ['all-leads-browse'] });
+      queryClient.invalidateQueries({ queryKey: ['deletion-requests'] });
     } catch (err) {
-      toast({ title: 'Delete failed', description: err?.message || 'Unknown error', variant: 'destructive' });
+      toast({ title: 'Error', description: err.message, variant: 'destructive' });
+    } finally {
+      setDeletingId(null);
+      setShowDeleteConfirm(false);
+      setDeletingLead(null);
     }
   };
+
+  // Filter browse results
+  let filteredLeads = allLeads;
+  if (searchTerm) {
+    const term = searchTerm.toLowerCase();
+    filteredLeads = filteredLeads.filter(lead => 
+      lead.name?.toLowerCase().includes(term) ||
+      lead.phone?.toLowerCase().includes(term) ||
+      lead.email?.toLowerCase().includes(term)
+    );
+  }
+  if (selectedClient !== 'all') {
+    filteredLeads = filteredLeads.filter(lead => lead.client_id === selectedClient);
+  }
+  if (selectedStatus !== 'all') {
+    filteredLeads = filteredLeads.filter(lead => lead.status === selectedStatus);
+  }
+
+  const statuses = [
+    { val: 'new', label: 'New' },
+    { val: 'first_call_made', label: 'First Call Made' },
+    { val: 'contacted', label: 'Contacted' },
+    { val: 'appointment_booked', label: 'Appointment Booked' },
+    { val: 'disqualified', label: 'Disqualified' },
+    { val: 'completed', label: 'Completed' },
+  ];
 
   return (
     <div className="space-y-6">
-      {/* Deletion Requests Section */}
-      {deletionRequests.length > 0 && (
-        <div className="bg-slate-800 border border-slate-700 rounded-lg p-4">
-          <div className="flex items-center gap-2 mb-4">
-            <AlertCircle className="w-4 h-4 text-amber-500" />
-            <h2 className="text-sm font-semibold text-white">Pending Deletion Requests ({deletionRequests.length})</h2>
+      {/* Section A: Pending Deletion Requests */}
+      {!loadingDeletions && deletionRequests.length > 0 && (
+        <div className="rounded-xl border border-amber-500/30 bg-amber-500/5 p-4 space-y-3">
+          <div className="flex items-center gap-2">
+            <AlertTriangle className="w-4 h-4 text-amber-400" />
+            <h2 className="text-sm font-semibold text-amber-400">
+              Pending Deletion Requests ({deletionRequests.length})
+            </h2>
           </div>
-          <div className="space-y-3">
+
+          <div className="space-y-2">
             {deletionRequests.map(lead => (
-              <div key={lead.id} className="bg-slate-700/50 rounded-lg p-3 border border-slate-700">
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 mb-2">
-                  <div>
-                    <p className="text-xs text-slate-400">Lead</p>
-                    <p className="text-sm font-medium text-white">{lead.name}</p>
+              <div
+                key={lead.id}
+                className="flex flex-col sm:flex-row sm:items-start justify-between gap-3 px-4 py-3 rounded-lg border border-slate-700/40 bg-slate-800/60"
+              >
+                <div className="min-w-0">
+                  <p className="text-sm font-medium text-white">{lead.name}</p>
+                  <div className="flex flex-wrap gap-3 mt-2 text-xs text-slate-400">
+                    {lead.phone && <span>{lead.phone}</span>}
+                    {lead.email && <span>{lead.email}</span>}
+                    <span className="text-slate-500">Client: {getClientName(lead.client_id)}</span>
+                    <span className="text-slate-500">Status: {lead.status}</span>
                   </div>
-                  <div>
-                    <p className="text-xs text-slate-400">Client</p>
-                    <p className="text-sm text-slate-300">{clientMap[lead.client_id] || 'Unknown'}</p>
-                  </div>
-                  <div>
-                    <p className="text-xs text-slate-400">Requested By</p>
-                    <p className="text-sm text-slate-300">{getUserName(lead.deletion_requested_by)}</p>
+                  {lead.deletion_reason && (
+                    <p className="text-xs text-amber-300 mt-2">Reason: {lead.deletion_reason}</p>
+                  )}
+                  <div className="flex gap-2 text-xs text-slate-500 mt-2">
+                    {lead.deletion_requested_by && (
+                      <span>Requested by: {getUserName(lead.deletion_requested_by)}</span>
+                    )}
+                    {lead.deletion_requested_date && (
+                      <span>({formatDate(lead.deletion_requested_date)})</span>
+                    )}
                   </div>
                 </div>
-                {lead.deletion_reason && (
-                  <div className="mb-2">
-                    <p className="text-xs text-slate-400">Reason</p>
-                    <p className="text-sm text-slate-300">{lead.deletion_reason}</p>
-                  </div>
-                )}
-                {lead.deletion_requested_date && (
-                  <p className="text-xs text-slate-500 mb-2">Requested: {new Date(lead.deletion_requested_date).toLocaleString()}</p>
-                )}
-                <div className="flex gap-2">
+
+                <div className="flex gap-2 flex-shrink-0">
                   <button
-                    onClick={() => handleApproveDeletion(lead.id, lead.name)}
-                    className="flex-1 px-3 py-1.5 bg-red-600 hover:bg-red-700 text-white rounded text-xs font-medium transition-colors flex items-center justify-center gap-1"
+                    onClick={() => handleApproveDeletion(lead)}
+                    disabled={deletingId === lead.id}
+                    className="px-3 py-1.5 text-xs font-medium rounded-lg bg-red-500/15 border border-red-500/30 text-red-400 hover:bg-red-500/25 transition-colors disabled:opacity-50"
                   >
-                    <Check className="w-3 h-3" /> Approve & Delete
+                    {deletingId === lead.id ? <Loader2 className="w-3 h-3 animate-spin inline mr-1" /> : null}
+                    Approve & Delete
                   </button>
                   <button
-                    onClick={() => setDenyReqConfirm(lead.id)}
-                    className="flex-1 px-3 py-1.5 bg-slate-600 hover:bg-slate-500 text-white rounded text-xs font-medium transition-colors flex items-center justify-center gap-1"
+                    onClick={() => handleDenyDeletion(lead)}
+                    disabled={deletingId === lead.id}
+                    className="px-3 py-1.5 text-xs font-medium rounded-lg bg-slate-700 text-slate-300 hover:bg-slate-600 transition-colors disabled:opacity-50"
                   >
-                    <X className="w-3 h-3" /> Deny
+                    Deny
                   </button>
                 </div>
               </div>
@@ -173,105 +205,136 @@ export default function LeadManager() {
         </div>
       )}
 
-      {/* Search Section */}
-      <div>
-        <h2 className="text-sm font-semibold text-white mb-3">Search & Delete Leads</h2>
-        <div className="relative mb-4">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
-          <input
-            type="text"
-            placeholder="Search by name, phone, or email..."
-            value={searchInput}
-            onChange={(e) => setSearchInput(e.target.value)}
-            className="w-full pl-9 pr-3 py-2 text-sm border border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 bg-slate-800 text-white placeholder-slate-500"
-          />
+      {/* Section B: Lead Search & Browse */}
+      <div className="space-y-3">
+        <div>
+          <h2 className="text-sm font-semibold text-white mb-3">Search & Browse Leads</h2>
+          <div className="flex flex-col sm:flex-row gap-3">
+            <div className="flex-1 relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-500" />
+              <input
+                type="text"
+                placeholder="Search by name, phone, or email..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full pl-9 pr-3 py-2 bg-slate-800/60 border border-slate-700/50 rounded-lg text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-[#D6FF03]/50"
+              />
+            </div>
+
+            <select
+              value={selectedClient}
+              onChange={(e) => setSelectedClient(e.target.value)}
+              className="px-3 py-2 bg-slate-800/60 border border-slate-700/50 rounded-lg text-sm text-white focus:outline-none focus:ring-2 focus:ring-[#D6FF03]/50"
+            >
+              <option value="all">All Clients</option>
+              {clients.map(c => (
+                <option key={c.id} value={c.id}>{c.name}</option>
+              ))}
+            </select>
+
+            <select
+              value={selectedStatus}
+              onChange={(e) => setSelectedStatus(e.target.value)}
+              className="px-3 py-2 bg-slate-800/60 border border-slate-700/50 rounded-lg text-sm text-white focus:outline-none focus:ring-2 focus:ring-[#D6FF03]/50"
+            >
+              <option value="all">All Status</option>
+              {statuses.map(s => (
+                <option key={s.val} value={s.val}>{s.label}</option>
+              ))}
+            </select>
+          </div>
         </div>
 
-        {searchInput && (
-          <div className="overflow-x-auto border border-slate-700 rounded-lg">
-            <table className="w-full">
-              <thead className="bg-slate-800 border-b border-slate-700">
+        {/* Results Table */}
+        {loadingLeads ? (
+          <div className="flex items-center justify-center py-10">
+            <Loader2 className="w-5 h-5 text-slate-500 animate-spin" />
+          </div>
+        ) : filteredLeads.length === 0 ? (
+          <div className="text-center py-10">
+            <p className="text-slate-400 text-sm">
+              {searchTerm || selectedClient !== 'all' || selectedStatus !== 'all'
+                ? 'No leads match your filters.'
+                : 'No leads found.'}
+            </p>
+          </div>
+        ) : (
+          <div className="rounded-lg border border-slate-700/50 bg-slate-800/30 overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead className="border-b border-slate-700/50 bg-slate-800/50">
                 <tr>
-                  <th className="px-3 py-2 text-left text-xs font-semibold text-slate-300">Name</th>
-                  <th className="px-3 py-2 text-left text-xs font-semibold text-slate-300">Client</th>
-                  <th className="px-3 py-2 text-left text-xs font-semibold text-slate-300">Status</th>
-                  <th className="px-3 py-2 text-left text-xs font-semibold text-slate-300">Phone</th>
-                  <th className="px-3 py-2 text-left text-xs font-semibold text-slate-300">Created</th>
-                  <th className="px-3 py-2 text-center text-xs font-semibold text-slate-300">Action</th>
+                  <th className="px-4 py-3 text-left text-slate-300 font-semibold">Name</th>
+                  <th className="px-4 py-3 text-left text-slate-300 font-semibold">Client</th>
+                  <th className="px-4 py-3 text-left text-slate-300 font-semibold">Status</th>
+                  <th className="px-4 py-3 text-left text-slate-300 font-semibold">Phone</th>
+                  <th className="px-4 py-3 text-left text-slate-300 font-semibold">Created</th>
+                  <th className="px-4 py-3 text-right text-slate-300 font-semibold">Action</th>
                 </tr>
               </thead>
-              <tbody>
-                {allLeads.length === 0 ? (
-                  <tr>
-                    <td colSpan="6" className="px-3 py-3 text-center text-sm text-slate-400">No leads found</td>
+              <tbody className="divide-y divide-slate-700/30">
+                {filteredLeads.map(lead => (
+                  <tr key={lead.id} className="hover:bg-slate-800/40 transition-colors">
+                    <td className="px-4 py-3 text-white font-medium">{lead.name}</td>
+                    <td className="px-4 py-3 text-slate-300">{getClientName(lead.client_id)}</td>
+                    <td className="px-4 py-3 text-slate-300">
+                      <span className="text-[11px] px-2 py-1 rounded-full bg-slate-700/50 text-slate-300">
+                        {statuses.find(s => s.val === lead.status)?.label || lead.status}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3 text-slate-400">{lead.phone || '-'}</td>
+                    <td className="px-4 py-3 text-slate-400">{formatDate(lead.created_date)}</td>
+                    <td className="px-4 py-3 text-right">
+                      <button
+                        onClick={() => {
+                          setDeletingLead(lead);
+                          setShowDeleteConfirm(true);
+                        }}
+                        disabled={deletingId === lead.id}
+                        className="p-1.5 text-red-400 hover:bg-red-500/10 rounded transition-colors disabled:opacity-50"
+                      >
+                        {deletingId === lead.id ? (
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                        ) : (
+                          <Trash2 className="w-4 h-4" />
+                        )}
+                      </button>
+                    </td>
                   </tr>
-                ) : (
-                  allLeads.map(lead => (
-                    <tr key={lead.id} className="border-b border-slate-700 hover:bg-slate-800/50">
-                      <td className="px-3 py-2 text-sm text-white font-medium">{lead.name}</td>
-                      <td className="px-3 py-2 text-sm text-slate-300">{clientMap[lead.client_id] || '—'}</td>
-                      <td className="px-3 py-2 text-sm text-slate-300 capitalize">{lead.status?.replace(/_/g, ' ') || '—'}</td>
-                      <td className="px-3 py-2 text-sm text-slate-400">{lead.phone || '—'}</td>
-                      <td className="px-3 py-2 text-sm text-slate-400">{new Date(lead.created_date).toLocaleDateString()}</td>
-                      <td className="px-3 py-2 text-center">
-                        <button
-                          onClick={() => setDeleteLeadConfirm(lead.id)}
-                          className="px-2 py-1 text-xs bg-red-600/20 text-red-400 rounded hover:bg-red-600/30 transition-colors flex items-center justify-center gap-1 mx-auto"
-                        >
-                          <Trash2 className="w-3 h-3" /> Delete
-                        </button>
-                      </td>
-                    </tr>
-                  ))
-                )}
+                ))}
               </tbody>
             </table>
           </div>
         )}
+
+        {filteredLeads.length > 0 && (
+          <p className="text-xs text-slate-400 text-right">
+            Showing {filteredLeads.length} lead{filteredLeads.length !== 1 ? 's' : ''}
+          </p>
+        )}
       </div>
 
-      {/* Denial Confirmation Dialog */}
-      <AlertDialog open={!!denyReqConfirm} onOpenChange={(open) => { if (!open) setDenyReqConfirm(null); }}>
-        <AlertDialogContent className="bg-slate-900 border-slate-700 text-white max-w-sm">
-          <AlertDialogHeader>
-            <AlertDialogTitle className="text-white">Deny Deletion Request</AlertDialogTitle>
-            <AlertDialogDescription className="text-slate-400">
-              Are you sure? This will clear the deletion request and return the lead to the pipeline.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <div className="flex gap-2 mt-3">
-            <button
-              onClick={() => handleDenyDeletion(denyReqConfirm)}
-              className="flex-1 px-4 py-2 bg-slate-700 text-white rounded-lg hover:bg-slate-600 font-medium text-sm transition-colors"
-            >
-              Confirm
-            </button>
-            <AlertDialogCancel className="bg-slate-800 border-slate-600 text-slate-300 hover:bg-slate-700">Cancel</AlertDialogCancel>
-          </div>
-        </AlertDialogContent>
-      </AlertDialog>
-
       {/* Delete Confirmation Dialog */}
-      <AlertDialog open={!!deleteLeadConfirm} onOpenChange={(open) => { if (!open) setDeleteLeadConfirm(null); }}>
+      <AlertDialog open={showDeleteConfirm} onOpenChange={setShowDeleteConfirm}>
         <AlertDialogContent className="bg-slate-900 border-slate-700 text-white max-w-sm">
           <AlertDialogHeader>
-            <AlertDialogTitle className="text-white">Permanently Delete Lead</AlertDialogTitle>
-            <AlertDialogDescription className="text-slate-400">
-              Are you sure you want to permanently delete this lead? This cannot be undone.
-            </AlertDialogDescription>
+            <AlertDialogTitle className="text-white">Permanently delete lead?</AlertDialogTitle>
           </AlertDialogHeader>
-          <div className="flex gap-2 mt-3">
+          <p className="text-sm text-slate-300">
+            Permanently delete <span className="font-semibold">{deletingLead?.name}</span>? This cannot be undone.
+          </p>
+          <AlertDialogFooter>
+            <AlertDialogCancel className="bg-slate-800 border-slate-600 text-slate-300 hover:bg-slate-700">
+              Cancel
+            </AlertDialogCancel>
             <button
-              onClick={() => {
-                const lead = allLeads.find(l => l.id === deleteLeadConfirm) || deletionRequests.find(l => l.id === deleteLeadConfirm);
-                handleDeleteLead(deleteLeadConfirm, lead?.name || 'Lead');
-              }}
-              className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 font-medium text-sm transition-colors"
+              onClick={() => handleDirectDelete(deletingLead)}
+              disabled={deletingId === deletingLead?.id}
+              className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 font-medium text-sm transition-colors disabled:opacity-50"
             >
-              Delete Permanently
+              {deletingId === deletingLead?.id ? <Loader2 className="w-3 h-3 animate-spin inline mr-1" /> : null}
+              Delete
             </button>
-            <AlertDialogCancel className="bg-slate-800 border-slate-600 text-slate-300 hover:bg-slate-700">Cancel</AlertDialogCancel>
-          </div>
+          </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
     </div>
