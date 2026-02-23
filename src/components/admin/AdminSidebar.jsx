@@ -10,6 +10,7 @@ import {
   PieChart, Target, LineChart, Building, Cog, ArrowUpDown, Calendar, ClipboardCheck,
 } from 'lucide-react';
 import { useEffectsToggle } from '../shared/useEffectsToggle';
+import NotificationBell from '../shared/NotificationBell';
 import AdminUserMenu from './AdminUserMenu';
 
 // --- Admin Navigation Structure ---
@@ -253,6 +254,9 @@ export default function AdminSidebar({ user, currentPage, clients = [] }) {
 
       {/* Bottom Section */}
       <div className="border-t border-slate-700/50 px-2 py-3 space-y-2">
+        {!collapsed && (
+          <NotificationBell user={user} />
+        )}
         {/* View Switcher */}
         {!collapsed && (
           <select

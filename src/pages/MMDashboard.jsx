@@ -15,6 +15,7 @@ import MMPerformanceGoal from '../components/mm/MMPerformanceGoal';
 import DateRangePicker from '../components/admin/DateRangePicker';
 import PageErrorBoundary from '../components/shared/PageErrorBoundary';
 import PageLoader from '../components/shared/PageLoader';
+import BugReportWidget from '../components/shared/BugReportWidget';
 import { motion } from 'framer-motion';
 
 export default function MMDashboard() {
@@ -294,6 +295,8 @@ export default function MMDashboard() {
           </div>
         </motion.div>
       </main>
+
+      <BugReportWidget user={user} />
     </div>
     </PageErrorBoundary>
   );

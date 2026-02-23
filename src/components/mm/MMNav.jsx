@@ -5,6 +5,7 @@ import { base44 } from '@/api/base44Client';
 import { LayoutDashboard, LogOut, ClipboardCheck, Zap, ZapOff } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useEffectsToggle } from '../shared/useEffectsToggle';
+import NotificationBell from '../shared/NotificationBell';
 import MMTourGuide from './MMTourGuide';
 
 export default function MMNav({ user, clients, pendingOnboardCount = 0 }) {
@@ -60,6 +61,7 @@ export default function MMNav({ user, clients, pendingOnboardCount = 0 }) {
           </div>
           <div className="flex items-center gap-1.5 sm:gap-3 shrink-0">
             <MMTourGuide />
+            <NotificationBell user={user} />
             {user?.app_role === 'admin' && (
               <select
                 onChange={(e) => {
