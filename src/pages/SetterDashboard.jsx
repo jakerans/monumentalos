@@ -198,6 +198,42 @@ export default function SetterDashboard() {
     return clientMap[clientId] || 'Unknown';
   };
 
+  const optimisticLeadUpdate = (leadId, updates) => {
+    queryClient.setQueryData(['setter-dashboard-data'], (old) => {
+      if (!old) return old;
+      const pipeline = old.pipeline;
+      if (!pipeline) return old;
+
+      let lead = null;
+      let sourceColumn = null;
+      for (const col of ['newLeads', 'inProgressLeads', 'bookedLeads', 'dqLeads']) {
+        const found = pipeline[col]?.find(l => l.id === leadId);
+        if (found) { lead = { ...found, ...updates }; sourceColumn = col; break; }
+      }
+      if (!lead || !sourceColumn) return old;
+
+      const targetColumn =
+        lead.status === 'new' ? 'newLeads' :
+        lead.status === 'first_call_made' || lead.status === 'contacted' ? 'inProgressLeads' :
+        lead.status === 'appointment_booked' ? 'bookedLeads' :
+        lead.status === 'disqualified' ? 'dqLeads' :
+        sourceColumn;
+
+      const newPipeline = { ...pipeline };
+      for (const col of ['newLeads', 'inProgressLeads', 'bookedLeads', 'dqLeads']) {
+        newPipeline[col] = pipeline[col].filter(l => l.id !== leadId);
+      }
+      newPipeline[targetColumn] = [...newPipeline[targetColumn], lead];
+
+      const newStats = { ...old.stats };
+      newStats.newCount = newPipeline.newLeads.length;
+      newStats.inProgressCount = newPipeline.inProgressLeads.length;
+      newStats.bookedCount = newPipeline.bookedLeads.length;
+
+      return { ...old, pipeline: newPipeline, stats: newStats };
+    });
+  };
+
   const handleAction = (action, lead) => {
     if (action === 'first_call') {
       setFirstCallLead(lead);
@@ -213,19 +249,24 @@ export default function SetterDashboard() {
 
   const handleDisqualify = async (leadId, dqReason) => {
     const lead = allPipelineLeads.find(l => l.id === leadId);
-    await base44.entities.Lead.update(leadId, {
+    const dqUpdates = {
       status: 'disqualified',
       dq_reason: dqReason,
       disqualified_by_setter_id: user.id,
       disqualified_date: new Date().toISOString(),
-    });
-    refetch();
+    };
+    optimisticLeadUpdate(leadId, dqUpdates);
     toast({ title: 'Lead Disqualified', description: `${lead?.name || 'Lead'} marked as DQ.`, variant: 'warning' });
+    base44.entities.Lead.update(leadId, dqUpdates)
+      .then(() => refetch())
+      .catch((err) => { console.error('DQ failed:', err); toast({ title: 'Sync error — refreshing...', variant: 'destructive' }); refetch(); });
   };
 
   const handleFirstCallResult = async (leadId, result, dqReason) => {
+    const lead = allPipelineLeads.find(l => l.id === leadId);
+    const leadName = lead?.name || 'Lead';
+
     const speedMinutes = (() => {
-      const lead = allPipelineLeads.find(l => l.id === leadId);
       if (!lead) return null;
       const received = lead.lead_received_date || lead.created_date;
       if (lead.first_call_made_date) return undefined;
@@ -238,50 +279,45 @@ export default function SetterDashboard() {
       ...(speedMinutes != null && speedMinutes !== undefined ? { speed_to_lead_minutes: speedMinutes } : {}),
     };
 
-    const leadName = allPipelineLeads.find(l => l.id === leadId)?.name || 'Lead';
     if (result === 'scheduled') {
-      await base44.entities.Lead.update(leadId, {
-        ...baseUpdates,
-        status: 'first_call_made',
-      });
-      refetch();
+      optimisticLeadUpdate(leadId, { ...baseUpdates, status: 'first_call_made' });
       toast({ title: 'Call Logged', description: `${leadName} — ready to book.`, variant: 'success' });
-      const updatedLead = allPipelineLeads.find(l => l.id === leadId);
-      if (updatedLead) {
-        setBookingLead({ ...updatedLead, status: 'first_call_made' });
-        setBookingOpen(true);
-      }
+      if (lead) { setBookingLead({ ...lead, ...baseUpdates, status: 'first_call_made' }); setBookingOpen(true); }
+      base44.entities.Lead.update(leadId, { ...baseUpdates, status: 'first_call_made' })
+        .then(() => refetch())
+        .catch((err) => { console.error('Lead update failed:', err); toast({ title: 'Sync error — refreshing...', variant: 'destructive' }); refetch(); });
+
     } else if (result === 'not_connected') {
-      await base44.entities.Lead.update(leadId, {
-        ...baseUpdates,
-        status: 'first_call_made',
-      });
-      refetch();
+      optimisticLeadUpdate(leadId, { ...baseUpdates, status: 'first_call_made' });
       toast({ title: 'Call Logged', description: `${leadName} — not connected, moved to In Progress.`, variant: 'info' });
+      base44.entities.Lead.update(leadId, { ...baseUpdates, status: 'first_call_made' })
+        .then(() => refetch())
+        .catch((err) => { console.error('Lead update failed:', err); toast({ title: 'Sync error — refreshing...', variant: 'destructive' }); refetch(); });
+
     } else if (result === 'disqualified') {
-      await base44.entities.Lead.update(leadId, {
-        ...baseUpdates,
-        status: 'disqualified',
-        dq_reason: dqReason,
-        disqualified_by_setter_id: user.id,
-        disqualified_date: new Date().toISOString(),
-      });
-      refetch();
+      const dqUpdates = { ...baseUpdates, status: 'disqualified', dq_reason: dqReason, disqualified_by_setter_id: user.id, disqualified_date: new Date().toISOString() };
+      optimisticLeadUpdate(leadId, dqUpdates);
       toast({ title: 'Lead Disqualified', description: `${leadName} marked as DQ.`, variant: 'warning' });
+      base44.entities.Lead.update(leadId, dqUpdates)
+        .then(() => refetch())
+        .catch((err) => { console.error('Lead update failed:', err); toast({ title: 'Sync error — refreshing...', variant: 'destructive' }); refetch(); });
     }
   };
 
   const handleBookAppointment = async (leadId, appointmentDate) => {
     const lead = allPipelineLeads.find(l => l.id === leadId);
-    await base44.entities.Lead.update(leadId, {
+    const bookUpdates = {
       status: 'appointment_booked',
       appointment_date: appointmentDate,
       date_appointment_set: new Date().toISOString(),
       disposition: 'scheduled',
       booked_by_setter_id: user.id,
-    });
-    refetch();
+    };
+    optimisticLeadUpdate(leadId, bookUpdates);
     toast({ title: '🗓️ Appointment Booked!', description: `${lead?.name || 'Lead'} is scheduled.`, variant: 'success', duration: 5000 });
+    base44.entities.Lead.update(leadId, bookUpdates)
+      .then(() => refetch())
+      .catch((err) => { console.error('Booking failed:', err); toast({ title: 'Booking sync error — refreshing...', variant: 'destructive' }); refetch(); });
 
     // Fire the drop engine — non-blocking
     try {
@@ -303,8 +339,8 @@ export default function SetterDashboard() {
 
   const handleAddLead = async (leadData) => {
     await base44.entities.Lead.create(leadData);
-    refetch();
     toast({ title: 'Lead Added', description: `${leadData.name} added to the pipeline.`, variant: 'success' });
+    refetch();
   };
 
   const handleSelectLead = (lead) => {
