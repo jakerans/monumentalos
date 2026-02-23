@@ -122,8 +122,10 @@ Deno.serve(async (req) => {
 
     console.log(`[getExpensesTableData] range=${rangeExpenses.length} filtered=${totalFiltered} page=${expenses.length} skip=${skip}`);
 
+    const uncategorizedCount = rangeExpenses.filter(e => e.category === 'uncategorized' || !e.category).length;
+
     return Response.json({
-      kpis: { total, cogsTotal, overheadTotal },
+      kpis: { total, cogsTotal, overheadTotal, uncategorizedCount },
       byCategory,
       expenses,
       totalFiltered,

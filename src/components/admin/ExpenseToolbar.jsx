@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { toast } from '@/components/ui/use-toast';
-import { RefreshCw, Sparkles, Loader2, Undo2 } from 'lucide-react';
+import { RefreshCw, Sparkles, Loader2, Undo2, Plus, MoreHorizontal, Eye, EyeOff } from 'lucide-react';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -13,11 +13,25 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 
-export default function ExpenseToolbar({ onRefresh }) {
+export default function ExpenseToolbar({ onRefresh, onAddExpense, uncategorizedCount, showDistributions, onToggleDistributions }) {
   const [syncing, setSyncing] = useState(false);
   const [categorizing, setCategorizing] = useState(false);
   const [undoing, setUndoing] = useState(false);
   const [showUndoConfirm, setShowUndoConfirm] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const menuRef = useRef(null);
+
+  // Close dropdown on outside click
+  useEffect(() => {
+    if (!menuOpen) return;
+    const handler = (e) => {
+      if (menuRef.current && !menuRef.current.contains(e.target)) {
+        setMenuOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, [menuOpen]);
 
   const handleSync = async () => {
     setSyncing(true);
@@ -65,31 +79,72 @@ export default function ExpenseToolbar({ onRefresh }) {
 
   return (
     <>
-      <div className="flex flex-wrap items-center gap-2">
+      <div className="flex items-center gap-2 flex-wrap">
+        {/* Primary: Sync */}
         <button
           onClick={handleSync}
           disabled={syncing}
           className="px-3 py-1.5 text-xs font-medium bg-emerald-600 text-white rounded-md hover:bg-emerald-700 disabled:opacity-50 flex items-center gap-1.5"
         >
           {syncing ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <RefreshCw className="w-3.5 h-3.5" />}
-          {syncing ? 'Syncing...' : 'Sync Expenses'}
+          {syncing ? 'Syncing...' : 'Sync from Sheet'}
         </button>
+
+        {/* Secondary: AI Categorize — only when uncategorized exist */}
+        {uncategorizedCount > 0 && (
+          <button
+            onClick={handleCategorize}
+            disabled={categorizing}
+            className="px-3 py-1.5 text-xs font-medium bg-purple-600 text-white rounded-md hover:bg-purple-700 disabled:opacity-50 flex items-center gap-1.5"
+          >
+            {categorizing ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Sparkles className="w-3.5 h-3.5" />}
+            {categorizing ? 'Categorizing...' : 'AI Categorize'}
+          </button>
+        )}
+
+        {/* Tertiary: Add Expense */}
         <button
-          onClick={handleCategorize}
-          disabled={categorizing}
-          className="px-3 py-1.5 text-xs font-medium bg-purple-600 text-white rounded-md hover:bg-purple-700 disabled:opacity-50 flex items-center gap-1.5"
+          onClick={onAddExpense}
+          className="px-3 py-1.5 text-xs font-medium border border-slate-600 text-slate-300 rounded-md hover:bg-slate-700 hover:text-white flex items-center gap-1.5"
         >
-          {categorizing ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Sparkles className="w-3.5 h-3.5" />}
-          {categorizing ? 'Categorizing...' : 'AI Categorize'}
+          <Plus className="w-3.5 h-3.5" />
+          Add Expense
         </button>
-        <button
-          onClick={() => setShowUndoConfirm(true)}
-          disabled={undoing}
-          className="px-3 py-1.5 text-xs font-medium bg-orange-600 text-white rounded-md hover:bg-orange-700 disabled:opacity-50 flex items-center gap-1.5"
-        >
-          {undoing ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Undo2 className="w-3.5 h-3.5" />}
-          {undoing ? 'Undoing...' : 'Undo AI Categorize'}
-        </button>
+
+        {/* Overflow menu */}
+        <div className="relative ml-auto" ref={menuRef}>
+          <button
+            onClick={() => setMenuOpen(v => !v)}
+            className="p-1.5 rounded-md text-slate-400 hover:text-white hover:bg-slate-700/50"
+          >
+            <MoreHorizontal className="w-4 h-4" />
+          </button>
+
+          {menuOpen && (
+            <div className="absolute right-0 top-full mt-1 bg-slate-800 border border-slate-700 rounded-lg shadow-xl z-50 py-1 min-w-[200px]">
+              {/* Undo AI — destructive */}
+              <button
+                onClick={() => { setMenuOpen(false); setShowUndoConfirm(true); }}
+                disabled={undoing}
+                className="w-full text-left px-3 py-2 text-xs text-orange-400 hover:bg-orange-500/10 flex items-center gap-2 disabled:opacity-50"
+              >
+                {undoing ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Undo2 className="w-3.5 h-3.5" />}
+                Undo AI Categorization
+              </button>
+
+              <div className="border-t border-slate-700/50 my-1" />
+
+              {/* Toggle Distributions */}
+              <button
+                onClick={() => { setMenuOpen(false); if (onToggleDistributions) onToggleDistributions(); }}
+                className="w-full text-left px-3 py-2 text-xs text-slate-300 hover:bg-slate-700/50 flex items-center gap-2"
+              >
+                {showDistributions ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+                {showDistributions ? 'Hide Distributions' : 'Show Distributions'}
+              </button>
+            </div>
+          )}
+        </div>
       </div>
 
       <AlertDialog open={showUndoConfirm} onOpenChange={setShowUndoConfirm}>
