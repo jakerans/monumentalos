@@ -28,9 +28,22 @@ export default function AddEmployeeModal({ open, onOpenChange, onAdd }) {
     e.preventDefault();
     setSaving(true);
 
-    const data = { ...form, status: 'active' };
-    const shouldInvite = data.send_invite;
-    delete data.send_invite;
+    const shouldInvite = form.send_invite;
+
+    const data = {
+      full_name: form.full_name,
+      email: form.email || undefined,
+      phone: form.phone || undefined,
+      app_role: form.app_role,
+      classification: form.classification,
+      cost_type: form.cost_type,
+      discipline_status: form.discipline_status,
+      status: 'active',
+      has_performance_pay: form.has_performance_pay,
+    };
+
+    if (form.start_date) data.start_date = form.start_date;
+    if (form.notes?.trim()) data.notes = form.notes.trim();
 
     if (form.classification === 'salary') {
       data.pay_per_cycle = parseFloat(form.pay_per_cycle) || 0;
@@ -41,10 +54,13 @@ export default function AddEmployeeModal({ open, onOpenChange, onAdd }) {
       data.contractor_billing_type = form.contractor_billing_type;
       if (form.contractor_billing_type === 'per_cycle') {
         data.pay_per_cycle = parseFloat(form.pay_per_cycle) || 0;
-      } else if (form.contractor_billing_type !== 'per_project') {
-        data.contractor_rate = parseFloat(form.contractor_rate) || 0;
+      } else if (form.contractor_billing_type === 'hourly') {
+        data.hourly_rate = parseFloat(form.hourly_rate) || 0;
       }
+      data.contractor_rate = parseFloat(form.contractor_rate) || 0;
     }
+
+    Object.keys(data).forEach(k => { if (data[k] === undefined) delete data[k]; });
 
     try {
       await onAdd(data);
