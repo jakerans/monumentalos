@@ -628,16 +628,16 @@ export default function ExpenseManager({ startDate, endDate, onAddExpense }) {
         <div className="overflow-x-auto">
           <table className="w-full text-xs" style={{ tableLayout: 'fixed' }}>
             <colgroup>
-              <col style={{ width: '36px' }} />
-              <col style={{ width: '100px' }} />
-              <col style={{ width: '95px' }} />
-              <col style={{ width: '85px' }} />
-              <col />
-              <col style={{ width: '100px' }} />
-              <col style={{ width: '100px' }} />
-              <col style={{ width: '110px' }} />
+              <col style={{ width: '32px' }} />
               <col style={{ width: '90px' }} />
+              <col style={{ width: '85px' }} />
+              <col style={{ width: '80px' }} />
+              <col />
+              <col style={{ width: '90px' }} />
+              <col style={{ width: '65px' }} />
               <col style={{ width: '70px' }} />
+              <col style={{ width: '80px' }} />
+              <col style={{ width: '60px' }} />
             </colgroup>
             <thead>
               <tr className="border-b border-slate-700/50 text-slate-400">
