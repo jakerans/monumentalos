@@ -87,8 +87,6 @@ Deno.serve(async (req) => {
     }
     const historicalExamples = Object.values(examplesByCategory).flat();
 
-    // 3. Fetch AI expense settings (already fetched above)
-    const settingsArr = await base44.entities.CompanySettings.filter({ key: 'ai_expense' });
     const settings = settingsArr.length > 0 ? settingsArr[0] : {};
 
     const allowedCategories = settings.allowed_expense_categories?.length
@@ -109,7 +107,12 @@ Deno.serve(async (req) => {
       vendor: e.vendor || '',
       amount: e.amount || 0,
       date: e.date || '',
+      bank_account_id: e.bank_account_id || '',
     }));
+
+    const examplesSection = historicalExamples.length > 0
+      ? `\n\nHISTORICAL EXAMPLES — These are real expenses from this business that have already been categorized. Use these as a guide for similar expenses:\n${JSON.stringify(historicalExamples, null, 2)}\n\nWhen you see a new expense that looks similar to one of these examples (same vendor, similar description, similar amount), categorize it the same way.`
+      : '';
 
     // 4. Single AI invocation
     const systemPrompt = `You are a bookkeeper AI. Your job is to categorize business expenses.
@@ -119,7 +122,11 @@ ALLOWED EXPENSE TYPES (you MUST only use these exact values): ${JSON.stringify(a
 
 You are STRICTLY FORBIDDEN from inventing new categories or types. Only use the exact values listed above.
 
-${customInstructions ? `ADDITIONAL ADMIN INSTRUCTIONS:\n${customInstructions}\n` : ''}
+CRITICAL: You MUST categorize every expense. Never skip one. If you are uncertain, use your best judgment based on the description, vendor, amount, and historical examples. Default to "other" / "overhead" only as a last resort — always try to find a more specific category first.
+
+Each expense also includes a bank_account_id field which identifies which bank account the charge came from. Use this along with the admin instructions to determine categorization when account-specific rules are provided.
+
+${customInstructions ? `ADDITIONAL ADMIN INSTRUCTIONS:\n${customInstructions}\n` : ''}${examplesSection}
 
 For each expense below, determine the best matching category and type based on the description, vendor, and amount.
 Also, if the vendor field is empty, try to deduce the vendor/payee name from the description. If you can identify one, include it as "suggested_vendor". If you cannot determine a vendor, omit the field or set it to null.
