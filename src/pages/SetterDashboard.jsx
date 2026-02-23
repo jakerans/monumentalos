@@ -346,9 +346,14 @@ export default function SetterDashboard() {
   };
 
   const handleAddLead = async (leadData) => {
-    await base44.entities.Lead.create(leadData);
-    toast({ title: 'Lead Added', description: `${leadData.name} added to the pipeline.`, variant: 'success' });
-    refetch();
+    try {
+      await base44.entities.Lead.create(leadData);
+      toast({ title: 'Lead Added', description: `${leadData.name} added to the pipeline.`, variant: 'success' });
+      refetch();
+    } catch (err) {
+      toast({ title: 'Failed to add lead', description: err?.message || 'Unknown error', variant: 'destructive' });
+      throw err;
+    }
   };
 
   const handleSelectLead = (lead) => {
