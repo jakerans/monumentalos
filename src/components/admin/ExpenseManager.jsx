@@ -960,18 +960,21 @@ function ExpenseRow({ expense: e, clients, bankAccounts, bankAccountMap, onUpdat
         <InlineEditCell value={e.date || ''} displayValue={dayjs(e.date).format('MMM D, YYYY')} field="date" expenseId={e.id} onUpdate={onUpdate} type="date" />
       </td>
       <td className="px-3 py-2">
-        {hasPendingAI && !accepted ? (
-          <DraftDropdown
-            value={draftCategory}
-            onChange={setDraftCategory}
-            options={categoryOptions}
-            colorMap={CATEGORY_COLORS}
-            labelMap={CATEGORY_LABELS}
-            isAISuggested={draftCategory === e.suggested_category}
-          />
-        ) : (
-          <InlineEditCell value={e.category || 'uncategorized'} displayValue={<span className={`px-1.5 py-0.5 text-[10px] font-medium rounded border ${CATEGORY_COLORS[e.category] || CATEGORY_COLORS.other}`}>{CATEGORY_LABELS[e.category] || e.category}</span>} field="category" expenseId={e.id} onUpdate={onUpdate} options={categoryOptions} />
-        )}
+        <div className="flex items-center gap-1">
+          {hasPendingAI && !accepted ? (
+            <DraftDropdown
+              value={draftCategory}
+              onChange={setDraftCategory}
+              options={categoryOptions}
+              colorMap={CATEGORY_COLORS}
+              labelMap={CATEGORY_LABELS}
+              isAISuggested={draftCategory === e.suggested_category}
+            />
+          ) : (
+            <InlineEditCell value={e.category || 'uncategorized'} displayValue={<span className={`px-1.5 py-0.5 text-[10px] font-medium rounded border ${CATEGORY_COLORS[e.category] || CATEGORY_COLORS.other}`}>{CATEGORY_LABELS[e.category] || e.category}</span>} field="category" expenseId={e.id} onUpdate={onUpdate} options={categoryOptions} />
+          )}
+          {isRefunded && <span className="px-1 py-0.5 text-[7px] font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 rounded leading-none shrink-0">REFUND</span>}
+        </div>
       </td>
       <td className="px-3 py-2">
         {hasPendingAI && !accepted ? (
