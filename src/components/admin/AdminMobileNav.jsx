@@ -37,7 +37,6 @@ const adminSections = [
     label: 'OPERATIONS',
     items: [
       { key: 'ClientPerformance', label: 'Client Overview', icon: Target },
-      { key: 'EmployeeManagement', label: 'Scheduling', icon: Calendar },
       { key: 'SetterPerformance', label: 'Setter Management', icon: Headset },
       { key: 'SetterStats', label: 'Setter Reporting', icon: LineChart },
       { key: 'LeadManager', label: 'Lead Management', icon: Users },
@@ -49,7 +48,7 @@ const adminSections = [
     items: [
       { key: 'UserManagement', label: 'Users', icon: Building },
       { key: 'BankAccountSettings', label: 'Bank Accounts', icon: Landmark },
-      { key: 'LeadFieldSettings', label: 'Settings', icon: Cog },
+      { key: 'LeadFieldSettings', label: 'Lead Settings', icon: Cog },
       { key: 'ShiftChecklistSettings', label: 'Shift Checklist', icon: ClipboardCheck },
       { key: 'HealthMonitor', label: 'Health Monitor', icon: Activity },
       { key: 'PreviewEffects', label: 'Preview Effects', icon: Eye },
