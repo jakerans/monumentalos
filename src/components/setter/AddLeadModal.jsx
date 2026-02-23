@@ -8,6 +8,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import IndustryPicker from '../shared/IndustryPicker';
+import { ProjectSizeSelect } from '../shared/LeadFieldSelects';
 
 const SOURCE_OPTIONS = [
   { value: 'form', label: 'Form' },
@@ -16,6 +17,54 @@ const SOURCE_OPTIONS = [
   { value: 'inbound_call', label: 'Inbound Call' },
   { value: 'agency', label: 'Agency' },
 ];
+
+const PROJECT_TYPES_BY_INDUSTRY = {
+  painting: [
+    { value: 'interior', label: 'Interior' },
+    { value: 'exterior', label: 'Exterior' },
+    { value: 'cabinets', label: 'Cabinets' },
+    { value: 'garage_floor', label: 'Garage Floor' },
+    { value: 'basement', label: 'Basement' },
+    { value: 'commercial', label: 'Commercial' },
+  ],
+  epoxy: [
+    { value: 'garage_floor', label: 'Garage Floor' },
+    { value: 'basement', label: 'Basement' },
+    { value: 'commercial', label: 'Commercial' },
+  ],
+  'kitchen_bath': [
+    { value: 'kitchen', label: 'Kitchen' },
+    { value: 'bath', label: 'Bath' },
+    { value: 'kitchen_bath', label: 'Kitchen & Bath' },
+    { value: 'full_home', label: 'Full Home' },
+  ],
+  reno: [
+    { value: 'kitchen', label: 'Kitchen' },
+    { value: 'bath', label: 'Bath' },
+    { value: 'kitchen_bath', label: 'Kitchen & Bath' },
+    { value: 'full_home', label: 'Full Home' },
+    { value: 'addition', label: 'Addition' },
+    { value: 'room_remodel', label: 'Room Remodel' },
+  ],
+};
+
+function getProjectTypesForIndustries(industries) {
+  if (!industries || industries.length === 0) {
+    const all = Object.values(PROJECT_TYPES_BY_INDUSTRY).flat();
+    const seen = new Set();
+    return all.filter(t => { if (seen.has(t.value)) return false; seen.add(t.value); return true; });
+  }
+  const seen = new Set();
+  const result = [];
+  for (const ind of industries) {
+    const key = ind.toLowerCase().replace(/[/ ]/g, '_');
+    const types = PROJECT_TYPES_BY_INDUSTRY[key] || [];
+    for (const t of types) {
+      if (!seen.has(t.value)) { seen.add(t.value); result.push(t); }
+    }
+  }
+  return result;
+}
 
 export default function AddLeadModal({ open, onOpenChange, clients, onAdd, userId }) {
   const [form, setForm] = useState({
@@ -26,6 +75,8 @@ export default function AddLeadModal({ open, onOpenChange, clients, onAdd, userI
     lead_source: '',
     industries: [],
     notes: '',
+    project_types: [],
+    project_size: '',
   });
   const [isBooked, setIsBooked] = useState(false);
   const [appointmentDate, setAppointmentDate] = useState('');
@@ -54,6 +105,8 @@ export default function AddLeadModal({ open, onOpenChange, clients, onAdd, userI
     if (form.industries?.length > 0) leadData.industries = form.industries;
 
     if (isBooked && appointmentDate) {
+      if (form.project_types.length > 0) leadData.project_type = form.project_types.join(', ');
+      if (form.project_size) leadData.project_size = form.project_size;
       leadData.status = 'appointment_booked';
       leadData.appointment_date = new Date(appointmentDate).toISOString();
       leadData.date_appointment_set = new Date().toISOString();
@@ -66,7 +119,7 @@ export default function AddLeadModal({ open, onOpenChange, clients, onAdd, userI
 
     try {
       await onAdd(leadData);
-      setForm({ name: '', phone: '', email: '', client_id: '', lead_source: '', industries: [], notes: '' });
+      setForm({ name: '', phone: '', email: '', client_id: '', lead_source: '', industries: [], notes: '', project_types: [], project_size: '' });
       setIsBooked(false);
       setAppointmentDate('');
       setChatSTL('');
@@ -201,6 +254,43 @@ export default function AddLeadModal({ open, onOpenChange, clients, onAdd, userI
                     className="w-full px-3 py-2 border border-slate-700 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#D6FF03] bg-slate-800 text-white"
                   />
                 </div>
+                <div>
+                  <label className="block text-xs font-medium text-slate-300 mb-1">Project Type(s)</label>
+                  <div className="flex flex-wrap gap-1.5">
+                    {getProjectTypesForIndustries(form.industries).map(opt => {
+                      const selected = form.project_types.includes(opt.value);
+                      return (
+                        <button
+                          key={opt.value}
+                          type="button"
+                          onClick={() => {
+                            if (selected) {
+                              update('project_types', form.project_types.filter(v => v !== opt.value));
+                            } else {
+                              update('project_types', [...form.project_types, opt.value]);
+                            }
+                          }}
+                          className={`px-2.5 py-1 rounded-md text-xs font-medium border transition-colors ${
+                            selected
+                              ? 'bg-[#D6FF03]/20 border-[#D6FF03]/50 text-[#D6FF03]'
+                              : 'bg-slate-800 border-slate-600 text-slate-400 hover:text-white hover:border-slate-500'
+                          }`}
+                        >
+                          {opt.label}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-medium text-slate-300 mb-1">Project Size</label>
+                  <ProjectSizeSelect
+                    value={form.project_size}
+                    onChange={(v) => update('project_size', v)}
+                  />
+                </div>
+
                 {form.lead_source === 'msg' && (
                   <div>
                     <label className="block text-xs font-medium text-slate-300 mb-1">Chat Speed-to-Lead (minutes)</label>
