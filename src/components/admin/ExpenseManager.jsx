@@ -328,6 +328,13 @@ export default function ExpenseManager({ startDate, endDate, onAddExpense }) {
     refetch();
   };
 
+  const handleUndoRefund = async (expense) => {
+    if (!window.confirm('Remove refund status from this expense?')) return;
+    await base44.entities.Expense.update(expense.id, { is_refunded: false, refund_amount: 0 });
+    toast({ title: 'Refund removed', variant: 'success' });
+    refetch();
+  };
+
   const handleApproveAI = async (expense) => {
     await base44.entities.Expense.update(expense.id, {
       category: expense.suggested_category,
