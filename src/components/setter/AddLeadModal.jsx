@@ -29,7 +29,6 @@ export default function AddLeadModal({ open, onOpenChange, clients, onAdd, userI
     notes: '',
     project_type: '',
     project_size: '',
-    timeline: '',
   });
   const [isBooked, setIsBooked] = useState(false);
   const [appointmentDate, setAppointmentDate] = useState('');
@@ -56,7 +55,6 @@ export default function AddLeadModal({ open, onOpenChange, clients, onAdd, userI
     if (form.notes?.trim()) leadData.notes = form.notes.trim();
     if (form.project_type) leadData.project_type = form.project_type;
     if (form.project_size) leadData.project_size = form.project_size;
-    if (form.timeline?.trim()) leadData.timeline = form.timeline.trim();
     if (form.industries?.length > 0) leadData.industries = form.industries;
 
     if (isBooked && appointmentDate) {
@@ -69,7 +67,7 @@ export default function AddLeadModal({ open, onOpenChange, clients, onAdd, userI
 
     try {
       await onAdd(leadData);
-      setForm({ name: '', phone: '', email: '', client_id: '', lead_source: '', industries: [], notes: '', project_type: '', project_size: '', timeline: '' });
+      setForm({ name: '', phone: '', email: '', client_id: '', lead_source: '', industries: [], notes: '', project_type: '', project_size: '' });
       setIsBooked(false);
       setAppointmentDate('');
       onOpenChange(false);
@@ -180,7 +178,7 @@ export default function AddLeadModal({ open, onOpenChange, clients, onAdd, userI
           </div>
 
           {/* Optional qualification fields */}
-          <div className="grid grid-cols-3 gap-3">
+          <div className="grid grid-cols-2 gap-3">
             <div>
               <label className="block text-xs font-medium text-slate-300 mb-1">Project Type</label>
               <ProjectTypeSelect
@@ -194,16 +192,6 @@ export default function AddLeadModal({ open, onOpenChange, clients, onAdd, userI
               <ProjectSizeSelect
                 value={form.project_size}
                 onChange={(v) => update('project_size', v)}
-              />
-            </div>
-            <div>
-              <label className="block text-xs font-medium text-slate-300 mb-1">Timeline</label>
-              <input
-                type="text"
-                value={form.timeline}
-                onChange={(e) => update('timeline', e.target.value)}
-                className="w-full px-3 py-2 border border-slate-700 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#D6FF03] bg-slate-800 text-white placeholder-slate-500"
-                placeholder="e.g. 2-3 months"
               />
             </div>
           </div>
