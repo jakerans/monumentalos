@@ -250,12 +250,18 @@ export default function ExpenseManager({ startDate, endDate, onAddExpense }) {
     setSelectAllMode('all');
   };
 
-  const handleApproveAllAI = async () => {
-    if (!window.confirm(`Approve all ${aiPendingCount} AI-categorized expenses? This marks them as reviewed.`)) return;
-    const res = await base44.functions.invoke('bulkApproveAIExpenses', {});
-    const d = res.data;
-    toast({ title: 'AI Categories Approved', description: `${d.approved || 0} expenses marked as reviewed`, variant: 'success' });
-    refetch();
+  const handleApproveAllAI = () => {
+    setConfirmAction({
+      title: 'Approve All AI Categories',
+      description: `Mark all ${aiPendingCount} AI-categorized expenses as reviewed? You can still edit individual expenses afterward.`,
+      variant: 'success',
+      onConfirm: async () => {
+        const res = await base44.functions.invoke('bulkApproveAIExpenses', {});
+        const d = res.data;
+        toast({ title: 'AI Categories Approved', description: `${d.approved || 0} expenses marked as reviewed`, variant: 'success' });
+        refetch();
+      },
+    });
   };
 
   const handleBulkApprove = async () => {
