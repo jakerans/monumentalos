@@ -59,7 +59,35 @@ Deno.serve(async (req) => {
       return Response.json({ message: 'No uncategorized expenses found.', processed: 0, updated: 0, skipped_invalid: 0 });
     }
 
-    // 2. Fetch AI expense settings
+    // 2. Fetch historical examples in parallel with settings
+    const [settingsArr, allExpenses] = await Promise.all([
+      base44.entities.CompanySettings.filter({ key: 'ai_expense' }),
+      fetchAllFiltered(base44.asServiceRole.entities.Expense, {}, '-date'),
+    ]);
+
+    const categorizedExamples = allExpenses.filter(e =>
+      e.category && e.category !== 'uncategorized' &&
+      e.expense_type && e.expense_type !== 'uncategorized' &&
+      (e.ai_approved === true || !e.suggested_category)
+    );
+
+    const examplesByCategory = {};
+    for (const e of categorizedExamples) {
+      const cat = e.category;
+      if (!examplesByCategory[cat]) examplesByCategory[cat] = [];
+      if (examplesByCategory[cat].length < 15) {
+        examplesByCategory[cat].push({
+          description: e.description || '',
+          vendor: e.vendor || '',
+          amount: e.amount || 0,
+          category: e.category,
+          expense_type: e.expense_type,
+        });
+      }
+    }
+    const historicalExamples = Object.values(examplesByCategory).flat();
+
+    // 3. Fetch AI expense settings (already fetched above)
     const settingsArr = await base44.entities.CompanySettings.filter({ key: 'ai_expense' });
     const settings = settingsArr.length > 0 ? settingsArr[0] : {};
 
