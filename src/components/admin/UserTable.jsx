@@ -202,7 +202,20 @@ const UserRow = forwardRef(({ user, editingId, editRole, setEditRole, saving, st
         </div>
       )}
     </td>
-    <td className="px-4 py-3 text-xs text-slate-400">{user.app_role === 'client' ? getClientName(user.client_id) : '—'}</td>
+    <td className="px-4 py-3 text-xs text-slate-400">
+      {user.app_role === 'client' && user.client_id ? (
+        <button
+          onClick={() => {
+            navigator.clipboard.writeText(user.client_id);
+            toast({ title: 'Copied', description: 'Client ID copied to clipboard', duration: 2000 });
+          }}
+          className="text-slate-300 hover:text-white hover:underline transition-colors"
+          title="Click to copy Client ID"
+        >
+          {getClientName(user.client_id)}
+        </button>
+      ) : '—'}
+    </td>
     <td className="px-4 py-3 text-xs text-slate-500">{user.created_date ? new Date(user.created_date).toLocaleDateString() : '—'}</td>
     <td className="px-4 py-3 text-right">
       <div className="flex items-center justify-end gap-1">
