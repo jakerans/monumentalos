@@ -1018,7 +1018,7 @@ function ExpenseRow({ expense: e, clients, bankAccounts, bankAccountMap, onUpdat
       <td className="px-3 py-2 text-slate-400">
         <InlineEditCell value={e.bank_account_id || ''} displayValue={<span className="truncate block">{bankAccountMap[e.bank_account_id] || '—'}</span>} field="bank_account_id" expenseId={e.id} onUpdate={onUpdate} options={bankAccountOptions} />
       </td>
-      <td className="px-3 py-2 text-right font-bold">
+      <td className="px-3 py-2 text-right font-bold text-red-400">
         {isRefunded ? (
           <div>
             <span className="text-red-400 line-through text-[10px]">${(e.amount || 0).toLocaleString()}</span>
