@@ -40,6 +40,7 @@ export default function ClientView() {
       try {
         const currentUser = await base44.auth.me();
         setUser(currentUser);
+        if (!currentUser.app_role) { navigate(createPageUrl('AccountPending')); return; }
         if (currentUser.app_role !== 'admin' && currentUser.app_role !== 'marketing_manager') {
           navigate(createPageUrl('SetterDashboard'));
         }

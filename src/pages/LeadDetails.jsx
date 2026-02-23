@@ -18,6 +18,7 @@ export default function LeadDetails() {
       try {
         const currentUser = await base44.auth.me();
         setUser(currentUser);
+        if (!currentUser.app_role) { navigate(createPageUrl('AccountPending')); return; }
         if (currentUser.app_role !== 'client' && currentUser.app_role !== 'admin') {
           navigate(createPageUrl('SetterDashboard'));
         }

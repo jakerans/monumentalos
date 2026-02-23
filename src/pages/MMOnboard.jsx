@@ -15,6 +15,7 @@ export default function MMOnboard() {
       try {
         const currentUser = await base44.auth.me();
         setUser(currentUser);
+        if (!currentUser.app_role) { navigate(createPageUrl('AccountPending')); return; }
         if (currentUser.app_role !== 'marketing_manager' && currentUser.app_role !== 'admin') {
           navigate(createPageUrl('SetterDashboard'));
         }
