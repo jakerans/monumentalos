@@ -39,6 +39,7 @@ const ADMIN_SECTIONS = {
       { key: 'EmployeeManagement', label: 'Scheduling', icon: Calendar },
       { key: 'SetterPerformance', label: 'Setter Management', icon: Headset },
       { key: 'SetterStats', label: 'Setter Reporting', icon: LineChart },
+      { key: 'LeadManager', label: 'Lead Management', icon: Users },
       { key: 'LootAdmin', label: 'Rewards Admin', icon: Gift },
     ],
   },
@@ -88,6 +89,13 @@ export default function AdminSidebar({ user, currentPage, clients = [] }) {
   const { effectsOn, toggle: toggleEffects } = useEffectsToggle();
   const navigate = useNavigate();
   const [collapsed, setCollapsed] = useState(false);
+  const [deletionCount, setDeletionCount] = useState(0);
+
+  // Fetch deletion request count
+  React.useEffect(() => {
+    base44.entities.Lead.filter({ deletion_requested: true }, '-deletion_requested_date', 500)
+      .then(leads => setDeletionCount(leads?.length || 0));
+  }, []);
 
   const isFinanceAdmin = user?.app_role === 'finance_admin';
   const sections = isFinanceAdmin ? FINANCE_ADMIN_SECTIONS : ADMIN_SECTIONS;
@@ -230,17 +238,20 @@ export default function AdminSidebar({ user, currentPage, clients = [] }) {
                           </Link>
                         ) : (
                           <Link
-                            to={createPageUrl(item.key)}
-                            className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
-                              active ? 'bg-white/10 text-white' : 'text-slate-400 hover:text-white hover:bg-white/5'
-                            }`}
-                          >
-                            <Icon className="w-4 h-4 shrink-0" />
-                            <span className="flex-1">{item.label}</span>
-                            {active && (
-                              <div className="ml-auto w-1.5 h-1.5 rounded-full" style={{ backgroundColor: '#D6FF03' }} />
-                            )}
-                          </Link>
+                             to={createPageUrl(item.key)}
+                             className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+                               active ? 'bg-white/10 text-white' : 'text-slate-400 hover:text-white hover:bg-white/5'
+                             }`}
+                           >
+                             <Icon className="w-4 h-4 shrink-0" />
+                             <span className="flex-1">{item.label}</span>
+                             {item.key === 'LeadManager' && deletionCount > 0 && (
+                               <span className="ml-auto px-1.5 py-0.5 text-[10px] font-bold bg-red-600 text-white rounded-full">{deletionCount}</span>
+                             )}
+                             {active && !deletionCount && (
+                               <div className="ml-auto w-1.5 h-1.5 rounded-full" style={{ backgroundColor: '#D6FF03' }} />
+                             )}
+                           </Link>
                         )}
                       </motion.div>
                     );
