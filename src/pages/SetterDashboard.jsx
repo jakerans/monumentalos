@@ -5,6 +5,15 @@ import { useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import { Search, Filter, Plus, Ban, DollarSign, Phone, ClipboardCheck } from 'lucide-react';
 import { toast } from '@/components/ui/use-toast';
+import {
+  AlertDialog,
+  AlertDialogContent,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogCancel,
+} from '@/components/ui/alert-dialog';
 import SetterNav from '../components/setter/SetterNav';
 import SetterStats from '../components/setter/SetterStats';
 import DailyAIMessage from '../components/setter/DailyAIMessage';
@@ -55,6 +64,8 @@ export default function SetterDashboard() {
   const [dashTab, setDashTab] = useState('pipeline');
   const [workspaceOpen, setWorkspaceOpen] = useState(false);
   const [checklistVisible, setChecklistVisible] = useState(false);
+  const [reactivateLead, setReactivateLead] = useState(null);
+  const [reactivateOpen, setReactivateOpen] = useState(false);
   const prevRankRef = useRef(null);
   const [animateRef] = useAutoAnimate({ duration: 350, easing: 'ease-out' });
 
@@ -259,17 +270,63 @@ export default function SetterDashboard() {
   };
 
   const handleReactivate = (lead) => {
-    const reactivateUpdates = {
-      status: lead.first_call_made_date ? 'first_call_made' : 'new',
-      dq_reason: '',
-      disqualified_by_setter_id: '',
-      disqualified_date: '',
-    };
-    optimisticLeadUpdate(lead.id, reactivateUpdates);
-    toast({ title: 'Lead Reactivated', description: `${lead.name} moved back to ${lead.first_call_made_date ? 'In Progress' : 'New Leads'}.`, variant: 'success' });
-    base44.entities.Lead.update(lead.id, reactivateUpdates)
-      .then(() => refetch())
-      .catch((err) => { console.error('Reactivate failed:', err); toast({ title: 'Sync error — refreshing...', variant: 'destructive' }); refetch(); });
+    // If lead had a booking, show confirmation dialog with options
+    if (lead.appointment_date || lead.status === 'appointment_booked' || lead.disposition === 'scheduled') {
+      setReactivateLead(lead);
+      setReactivateOpen(true);
+    } else {
+      // No booking — just reactivate directly
+      const targetStatus = lead.first_call_made_date ? 'first_call_made' : 'new';
+      const updates = {
+        status: targetStatus,
+        dq_reason: '',
+        disqualified_by_setter_id: '',
+        disqualified_date: '',
+      };
+      optimisticLeadUpdate(lead.id, updates);
+      toast({ title: 'Lead Reactivated', description: `${lead.name} moved back to ${targetStatus === 'new' ? 'New Leads' : 'In Progress'}.`, variant: 'success' });
+      base44.entities.Lead.update(lead.id, updates)
+        .then(() => refetch())
+        .catch((err) => { console.error('Reactivate failed:', err); toast({ title: 'Sync error — refreshing...', variant: 'destructive' }); refetch(); });
+    }
+  };
+
+  const handleReactivateChoice = (choice) => {
+    const lead = reactivateLead;
+    if (!lead) return;
+    setReactivateOpen(false);
+    setReactivateLead(null);
+
+    if (choice === 'keep_booking') {
+      const updates = {
+        status: 'appointment_booked',
+        disposition: 'scheduled',
+        dq_reason: '',
+        disqualified_by_setter_id: '',
+        disqualified_date: '',
+      };
+      optimisticLeadUpdate(lead.id, updates);
+      toast({ title: 'Lead Reactivated', description: `${lead.name} restored to Appointment Booked.`, variant: 'success' });
+      base44.entities.Lead.update(lead.id, updates)
+        .then(() => refetch())
+        .catch((err) => { console.error('Reactivate failed:', err); toast({ title: 'Sync error — refreshing...', variant: 'destructive' }); refetch(); });
+    } else {
+      const updates = {
+        status: 'first_call_made',
+        appointment_date: '',
+        date_appointment_set: '',
+        disposition: '',
+        booked_by_setter_id: '',
+        dq_reason: '',
+        disqualified_by_setter_id: '',
+        disqualified_date: '',
+      };
+      optimisticLeadUpdate(lead.id, updates);
+      toast({ title: 'Lead Reactivated', description: `${lead.name} moved to In Progress. Booking cleared.`, variant: 'warning' });
+      base44.entities.Lead.update(lead.id, updates)
+        .then(() => refetch())
+        .catch((err) => { console.error('Reactivate failed:', err); toast({ title: 'Sync error — refreshing...', variant: 'destructive' }); refetch(); });
+    }
   };
 
   const handleDisqualify = (leadId, dqReason) => {
@@ -754,6 +811,51 @@ export default function SetterDashboard() {
       </AnimatePresence>
 
       <BugReportWidget user={user} />
+
+      <AlertDialog open={reactivateOpen} onOpenChange={(open) => { if (!open) { setReactivateOpen(false); setReactivateLead(null); } }}>
+        <AlertDialogContent className="bg-slate-900 border-slate-700 text-white max-w-md">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-white">Reactivate Lead</AlertDialogTitle>
+            <AlertDialogDescription className="text-slate-300">
+              <span className="font-semibold text-white">{reactivateLead?.name}</span> has an existing booking:
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+
+          {reactivateLead && (
+            <div className="bg-slate-800 rounded-lg p-3 border border-slate-700 my-2">
+              <div className="text-xs text-slate-400 space-y-1">
+                {reactivateLead.appointment_date && (
+                  <p>📅 <span className="text-white">{new Date(reactivateLead.appointment_date).toLocaleString()}</span></p>
+                )}
+                {reactivateLead.date_appointment_set && (
+                  <p>🕐 Booked on: <span className="text-slate-300">{new Date(reactivateLead.date_appointment_set).toLocaleDateString()}</span></p>
+                )}
+              </div>
+            </div>
+          )}
+
+          <div className="flex flex-col gap-2 mt-2">
+            <button
+              onClick={() => handleReactivateChoice('keep_booking')}
+              className="w-full px-4 py-2.5 bg-green-600 text-white rounded-lg hover:bg-green-700 font-medium text-sm transition-colors text-left"
+            >
+              <span className="block font-semibold">Keep booking → Appointment Booked</span>
+              <span className="block text-xs text-green-200 mt-0.5">Restore to Appointment Booked with existing date/time</span>
+            </button>
+            <button
+              onClick={() => handleReactivateChoice('clear_booking')}
+              className="w-full px-4 py-2.5 bg-amber-600 text-white rounded-lg hover:bg-amber-700 font-medium text-sm transition-colors text-left"
+            >
+              <span className="block font-semibold">Clear booking → In Progress</span>
+              <span className="block text-xs text-amber-200 mt-0.5">Remove appointment and move to In Progress for re-booking</span>
+            </button>
+          </div>
+
+          <AlertDialogFooter className="mt-2">
+            <AlertDialogCancel className="bg-slate-800 border-slate-600 text-slate-300 hover:bg-slate-700">Cancel</AlertDialogCancel>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
     </PageErrorBoundary>
   );
