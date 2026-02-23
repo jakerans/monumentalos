@@ -84,8 +84,9 @@ export default function ExpenseManager({ startDate, endDate, onAddExpense }) {
     keepPreviousData: true,
   });
 
-  const kpis = data?.kpis || { total: 0, cogsTotal: 0, overheadTotal: 0, uncategorizedCount: 0 };
+  const kpis = data?.kpis || { total: 0, cogsTotal: 0, overheadTotal: 0, uncategorizedCount: 0, aiPendingCount: 0 };
   const uncategorizedCount = kpis.uncategorizedCount || 0;
+  const aiPendingCount = kpis.aiPendingCount || 0;
   const byCategory = data?.byCategory || [];
   const expenses = data?.expenses || [];
   const totalFiltered = data?.totalFiltered || 0;
