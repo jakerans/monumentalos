@@ -4,20 +4,21 @@ const SPREADSHEET_ID = '1qn4-rYBgi5ruOm7tB6obbA3yBvSyOU313yNI3b41STM';
 const SHEET_NAME = 'Expense Sheet';
 const SHEETS_API = 'https://sheets.googleapis.com/v4/spreadsheets';
 
-// App columns (Q-W, indices 16-22)
-const APP_ID_COL = 16;
-const APP_CATEGORY_COL = 17;
-const APP_EXP_TYPE_COL = 18;
-const APP_CLIENT_ID_COL = 19;
-const APP_VENDOR_COL = 20;
-const APP_SYNCED_COL = 21;
+// New 12-column layout:
+// A=ID, B=Date, C=Description, D=Amount, E=Account ID,
+// F=App ID, G=Category, H=Expense Type, I=Client ID, J=Vendor, K=Synced, L=Is_Deleted
+const BANK_ID_COL = 0;        // A — unique row identifier
+const BANK_DATE_COL = 1;      // B — date
+const BANK_DESC_COL = 2;      // C — description
+const BANK_AMOUNT_COL = 3;    // D — amount (negative = expense)
+const BANK_ACCOUNT_COL = 4;   // E — account identifier
 
-// Bank columns
-const BANK_ID_COL = 0;        // Column A — unique row identifier
-const BANK_DATE_COL = 1;
-const BANK_DESC_COL = 3;
-const BANK_AMOUNT_COL = 6;
-const BANK_ACCOUNT_COL = 14;  // Column O — account identifier from bank feed
+const APP_ID_COL = 5;         // F — written by sync
+const APP_CATEGORY_COL = 6;   // G — written by sync
+const APP_EXP_TYPE_COL = 7;   // H — written by sync
+const APP_CLIENT_ID_COL = 8;  // I — written by sync
+const APP_VENDOR_COL = 9;     // J — written by sync
+const APP_SYNCED_COL = 10;    // K — written by sync
 
 const VALID_CATEGORIES = ['ad_spend', 'payroll', 'software', 'office', 'contractor', 'travel', 'distribution', 'processing_fee', 'other', 'uncategorized'];
 const SKIP_CATEGORIES = ['transaction', 'transfer'];
