@@ -21,8 +21,6 @@ const APP_VENDOR_COL = 9;     // J — written by sync
 const APP_SYNCED_COL = 10;    // K — written by sync
 
 const VALID_CATEGORIES = ['ad_spend', 'payroll', 'software', 'office', 'contractor', 'travel', 'distribution', 'processing_fee', 'other', 'uncategorized'];
-const SKIP_CATEGORIES = ['transaction', 'transfer'];
-const SKIP_DESCRIPTIONS = ['GUSTO - TAX', 'GUSTO - NET', 'GUSTO - CND', 'Wise Inc'];
 const VALID_TYPES = ['cogs', 'overhead', 'distribution', 'uncategorized'];
 
 function colLetter(index) {
