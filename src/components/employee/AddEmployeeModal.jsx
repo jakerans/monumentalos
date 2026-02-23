@@ -18,14 +18,20 @@ export default function AddEmployeeModal({ open, onOpenChange, onAdd }) {
     classification: 'salary', pay_per_cycle: '', hourly_rate: '', standard_monthly_hours: '',
     contractor_billing_type: 'monthly', contractor_rate: '',
     cost_type: 'overhead', discipline_status: 'green', start_date: '',
-    has_performance_pay: false, notes: '',
+    has_performance_pay: false, notes: '', send_invite: true,
   });
+  const [saving, setSaving] = useState(false);
 
   const set = (k, v) => setForm(p => ({ ...p, [k]: v }));
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    setSaving(true);
+
     const data = { ...form, status: 'active' };
+    const shouldInvite = data.send_invite;
+    delete data.send_invite;
+
     if (form.classification === 'salary') {
       data.pay_per_cycle = parseFloat(form.pay_per_cycle) || 0;
     } else if (form.classification === 'hourly') {
@@ -39,9 +45,47 @@ export default function AddEmployeeModal({ open, onOpenChange, onAdd }) {
         data.contractor_rate = parseFloat(form.contractor_rate) || 0;
       }
     }
-    onAdd(data);
-    setForm({ full_name: '', email: '', phone: '', app_role: 'setter', classification: 'salary', pay_per_cycle: '', hourly_rate: '', standard_monthly_hours: '', contractor_billing_type: 'monthly', contractor_rate: '', cost_type: 'overhead', discipline_status: 'green', start_date: '', has_performance_pay: false, notes: '' });
-    onOpenChange(false);
+
+    try {
+      await onAdd(data);
+
+      if (shouldInvite && form.email?.trim()) {
+        try {
+          const role = form.app_role || 'setter';
+          const platformRole = (role === 'admin' || role === 'onboard_admin') ? 'admin' : 'user';
+          await base44.users.inviteUser(form.email.trim(), platformRole);
+
+          if (role !== 'admin') {
+            await base44.entities.PendingInvite.create({
+              email: form.email.trim().toLowerCase(),
+              intended_role: role,
+              status: 'pending',
+            });
+          }
+
+          toast({ title: 'Invitation Sent', description: `${form.email} will receive a login invite.`, variant: 'success' });
+        } catch (invErr) {
+          toast({
+            title: 'Employee added, but invite failed',
+            description: invErr?.response?.data?.error || invErr?.message || 'You can resend from Team Settings.',
+            variant: 'warning',
+          });
+        }
+      }
+
+      setForm({
+        full_name: '', email: '', phone: '', app_role: 'setter',
+        classification: 'salary', pay_per_cycle: '', hourly_rate: '', standard_monthly_hours: '',
+        contractor_billing_type: 'monthly', contractor_rate: '',
+        cost_type: 'overhead', discipline_status: 'green', start_date: '',
+        has_performance_pay: false, notes: '', send_invite: true,
+      });
+      onOpenChange(false);
+    } catch (err) {
+      toast({ title: 'Failed to add employee', description: err?.message || 'Unknown error', variant: 'destructive' });
+    } finally {
+      setSaving(false);
+    }
   };
 
   const inputCls = "w-full px-3 py-2 text-sm bg-slate-800 border border-slate-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-[#D6FF03]";
