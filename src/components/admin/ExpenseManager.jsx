@@ -417,7 +417,7 @@ export default function ExpenseManager({ startDate, endDate, onAddExpense }) {
               {expenses.length === 0 ? (
                 <tr><td colSpan={10} className="text-center py-8 text-slate-500">No expenses match your filters</td></tr>
               ) : expenses.map(e => (
-                <ExpenseRow key={e.id} expense={e} clients={clients} bankAccounts={bankAccounts} bankAccountMap={bankAccountMap} onUpdate={handleInlineUpdate} onDelete={() => handleDelete(e.id)} onApproveAI={handleApproveAI} selected={selected.has(e.id)} onToggleSelect={() => toggleSelect(e.id)} />
+                <ExpenseRow key={e.id} expense={e} clients={clients} bankAccounts={bankAccounts} bankAccountMap={bankAccountMap} onUpdate={handleInlineUpdate} onDelete={() => handleDelete(e.id)} onApproveAI={handleApproveAI} onAcceptDraft={handleAcceptDraft} selected={selected.has(e.id)} onToggleSelect={() => toggleSelect(e.id)} />
               ))}
             </tbody>
           </table>
