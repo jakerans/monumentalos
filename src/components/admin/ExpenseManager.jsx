@@ -167,20 +167,14 @@ export default function ExpenseManager({ startDate, endDate, onAddExpense }) {
   const handleInlineUpdate = async (id, field, value) => {
     const update = { [field]: field === 'amount' ? Number(value) : value };
     if (field === 'client_id' && !value) update.client_id = undefined;
-    if (field === 'category' || field === 'expense_type') {
-      const current = expenses.find(e => e.id === id);
-      if (current) {
-        const newCategory = field === 'category' ? value : (current.category || 'uncategorized');
-        const newType = field === 'expense_type' ? value : (current.expense_type || 'uncategorized');
-        if (newCategory !== 'uncategorized' && newType !== 'uncategorized') {
-          update.suggested_category = '';
-          update.suggested_type = '';
-          update.ai_approved = true;
-        }
-      }
-    }
     await base44.entities.Expense.update(id, update);
     toast({ title: 'Updated', variant: 'success' });
+    refetch();
+  };
+
+  const handleAcceptDraft = async (id, updates) => {
+    await base44.entities.Expense.update(id, updates);
+    toast({ title: 'Expense approved', variant: 'success' });
     refetch();
   };
 
