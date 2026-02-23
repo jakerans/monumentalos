@@ -37,6 +37,8 @@ export default function AddLeadModal({ open, onOpenChange, clients, onAdd, userI
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    // NOTE: Leads created before this fix may have no status field.
+    // To fix existing leads, update them in the database: status = 'new'
     if (!form.name || !form.client_id || !form.lead_source) return;
     setLoading(true);
 
@@ -45,6 +47,7 @@ export default function AddLeadModal({ open, onOpenChange, clients, onAdd, userI
       client_id: form.client_id,
       lead_source: form.lead_source,
       lead_received_date: new Date().toISOString(),
+      status: 'new',
     };
 
     if (form.phone?.trim()) leadData.phone = form.phone.trim();
