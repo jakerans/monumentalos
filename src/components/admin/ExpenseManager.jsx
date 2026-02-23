@@ -897,7 +897,7 @@ function SortableHeader({ field, label, current, dir, onClick, align = 'left' })
   );
 }
 
-function ExpenseRow({ expense: e, clients, bankAccounts, bankAccountMap, onUpdate, onDelete, onApproveAI, onAcceptDraft, selected, onToggleSelect }) {
+function ExpenseRow({ expense: e, clients, bankAccounts, bankAccountMap, onUpdate, onDelete, onApproveAI, onAcceptDraft, selected, onToggleSelect, onRefund, onUndoRefund }) {
   const categoryOptions = Object.entries(CATEGORY_LABELS).map(([k, v]) => ({ value: k, label: v }));
   const typeOptions = [{ value: 'uncategorized', label: 'Uncategorized' }, { value: 'cogs', label: 'COGS' }, { value: 'overhead', label: 'Overhead' }, { value: 'distribution', label: 'Distribution' }];
   const clientOptions = [{ value: '', label: 'None' }, ...clients.map(c => ({ value: c.id, label: c.name }))];
