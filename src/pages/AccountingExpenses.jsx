@@ -50,15 +50,6 @@ export default function AccountingExpenses() {
 
   const clients = dashData?.clients || [];
 
-  const handleSyncExpenses = async () => {
-    setSyncing(true);
-    const res = await base44.functions.invoke('syncExpensesSheet');
-    setSyncing(false);
-    const s = res.data?.stats || {};
-    toast({ title: 'Expense Sync Complete', description: `Imported: ${s.imported || 0}, Updated from sheet: ${s.updatedFromSheet || 0}, Pushed to sheet: ${s.updatedToSheet || 0}`, variant: 'success' });
-    refetchAll();
-  };
-
   if (!user) return null;
   if (isLoading) return <RevenueDashboardSkeleton />;
 
@@ -77,20 +68,6 @@ export default function AccountingExpenses() {
             <div className="flex items-center gap-2">
               <DateRangePicker startDate={startDate} endDate={endDate} onStartChange={setStartDate} onEndChange={setEndDate} />
             </div>
-          </div>
-
-          <div className="flex flex-wrap gap-2">
-            <button onClick={() => setExpenseOpen(true)} className="px-3 py-1.5 text-xs font-medium bg-red-600 text-white rounded-md hover:bg-red-700 flex items-center gap-1">
-              <Receipt className="w-3.5 h-3.5" /> Add Expense
-            </button>
-            <button onClick={handleSyncExpenses} disabled={syncing} className="px-3 py-1.5 text-xs font-medium bg-slate-700 text-white rounded-md hover:bg-slate-600 disabled:opacity-50 flex items-center gap-1">
-              <RefreshCw className={`w-3.5 h-3.5 ${syncing ? 'animate-spin' : ''}`} /> {syncing ? 'Syncing...' : 'Sync Sheet'}
-            </button>
-            {(user?.app_role === 'admin' || user?.app_role === 'finance_admin') && (
-              <button onClick={() => setPayrollOpen(true)} className="px-3 py-1.5 text-xs font-medium bg-purple-600 text-white rounded-md hover:bg-purple-700 flex items-center gap-1">
-                <Banknote className="w-3.5 h-3.5" /> Run Payroll
-              </button>
-            )}
           </div>
 
           <ExpenseManager startDate={startDate} endDate={endDate} onAddExpense={() => setExpenseOpen(true)} />
