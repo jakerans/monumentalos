@@ -12,6 +12,7 @@ import AddExpenseModal from '../components/admin/AddExpenseModal';
 import MonthlyClosePanel from '../components/admin/MonthlyClosePanel';
 import PageErrorBoundary from '../components/shared/PageErrorBoundary';
 import RevenueDashboardSkeleton from '../components/admin/RevenueDashboardSkeleton';
+import ExpensesTourGuide from '../components/admin/ExpensesTourGuide';
 
 export default function AccountingExpenses() {
   const navigate = useNavigate();

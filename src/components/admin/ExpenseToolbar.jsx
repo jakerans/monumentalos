@@ -79,11 +79,12 @@ export default function ExpenseToolbar({ onRefresh, onAddExpense, uncategorizedC
 
   return (
     <>
-      <div className="flex items-center gap-2 flex-wrap">
+      <div className="flex items-center gap-2 flex-wrap" data-tour="expense-toolbar">
         {/* Primary: Sync */}
         <button
           onClick={handleSync}
           disabled={syncing}
+          data-tour="expense-sync-btn"
           className="px-3 py-1.5 text-xs font-medium bg-emerald-600 text-white rounded-md hover:bg-emerald-700 disabled:opacity-50 flex items-center gap-1.5"
         >
           {syncing ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <RefreshCw className="w-3.5 h-3.5" />}

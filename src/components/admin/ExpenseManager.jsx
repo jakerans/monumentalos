@@ -215,7 +215,7 @@ export default function ExpenseManager({ startDate, endDate, onAddExpense }) {
       )}
 
       {/* Summary cards */}
-      <div className="grid grid-cols-3 gap-3">
+      <div className="grid grid-cols-3 gap-3" data-tour="expense-summary-cards">
         <SummaryCard label="Total Expenses" value={kpis.total} color="text-red-400" />
         <SummaryCard label="COGS" value={kpis.cogsTotal} color="text-orange-400" />
         <SummaryCard label="Overhead" value={kpis.overheadTotal} color="text-slate-300" />
