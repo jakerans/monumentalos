@@ -62,9 +62,17 @@ Deno.serve(async (req) => {
     const closedMonths = closedSettings.map(s => s.value).filter(Boolean).sort().reverse();
     const isAlreadyClosed = closedMonths.includes(targetMonth);
 
+    const aiPendingCount = allMonthExpenses.filter(e =>
+      e.date >= monthStart && e.date <= monthEnd &&
+      e.category && e.category !== 'uncategorized' &&
+      e.suggested_category &&
+      e.ai_approved === false
+    ).length;
+
     return Response.json({
       targetMonth,
       uncategorizedCount,
+      aiPendingCount,
       missingBillingCount,
       activeClientCount: activeClients.length,
       closedMonths,
