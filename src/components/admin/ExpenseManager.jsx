@@ -37,6 +37,115 @@ const TYPE_COLORS = {
 
 const PAGE_SIZE = 50;
 
+function RefundModal({ expense, open, onClose, onRefunded }) {
+  const [mode, setMode] = useState('full');
+  const [refundAmount, setRefundAmount] = useState('');
+  const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    if (open && expense) {
+      setMode('full');
+      setRefundAmount('');
+    }
+  }, [open, expense?.id]);
+
+  if (!open || !expense) return null;
+
+  const handleSave = async () => {
+    setSaving(true);
+    const amount = mode === 'full' ? expense.amount : parseFloat(refundAmount);
+    if (!amount || amount <= 0 || amount > expense.amount) {
+      setSaving(false);
+      return;
+    }
+    await base44.entities.Expense.update(expense.id, {
+      is_refunded: mode === 'full',
+      refund_amount: amount,
+    });
+    setSaving(false);
+    onRefunded();
+    onClose();
+  };
+
+  const partialAmt = parseFloat(refundAmount);
+  const partialValid = !isNaN(partialAmt) && partialAmt > 0 && partialAmt <= expense.amount;
+
+  return (
+    <AlertDialog open={open} onOpenChange={onClose}>
+      <AlertDialogContent className="bg-slate-900 border border-slate-700 text-white">
+        <AlertDialogHeader>
+          <AlertDialogTitle>Mark as Refunded</AlertDialogTitle>
+          <AlertDialogDescription asChild>
+            <div className="space-y-3">
+              <p className="text-sm text-slate-400">
+                {expense.description || 'Expense'} — ${(expense.amount || 0).toLocaleString()}
+              </p>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => setMode('full')}
+                  className={`flex-1 px-3 py-2 text-xs font-medium rounded-md border transition-colors ${
+                    mode === 'full'
+                      ? 'bg-[#D6FF03]/15 border-[#D6FF03]/40 text-[#D6FF03]'
+                      : 'bg-slate-800 border-slate-700 text-slate-400 hover:border-slate-600'
+                  }`}
+                >
+                  Full Refund
+                </button>
+                <button
+                  onClick={() => setMode('partial')}
+                  className={`flex-1 px-3 py-2 text-xs font-medium rounded-md border transition-colors ${
+                    mode === 'partial'
+                      ? 'bg-[#D6FF03]/15 border-[#D6FF03]/40 text-[#D6FF03]'
+                      : 'bg-slate-800 border-slate-700 text-slate-400 hover:border-slate-600'
+                  }`}
+                >
+                  Partial Refund
+                </button>
+              </div>
+              {mode === 'partial' && (
+                <div>
+                  <label className="text-xs text-slate-400 block mb-1">Refund Amount</label>
+                  <div className="relative">
+                    <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-xs text-slate-500">$</span>
+                    <input
+                      type="number"
+                      value={refundAmount}
+                      onChange={(ev) => setRefundAmount(ev.target.value)}
+                      max={expense.amount}
+                      step="0.01"
+                      placeholder="0.00"
+                      className="w-full pl-6 pr-3 py-2 text-sm bg-slate-800 border border-slate-700 rounded-md text-white focus:outline-none focus:ring-1 focus:ring-[#D6FF03]/50"
+                    />
+                  </div>
+                  {refundAmount && !partialValid && parseFloat(refundAmount) > expense.amount && (
+                    <p className="text-[10px] text-red-400 mt-1">Refund cannot exceed original amount</p>
+                  )}
+                </div>
+              )}
+              {mode === 'full' && (
+                <p className="text-xs text-slate-500">This marks the full ${(expense.amount || 0).toLocaleString()} as refunded. The expense stays in your records but is excluded from totals.</p>
+              )}
+              {mode === 'partial' && partialValid && (
+                <p className="text-xs text-slate-500">Effective amount after refund: ${((expense.amount || 0) - partialAmt).toLocaleString()}</p>
+              )}
+            </div>
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel className="bg-slate-800 border-slate-700 text-slate-300 hover:bg-slate-700">Cancel</AlertDialogCancel>
+          <AlertDialogAction
+            onClick={handleSave}
+            disabled={saving || (mode === 'partial' && !partialValid)}
+            className="bg-emerald-600 hover:bg-emerald-700"
+          >
+            {saving ? 'Saving...' : 'Mark as Refunded'}
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+  );
+}
+
 export default function ExpenseManager({ startDate, endDate, onAddExpense }) {
   const [filterCat, setFilterCat] = useState('all');
   const [filterType, setFilterType] = useState('all');
