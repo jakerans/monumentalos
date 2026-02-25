@@ -13,7 +13,8 @@ import AICoachSettingsTab from '../components/admin/AICoachSettingsTab';
 import AIExpenseSettingsTab from '../components/admin/AIExpenseSettingsTab';
 import BankAccountsTab from '../components/admin/BankAccountsTab';
 import QuickLinkManager from '../components/admin/QuickLinkManager';
-import { Settings, List, Sparkles, MessageSquare, Receipt, Landmark, Link } from 'lucide-react';
+import STLBusinessHoursTab from '../components/admin/STLBusinessHoursTab';
+import { Settings, List, Sparkles, MessageSquare, Receipt, Landmark, Link, Moon } from 'lucide-react';
 
 const TABS = [
   { id: 'lead_options', label: 'Lead Field Options', icon: List },
@@ -22,6 +23,7 @@ const TABS = [
   { id: 'ai_expense', label: 'AI Expenses', icon: Receipt },
   { id: 'bank_accounts', label: 'Bank Accounts', icon: Landmark },
   { id: 'quick_links', label: 'Quick Links', icon: Link },
+  { id: 'stl_hours', label: 'STL Hours', icon: Moon },
 ];
 
 export default function LeadFieldSettings() {
@@ -115,6 +117,9 @@ export default function LeadFieldSettings() {
           )}
           {tab === 'quick_links' && (
             <QuickLinkManager />
+          )}
+          {tab === 'stl_hours' && (
+            <STLBusinessHoursTab />
           )}
           </main>
         <AdminMobileNav currentPage="LeadFieldSettings" clients={clients || []} user={user} />
