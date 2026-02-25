@@ -13,6 +13,7 @@ import SetterStatsTable from '../components/admin/SetterStatsTable';
 import SetterStatsDQChart from '../components/admin/SetterStatsDQChart';
 import SetterStatsSTLChart from '../components/admin/SetterStatsSTLChart';
 import SetterStatsTrendChart from '../components/admin/SetterStatsTrendChart';
+import SetterStatsLeadChannels from '../components/admin/SetterStatsLeadChannels';
 import PageErrorBoundary from '../components/shared/PageErrorBoundary';
 import PageLoader from '../components/shared/PageLoader';
 
@@ -159,6 +160,8 @@ export default function SetterStats() {
           </div>
 
           <SetterStatsDQChart stats={stats} overallDQReasons={overallDQReasons} />
+
+          <SetterStatsLeadChannels leads={leads} inRange={inRange} />
         </main>
         <AdminMobileNav currentPage="SetterStats" clients={clients} user={user} />
       </div>
