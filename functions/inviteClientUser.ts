@@ -38,19 +38,19 @@ Deno.serve(async (req) => {
     
     let inviteSent = false;
     try {
-      console.log('Attempting invite with user token...');
-      const inviteResult = await base44.auth.inviteUser(email.trim(), inviteRole);
+      console.log('Attempting invite via users.inviteUser...');
+      await base44.users.inviteUser(email.trim(), inviteRole);
       inviteSent = true;
-      console.log('Invite sent successfully, result:', JSON.stringify(inviteResult));
+      console.log('Invite sent successfully via users.inviteUser');
     } catch (inviteError) {
-      console.error('User-token invite failed:', inviteError.message, JSON.stringify(inviteError.response?.data || inviteError.response?.status || 'no response'));
+      console.error('users.inviteUser failed:', inviteError.message, JSON.stringify(inviteError.response?.data || {}));
       try {
-        console.log('Retrying with service role...');
-        const srResult = await base44.asServiceRole.auth.inviteUser(email.trim(), inviteRole);
+        console.log('Falling back to auth.inviteUser...');
+        await base44.auth.inviteUser(email.trim(), inviteRole);
         inviteSent = true;
-        console.log('Service role invite sent, result:', JSON.stringify(srResult));
-      } catch (srError) {
-        console.error('Service role invite failed:', srError.message, JSON.stringify(srError.response?.data || srError.response?.status || 'no response'));
+        console.log('Invite sent via auth.inviteUser fallback');
+      } catch (authError) {
+        console.error('auth.inviteUser also failed:', authError.message, JSON.stringify(authError.response?.data || {}));
       }
     }
 
