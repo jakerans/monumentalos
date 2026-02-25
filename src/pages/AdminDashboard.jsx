@@ -146,13 +146,49 @@ export default function AdminDashboard() {
             <PLComparisonRow current={mtd} prior={priorPL} />
           </motion.div>
 
-          {/* Stat Compare */}
+          {/* Stat Compare + Setter Leaderboard */}
           <motion.div
             initial={effectsOn ? { opacity: 0, y: 20 } : false}
             animate={effectsOn ? { opacity: 1, y: 0 } : false}
             transition={effectsOn ? { delay: 0.35, duration: 0.4 } : { duration: 0 }}
+            className="grid grid-cols-1 lg:grid-cols-2 gap-4"
           >
+            {/* Income vs Expenses */}
             <StatCompareCard data={statCompare} />
+
+            {/* Setter leaderboard */}
+            <div className="bg-slate-800/50 rounded-lg border border-slate-700/50 overflow-hidden flex flex-col max-h-[400px]">
+              <div className="px-4 py-3 border-b border-slate-700/50 flex items-center gap-2 shrink-0">
+                <Trophy className="w-4 h-4 text-amber-400" />
+                <h3 className="text-sm font-bold text-white">Setter Leaderboard (MTD)</h3>
+                <InfoTooltip text="Rankings based on appointments booked this month. STL = average Speed-to-Lead in minutes (lower is better). Top performers are highlighted." />
+              </div>
+              <div className="px-4 py-1.5 flex items-center justify-between border-b border-slate-700/30 shrink-0">
+                <span className="text-[10px] text-slate-500 uppercase tracking-wider">Setter</span>
+                <div className="flex items-center gap-3">
+                  <span className="text-[10px] text-slate-500 uppercase tracking-wider min-w-[40px] text-right">STL</span>
+                  <span className="text-[10px] text-slate-500 uppercase tracking-wider min-w-[55px] text-right">Booked</span>
+                </div>
+              </div>
+              <div ref={leaderboardRef} className="divide-y divide-slate-700/30 overflow-y-auto flex-1">
+                {setterStats.length === 0 ? (
+                  <div className="px-4 py-6 text-xs text-slate-500 text-center">No setters found</div>
+                ) : setterStats.slice(0, 8).map((s, i) => (
+                  <div key={i} className="px-4 py-2.5 flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <span className={`w-5 h-5 flex items-center justify-center rounded-full text-[10px] font-bold ${
+                        i === 0 ? 'bg-yellow-500/20 text-yellow-400' : i === 1 ? 'bg-slate-600 text-slate-300' : i === 2 ? 'bg-orange-500/20 text-orange-400' : 'bg-slate-700 text-slate-400'
+                      }`}>{i + 1}</span>
+                      <span className="text-xs font-medium text-slate-200">{s.name}</span>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <span className="text-[10px] text-slate-400 min-w-[40px] text-right">{s.avgSTL != null ? `${s.avgSTL}m` : '—'}</span>
+                      <span className="text-xs font-bold min-w-[55px] text-right" style={{color:'#D6FF03'}}>{s.booked} booked</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
           </motion.div>
 
           {/* No goal prompt */}
