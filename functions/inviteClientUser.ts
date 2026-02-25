@@ -38,17 +38,19 @@ Deno.serve(async (req) => {
     
     let inviteSent = false;
     try {
-      await base44.auth.inviteUser(email.trim(), inviteRole);
+      console.log('Attempting invite with user token...');
+      const inviteResult = await base44.auth.inviteUser(email.trim(), inviteRole);
       inviteSent = true;
-      console.log('Invite sent successfully');
+      console.log('Invite sent successfully, result:', JSON.stringify(inviteResult));
     } catch (inviteError) {
-      console.warn('Email invite failed with user token, trying service role:', inviteError.message);
+      console.error('User-token invite failed:', inviteError.message, JSON.stringify(inviteError.response?.data || inviteError.response?.status || 'no response'));
       try {
-        await base44.asServiceRole.auth.inviteUser(email.trim(), inviteRole);
+        console.log('Retrying with service role...');
+        const srResult = await base44.asServiceRole.auth.inviteUser(email.trim(), inviteRole);
         inviteSent = true;
-        console.log('Invite sent via service role');
+        console.log('Service role invite sent, result:', JSON.stringify(srResult));
       } catch (srError) {
-        console.warn('Service role invite also failed:', srError.message);
+        console.error('Service role invite failed:', srError.message, JSON.stringify(srError.response?.data || srError.response?.status || 'no response'));
       }
     }
 
