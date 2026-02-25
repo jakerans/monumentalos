@@ -12,6 +12,19 @@ const SOURCE_LABELS = {
 const fmt = (n) => n != null ? `$${n.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}` : '—';
 const pct = (num, den) => den > 0 ? ((num / den) * 100).toFixed(1) : '—';
 
+const bookColor = (v) => v === '—' ? 'text-slate-500' : parseFloat(v) >= 40 ? 'text-green-400' : parseFloat(v) >= 20 ? 'text-amber-400' : 'text-red-400';
+const showColor = (v) => v === '—' ? 'text-slate-500' : parseFloat(v) >= 70 ? 'text-green-400' : parseFloat(v) >= 50 ? 'text-amber-400' : 'text-red-400';
+const closeColor = (v) => v === '—' ? 'text-slate-500' : parseFloat(v) >= 30 ? 'text-green-400' : parseFloat(v) >= 15 ? 'text-amber-400' : 'text-red-400';
+
+const ACCENT_COLORS = [
+  'from-violet-500 to-blue-500',
+  'from-blue-500 to-cyan-500',
+  'from-cyan-500 to-teal-500',
+  'from-teal-500 to-emerald-500',
+  'from-purple-500 to-pink-500',
+  'from-amber-500 to-orange-500',
+];
+
 export default function SetterStatsLeadChannels({ leads, inRange }) {
   const rows = useMemo(() => {
     const periodLeads = leads.filter(l =>
@@ -73,8 +86,7 @@ export default function SetterStatsLeadChannels({ leads, inRange }) {
     return { channelRows, totalsRow };
   }, [leads, inRange]);
 
-  const thClass = "text-[10px] uppercase tracking-wider font-semibold text-slate-500 px-3 py-2.5 text-right whitespace-nowrap";
-  const tdClass = "px-3 py-3 text-sm text-right";
+  const maxTotal = Math.max(...rows.channelRows.map(r => r.total), 1);
 
   return (
     <div className="bg-slate-800/40 border border-slate-700/30 rounded-xl overflow-hidden">
@@ -82,53 +94,81 @@ export default function SetterStatsLeadChannels({ leads, inRange }) {
         <Megaphone className="w-4 h-4 text-cyan-400" />
         <h3 className="text-sm font-semibold text-white">Lead Channel Breakdown</h3>
       </div>
-      <div className="overflow-x-auto">
-        <table className="w-full">
-          <thead>
-            <tr className="border-b border-slate-700/40">
-              <th className={`${thClass} text-left`}>Channel</th>
-              <th className={thClass}>Leads</th>
-              <th className={thClass}>Booked</th>
-              <th className={thClass}>Book %</th>
-              <th className={thClass}>Showed</th>
-              <th className={thClass}>Show %</th>
-              <th className={thClass}>Closed</th>
-              <th className={thClass}>Close %</th>
-              <th className={thClass}>Revenue</th>
-              <th className={thClass}>Avg Rev / Booking</th>
-            </tr>
-          </thead>
-          <tbody>
-            {rows.channelRows.map(r => (
-              <tr key={r.source} className="border-b border-slate-700/20 hover:bg-slate-700/10 transition-colors">
-                <td className={`${tdClass} text-left font-medium text-white`}>{r.label}</td>
-                <td className={`${tdClass} text-slate-300`}>{r.total}</td>
-                <td className={`${tdClass} text-purple-400 font-semibold`}>{r.booked}</td>
-                <td className={`${tdClass} text-cyan-400`}>{r.bookingPct !== '—' ? `${r.bookingPct}%` : '—'}</td>
-                <td className={`${tdClass} text-green-400 font-semibold`}>{r.showed}</td>
-                <td className={`${tdClass} text-emerald-400`}>{r.showPct !== '—' ? `${r.showPct}%` : '—'}</td>
-                <td className={`${tdClass} text-amber-400 font-semibold`}>{r.closed}</td>
-                <td className={`${tdClass} text-amber-300`}>{r.closePct !== '—' ? `${r.closePct}%` : '—'}</td>
-                <td className={`${tdClass} text-green-300`}>{fmt(r.totalRevenue)}</td>
-                <td className={`${tdClass} text-sky-400`}>{r.avgRevPerBooking != null ? fmt(Math.round(r.avgRevPerBooking)) : '—'}</td>
-              </tr>
-            ))}
-          </tbody>
-          <tfoot>
-            <tr className="border-t border-slate-600/40 bg-slate-800/60">
-              <td className={`${tdClass} text-left font-bold text-white`}>{rows.totalsRow.label}</td>
-              <td className={`${tdClass} font-bold text-white`}>{rows.totalsRow.total}</td>
-              <td className={`${tdClass} font-bold text-purple-400`}>{rows.totalsRow.booked}</td>
-              <td className={`${tdClass} font-bold text-cyan-400`}>{rows.totalsRow.bookingPct !== '—' ? `${rows.totalsRow.bookingPct}%` : '—'}</td>
-              <td className={`${tdClass} font-bold text-green-400`}>{rows.totalsRow.showed}</td>
-              <td className={`${tdClass} font-bold text-emerald-400`}>{rows.totalsRow.showPct !== '—' ? `${rows.totalsRow.showPct}%` : '—'}</td>
-              <td className={`${tdClass} font-bold text-amber-400`}>{rows.totalsRow.closed}</td>
-              <td className={`${tdClass} font-bold text-amber-300`}>{rows.totalsRow.closePct !== '—' ? `${rows.totalsRow.closePct}%` : '—'}</td>
-              <td className={`${tdClass} font-bold text-green-300`}>{fmt(rows.totalsRow.totalRevenue)}</td>
-              <td className={`${tdClass} font-bold text-sky-400`}>{rows.totalsRow.avgRevPerBooking != null ? fmt(Math.round(rows.totalsRow.avgRevPerBooking)) : '—'}</td>
-            </tr>
-          </tfoot>
-        </table>
+      <div className="p-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+          {rows.channelRows.filter(r => r.total > 0).map((r, i) => (
+            <ChannelCard key={r.source} row={r} accentIndex={i} maxTotal={maxTotal} />
+          ))}
+          <TotalsCard row={rows.totalsRow} />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function ChannelCard({ row: r, accentIndex, maxTotal }) {
+  const gradient = ACCENT_COLORS[accentIndex % ACCENT_COLORS.length];
+  const barOpacity = 0.4 + (r.total / maxTotal) * 0.6;
+
+  return (
+    <div className="relative rounded-lg border border-slate-700/50 bg-slate-800/40 overflow-hidden">
+      <div className={`h-1 bg-gradient-to-r ${gradient}`} style={{ opacity: barOpacity }} />
+      <div className="px-3.5 py-3 space-y-2.5">
+        {/* Header */}
+        <div className="flex items-center justify-between">
+          <span className="text-sm font-bold text-white">{r.label}</span>
+          <span className="text-[10px] font-medium bg-slate-700/60 text-slate-300 px-2 py-0.5 rounded-full">
+            {r.total} lead{r.total !== 1 ? 's' : ''}
+          </span>
+        </div>
+        {/* Primary */}
+        <div className="flex items-baseline gap-4">
+          <div>
+            <span className="text-2xl font-bold text-purple-400">{r.booked}</span>
+            <span className="text-xs text-slate-500 ml-1">booked</span>
+          </div>
+          <span className={`text-lg font-semibold ${bookColor(r.bookingPct)}`}>
+            {r.bookingPct !== '—' ? `${r.bookingPct}%` : '—'}
+          </span>
+        </div>
+        {/* Secondary */}
+        <div className="flex flex-wrap gap-x-4 gap-y-1 text-[11px]">
+          <span className="text-slate-500">Show <span className={`font-medium ${showColor(r.showPct)}`}>{r.showPct !== '—' ? `${r.showPct}%` : '—'}</span></span>
+          <span className="text-slate-500">Close <span className={`font-medium ${closeColor(r.closePct)}`}>{r.closePct !== '—' ? `${r.closePct}%` : '—'}</span></span>
+          <span className="text-slate-500">Rev <span className="font-medium text-green-300">{fmt(r.totalRevenue)}</span></span>
+          <span className="text-slate-500">Avg <span className="font-medium text-sky-400">{r.avgRevPerBooking != null ? fmt(Math.round(r.avgRevPerBooking)) : '—'}</span></span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function TotalsCard({ row: r }) {
+  return (
+    <div className="relative rounded-lg border border-dashed border-slate-600/60 bg-slate-700/20 overflow-hidden">
+      <div className="h-1 bg-slate-600/40" />
+      <div className="px-3.5 py-3 space-y-2.5">
+        <div className="flex items-center justify-between">
+          <span className="text-sm font-bold text-slate-300">{r.label}</span>
+          <span className="text-[10px] font-medium bg-slate-600/50 text-slate-400 px-2 py-0.5 rounded-full">
+            {r.total} lead{r.total !== 1 ? 's' : ''}
+          </span>
+        </div>
+        <div className="flex items-baseline gap-4">
+          <div>
+            <span className="text-2xl font-bold text-purple-400">{r.booked}</span>
+            <span className="text-xs text-slate-500 ml-1">booked</span>
+          </div>
+          <span className={`text-lg font-semibold ${bookColor(r.bookingPct)}`}>
+            {r.bookingPct !== '—' ? `${r.bookingPct}%` : '—'}
+          </span>
+        </div>
+        <div className="flex flex-wrap gap-x-4 gap-y-1 text-[11px]">
+          <span className="text-slate-500">Show <span className={`font-medium ${showColor(r.showPct)}`}>{r.showPct !== '—' ? `${r.showPct}%` : '—'}</span></span>
+          <span className="text-slate-500">Close <span className={`font-medium ${closeColor(r.closePct)}`}>{r.closePct !== '—' ? `${r.closePct}%` : '—'}</span></span>
+          <span className="text-slate-500">Rev <span className="font-medium text-green-300">{fmt(r.totalRevenue)}</span></span>
+          <span className="text-slate-500">Avg <span className="font-medium text-sky-400">{r.avgRevPerBooking != null ? fmt(Math.round(r.avgRevPerBooking)) : '—'}</span></span>
+        </div>
       </div>
     </div>
   );

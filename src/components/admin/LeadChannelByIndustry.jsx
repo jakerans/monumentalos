@@ -12,8 +12,12 @@ const INDUSTRY_LABELS = {
 const fmt = (n) => n != null ? `$${n.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}` : '—';
 const pct = (num, den) => den > 0 ? ((num / den) * 100).toFixed(1) : '—';
 
+const bookColor = (v) => v === '—' ? 'text-slate-500' : parseFloat(v) >= 40 ? 'text-green-400' : parseFloat(v) >= 20 ? 'text-amber-400' : 'text-red-400';
+const showColor = (v) => v === '—' ? 'text-slate-500' : parseFloat(v) >= 70 ? 'text-green-400' : parseFloat(v) >= 50 ? 'text-amber-400' : 'text-red-400';
+const closeColor = (v) => v === '—' ? 'text-slate-500' : parseFloat(v) >= 30 ? 'text-green-400' : parseFloat(v) >= 15 ? 'text-amber-400' : 'text-red-400';
+
 export default function LeadChannelByIndustry({ leads, inRange }) {
-  const rows = useMemo(() => {
+  const { industryRows, totalsRow } = useMemo(() => {
     const periodLeads = leads.filter(l =>
       (l.lead_received_date && inRange(l.lead_received_date)) ||
       (!l.lead_received_date && l.created_date && inRange(l.created_date))
@@ -29,7 +33,7 @@ export default function LeadChannelByIndustry({ leads, inRange }) {
       });
     });
 
-    const industryRows = Object.entries(groups).map(([industry, indLeads]) => {
+    const rows = Object.entries(groups).map(([industry, indLeads]) => {
       const total = indLeads.length;
       const booked = indLeads.filter(l => l.status === 'appointment_booked' || l.status === 'completed' || l.date_appointment_set).length;
       const showed = indLeads.filter(l => l.disposition === 'showed').length;
@@ -48,11 +52,36 @@ export default function LeadChannelByIndustry({ leads, inRange }) {
       };
     }).sort((a, b) => b.total - a.total);
 
-    return industryRows;
+    const allTotal = rows.reduce((s, r) => s + r.total, 0);
+    const allBooked = rows.reduce((s, r) => s + r.booked, 0);
+    const allShowed = rows.reduce((s, r) => s + r.showed, 0);
+    const allClosed = rows.reduce((s, r) => s + r.closed, 0);
+    const allRevenue = rows.reduce((s, r) => s + r.totalRevenue, 0);
+
+    return {
+      industryRows: rows,
+      totalsRow: {
+        label: 'All Industries',
+        total: allTotal,
+        booked: allBooked,
+        showed: allShowed,
+        closed: allClosed,
+        bookingPct: pct(allBooked, allTotal),
+        showPct: pct(allShowed, allBooked),
+        closePct: pct(allClosed, allBooked),
+        totalRevenue: allRevenue,
+        avgRevPerBooking: allBooked > 0 ? allRevenue / allBooked : null,
+      },
+    };
   }, [leads, inRange]);
 
   const thClass = "text-[10px] uppercase tracking-wider font-semibold text-slate-500 px-3 py-2.5 text-right whitespace-nowrap";
   const tdClass = "px-3 py-3 text-sm text-right";
+
+  const renderPct = (val, colorFn) => {
+    const color = colorFn(val);
+    return <span className={color}>{val !== '—' ? `${val}%` : '—'}</span>;
+  };
 
   return (
     <div className="bg-slate-800/40 border border-slate-700/30 rounded-xl overflow-hidden">
@@ -77,21 +106,35 @@ export default function LeadChannelByIndustry({ leads, inRange }) {
             </tr>
           </thead>
           <tbody>
-            {rows.map(r => (
+            {industryRows.map(r => (
               <tr key={r.industry} className="border-b border-slate-700/20 hover:bg-slate-700/10 transition-colors">
                 <td className={`${tdClass} text-left font-medium text-white`}>{r.label}</td>
                 <td className={`${tdClass} text-slate-300`}>{r.total}</td>
                 <td className={`${tdClass} text-purple-400 font-semibold`}>{r.booked}</td>
-                <td className={`${tdClass} text-cyan-400`}>{r.bookingPct !== '—' ? `${r.bookingPct}%` : '—'}</td>
+                <td className={`${tdClass} font-medium`}>{renderPct(r.bookingPct, bookColor)}</td>
                 <td className={`${tdClass} text-green-400 font-semibold`}>{r.showed}</td>
-                <td className={`${tdClass} text-emerald-400`}>{r.showPct !== '—' ? `${r.showPct}%` : '—'}</td>
+                <td className={`${tdClass} font-medium`}>{renderPct(r.showPct, showColor)}</td>
                 <td className={`${tdClass} text-amber-400 font-semibold`}>{r.closed}</td>
-                <td className={`${tdClass} text-amber-300`}>{r.closePct !== '—' ? `${r.closePct}%` : '—'}</td>
+                <td className={`${tdClass} font-medium`}>{renderPct(r.closePct, closeColor)}</td>
                 <td className={`${tdClass} text-green-300`}>{fmt(r.totalRevenue)}</td>
-                <td className={`${tdClass} text-sky-400`}>{r.avgRevPerBooking != null ? fmt(Math.round(r.avgRevPerBooking)) : '—'}</td>
+                <td className={`${tdClass} text-sky-400`}>{r.avgRevPerBooking != null ? fmt(Math.round(r.avgRevPerBooking)) : <span className="text-slate-500">—</span>}</td>
               </tr>
             ))}
           </tbody>
+          <tfoot>
+            <tr className="border-t border-slate-600/40 bg-slate-700/20">
+              <td className={`${tdClass} text-left font-bold text-white`}>{totalsRow.label}</td>
+              <td className={`${tdClass} font-bold text-white`}>{totalsRow.total}</td>
+              <td className={`${tdClass} font-bold text-purple-400`}>{totalsRow.booked}</td>
+              <td className={`${tdClass} font-bold`}>{renderPct(totalsRow.bookingPct, bookColor)}</td>
+              <td className={`${tdClass} font-bold text-green-400`}>{totalsRow.showed}</td>
+              <td className={`${tdClass} font-bold`}>{renderPct(totalsRow.showPct, showColor)}</td>
+              <td className={`${tdClass} font-bold text-amber-400`}>{totalsRow.closed}</td>
+              <td className={`${tdClass} font-bold`}>{renderPct(totalsRow.closePct, closeColor)}</td>
+              <td className={`${tdClass} font-bold text-green-300`}>{fmt(totalsRow.totalRevenue)}</td>
+              <td className={`${tdClass} font-bold text-sky-400`}>{totalsRow.avgRevPerBooking != null ? fmt(Math.round(totalsRow.avgRevPerBooking)) : <span className="text-slate-500">—</span>}</td>
+            </tr>
+          </tfoot>
         </table>
       </div>
     </div>
