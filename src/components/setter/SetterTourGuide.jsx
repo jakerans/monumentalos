@@ -81,7 +81,7 @@ export default function SetterTourGuide() {
           element: '[data-tour="earnings-tab"]',
           popover: {
             title: '💰 My Earnings',
-            description: 'See your estimated pay breakdown — base pay, spiff bonuses, and booking reward cash prizes. Updates as you book appointments and hit bonus thresholds.',
+            description: 'See your estimated pay breakdown — base pay, spiff bonuses, and loot box cash prizes. Updates as you book appointments and hit bonus thresholds.',
             side: 'bottom',
           },
         },
@@ -89,7 +89,7 @@ export default function SetterTourGuide() {
           element: '[data-tour="inventory-btn"]',
           popover: {
             title: '📦 Rewards Inventory',
-            description: 'When you book appointments, you earn booking rewards. Open them here to win prizes — cash bonuses, PTO days, and more. Don\'t let your inventory fill up or you\'ll stop earning booking rewards.',
+            description: 'When you book appointments, you earn loot boxes. Open them here to win prizes — cash bonuses, PTO days, and more. Don\'t let your inventory fill up or you\'ll stop earning loot boxes.',
             side: 'bottom',
           },
         },

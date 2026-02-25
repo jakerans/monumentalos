@@ -200,14 +200,14 @@ export default function PTORequestModal({ open, onOpenChange, setterId, existing
                     offerType === 'loot_boxes' ? 'border-purple-400/40 bg-purple-500/10 text-purple-400' : 'border-slate-700 text-slate-400 hover:bg-slate-800'
                   }`}
                 >
-                  <Gift className="w-3 h-3" /> Booking Rewards
+                  <Gift className="w-3 h-3" /> Loot Boxes
                 </button>
               </div>
 
               {offerType === 'loot_boxes' && (
                 <div className="space-y-2 p-3 rounded-lg border border-purple-500/20 bg-purple-500/5">
                   {boxes.length === 0 ? (
-                    <p className="text-xs text-slate-500">No unopened booking rewards available to offer.</p>
+                    <p className="text-xs text-slate-500">No unopened loot boxes available to offer.</p>
                   ) : (
                     <>
                       <p className="text-[10px] text-slate-400">Select rewards to offer ({selectedBoxIds.length} selected)</p>

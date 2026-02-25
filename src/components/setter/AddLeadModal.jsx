@@ -301,9 +301,9 @@ export default function AddLeadModal({ open, onOpenChange, clients, onAdd, userI
                       value={chatSTL}
                       onChange={(e) => setChatSTL(e.target.value)}
                       className="w-full px-3 py-2 border border-slate-700 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#D6FF03] bg-slate-800 text-white placeholder-slate-500"
-                      placeholder="How many minutes from first msg to booking?"
+                      placeholder="Minutes from receiving lead to your first message"
                     />
-                    <p className="text-[10px] text-slate-500 mt-1">Time between lead's first message and appointment booking</p>
+                    <p className="text-[10px] text-slate-500 mt-1">Time between receiving the lead and your first response</p>
                   </div>
                 )}
               </div>

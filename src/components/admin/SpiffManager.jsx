@@ -474,8 +474,8 @@ export default function SpiffManager({ leads, users }) {
                 <div className={`absolute top-0.5 w-4 h-4 rounded-full bg-white shadow transition-transform ${form.loot_box_enabled ? 'translate-x-5' : 'translate-x-0.5'}`} />
               </button>
               <div>
-                <span className="text-xs text-white font-medium">Award Booking Reward on Completion</span>
-                <p className="text-[10px] text-slate-500">Winning setters receive a guaranteed booking reward</p>
+                <span className="text-xs text-white font-medium">Award Loot Box on Completion</span>
+                <p className="text-[10px] text-slate-500">Winning setters receive a guaranteed loot box</p>
               </div>
             </div>
             {form.loot_box_enabled && (

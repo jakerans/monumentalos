@@ -232,7 +232,7 @@ function InventoryGrid({ boxes, count, cap, countColor, onOpenBox, onOpenAll, lo
     <div>
       <div className="flex items-center justify-between mb-3">
         <h3 className="text-xs text-slate-500 uppercase tracking-wider">
-          Unopened Rewards (<span className={countColor}>{count}</span>/{cap})
+          Unopened Loot Boxes (<span className={countColor}>{count}</span>/{cap})
         </h3>
         {count >= 2 && (
           <button
@@ -247,7 +247,7 @@ function InventoryGrid({ boxes, count, cap, countColor, onOpenBox, onOpenAll, lo
 
       {count === 0 ? (
         <div className="text-center py-8 text-sm text-slate-500">
-          No unopened rewards — keep booking to earn booking rewards!
+          No unopened loot boxes — keep booking to earn more!
         </div>
       ) : (
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">

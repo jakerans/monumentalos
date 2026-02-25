@@ -471,9 +471,31 @@ export default function SetterDashboard() {
 
   const handleAddLead = async (leadData) => {
     try {
-      await base44.entities.Lead.create(leadData);
-      toast({ title: 'Lead Added', description: `${leadData.name} added to the pipeline.`, variant: 'success' });
-      refetch();
+      const created = await base44.entities.Lead.create(leadData);
+      
+      if (leadData.status === 'appointment_booked') {
+        toast({ title: '🗓️ Appointment Booked!', description: `${leadData.name} is scheduled.`, variant: 'success', duration: 5000 });
+        refetch();
+
+        try {
+          const dropRes = await base44.functions.invoke('processLootBoxDrop', {
+            setter_id: user.id,
+            lead_id: created.id,
+          });
+          const drop = dropRes?.data;
+          if (drop?.dropped && drop?.loot_box_id) {
+            setDroppedBox({ id: drop.loot_box_id, rarity: drop.rarity, status: 'unopened' });
+            setCelebration({ type: 'loot_drop', rarity: drop.rarity });
+          } else {
+            setCelebration({ type: 'booking' });
+          }
+        } catch {
+          setCelebration({ type: 'booking' });
+        }
+      } else {
+        toast({ title: 'Lead Added', description: `${leadData.name} added to the pipeline.`, variant: 'success' });
+        refetch();
+      }
     } catch (err) {
       toast({ title: 'Failed to add lead', description: err?.message || 'Unknown error', variant: 'destructive' });
       throw err;

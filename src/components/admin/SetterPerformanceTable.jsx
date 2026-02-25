@@ -14,9 +14,13 @@ function calcSetterStats(setters, leads, clients, inRange) {
     const booked = leads.filter(l => l.booked_by_setter_id === setter.id && l.date_appointment_set && inRange(l.date_appointment_set));
     const showed = booked.filter(l => l.disposition === 'showed');
     const dq = leads.filter(l => l.setter_id === setter.id && l.status === 'disqualified' && inRange(l.first_call_made_date));
+    const totalLeads = leads.filter(l => l.setter_id === setter.id && (
+      (l.lead_received_date && inRange(l.lead_received_date)) || 
+      (!l.lead_received_date && l.created_date && inRange(l.created_date))
+    )).length;
     const stlValues = firstCalls.filter(l => l.speed_to_lead_minutes != null).map(l => l.speed_to_lead_minutes);
     const avgSTL = stlValues.length ? Math.round(stlValues.reduce((a, b) => a + b, 0) / stlValues.length) : null;
-    const bookingRate = firstCalls.length > 0 ? ((booked.length / firstCalls.length) * 100).toFixed(1) : 0;
+    const bookingRate = totalLeads > 0 ? ((booked.length / totalLeads) * 100).toFixed(1) : 0;
     const showRate = booked.length > 0 ? ((showed.length / booked.length) * 100).toFixed(1) : 0;
     let setRevenue = 0;
     booked.forEach(l => {
@@ -30,7 +34,7 @@ function calcSetterStats(setters, leads, clients, inRange) {
       if (client?.billing_type === 'pay_per_show' && client.price_per_shown_appointment) showRevenue += client.price_per_shown_appointment;
     });
     const revenue = setRevenue + showRevenue;
-    return { id: setter.id, name: setter.full_name, firstCalls: firstCalls.length, booked: booked.length, showed: showed.length, dq: dq.length, avgSTL, bookingRate: parseFloat(bookingRate), showRate: parseFloat(showRate), revenue, setRevenue, showRevenue };
+    return { id: setter.id, name: setter.full_name, firstCalls: firstCalls.length, booked: booked.length, showed: showed.length, dq: dq.length, avgSTL, bookingRate: parseFloat(bookingRate), showRate: parseFloat(showRate), revenue, setRevenue, showRevenue, totalLeads };
   }).sort((a, b) => b.booked - a.booked);
 }
 
@@ -88,8 +92,10 @@ export default function SetterPerformanceTable({ users, leads, clients, startDat
   const pShowRevenue = priorStats.reduce((s, r) => s + r.showRevenue, 0);
   const pSTLValues = priorStats.filter(r => r.avgSTL != null).map(r => r.avgSTL);
   const pAvgSTL = pSTLValues.length ? Math.round(pSTLValues.reduce((a, b) => a + b, 0) / pSTLValues.length) : null;
-  const pBookingRate = pCalls > 0 ? ((pBooked / pCalls) * 100).toFixed(1) : 0;
-  const currBookingRate = totalCalls > 0 ? ((totalBooked / totalCalls) * 100).toFixed(1) : 0;
+  const totalLeadsSum = stats.reduce((s, r) => s + r.totalLeads, 0);
+  const pTotalLeads = priorStats.reduce((s, r) => s + r.totalLeads, 0);
+  const pBookingRate = pTotalLeads > 0 ? ((pBooked / pTotalLeads) * 100).toFixed(1) : 0;
+  const currBookingRate = totalLeadsSum > 0 ? ((totalBooked / totalLeadsSum) * 100).toFixed(1) : 0;
 
   // Sparklines
   const sparkBooked = useMemo(() => buildDailySparkline(leads, 'date_appointment_set', l => setters.some(s => s.id === l.booked_by_setter_id), startDate, endDate), [leads, setters, startDate, endDate]);
