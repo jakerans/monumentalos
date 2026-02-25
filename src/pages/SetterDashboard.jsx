@@ -585,7 +585,7 @@ export default function SetterDashboard() {
         {dashTab === 'earnings' ? (
           <EarningsTab data={earningsData} loading={earningsLoading} />
         ) : dashTab === 'schedule' ? (
-          <MyScheduleTab workspaceData={workspaceData} userId={user?.id} unopenedBoxes={unopenedBoxes} />
+          <MyScheduleTab workspaceData={workspaceData} userId={user?.id} unopenedBoxes={unopenedBoxes} onRefreshWorkspace={refetchWorkspace} />
         ) : (
         <>
         {/* Floating checklist button */}

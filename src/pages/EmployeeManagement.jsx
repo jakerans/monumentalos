@@ -22,6 +22,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import SetterBonusSummaryTab from '../components/loot/SetterBonusSummaryTab';
 import PayrollTourGuide from '../components/admin/PayrollTourGuide';
 import AdminScheduleTab from '../components/schedule/AdminScheduleTab';
+import AdminTimeEditQueue from '../components/schedule/AdminTimeEditQueue';
 
 export default function EmployeeManagement() {
   const navigate = useNavigate();
@@ -215,6 +216,7 @@ export default function EmployeeManagement() {
 
           <TabsContent value="schedules" className="space-y-4">
             <AdminScheduleTab />
+            <AdminTimeEditQueue />
           </TabsContent>
 
           <TabsContent value="performance" className="space-y-4">

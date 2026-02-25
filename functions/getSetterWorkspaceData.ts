@@ -45,6 +45,7 @@ Deno.serve(async (req) => {
       ptoBanks,
       weekEntries,
       monthEntries,
+      editRequests,
     ] = await Promise.all([
       // Active clock-in
       sr.entities.TimeEntry.filter({ setter_id: setterId, status: 'active' }, '-created_date', 1),
@@ -58,6 +59,8 @@ Deno.serve(async (req) => {
       sr.entities.TimeEntry.filter({ setter_id: setterId, status: 'completed' }, '-clock_in', 200),
       // Month completed entries — separate query to avoid undercounting
       sr.entities.TimeEntry.filter({ setter_id: setterId, status: 'completed' }, '-clock_in', 500),
+      // Edit requests for recent entries
+      sr.entities.TimeEntryEditRequest.filter({ setter_id: setterId }, '-created_date', 50),
     ]);
 
     // Clock status
@@ -108,6 +111,7 @@ Deno.serve(async (req) => {
       weekSchedule,
       nextWeekSchedule,
       recentTimeEntries: recentEntries,
+      editRequests,
       ptoBank,
       hoursThisWeek: Math.round(hoursThisWeek * 100) / 100,
       hoursThisMonth: Math.round(hoursThisMonth * 100) / 100,

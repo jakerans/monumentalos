@@ -5,6 +5,7 @@ import { Calendar, Palmtree, Plus } from 'lucide-react';
 import PendingCoverRequests from './PendingCoverRequests';
 import PTORequestModal from './PTORequestModal';
 import MyPTORequests from './MyPTORequests';
+import RecentTimeEntries from './RecentTimeEntries';
 
 const STATUS_COLORS = {
   scheduled: 'bg-green-500',
@@ -89,7 +90,7 @@ function getMonday(date) {
   return d.toISOString().split('T')[0];
 }
 
-function MyScheduleTab({ workspaceData, userId, unopenedBoxes }) {
+function MyScheduleTab({ workspaceData, userId, unopenedBoxes, onRefreshWorkspace }) {
   const [ptoModalOpen, setPtoModalOpen] = useState(false);
   const weekSchedule = workspaceData?.weekSchedule || [];
   const nextWeekSchedule = workspaceData?.nextWeekSchedule || [];
@@ -177,6 +178,13 @@ function MyScheduleTab({ workspaceData, userId, unopenedBoxes }) {
           ))}
         </div>
       </div>
+
+      {/* Recent Time Entries with edit buttons */}
+      <RecentTimeEntries
+        entries={workspaceData?.recentTimeEntries}
+        editRequests={workspaceData?.editRequests}
+        onRefresh={onRefreshWorkspace}
+      />
 
       {/* My PTO Requests */}
       <MyPTORequests setterId={userId} />
