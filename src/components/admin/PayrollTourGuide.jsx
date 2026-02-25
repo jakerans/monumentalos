@@ -29,15 +29,15 @@ export default function PayrollTourGuide({ onStart, setRunPayrollModalOpen }) {
           element: '[data-tour="setter-bonuses-section"]',
           popover: {
             title: '🎁 Step 1 — Review Setter Bonuses',
-            description: 'Start here. This shows every setter who has pending booking reward prizes or completed spiffs from last month. Review the amounts before doing anything.',
+            description: 'Start here. This shows every setter who has pending loot box prizes or completed spiffs from last month. Review the amounts before doing anything.',
             side: 'top',
           },
         },
         {
           element: '[data-tour="approve-for-payroll-btn"]',
           popover: {
-            title: 'Approve Booking Reward Prizes',
-            description: "For each setter with booking reward prizes, click Approve for Payroll. This queues them — no expense is created yet, nothing is charged. Spiff totals load automatically and don't need approval.",
+            title: 'Approve Loot Box Prizes',
+            description: "For each setter with loot box prizes, click Approve for Payroll. This queues them — no expense is created yet, nothing is charged. Spiff totals load automatically and don't need approval.",
             side: 'top',
           },
         },
@@ -65,7 +65,7 @@ export default function PayrollTourGuide({ onStart, setRunPayrollModalOpen }) {
           element: '[data-tour="check-number-toggle"]',
           popover: {
             title: '⚠️ Most Important Step',
-            description: 'First check of the month loads all prior month bonuses — MM performance pay, setter spiffs, and reward prizes. Second check is base pay only. Wrong selection means missed bonuses or paying them twice.',
+            description: 'First check of the month loads all prior month bonuses — MM performance pay, setter spiffs, and loot box prizes. Second check is base pay only. Wrong selection means missed bonuses or paying them twice.',
             side: 'bottom',
           },
         },
@@ -73,7 +73,7 @@ export default function PayrollTourGuide({ onStart, setRunPayrollModalOpen }) {
           element: '[data-tour="generate-preview-btn"]',
           popover: {
             title: '👁 Generate Preview',
-            description: 'Click Generate Preview when ready. The app pulls everything together — base pay, MM bonus, setter spiffs, and booking reward prizes. Nothing is saved yet.',
+            description: 'Click Generate Preview when ready. The app pulls everything together — base pay, MM bonus, setter spiffs, and loot box prizes. Nothing is saved yet.',
             side: 'top',
           },
         },
@@ -105,7 +105,7 @@ export default function PayrollTourGuide({ onStart, setRunPayrollModalOpen }) {
           element: '[data-tour="confirm-run-btn"]',
           popover: {
             title: '🛑 Point of No Return',
-            description: "⚠️ Do NOT click this during the guide. When you click Confirm & Run Payroll for real, expenses are created, records are marked paid, and reward wins are logged. Only do this when everything looks right.",
+            description: "⚠️ Do NOT click this during the guide. When you click Confirm & Run Payroll for real, expenses are created, records are marked paid, and loot box wins are logged. Only do this when everything looks right.",
             side: 'top',
           },
         },

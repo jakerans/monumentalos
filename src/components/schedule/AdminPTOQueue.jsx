@@ -11,7 +11,7 @@ function formatOfferLabel(offer) {
   const counts = {};
   offer.loot_boxes.forEach(b => { counts[b.rarity] = (counts[b.rarity] || 0) + 1; });
   const parts = Object.entries(counts).map(([r, c]) => ({ rarity: r, label: `${c}x ${r.charAt(0).toUpperCase() + r.slice(1)}` }));
-  return { label: `Offer: ${offer.quantity} booking reward${offer.quantity !== 1 ? 's' : ''}`, parts };
+  return { label: `Offer: ${offer.quantity} loot box${offer.quantity !== 1 ? 'es' : ''}`, parts };
 }
 
 function formatDate(dateStr) {
@@ -172,7 +172,7 @@ const PendingTransferCard = React.memo(function PendingTransferCard({ request, o
       action: 'finalize_transfer', request_id: request.id,
     });
     setActing(false);
-    toast({ title: `Booking rewards transferred to ${request.cover_setter_name}` });
+    toast({ title: `Loot boxes transferred to ${request.cover_setter_name}` });
     onAction();
   };
 
@@ -182,7 +182,7 @@ const PendingTransferCard = React.memo(function PendingTransferCard({ request, o
       action: 'return_held_boxes', request_id: request.id,
     });
     setActing(false);
-    toast({ title: `Booking rewards returned to ${request.setter_name}` });
+    toast({ title: `Loot boxes returned to ${request.setter_name}` });
     onAction();
   };
 
