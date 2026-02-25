@@ -196,14 +196,11 @@ export default function SetterStats() {
           </div>
 
           <SetterStatsKPIs
-            setterCount={setters.length}
             totalLeadsGenerated={totalLeadsGenerated}
             totalBooked={totalBooked}
-            totalShowed={totalShowed}
             totalDQ={totalDQ}
             avgSTL={avgSTL}
             bookingRate={bookingRate}
-            showRate={showRate}
             prior={priorKPIs}
             sparklines={dailySparklines}
           />
