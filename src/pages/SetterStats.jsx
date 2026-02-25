@@ -204,6 +204,8 @@ export default function SetterStats() {
             avgSTL={avgSTL}
             bookingRate={bookingRate}
             showRate={showRate}
+            prior={priorKPIs}
+            sparklines={dailySparklines}
           />
 
           <SetterStatsLeadChannels leads={leads} inRange={inRange} />
