@@ -62,7 +62,7 @@ Deno.serve(async (req) => {
       console.warn('Note: Email invitation failed, but user record created. They can sign up normally.');
     }
 
-    return Response.json({ success: true, email: email.trim(), intended_role, client_id });
+    return Response.json({ success: true, invite_sent: inviteSent, email: email.trim(), intended_role, client_id });
   } catch (error) {
     console.error('inviteClientUser error:', error.message, error.response?.data);
     return Response.json({ error: error.message, details: error.response?.data }, { status: 500 });

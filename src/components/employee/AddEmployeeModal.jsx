@@ -67,17 +67,31 @@ export default function AddEmployeeModal({ open, onOpenChange, onAdd }) {
 
       if (shouldInvite && form.email?.trim()) {
         try {
-            const role = form.app_role || 'setter';
-            await base44.functions.invoke('inviteClientUser', {
-              email: form.email.trim(),
-              intended_role: role,
-            });
+          const role = form.app_role || 'setter';
+          const invRes = await base44.functions.invoke('inviteClientUser', {
+            email: form.email.trim(),
+            intended_role: role,
+          });
 
-          toast({ title: 'Invitation Sent', description: `${form.email} will receive a login invite.`, variant: 'success' });
+          if (invRes.data?.success && invRes.data?.invite_sent) {
+            toast({ title: 'Invitation Sent', description: `${form.email} will receive a login invite.`, variant: 'success' });
+          } else if (invRes.data?.success && !invRes.data?.invite_sent) {
+            toast({
+              title: 'Employee added — email invite failed',
+              description: `${form.email} was set up but the invite email didn't send. Use User Management to resend the invite.`,
+              variant: 'warning',
+            });
+          } else {
+            toast({
+              title: 'Employee added, but invite failed',
+              description: invRes.data?.error || 'You can resend from User Management.',
+              variant: 'warning',
+            });
+          }
         } catch (invErr) {
           toast({
             title: 'Employee added, but invite failed',
-            description: invErr?.response?.data?.error || invErr?.message || 'You can resend from Team Settings.',
+            description: invErr?.response?.data?.error || invErr?.message || 'You can resend from User Management.',
             variant: 'warning',
           });
         }
