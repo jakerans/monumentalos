@@ -42,7 +42,14 @@ Deno.serve(async (req) => {
       inviteSent = true;
       console.log('Invite sent successfully');
     } catch (inviteError) {
-      console.warn('Email invite failed:', inviteError.message);
+      console.warn('Email invite failed with user token, trying service role:', inviteError.message);
+      try {
+        await base44.asServiceRole.auth.inviteUser(email.trim(), inviteRole);
+        inviteSent = true;
+        console.log('Invite sent via service role');
+      } catch (srError) {
+        console.warn('Service role invite also failed:', srError.message);
+      }
     }
 
     // Create a PendingInvite so the role is applied when the user signs up
