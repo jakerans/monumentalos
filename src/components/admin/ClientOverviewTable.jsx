@@ -80,7 +80,8 @@ export default function ClientOverviewTable({ clients, leads, spend, payments, o
 
     const mtdPaid = payments.filter(p => p.client_id === client.id && new Date(p.date) >= thisMonthStart).reduce((s, p) => s + (p.amount || 0), 0);
 
-    return { ...client, mtdLeads, mtdBooked, mtdShowed, mtdSpend, mtdBilled, mtdPaid, billingType };
+    const cpa = mtdBooked > 0 ? mtdSpend / mtdBooked : Infinity;
+    return { ...client, mtdLeads, mtdBooked, mtdShowed, mtdSpend, cpa, mtdBilled, mtdPaid, billingType };
   }), [clients, leads, spend, payments]);
 
   const columns = [
@@ -108,6 +109,14 @@ export default function ClientOverviewTable({ clients, leads, spend, payments, o
     { key: 'mtdBooked', label: 'Booked', align: 'right', sortable: true, render: (r) => <span className="text-slate-300">{r.mtdBooked}</span> },
     { key: 'mtdShowed', label: 'Showed', align: 'right', sortable: true, render: (r) => <span className="text-slate-300">{r.mtdShowed}</span> },
     { key: 'mtdSpend', label: 'Ad Spend', align: 'right', sortable: true, render: (r) => <span className="text-slate-300">${r.mtdSpend.toLocaleString()}</span> },
+    { key: 'cpa', label: 'CPA', align: 'right', sortable: true,
+      render: (r) => {
+        if (!r.mtdBooked) return <span className="text-slate-500">—</span>;
+        const cpa = r.mtdSpend / r.mtdBooked;
+        const color = cpa <= 150 ? 'text-green-400' : cpa <= 250 ? 'text-amber-400' : 'text-red-400';
+        return <span className={`font-medium ${color}`}>${Math.round(cpa).toLocaleString()}</span>;
+      }
+    },
     { key: 'mtdBilled', label: 'To Be Billed', align: 'right', sortable: true, render: (r) => <span className="font-medium text-green-400">${r.mtdBilled.toLocaleString()}</span> },
     { key: 'mtdPaid', label: 'Collected', align: 'right', sortable: true, render: (r) => <span className="font-medium text-emerald-400">${r.mtdPaid.toLocaleString()}</span> },
     {
@@ -154,6 +163,7 @@ export default function ClientOverviewTable({ clients, leads, spend, payments, o
         <div><span className="text-slate-500">Booked</span><p className="text-slate-300 font-medium">{r.mtdBooked}</p></div>
         <div><span className="text-slate-500">Showed</span><p className="text-slate-300 font-medium">{r.mtdShowed}</p></div>
         <div><span className="text-slate-500">Ad Spend</span><p className="text-slate-300 font-medium">${r.mtdSpend.toLocaleString()}</p></div>
+        <div><span className="text-slate-500">CPA</span><p className={`font-medium ${!r.mtdBooked ? 'text-slate-500' : (r.mtdSpend / r.mtdBooked) <= 150 ? 'text-green-400' : (r.mtdSpend / r.mtdBooked) <= 250 ? 'text-amber-400' : 'text-red-400'}`}>{r.mtdBooked ? `$${Math.round(r.mtdSpend / r.mtdBooked).toLocaleString()}` : '—'}</p></div>
         <div><span className="text-slate-500">Billed</span><p className="text-green-400 font-medium">${r.mtdBilled.toLocaleString()}</p></div>
         <div><span className="text-slate-500">Collected</span><p className="text-emerald-400 font-medium">${r.mtdPaid.toLocaleString()}</p></div>
       </div>
