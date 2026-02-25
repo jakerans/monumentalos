@@ -398,6 +398,8 @@ export default function SetterDashboard() {
       if (!lead) return null;
       const received = lead.lead_received_date || lead.created_date;
       if (lead.first_call_made_date) return undefined;
+      // Skip STL for overnight leads
+      if (lead.is_overnight) return undefined;
       return Math.floor((new Date() - new Date(received)) / 60000);
     })();
 

@@ -46,6 +46,29 @@ Deno.serve(async (req) => {
 
     const sr = base44.asServiceRole.entities;
 
+    // Fetch STL business hours config
+    const stlHoursArr = await sr.CompanySettings.filter({ key: 'stl_business_hours' }, '-created_date', 1);
+    const stlHoursRaw = stlHoursArr.length > 0 ? stlHoursArr[0] : null;
+    let stlStartHour = 10;
+    let stlEndHour = 20;
+    let stlTimezone = 'America/New_York';
+    if (stlHoursRaw) {
+      try {
+        const parsed = typeof stlHoursRaw.value === 'string' ? JSON.parse(stlHoursRaw.value) : stlHoursRaw.value;
+        stlStartHour = parsed.start_hour ?? 10;
+        stlEndHour = parsed.end_hour ?? 20;
+        stlTimezone = parsed.timezone ?? 'America/New_York';
+      } catch (e) { /* use defaults */ }
+    }
+
+    function isOvernightLead(leadReceivedDate, startHour, endHour, tz) {
+      if (!leadReceivedDate) return false;
+      const received = new Date(leadReceivedDate);
+      const timeStr = received.toLocaleString('en-US', { timeZone: tz, hour12: false, hour: '2-digit' });
+      const hour = parseInt(timeStr, 10);
+      return hour < startHour || hour >= endHour;
+    }
+
     const ninetyDaysAgo = new Date();
     ninetyDaysAgo.setDate(ninetyDaysAgo.getDate() - 90);
 
@@ -79,10 +102,16 @@ Deno.serve(async (req) => {
       return true;
     });
 
-    const newLeads = pipelineLeads.filter(l => l.status === 'new');
-    const inProgressLeads = pipelineLeads.filter(l => l.status === 'first_call_made' || l.status === 'contacted');
-    const bookedLeads = pipelineLeads.filter(l => l.status === 'appointment_booked');
-    const dqLeads = pipelineLeads.filter(l => l.status === 'disqualified');
+    // Add overnight flag to pipeline leads
+    const pipelineLeadsWithFlags = pipelineLeads.map(l => ({
+      ...l,
+      is_overnight: isOvernightLead(l.lead_received_date || l.created_date, stlStartHour, stlEndHour, stlTimezone),
+    }));
+
+    const newLeads = pipelineLeadsWithFlags.filter(l => l.status === 'new');
+    const inProgressLeads = pipelineLeadsWithFlags.filter(l => l.status === 'first_call_made' || l.status === 'contacted');
+    const bookedLeads = pipelineLeadsWithFlags.filter(l => l.status === 'appointment_booked');
+    const dqLeads = pipelineLeadsWithFlags.filter(l => l.status === 'disqualified');
 
     // --- SetterStats pre-computation ---
     const mtdBooked = allLeads.filter(l => l.booked_by_setter_id === userId && inMTD(l.date_appointment_set)).length;
@@ -90,12 +119,21 @@ Deno.serve(async (req) => {
     const mtdCalls = allLeads.filter(l => l.setter_id === userId && inMTD(l.first_call_made_date)).length;
     const lmCalls = allLeads.filter(l => l.setter_id === userId && inLM(l.first_call_made_date)).length;
 
-    // Avg STL (last 7 days, mine)
-    const my7dSTL = allLeads.filter(l => l.setter_id === userId && l.speed_to_lead_minutes != null && l.created_date && new Date(l.created_date) >= stl7dStart);
+    // Avg STL (last 7 days, mine) — exclude overnight
+    const my7dSTL = allLeads.filter(l => 
+      l.setter_id === userId && 
+      l.speed_to_lead_minutes != null && 
+      !isOvernightLead(l.lead_received_date || l.created_date, stlStartHour, stlEndHour, stlTimezone) &&
+      l.created_date && new Date(l.created_date) >= stl7dStart
+    );
     const avgSTL = my7dSTL.length > 0 ? Math.round(my7dSTL.reduce((s, l) => s + l.speed_to_lead_minutes, 0) / my7dSTL.length * 10) / 10 : 0;
 
-    // Team avg STL (last 7 days)
-    const team7dSTL = allLeads.filter(l => l.speed_to_lead_minutes != null && l.created_date && new Date(l.created_date) >= stl7dStart);
+    // Team avg STL (last 7 days) — exclude overnight
+    const team7dSTL = allLeads.filter(l => 
+      l.speed_to_lead_minutes != null && 
+      !isOvernightLead(l.lead_received_date || l.created_date, stlStartHour, stlEndHour, stlTimezone) &&
+      l.created_date && new Date(l.created_date) >= stl7dStart
+    );
     const teamAvgSTL = team7dSTL.length > 0 ? Math.round(team7dSTL.reduce((s, l) => s + l.speed_to_lead_minutes, 0) / team7dSTL.length * 10) / 10 : 0;
 
     // Today's appointments — mine and team
@@ -249,6 +287,7 @@ Deno.serve(async (req) => {
       clients: settableClients.map(c => ({ id: c.id, name: c.name, booking_link: c.booking_link, billing_type: c.billing_type })),
       clientMap,
       allLeads,
+      stlBusinessHours: { startHour: stlStartHour, endHour: stlEndHour, timezone: stlTimezone },
     });
   } catch (error) {
     return Response.json({ error: error.message }, { status: 500 });

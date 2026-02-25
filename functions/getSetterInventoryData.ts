@@ -47,6 +47,25 @@ Deno.serve(async (req) => {
     const settings = settingsRecords.length > 0 ? settingsRecords[0] : {};
     const profile = profiles.length > 0 ? profiles[0] : null;
 
+    // Load STL business hours for overnight exclusion
+    const stlHoursArr = await sr.CompanySettings.filter({ key: 'stl_business_hours' }, '-created_date', 1);
+    const stlHoursRaw = stlHoursArr.length > 0 ? stlHoursArr[0] : null;
+    let stlStartHour = 10, stlEndHour = 20, stlTz = 'America/New_York';
+    if (stlHoursRaw) {
+      try {
+        const parsed = typeof stlHoursRaw.value === 'string' ? JSON.parse(stlHoursRaw.value) : stlHoursRaw.value;
+        stlStartHour = parsed.start_hour ?? 10;
+        stlEndHour = parsed.end_hour ?? 20;
+        stlTz = parsed.timezone ?? 'America/New_York';
+      } catch (e) { /* defaults */ }
+    }
+    function isOvernightLead(dateStr) {
+      if (!dateStr) return false;
+      const d = new Date(dateStr);
+      const h = parseInt(d.toLocaleString('en-US', { timeZone: stlTz, hour12: false, hour: '2-digit' }), 10);
+      return h < stlStartHour || h >= stlEndHour;
+    }
+
     const inventoryCap = settings.inventory_cap ?? 10;
     const yellowWarning = settings.inventory_yellow_warning ?? 8;
     const stlThreshold = settings.eligibility_stl_threshold_minutes ?? 5;
@@ -60,8 +79,8 @@ Deno.serve(async (req) => {
     let lastActiveDate = null;
     let reason = 'no_data';
 
-    // Find leads with STL data in last 30 days
-    const leadsWithSTL = recentLeads.filter(l => l.speed_to_lead_minutes != null);
+    // Find leads with STL data in last 30 days — exclude overnight
+    const leadsWithSTL = recentLeads.filter(l => l.speed_to_lead_minutes != null && !isOvernightLead(l.lead_received_date || l.created_date));
     if (leadsWithSTL.length > 0) {
       // Find the most recent day with STL data
       const latestDay = leadsWithSTL[0].created_date.substring(0, 10);

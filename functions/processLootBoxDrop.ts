@@ -62,6 +62,25 @@ Deno.serve(async (req) => {
 
     const sr = base44.asServiceRole.entities;
 
+    // Load STL business hours for overnight exclusion
+    const stlHoursArr = await sr.CompanySettings.filter({ key: 'stl_business_hours' }, '-created_date', 1);
+    const stlHoursRaw = stlHoursArr.length > 0 ? stlHoursArr[0] : null;
+    let stlStartHour = 10, stlEndHour = 20, stlTz = 'America/New_York';
+    if (stlHoursRaw) {
+      try {
+        const parsed = typeof stlHoursRaw.value === 'string' ? JSON.parse(stlHoursRaw.value) : stlHoursRaw.value;
+        stlStartHour = parsed.start_hour ?? 10;
+        stlEndHour = parsed.end_hour ?? 20;
+        stlTz = parsed.timezone ?? 'America/New_York';
+      } catch (e) { /* defaults */ }
+    }
+    function isOvernightLead(dateStr) {
+      if (!dateStr) return false;
+      const d = new Date(dateStr);
+      const h = parseInt(d.toLocaleString('en-US', { timeZone: stlTz, hour12: false, hour: '2-digit' }), 10);
+      return h < stlStartHour || h >= stlEndHour;
+    }
+
     // Step 2 — Load settings
     const settingsRecords = await sr.LootSettings.list('-created_date', 1);
     const raw = settingsRecords.length > 0 ? settingsRecords[0] : {};
@@ -121,10 +140,10 @@ Deno.serve(async (req) => {
     }
 
     if (lastActiveDay) {
-      // Get leads that arrived on that day with STL data
+      // Get leads that arrived on that day with STL data — exclude overnight
       const lastDayLeads = setterLeads.filter(l => {
         const createdDay = l.created_date ? l.created_date.substring(0, 10) : null;
-        return createdDay === lastActiveDay && l.speed_to_lead_minutes != null;
+        return createdDay === lastActiveDay && l.speed_to_lead_minutes != null && !isOvernightLead(l.lead_received_date || l.created_date);
       });
 
       if (lastDayLeads.length > 0) {

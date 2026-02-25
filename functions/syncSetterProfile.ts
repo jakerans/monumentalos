@@ -35,6 +35,28 @@ Deno.serve(async (req) => {
     const stl7dStart = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 7);
     const allSTL = await db.Lead.filter({ speed_to_lead_minutes: { $exists: true }, created_date: { $gte: stl7dStart.toISOString() } }, '-created_date', 5000);
 
+    // Fetch STL business hours config for overnight exclusion
+    const stlHoursArr = await db.CompanySettings.filter({ key: 'stl_business_hours' }, '-created_date', 1);
+    const stlHoursRaw = stlHoursArr.length > 0 ? stlHoursArr[0] : null;
+    let stlStartHour = 10, stlEndHour = 20, stlTz = 'America/New_York';
+    if (stlHoursRaw) {
+      try {
+        const parsed = typeof stlHoursRaw.value === 'string' ? JSON.parse(stlHoursRaw.value) : stlHoursRaw.value;
+        stlStartHour = parsed.start_hour ?? 10;
+        stlEndHour = parsed.end_hour ?? 20;
+        stlTz = parsed.timezone ?? 'America/New_York';
+      } catch (e) { /* defaults */ }
+    }
+    function isOvernightLead(dateStr) {
+      if (!dateStr) return false;
+      const d = new Date(dateStr);
+      const h = parseInt(d.toLocaleString('en-US', { timeZone: stlTz, hour12: false, hour: '2-digit' }), 10);
+      return h < stlStartHour || h >= stlEndHour;
+    }
+
+    // Pre-filter overnight leads from STL data
+    const allSTLFiltered = allSTL.filter(l => !isOvernightLead(l.lead_received_date || l.created_date));
+
     const setterUsers = allUsers.filter(u => u.app_role === 'setter');
 
     const profileByUserId = {};
@@ -46,8 +68,8 @@ Deno.serve(async (req) => {
 
     for (const setter of setterUsers) {
       const booked = mtdLeads.filter(l => l.booked_by_setter_id === setter.id).length;
-      // STL: last 7 days, all leads where this setter has speed_to_lead_minutes — no status/dispo/outcome filter
-      const stlArr = allSTL.filter(l => l.setter_id === setter.id);
+      // STL: last 7 days, excluding overnight leads
+      const stlArr = allSTLFiltered.filter(l => l.setter_id === setter.id);
       const avgSTL = stlArr.length > 0
         ? Math.round(stlArr.reduce((s, l) => s + l.speed_to_lead_minutes, 0) / stlArr.length)
         : null;

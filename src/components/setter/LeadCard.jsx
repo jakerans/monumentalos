@@ -76,6 +76,11 @@ export default function LeadCard({ lead, clientName, onAction, onSelect, urgency
             {SOURCE_LABELS[lead.lead_source] || lead.lead_source}
           </span>
         )}
+        {lead.is_overnight && (
+          <span className="text-[10px] font-medium px-1.5 py-0.5 rounded-full bg-slate-600 text-slate-300">
+            🌙 Overnight
+          </span>
+        )}
         {lead.status === 'disqualified' && lead.dq_reason && (
           <span className="text-[10px] font-medium px-1.5 py-0.5 rounded-full bg-red-100 text-red-700">
             DQ: {DQ_LABELS[lead.dq_reason] || lead.dq_reason}
