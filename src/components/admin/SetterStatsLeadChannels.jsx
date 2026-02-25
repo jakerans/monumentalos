@@ -111,7 +111,7 @@ function ChannelCard({ row: r, accentIndex, maxTotal }) {
   const barOpacity = 0.4 + (r.total / maxTotal) * 0.6;
 
   return (
-    <div className="relative rounded-lg border border-slate-700/50 bg-slate-800/40 overflow-hidden">
+    <div className="relative rounded-lg border border-slate-700/50 bg-slate-800/40 overflow-hidden transition-all duration-200 hover:scale-[1.02] hover:border-slate-600/70 hover:shadow-lg hover:shadow-slate-900/50">
       <div className={`h-1 bg-gradient-to-r ${gradient}`} style={{ opacity: barOpacity }} />
       <div className="px-3.5 py-3 space-y-2.5">
         {/* Header */}
@@ -145,7 +145,7 @@ function ChannelCard({ row: r, accentIndex, maxTotal }) {
 
 function TotalsCard({ row: r }) {
   return (
-    <div className="relative rounded-lg border border-dashed border-slate-600/60 bg-slate-700/20 overflow-hidden">
+    <div className="relative rounded-lg border border-dashed border-slate-600/60 bg-slate-700/20 overflow-hidden transition-all duration-200 hover:scale-[1.02] hover:border-slate-600/70 hover:shadow-lg hover:shadow-slate-900/50">
       <div className="h-1 bg-slate-600/40" />
       <div className="px-3.5 py-3 space-y-2.5">
         <div className="flex items-center justify-between">

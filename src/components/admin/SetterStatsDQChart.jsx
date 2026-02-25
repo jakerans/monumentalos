@@ -10,7 +10,14 @@ const DQ_LABELS = {
   client_availability: 'Client Avail.',
 };
 
-const COLORS = ['#f87171', '#fb923c', '#fbbf24', '#a78bfa', '#60a5fa', '#34d399'];
+const DQ_COLORS = {
+  looking_for_work: '#8b5cf6',
+  not_interested: '#6366f1',
+  wrong_invalid_number: '#3b82f6',
+  project_size: '#06b6d4',
+  oosa: '#14b8a6',
+  client_availability: '#64748b',
+};
 
 const DQ_REASONS = Object.keys(DQ_LABELS);
 
@@ -57,7 +64,7 @@ export default function SetterStatsDQChart({ stats, overallDQReasons }) {
               <YAxis tick={{ fill: '#94a3b8', fontSize: 10 }} axisLine={false} tickLine={false} allowDecimals={false} />
               <Tooltip content={<CustomTooltip />} />
               {DQ_REASONS.map((r, i) => (
-                <Bar key={r} dataKey={r} name={DQ_LABELS[r]} stackId="dq" fill={COLORS[i % COLORS.length]} radius={i === DQ_REASONS.length - 1 ? [3, 3, 0, 0] : [0, 0, 0, 0]} />
+                <Bar key={r} dataKey={r} name={DQ_LABELS[r]} stackId="dq" fill={DQ_COLORS[r]} radius={i === DQ_REASONS.length - 1 ? [3, 3, 0, 0] : [0, 0, 0, 0]} />
               ))}
             </BarChart>
           </ResponsiveContainer>
@@ -72,8 +79,8 @@ export default function SetterStatsDQChart({ stats, overallDQReasons }) {
         {totalDQ > 0 ? (
           <ResponsiveContainer width="100%" height={260}>
             <PieChart>
-              <Pie data={pieData} cx="50%" cy="50%" outerRadius={90} innerRadius={50} dataKey="value" paddingAngle={2}>
-                {pieData.map((_, i) => <Cell key={i} fill={COLORS[i % COLORS.length]} />)}
+              <Pie data={pieData} cx="50%" cy="50%" outerRadius={90} innerRadius={50} dataKey="value" paddingAngle={2} stroke="#1e293b">
+                {pieData.map((entry, i) => <Cell key={i} fill={DQ_COLORS[entry.key] || '#64748b'} />)}
               </Pie>
               <Tooltip content={<CustomTooltip />} />
               <Legend

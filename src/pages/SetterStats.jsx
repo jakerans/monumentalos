@@ -19,6 +19,19 @@ import PageLoader from '../components/shared/PageLoader';
 
 dayjs.extend(isBetween);
 
+const SectionDivider = ({ label }) => (
+  <div className="relative mt-8 mb-4">
+    <div className="absolute inset-0 flex items-center">
+      <div className="w-full border-t border-slate-700/30" />
+    </div>
+    <div className="relative flex">
+      <span className="bg-[#0B0F1A] pr-3 text-[10px] uppercase tracking-widest font-semibold text-slate-500">
+        {label}
+      </span>
+    </div>
+  </div>
+);
+
 const DQ_REASONS = ['looking_for_work', 'not_interested', 'wrong_invalid_number', 'project_size', 'oosa', 'client_availability'];
 
 function calcStats(setters, leads, inRange) {
@@ -205,12 +218,16 @@ export default function SetterStats() {
             sparklines={dailySparklines}
           />
 
+          <SectionDivider label="Channel Performance" />
           <SetterStatsLeadChannels leads={leads} inRange={inRange} />
 
+          <SectionDivider label="Industry Breakdown" />
           <LeadChannelByIndustry leads={leads} inRange={inRange} />
 
+          <SectionDivider label="Cross-Channel Analysis" />
           <SourceIndustryHeatmap leads={leads} inRange={inRange} />
 
+          <SectionDivider label="Disqualification Analysis" />
           <SetterStatsDQChart stats={stats} overallDQReasons={overallDQReasons} />
         </main>
         <AdminMobileNav currentPage="SetterStats" clients={clients} user={user} />
