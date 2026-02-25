@@ -56,7 +56,7 @@ Deno.serve(async (req) => {
     ninetyDaysAgo.setDate(ninetyDaysAgo.getDate() - 90);
     const ninetyDaysAgoISO = ninetyDaysAgo.toISOString();
 
-    const [clients, leadsRaw, spend, expenses, goals, billingRecords, users, spiffs] = await Promise.all([
+    const [clients, leadsRaw, spend, expenses, goals, billingRecords, users, spiffs, stlHoursArr] = await Promise.all([
       sr.Client.list(),
       fetchAllFiltered(sr.Lead, {}, '-created_date'),
       fetchAll(sr.Spend, '-date'),
@@ -65,7 +65,27 @@ Deno.serve(async (req) => {
       fetchAll(sr.MonthlyBilling, '-billing_month'),
       sr.User.list(),
       fetchAllFiltered(sr.Spiff, { status: 'active' }, '-created_date'),
+      sr.CompanySettings.filter({ key: 'stl_business_hours' }, '-created_date', 1),
     ]);
+
+    // STL business hours for overnight exclusion
+    const stlHoursRaw = stlHoursArr.length > 0 ? stlHoursArr[0] : null;
+    let stlStartHour = 10, stlEndHour = 20, stlTimezone = 'America/New_York';
+    if (stlHoursRaw) {
+      try {
+        const parsed = typeof stlHoursRaw.value === 'string' ? JSON.parse(stlHoursRaw.value) : stlHoursRaw.value;
+        stlStartHour = parsed.start_hour ?? 10;
+        stlEndHour = parsed.end_hour ?? 20;
+        stlTimezone = parsed.timezone ?? 'America/New_York';
+      } catch (e) { /* use defaults */ }
+    }
+
+    function isOvernightLead(dateStr, startHour, endHour, tz) {
+      if (!dateStr) return false;
+      const d = new Date(dateStr);
+      const h = parseInt(d.toLocaleString('en-US', { timeZone: tz, hour12: false, hour: '2-digit' }), 10);
+      return h < startHour || h >= endHour;
+    }
 
     // Filter to last 90 days in JS — Base44's $gte silently excludes app-created leads
     const leads = leadsRaw.filter(l => {
@@ -485,7 +505,7 @@ Deno.serve(async (req) => {
     const setters = users.filter(u => u.app_role === 'setter');
     const setterStats = setters.map(setter => {
       const booked = leads.filter(l => l.booked_by_setter_id === setter.id && l.date_appointment_set && new Date(l.date_appointment_set) >= thisMonthStart).length;
-      const stlLeads = leads.filter(l => l.setter_id === setter.id && l.speed_to_lead_minutes != null && new Date(l.created_date) >= thisMonthStart);
+      const stlLeads = leads.filter(l => l.setter_id === setter.id && l.speed_to_lead_minutes != null && !isOvernightLead(l.lead_received_date || l.created_date, stlStartHour, stlEndHour, stlTimezone) && new Date(l.created_date) >= thisMonthStart);
       const avgSTL = stlLeads.length > 0 ? Math.round(stlLeads.reduce((s, l) => s + l.speed_to_lead_minutes, 0) / stlLeads.length) : null;
       return { name: setter.full_name, booked, avgSTL };
     }).sort((a, b) => b.booked - a.booked);
