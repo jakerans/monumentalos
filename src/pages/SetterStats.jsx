@@ -115,6 +115,62 @@ export default function SetterStats() {
   const bookingRate = totalLeadsGenerated > 0 ? parseFloat(((totalBooked / totalLeadsGenerated) * 100).toFixed(1)) : null;
   const showRate = totalBooked > 0 ? parseFloat(((totalShowed / totalBooked) * 100).toFixed(1)) : null;
 
+  // Prior period (same duration, immediately before)
+  const periodDays = end.diff(start, 'day') + 1;
+  const priorEnd = start.subtract(1, 'day').endOf('day');
+  const priorStart = priorEnd.subtract(periodDays - 1, 'day').startOf('day');
+  const inPriorRange = (d) => d ? dayjs(d).isBetween(priorStart, priorEnd, null, '[]') : false;
+
+  const priorKPIs = useMemo(() => {
+    const pStats = calcStats(setters, leads, inPriorRange);
+    const pBooked = pStats.reduce((s, r) => s + r.booked, 0);
+    const pShowed = pStats.reduce((s, r) => s + r.showed, 0);
+    const pDQ = pStats.reduce((s, r) => s + r.dq, 0);
+    const pLeads = leads.filter(l =>
+      (l.lead_received_date && inPriorRange(l.lead_received_date)) ||
+      (!l.lead_received_date && l.created_date && inPriorRange(l.created_date))
+    ).length;
+    const pSTLs = pStats.filter(r => r.avgSTL != null).map(r => r.avgSTL);
+    const pAvgSTL = pSTLs.length ? Math.round(pSTLs.reduce((a, b) => a + b, 0) / pSTLs.length) : null;
+    const pBookRate = pLeads > 0 ? parseFloat(((pBooked / pLeads) * 100).toFixed(1)) : null;
+    const pShowRate = pBooked > 0 ? parseFloat(((pShowed / pBooked) * 100).toFixed(1)) : null;
+    return { setterCount: setters.length, totalLeads: pLeads, booked: pBooked, showed: pShowed, dq: pDQ, avgSTL: pAvgSTL, bookingRate: pBookRate, showRate: pShowRate };
+  }, [setters, leads, startDate, endDate]);
+
+  // Daily sparkline data
+  const dailySparklines = useMemo(() => {
+    const days = [];
+    let cursor = start;
+    while (cursor.isBefore(end) || cursor.isSame(end, 'day')) {
+      days.push(cursor.format('YYYY-MM-DD'));
+      cursor = cursor.add(1, 'day');
+    }
+    const leadsPerDay = {}, bookedPerDay = {}, showedPerDay = {}, dqPerDay = {};
+    days.forEach(d => { leadsPerDay[d] = 0; bookedPerDay[d] = 0; showedPerDay[d] = 0; dqPerDay[d] = 0; });
+    leads.forEach(l => {
+      const rDate = dayjs(l.lead_received_date || l.created_date).format('YYYY-MM-DD');
+      if (leadsPerDay[rDate] !== undefined) leadsPerDay[rDate]++;
+      if (l.date_appointment_set) {
+        const bDate = dayjs(l.date_appointment_set).format('YYYY-MM-DD');
+        if (bookedPerDay[bDate] !== undefined) bookedPerDay[bDate]++;
+      }
+      if (l.disposition === 'showed' && l.appointment_date) {
+        const sDate = dayjs(l.appointment_date).format('YYYY-MM-DD');
+        if (showedPerDay[sDate] !== undefined) showedPerDay[sDate]++;
+      }
+      if (l.status === 'disqualified' && l.disqualified_date) {
+        const dDate = dayjs(l.disqualified_date).format('YYYY-MM-DD');
+        if (dqPerDay[dDate] !== undefined) dqPerDay[dDate]++;
+      }
+    });
+    return {
+      leads: days.map(d => leadsPerDay[d]),
+      booked: days.map(d => bookedPerDay[d]),
+      showed: days.map(d => showedPerDay[d]),
+      dq: days.map(d => dqPerDay[d]),
+    };
+  }, [leads, startDate, endDate]);
+
   const overallDQReasons = useMemo(() => {
     const totals = {};
     DQ_REASONS.forEach(r => { totals[r] = 0; });
