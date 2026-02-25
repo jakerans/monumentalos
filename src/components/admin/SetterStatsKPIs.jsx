@@ -16,19 +16,19 @@ function KPICard({ label, value, subtitle, icon: Icon, color, bg }) {
   );
 }
 
-export default function SetterStatsKPIs({ setterCount, totalBooked, totalShowed, totalDQ, avgSTL, bookingRate, showRate, dqRate }) {
+export default function SetterStatsKPIs({ setterCount, totalLeadsGenerated, totalBooked, totalShowed, totalDQ, avgSTL, bookingRate, showRate }) {
   const stlColor = avgSTL != null && avgSTL <= 5 ? 'text-green-400' : avgSTL != null && avgSTL <= 15 ? 'text-amber-400' : 'text-blue-400';
   const stlBg = avgSTL != null && avgSTL <= 5 ? 'bg-green-500/10' : avgSTL != null && avgSTL <= 15 ? 'bg-amber-500/10' : 'bg-blue-500/10';
 
   const cards = [
     { label: 'Active Setters', value: setterCount, icon: Users, color: 'text-indigo-400', bg: 'bg-indigo-500/10' },
+    { label: 'Total Leads', value: totalLeadsGenerated, icon: TrendingUp, color: 'text-sky-400', bg: 'bg-sky-500/10' },
     { label: 'Bookings', value: totalBooked, icon: Calendar, color: 'text-purple-400', bg: 'bg-purple-500/10' },
     { label: 'Showings', value: totalShowed, icon: Target, color: 'text-green-400', bg: 'bg-green-500/10' },
     { label: 'DQ\'d Leads', value: totalDQ, icon: Ban, color: 'text-red-400', bg: 'bg-red-500/10' },
     { label: 'Avg STL', value: avgSTL != null ? `${avgSTL}m` : '—', icon: Timer, color: stlColor, bg: stlBg },
     { label: 'Booking Rate', value: bookingRate != null ? `${bookingRate}%` : '—', icon: TrendingUp, color: 'text-cyan-400', bg: 'bg-cyan-500/10' },
     { label: 'Show Rate', value: showRate != null ? `${showRate}%` : '—', icon: Target, color: 'text-emerald-400', bg: 'bg-emerald-500/10' },
-    { label: 'DQ Rate', value: dqRate != null ? `${dqRate}%` : '—', icon: Ban, color: 'text-orange-400', bg: 'bg-orange-500/10' },
   ];
 
   return (

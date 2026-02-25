@@ -69,9 +69,7 @@ export default function SetterStatsTable({ stats }) {
               <th className={thClass} onClick={() => handleSort('showed')}>Showed <SortIcon col="showed" /></th>
               <th className={thClass} onClick={() => handleSort('dq')}>DQ <SortIcon col="dq" /></th>
               <th className={thClass} onClick={() => handleSort('avgSTL')}>Avg STL <SortIcon col="avgSTL" /></th>
-              <th className={thClass} onClick={() => handleSort('bookingRate')}>Book % <SortIcon col="bookingRate" /></th>
               <th className={thClass} onClick={() => handleSort('showRate')}>Show % <SortIcon col="showRate" /></th>
-              <th className={thClass} onClick={() => handleSort('dqRate')}>DQ % <SortIcon col="dqRate" /></th>
             </tr>
           </thead>
           <tbody>
@@ -88,13 +86,11 @@ export default function SetterStatsTable({ stats }) {
                   <td className={`${tdClass} text-green-400 font-semibold`}>{s.showed}</td>
                   <td className={`${tdClass} text-red-400 font-semibold`}>{s.dq}</td>
                   <td className={tdClass}><STLBadge value={s.avgSTL} /></td>
-                  <td className={`${tdClass} text-cyan-400`}>{s.bookingRate != null ? `${s.bookingRate}%` : '—'}</td>
                   <td className={`${tdClass} text-emerald-400`}>{s.showRate != null ? `${s.showRate}%` : '—'}</td>
-                  <td className={`${tdClass} text-orange-400`}>{s.dqRate != null ? `${s.dqRate}%` : '—'}</td>
                 </tr>
                 {expandedId === s.id && (
                   <tr className="bg-slate-800/60">
-                    <td colSpan={10} className="px-4 py-4">
+                    <td colSpan={8} className="px-4 py-4">
                       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                         <div>
                           <p className="text-[10px] uppercase tracking-wider font-semibold text-slate-500 mb-2">DQ Reasons Breakdown</p>
@@ -126,7 +122,7 @@ export default function SetterStatsTable({ stats }) {
             ))}
             {sorted.length === 0 && (
               <tr>
-                <td colSpan={10} className="px-4 py-8 text-center text-slate-500 text-sm">No setter data for this period</td>
+                <td colSpan={8} className="px-4 py-8 text-center text-slate-500 text-sm">No setter data for this period</td>
               </tr>
             )}
           </tbody>

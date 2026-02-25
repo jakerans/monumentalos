@@ -31,15 +31,9 @@ function calcStats(setters, leads, inRange) {
     const dqLegacy = leads.filter(l => !l.disqualified_by_setter_id && l.setter_id === setter.id && l.status === 'disqualified' && l.first_call_made_date && inRange(l.first_call_made_date));
     const dqAll = [...dqBySetter, ...dqLegacy];
 
-    const totalLeads = leads.filter(l => l.setter_id === setter.id && (
-      (l.lead_received_date && inRange(l.lead_received_date)) || 
-      (!l.lead_received_date && l.created_date && inRange(l.created_date))
-    )).length;
     const stlValues = firstCalls.filter(l => l.speed_to_lead_minutes != null).map(l => l.speed_to_lead_minutes);
     const avgSTL = stlValues.length ? Math.round(stlValues.reduce((a, b) => a + b, 0) / stlValues.length) : null;
-    const bookingRate = totalLeads > 0 ? parseFloat(((booked.length / totalLeads) * 100).toFixed(1)) : null;
     const showRate = booked.length > 0 ? parseFloat(((showed.length / booked.length) * 100).toFixed(1)) : null;
-    const dqRate = totalLeads > 0 ? parseFloat(((dqAll.length / totalLeads) * 100).toFixed(1)) : null;
 
     const dqReasons = {};
     DQ_REASONS.forEach(r => { dqReasons[r] = 0; });
@@ -60,7 +54,6 @@ function calcStats(setters, leads, inRange) {
       bookingRate,
       showRate,
       dqRate,
-      totalLeads,
       dqReasons,
       stlUnder5,
       stl5to15,
@@ -114,13 +107,14 @@ export default function SetterStats() {
   const totalBooked = stats.reduce((s, r) => s + r.booked, 0);
   const totalShowed = stats.reduce((s, r) => s + r.showed, 0);
   const totalDQ = stats.reduce((s, r) => s + r.dq, 0);
-  const totalCalls = stats.reduce((s, r) => s + r.firstCalls, 0);
-  const totalLeadsAll = stats.reduce((s, r) => s + r.totalLeads, 0);
+  const totalLeadsGenerated = leads.filter(l =>
+    (l.lead_received_date && inRange(l.lead_received_date)) ||
+    (!l.lead_received_date && l.created_date && inRange(l.created_date))
+  ).length;
   const allSTL = stats.filter(r => r.avgSTL != null).map(r => r.avgSTL);
   const avgSTL = allSTL.length ? Math.round(allSTL.reduce((a, b) => a + b, 0) / allSTL.length) : null;
-  const bookingRate = totalLeadsAll > 0 ? parseFloat(((totalBooked / totalLeadsAll) * 100).toFixed(1)) : null;
+  const bookingRate = totalLeadsGenerated > 0 ? parseFloat(((totalBooked / totalLeadsGenerated) * 100).toFixed(1)) : null;
   const showRate = totalBooked > 0 ? parseFloat(((totalShowed / totalBooked) * 100).toFixed(1)) : null;
-  const dqRate = totalLeadsAll > 0 ? parseFloat(((totalDQ / totalLeadsAll) * 100).toFixed(1)) : null;
 
   const overallDQReasons = useMemo(() => {
     const totals = {};
@@ -148,13 +142,13 @@ export default function SetterStats() {
 
           <SetterStatsKPIs
             setterCount={setters.length}
+            totalLeadsGenerated={totalLeadsGenerated}
             totalBooked={totalBooked}
             totalShowed={totalShowed}
             totalDQ={totalDQ}
             avgSTL={avgSTL}
             bookingRate={bookingRate}
             showRate={showRate}
-            dqRate={dqRate}
           />
 
           <SetterStatsTrendChart leads={leads} setters={setters} startDate={startDate} endDate={endDate} />
