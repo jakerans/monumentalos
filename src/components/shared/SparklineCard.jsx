@@ -105,6 +105,9 @@ export default function SparklineCard({
           )}
         </div>
         <p className="text-xl font-bold text-white leading-tight">{value}</p>
+        {subtitle && (
+          <p className="text-[10px] text-slate-500 mt-0.5">{subtitle}</p>
+        )}
 
         {/* Period-over-period comparison row */}
         {comparison && (

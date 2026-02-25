@@ -98,10 +98,12 @@ Deno.serve(async (req) => {
     const team7dSTL = allLeads.filter(l => l.speed_to_lead_minutes != null && l.created_date && new Date(l.created_date) >= stl7dStart);
     const teamAvgSTL = team7dSTL.length > 0 ? Math.round(team7dSTL.reduce((s, l) => s + l.speed_to_lead_minutes, 0) / team7dSTL.length * 10) / 10 : 0;
 
-    // Today's appointments (all)
-    const todayAppts = allLeads.filter(l => l.appointment_date && l.appointment_date.startsWith(todayStr)).length;
+    // Today's appointments — mine and team
+    const todayAppts = allLeads.filter(l => l.booked_by_setter_id === userId && l.appointment_date && l.appointment_date.startsWith(todayStr)).length;
+    const teamTodayAppts = allLeads.filter(l => l.appointment_date && l.appointment_date.startsWith(todayStr)).length;
     const yesterdayStr = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1).toISOString().split('T')[0];
-    const yesterdayAppts = allLeads.filter(l => l.appointment_date && l.appointment_date.startsWith(yesterdayStr)).length;
+    const yesterdayAppts = allLeads.filter(l => l.booked_by_setter_id === userId && l.appointment_date && l.appointment_date.startsWith(yesterdayStr)).length;
+    const teamYesterdayAppts = allLeads.filter(l => l.appointment_date && l.appointment_date.startsWith(yesterdayStr)).length;
 
     // Show rate (last 30 days, booked by me)
     const my30dBooked = allLeads.filter(l => l.booked_by_setter_id === userId && l.date_appointment_set && new Date(l.date_appointment_set) >= show30dStart);
@@ -125,7 +127,7 @@ Deno.serve(async (req) => {
     const bookedSpark = buildSpark((l, dStr) => l.booked_by_setter_id === userId && l.date_appointment_set && l.date_appointment_set.startsWith(dStr));
     const callsSpark = buildSpark((l, dStr) => l.setter_id === userId && l.first_call_made_date && l.first_call_made_date.startsWith(dStr));
     const stlSpark = buildSpark((l, dStr) => l.setter_id === userId && l.speed_to_lead_minutes != null && l.created_date && l.created_date.startsWith(dStr), 7);
-    const apptSpark = buildSpark((l, dStr) => l.appointment_date && l.appointment_date.startsWith(dStr));
+    const apptSpark = buildSpark((l, dStr) => l.booked_by_setter_id === userId && l.appointment_date && l.appointment_date.startsWith(dStr));
 
     // --- Spiff progress pre-computation ---
     function getSpiffProgress(spiff, scope_user_id) {
@@ -229,7 +231,7 @@ Deno.serve(async (req) => {
       stats: {
         mtdBooked, lmBooked, mtdCalls, lmCalls,
         avgSTL, teamAvgSTL,
-        todayAppts, yesterdayAppts,
+        todayAppts, teamTodayAppts, yesterdayAppts, teamYesterdayAppts,
         showRate, lmShowRate,
         bookedSpark, callsSpark, stlSpark, apptSpark,
       },

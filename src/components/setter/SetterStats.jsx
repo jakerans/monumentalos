@@ -38,6 +38,7 @@ function SetterStats({ preStats = {}, leads, user }) {
             sparkColor={s.sparkColor}
             sparkData={s.sparkData}
             comparison={s.comparison}
+            subtitle={s.subtitle}
           />
         );
       })}
@@ -94,6 +95,7 @@ function buildFromPreStats(s) {
       sparkColor: '#22d3ee',
       sparkData: s.apptSpark || [],
       comparison: { prior: s.yesterdayAppts || 0, change: pctChange(s.todayAppts || 0, s.yesterdayAppts || 0) },
+      subtitle: `Team: ${s.teamTodayAppts || 0}`,
     },
   ];
 }
@@ -132,9 +134,11 @@ function buildFromLeads(leads = [], user) {
   const team7dSTL = leads.filter(l => l.speed_to_lead_minutes != null && l.created_date && new Date(l.created_date) >= stl7dStart);
   const teamAvgSTL = team7dSTL.length > 0 ? Math.round(team7dSTL.reduce((s, l) => s + l.speed_to_lead_minutes, 0) / team7dSTL.length * 10) / 10 : 0;
 
-  const todayAppts = leads.filter(l => l.appointment_date && l.appointment_date.startsWith(todayStr)).length;
+  const todayAppts = leads.filter(l => l.booked_by_setter_id === userId && l.appointment_date && l.appointment_date.startsWith(todayStr)).length;
+  const teamTodayAppts = leads.filter(l => l.appointment_date && l.appointment_date.startsWith(todayStr)).length;
   const yesterdayStr = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1).toISOString().split('T')[0];
-  const yesterdayAppts = leads.filter(l => l.appointment_date && l.appointment_date.startsWith(yesterdayStr)).length;
+  const yesterdayAppts = leads.filter(l => l.booked_by_setter_id === userId && l.appointment_date && l.appointment_date.startsWith(yesterdayStr)).length;
+  const teamYesterdayAppts = leads.filter(l => l.appointment_date && l.appointment_date.startsWith(yesterdayStr)).length;
 
   const show30dStart = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 30);
   const show60dStart = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 60);
@@ -148,11 +152,11 @@ function buildFromLeads(leads = [], user) {
   return buildFromPreStats({
     mtdBooked, lmBooked, mtdCalls, lmCalls,
     avgSTL, teamAvgSTL,
-    todayAppts, yesterdayAppts,
+    todayAppts, teamTodayAppts, yesterdayAppts, teamYesterdayAppts,
     showRate, lmShowRate,
     bookedSpark: buildDailySparkline((l, dStr) => l.booked_by_setter_id === userId && l.date_appointment_set && l.date_appointment_set.startsWith(dStr)),
     callsSpark: buildDailySparkline((l, dStr) => l.setter_id === userId && l.first_call_made_date && l.first_call_made_date.startsWith(dStr)),
     stlSpark: buildDailySparkline((l, dStr) => l.setter_id === userId && l.speed_to_lead_minutes != null && l.created_date && l.created_date.startsWith(dStr), 7),
-    apptSpark: buildDailySparkline((l, dStr) => l.appointment_date && l.appointment_date.startsWith(dStr)),
+    apptSpark: buildDailySparkline((l, dStr) => l.booked_by_setter_id === userId && l.appointment_date && l.appointment_date.startsWith(dStr)),
   });
 }
