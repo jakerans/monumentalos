@@ -242,7 +242,7 @@ Deno.serve(async (req) => {
     const liveLeaderboard = [...allSetterIds].map(sid => {
       const profile = profileMap[sid] || {};
       const liveMtdBooked = allLeads.filter(l => l.booked_by_setter_id === sid && l.date_appointment_set && new Date(l.date_appointment_set) >= mtdStart).length;
-      const stlLeads = allLeads.filter(l => l.setter_id === sid && l.speed_to_lead_minutes != null && l.created_date && new Date(l.created_date) >= stl7dStart);
+      const stlLeads = allLeads.filter(l => l.setter_id === sid && l.speed_to_lead_minutes != null && !isOvernightLead(l.lead_received_date || l.created_date, stlStartHour, stlEndHour, stlTimezone) && l.created_date && new Date(l.created_date) >= stl7dStart);
       const liveAvgSTL = stlLeads.length > 0 ? Math.round(stlLeads.reduce((s, l) => s + l.speed_to_lead_minutes, 0) / stlLeads.length * 10) / 10 : null;
       return {
         ...profile,
