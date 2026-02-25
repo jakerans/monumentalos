@@ -178,11 +178,11 @@ Deno.serve(async (req) => {
       }
       if (spiff.qualifier === 'stl') {
         if (spiff.scope === 'team_company') {
-          const stlLeads = allLeads.filter(l => l.speed_to_lead_minutes != null && new Date(l.created_date) >= mtdStart);
+          const stlLeads = allLeads.filter(l => l.speed_to_lead_minutes != null && !isOvernightLead(l.lead_received_date || l.created_date, stlStartHour, stlEndHour, stlTimezone) && new Date(l.created_date) >= mtdStart);
           return stlLeads.length > 0 ? Math.round(stlLeads.reduce((s, l) => s + l.speed_to_lead_minutes, 0) / stlLeads.length) : null;
         }
         const sid = spiff.scope === 'individual' ? spiff.assigned_setter_id : scope_user_id;
-        const stlLeads = allLeads.filter(l => l.setter_id === sid && l.speed_to_lead_minutes != null && new Date(l.created_date) >= mtdStart);
+        const stlLeads = allLeads.filter(l => l.setter_id === sid && l.speed_to_lead_minutes != null && !isOvernightLead(l.lead_received_date || l.created_date, stlStartHour, stlEndHour, stlTimezone) && new Date(l.created_date) >= mtdStart);
         return stlLeads.length > 0 ? Math.round(stlLeads.reduce((s, l) => s + l.speed_to_lead_minutes, 0) / stlLeads.length) : null;
       }
       return 0;
@@ -198,11 +198,11 @@ Deno.serve(async (req) => {
       }
       if (spiff.qualifier === 'stl') {
         if (spiff.scope === 'team_company') {
-          const stlLeads = allLeads.filter(l => l.speed_to_lead_minutes != null && new Date(l.created_date) >= dayStart);
+          const stlLeads = allLeads.filter(l => l.speed_to_lead_minutes != null && !isOvernightLead(l.lead_received_date || l.created_date, stlStartHour, stlEndHour, stlTimezone) && new Date(l.created_date) >= dayStart);
           return stlLeads.length > 0 ? Math.round(stlLeads.reduce((s, l) => s + l.speed_to_lead_minutes, 0) / stlLeads.length) : null;
         }
         const sid = spiff.scope === 'individual' ? spiff.assigned_setter_id : scope_user_id;
-        const stlLeads = allLeads.filter(l => l.setter_id === sid && l.speed_to_lead_minutes != null && new Date(l.created_date) >= dayStart);
+        const stlLeads = allLeads.filter(l => l.setter_id === sid && l.speed_to_lead_minutes != null && !isOvernightLead(l.lead_received_date || l.created_date, stlStartHour, stlEndHour, stlTimezone) && new Date(l.created_date) >= dayStart);
         return stlLeads.length > 0 ? Math.round(stlLeads.reduce((s, l) => s + l.speed_to_lead_minutes, 0) / stlLeads.length) : null;
       }
       return 0;
