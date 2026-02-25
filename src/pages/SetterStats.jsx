@@ -11,9 +11,9 @@ import DateRangePicker from '../components/admin/DateRangePicker';
 import SetterStatsKPIs from '../components/admin/SetterStatsKPIs';
 import SetterStatsTable from '../components/admin/SetterStatsTable';
 import SetterStatsDQChart from '../components/admin/SetterStatsDQChart';
-import SetterStatsSTLChart from '../components/admin/SetterStatsSTLChart';
-import SetterStatsTrendChart from '../components/admin/SetterStatsTrendChart';
 import SetterStatsLeadChannels from '../components/admin/SetterStatsLeadChannels';
+import LeadChannelByIndustry from '../components/admin/LeadChannelByIndustry';
+import SourceIndustryHeatmap from '../components/admin/SourceIndustryHeatmap';
 import PageErrorBoundary from '../components/shared/PageErrorBoundary';
 import PageLoader from '../components/shared/PageLoader';
 
@@ -133,8 +133,8 @@ export default function SetterStats() {
         <main className="flex-1 min-w-0 max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div>
-              <h1 className="text-2xl font-bold text-white">Setter Reporting</h1>
-              <p className="text-sm text-slate-400">KPIs, DQ analysis, speed-to-lead, and booking trends</p>
+              <h1 className="text-2xl font-bold text-white">Booking Report</h1>
+              <p className="text-sm text-slate-400">Lead channels, booking performance, and DQ analysis</p>
             </div>
             <DateRangePicker startDate={startDate} endDate={endDate} onStartChange={setStartDate} onEndChange={setEndDate} />
           </div>
@@ -150,18 +150,15 @@ export default function SetterStats() {
             showRate={showRate}
           />
 
-          <SetterStatsTrendChart leads={leads} setters={setters} startDate={startDate} endDate={endDate} />
+          <SetterStatsLeadChannels leads={leads} inRange={inRange} />
+
+          <LeadChannelByIndustry leads={leads} inRange={inRange} />
+
+          <SourceIndustryHeatmap leads={leads} inRange={inRange} />
 
           <SetterStatsTable stats={stats} />
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-            <SetterStatsSTLChart stats={stats} />
-            <div /> {/* Keep grid balanced */}
-          </div>
-
           <SetterStatsDQChart stats={stats} overallDQReasons={overallDQReasons} />
-
-          <SetterStatsLeadChannels leads={leads} inRange={inRange} />
         </main>
         <AdminMobileNav currentPage="SetterStats" clients={clients} user={user} />
       </div>

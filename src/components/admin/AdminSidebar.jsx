@@ -37,7 +37,7 @@ const ADMIN_SECTIONS = {
     items: [
       { key: 'ClientPerformance', label: 'Client Overview', icon: Target },
       { key: 'SetterPerformance', label: 'Setter Management', icon: Headset },
-      { key: 'SetterStats', label: 'Setter Reporting', icon: LineChart },
+      { key: 'SetterStats', label: 'Booking Report', icon: LineChart },
       { key: 'LeadManager', label: 'Lead Management', icon: Users },
       { key: 'LootAdmin', label: 'Rewards Admin', icon: Gift },
     ],
