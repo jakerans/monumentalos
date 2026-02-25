@@ -36,19 +36,19 @@ Deno.serve(async (req) => {
     const thirtyDaysAgo = new Date();
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
 
-    const [lootBoxes, lootWins, profiles, recentLeads, settingsRecords] = await Promise.all([
+    const [lootBoxes, lootWins, profiles, recentLeads, settingsRecords, stlHoursArr] = await Promise.all([
       fetchAllFiltered(sr.LootBox, { setter_id }, '-awarded_date'),
       fetchAllFiltered(sr.LootWin, { setter_id }, '-won_date'),
       sr.SetterProfile.filter({ user_id: setter_id }, '-created_date', 1),
       fetchAllFiltered(sr.Lead, { setter_id, created_date: { $gte: thirtyDaysAgo.toISOString() } }, '-created_date'),
       sr.LootSettings.list('-created_date', 1),
+      sr.CompanySettings.filter({ key: 'stl_business_hours' }, '-created_date', 1),
     ]);
 
     const settings = settingsRecords.length > 0 ? settingsRecords[0] : {};
     const profile = profiles.length > 0 ? profiles[0] : null;
 
-    // Load STL business hours for overnight exclusion
-    const stlHoursArr = await sr.CompanySettings.filter({ key: 'stl_business_hours' }, '-created_date', 1);
+    // STL business hours for overnight exclusion
     const stlHoursRaw = stlHoursArr.length > 0 ? stlHoursArr[0] : null;
     let stlStartHour = 10, stlEndHour = 20, stlTz = 'America/New_York';
     if (stlHoursRaw) {
@@ -59,11 +59,11 @@ Deno.serve(async (req) => {
         stlTz = parsed.timezone ?? 'America/New_York';
       } catch (e) { /* defaults */ }
     }
-    function isOvernightLead(dateStr) {
+    function isOvernightLead(dateStr, startHour, endHour, tz) {
       if (!dateStr) return false;
       const d = new Date(dateStr);
-      const h = parseInt(d.toLocaleString('en-US', { timeZone: stlTz, hour12: false, hour: '2-digit' }), 10);
-      return h < stlStartHour || h >= stlEndHour;
+      const h = parseInt(d.toLocaleString('en-US', { timeZone: tz, hour12: false, hour: '2-digit' }), 10);
+      return h < startHour || h >= endHour;
     }
 
     const inventoryCap = settings.inventory_cap ?? 10;
@@ -80,7 +80,7 @@ Deno.serve(async (req) => {
     let reason = 'no_data';
 
     // Find leads with STL data in last 30 days — exclude overnight
-    const leadsWithSTL = recentLeads.filter(l => l.speed_to_lead_minutes != null && !isOvernightLead(l.lead_received_date || l.created_date));
+    const leadsWithSTL = recentLeads.filter(l => l.speed_to_lead_minutes != null && !isOvernightLead(l.lead_received_date || l.created_date, stlStartHour, stlEndHour, stlTz));
     if (leadsWithSTL.length > 0) {
       // Find the most recent day with STL data
       const latestDay = leadsWithSTL[0].created_date.substring(0, 10);

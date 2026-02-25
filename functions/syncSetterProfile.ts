@@ -47,15 +47,15 @@ Deno.serve(async (req) => {
         stlTz = parsed.timezone ?? 'America/New_York';
       } catch (e) { /* defaults */ }
     }
-    function isOvernightLead(dateStr) {
+    function isOvernightLead(dateStr, startHour, endHour, tz) {
       if (!dateStr) return false;
       const d = new Date(dateStr);
-      const h = parseInt(d.toLocaleString('en-US', { timeZone: stlTz, hour12: false, hour: '2-digit' }), 10);
-      return h < stlStartHour || h >= stlEndHour;
+      const h = parseInt(d.toLocaleString('en-US', { timeZone: tz, hour12: false, hour: '2-digit' }), 10);
+      return h < startHour || h >= endHour;
     }
 
     // Pre-filter overnight leads from STL data
-    const allSTLFiltered = allSTL.filter(l => !isOvernightLead(l.lead_received_date || l.created_date));
+    const allSTLFiltered = allSTL.filter(l => !isOvernightLead(l.lead_received_date || l.created_date, stlStartHour, stlEndHour, stlTz));
 
     const setterUsers = allUsers.filter(u => u.app_role === 'setter');
 

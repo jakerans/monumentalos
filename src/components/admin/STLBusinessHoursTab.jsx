@@ -45,6 +45,10 @@ export default function STLBusinessHoursTab() {
   }, []);
 
   const handleSave = async () => {
+    if (startHour >= endHour) {
+      toast({ title: 'Invalid Hours', description: 'Start hour must be before end hour.', variant: 'destructive' });
+      return;
+    }
     setSaving(true);
     const value = JSON.stringify({ start_hour: startHour, end_hour: endHour, timezone });
     if (existingId) {
@@ -109,6 +113,10 @@ export default function STLBusinessHoursTab() {
           </select>
         </div>
       </div>
+
+      {startHour >= endHour && (
+        <p className="text-[11px] text-red-400 font-medium">⚠️ Start hour must be before end hour</p>
+      )}
 
       <div className="flex items-center justify-between pt-2">
         <p className="text-[11px] text-slate-500">
