@@ -31,21 +31,6 @@ Deno.serve(async (req) => {
         console.log('Admin user with no invite, setting app_role to admin');
         await base44.asServiceRole.entities.User.update(user.id, { app_role: 'admin' });
 
-        // Auto-link Employee record if one exists with matching email
-        try {
-          const matchingEmployees = await base44.asServiceRole.entities.Employee.filter({
-            email: user.email.toLowerCase(),
-          }, '-created_date', 10);
-
-          const unlinkable = matchingEmployees.find(e => !e.user_id);
-          if (unlinkable) {
-            await base44.asServiceRole.entities.Employee.update(unlinkable.id, { user_id: user.id });
-            console.log('Auto-linked Employee', unlinkable.id, 'to User', user.id);
-          }
-        } catch (linkErr) {
-          console.error('Employee auto-link failed (non-fatal):', linkErr.message);
-        }
-
         return Response.json({ applied: true, role: 'admin', client_id: null });
       }
       return Response.json({ applied: false, role: null, client_id: null });
