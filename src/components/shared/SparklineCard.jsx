@@ -156,9 +156,7 @@ export default function SparklineCard({
                 {trend.label && <span className="text-slate-500 font-normal ml-0.5">{trend.label}</span>}
               </span>
             )}
-            {!trend && subtitle && (
-              <p className="text-[10px] text-slate-500">{subtitle}</p>
-            )}
+            {!trend && !subtitle && null}
           </div>
         )}
       </div>
