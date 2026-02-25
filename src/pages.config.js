@@ -52,7 +52,6 @@ import AccountingCashFlow from './pages/AccountingCashFlow';
 import AccountingClients from './pages/AccountingClients';
 import AccountingExpenses from './pages/AccountingExpenses';
 import AccountingPL from './pages/AccountingPL';
-import AdminDashboard from './pages/AdminDashboard';
 import AppointmentHistory from './pages/AppointmentHistory';
 import BankAccountSettings from './pages/BankAccountSettings';
 import ClientManagement from './pages/ClientManagement';
@@ -81,6 +80,7 @@ import SetterPerformance from './pages/SetterPerformance';
 import SetterStats from './pages/SetterStats';
 import ShiftChecklistSettings from './pages/ShiftChecklistSettings';
 import UserManagement from './pages/UserManagement';
+import AdminDashboard from './pages/AdminDashboard';
 import __Layout from './Layout.jsx';
 
 
@@ -90,7 +90,6 @@ export const PAGES = {
     "AccountingClients": AccountingClients,
     "AccountingExpenses": AccountingExpenses,
     "AccountingPL": AccountingPL,
-    "AdminDashboard": AdminDashboard,
     "AppointmentHistory": AppointmentHistory,
     "BankAccountSettings": BankAccountSettings,
     "ClientManagement": ClientManagement,
@@ -119,6 +118,7 @@ export const PAGES = {
     "SetterStats": SetterStats,
     "ShiftChecklistSettings": ShiftChecklistSettings,
     "UserManagement": UserManagement,
+    "AdminDashboard": AdminDashboard,
 }
 
 export const pagesConfig = {

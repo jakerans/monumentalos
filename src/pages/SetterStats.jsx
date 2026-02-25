@@ -9,7 +9,7 @@ import AdminSidebar from '../components/admin/AdminSidebar';
 import AdminMobileNav from '../components/admin/AdminMobileNav';
 import DateRangePicker from '../components/admin/DateRangePicker';
 import SetterStatsKPIs from '../components/admin/SetterStatsKPIs';
-import SetterStatsTable from '../components/admin/SetterStatsTable';
+
 import SetterStatsDQChart from '../components/admin/SetterStatsDQChart';
 import SetterStatsLeadChannels from '../components/admin/SetterStatsLeadChannels';
 import LeadChannelByIndustry from '../components/admin/LeadChannelByIndustry';
@@ -213,8 +213,6 @@ export default function SetterStats() {
           <LeadChannelByIndustry leads={leads} inRange={inRange} />
 
           <SourceIndustryHeatmap leads={leads} inRange={inRange} />
-
-          <SetterStatsTable stats={stats} />
 
           <SetterStatsDQChart stats={stats} overallDQReasons={overallDQReasons} />
         </main>
