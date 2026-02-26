@@ -28,6 +28,8 @@ export default function EditClientModal({ open, onOpenChange, client, onSaved })
   const [contacts, setContacts] = useState([]);
   const [goalType, setGoalType] = useState('');
   const [goalValue, setGoalValue] = useState('');
+  const [estimatorName, setEstimatorName] = useState('');
+  const [estimatorPhone, setEstimatorPhone] = useState('');
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
@@ -53,6 +55,8 @@ export default function EditClientModal({ open, onOpenChange, client, onSaved })
       setContacts(client.contacts?.length ? client.contacts : [{ name: '', email: '', role: '' }]);
       setGoalType(client.goal_type || '');
       setGoalValue(client.goal_value ?? '');
+      setEstimatorName(client.estimator_name || '');
+      setEstimatorPhone(client.estimator_phone || '');
     }
   }, [client, open]);
 
@@ -77,6 +81,8 @@ export default function EditClientModal({ open, onOpenChange, client, onSaved })
       stripe_customer_id: stripeCustomerId.trim() || undefined,
       booking_link: bookingLink.trim() || undefined,
       service_radius: serviceRadius.trim() || undefined,
+      estimator_name: estimatorName.trim() || undefined,
+      estimator_phone: estimatorPhone.trim() || undefined,
       target_zip_codes: targetZipCodes.trim() || undefined,
       negative_zip_codes: negativeZipCodes.trim() || undefined,
       status,
@@ -239,6 +245,18 @@ export default function EditClientModal({ open, onOpenChange, client, onSaved })
               <input value={stripeCustomerId} onChange={e => setStripeCustomerId(e.target.value)} className={inputClass} placeholder="cus_xxxxx" />
             </div>
           </div>
+          {/* Estimator Info */}
+          <div className="grid grid-cols-2 gap-2">
+            <div>
+              <label className={labelClass}>Estimator Name</label>
+              <input value={estimatorName} onChange={e => setEstimatorName(e.target.value)} className={inputClass} placeholder="e.g. John Smith" />
+            </div>
+            <div>
+              <label className={labelClass}>Estimator Phone</label>
+              <input value={estimatorPhone} onChange={e => setEstimatorPhone(e.target.value)} className={inputClass} placeholder="e.g. (555) 123-4567" />
+            </div>
+          </div>
+
           <div className="grid grid-cols-2 gap-2">
             <div>
               <label className={labelClass}>Booking Link</label>
