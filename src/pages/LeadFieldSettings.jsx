@@ -14,13 +14,15 @@ import AIExpenseSettingsTab from '../components/admin/AIExpenseSettingsTab';
 import BankAccountsTab from '../components/admin/BankAccountsTab';
 import QuickLinkManager from '../components/admin/QuickLinkManager';
 import STLBusinessHoursTab from '../components/admin/STLBusinessHoursTab';
-import { Settings, List, Sparkles, MessageSquare, Receipt, Landmark, Link, Moon } from 'lucide-react';
+import MessengerTemplateTab from '../components/admin/MessengerTemplateTab';
+import { Settings, List, Sparkles, MessageSquare, Receipt, Landmark, Link, Moon, Send } from 'lucide-react';
 
 const TABS = [
   { id: 'lead_options', label: 'Lead Field Options', icon: List },
   { id: 'ai_leads', label: 'AI Lead Classify', icon: Sparkles },
   { id: 'ai_coach', label: 'AI Setter Coach', icon: MessageSquare },
   { id: 'ai_expense', label: 'AI Expenses', icon: Receipt },
+  { id: 'messenger', label: 'Messenger Template', icon: Send },
   { id: 'bank_accounts', label: 'Bank Accounts', icon: Landmark },
   { id: 'quick_links', label: 'Quick Links', icon: Link },
   { id: 'stl_hours', label: 'STL Hours', icon: Moon },
@@ -111,6 +113,9 @@ export default function LeadFieldSettings() {
           )}
           {tab === 'ai_expense' && (
             <AIExpenseSettingsTab />
+          )}
+          {tab === 'messenger' && (
+            <MessengerTemplateTab />
           )}
           {tab === 'bank_accounts' && (
             <BankAccountsTab />

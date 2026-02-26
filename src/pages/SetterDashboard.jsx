@@ -485,23 +485,15 @@ export default function SetterDashboard() {
       const created = await base44.entities.Lead.create(leadData);
       
       if (leadData.status === 'appointment_booked') {
-        toast({ title: '🗓️ Appointment Booked!', description: `${leadData.name} is scheduled.`, variant: 'success', duration: 5000 });
         refetch();
 
-        try {
-          const dropRes = await base44.functions.invoke('processLootBoxDrop', {
-            setter_id: user.id,
-            lead_id: created.id,
-          });
-          const drop = dropRes?.data;
-          if (drop?.dropped && drop?.loot_box_id) {
-            setDroppedBox({ id: drop.loot_box_id, rarity: drop.rarity, status: 'unopened' });
-            setCelebration({ type: 'loot_drop', rarity: drop.rarity });
-          } else {
-            setCelebration({ type: 'booking' });
-          }
-        } catch {
-          setCelebration({ type: 'booking' });
+        // If messenger lead, show copy popup first
+        if (leadData.lead_source === 'msg') {
+          const client = clients.find(c => c.id === leadData.client_id);
+          setMessengerPopup({ client, appointmentDate: leadData.appointment_date, leadId: created.id });
+        } else {
+          toast({ title: '🗓️ Appointment Booked!', description: `${leadData.name} is scheduled.`, variant: 'success', duration: 5000 });
+          await fireBookingCelebration(created.id);
         }
       } else {
         toast({ title: 'Lead Added', description: `${leadData.name} added to the pipeline.`, variant: 'success' });
