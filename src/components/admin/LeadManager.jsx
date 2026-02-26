@@ -15,6 +15,7 @@ export default function LeadManager() {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedClient, setSelectedClient] = useState('all');
   const [selectedStatus, setSelectedStatus] = useState('all');
+  const [selectedIndustry, setSelectedIndustry] = useState('all');
   const [deletingId, setDeletingId] = useState(null);
   const [deletingLead, setDeletingLead] = useState(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
@@ -133,6 +134,11 @@ export default function LeadManager() {
   if (selectedStatus !== 'all') {
     filteredLeads = filteredLeads.filter(lead => lead.status === selectedStatus);
   }
+  if (selectedIndustry !== 'all') {
+    filteredLeads = filteredLeads.filter(lead => lead.industries?.includes(selectedIndustry));
+  }
+
+  const industryLabels = { painting: 'Painting', epoxy: 'Epoxy', kitchen_bath: 'Kitchen & Bath', reno: 'Renovation' };
 
   const statuses = [
     { val: 'new', label: 'New' },
@@ -242,6 +248,17 @@ export default function LeadManager() {
                 <option key={s.val} value={s.val}>{s.label}</option>
               ))}
             </select>
+
+            <select
+              value={selectedIndustry}
+              onChange={(e) => setSelectedIndustry(e.target.value)}
+              className="px-3 py-2 bg-slate-800/60 border border-slate-700/50 rounded-lg text-sm text-white focus:outline-none focus:ring-2 focus:ring-[#D6FF03]/50"
+            >
+              <option value="all">All Industries</option>
+              {Object.entries(industryLabels).map(([val, label]) => (
+                <option key={val} value={val}>{label}</option>
+              ))}
+            </select>
           </div>
         </div>
 
@@ -253,7 +270,7 @@ export default function LeadManager() {
         ) : filteredLeads.length === 0 ? (
           <div className="text-center py-10">
             <p className="text-slate-400 text-sm">
-              {searchTerm || selectedClient !== 'all' || selectedStatus !== 'all'
+              {searchTerm || selectedClient !== 'all' || selectedStatus !== 'all' || selectedIndustry !== 'all'
                 ? 'No leads match your filters.'
                 : 'No leads found.'}
             </p>
@@ -266,6 +283,7 @@ export default function LeadManager() {
                   <th className="px-4 py-3 text-left text-slate-300 font-semibold">Name</th>
                   <th className="px-4 py-3 text-left text-slate-300 font-semibold">Client</th>
                   <th className="px-4 py-3 text-left text-slate-300 font-semibold">Status</th>
+                  <th className="px-4 py-3 text-left text-slate-300 font-semibold">Industry</th>
                   <th className="px-4 py-3 text-left text-slate-300 font-semibold">Phone</th>
                   <th className="px-4 py-3 text-left text-slate-300 font-semibold">Created</th>
                   <th className="px-4 py-3 text-right text-slate-300 font-semibold">Action</th>
@@ -280,6 +298,11 @@ export default function LeadManager() {
                       <span className="text-[11px] px-2 py-1 rounded-full bg-slate-700/50 text-slate-300">
                         {statuses.find(s => s.val === lead.status)?.label || lead.status}
                       </span>
+                    </td>
+                    <td className="px-4 py-3 text-slate-400">
+                      {lead.industries?.length > 0
+                        ? lead.industries.map(i => industryLabels[i] || i).join(', ')
+                        : '-'}
                     </td>
                     <td className="px-4 py-3 text-slate-400">{lead.phone || '-'}</td>
                     <td className="px-4 py-3 text-slate-400">{formatDate(lead.created_date)}</td>
