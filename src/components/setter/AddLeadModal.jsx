@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { UserPlus } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { UserPlus, AlertTriangle } from 'lucide-react';
 import { toast } from '@/components/ui/use-toast';
 import {
   Dialog,
@@ -66,7 +66,27 @@ function getProjectTypesForIndustries(industries) {
   return result;
 }
 
-export default function AddLeadModal({ open, onOpenChange, clients, onAdd, userId }) {
+function normalizePhone(phone) {
+  if (!phone) return '';
+  return phone.replace(/[^0-9]/g, '').slice(-10);
+}
+
+function findMatchingLead(form, existingLeads) {
+  if (!existingLeads || existingLeads.length === 0 || !form.client_id) return null;
+  const clientLeads = existingLeads.filter(l => l.client_id === form.client_id);
+  const nameNorm = form.name?.toLowerCase().replace(/[^a-z0-9]/g, '');
+  const phoneNorm = normalizePhone(form.phone);
+  const emailNorm = form.email?.toLowerCase().trim();
+
+  for (const lead of clientLeads) {
+    if (phoneNorm && phoneNorm === normalizePhone(lead.phone)) return lead;
+    if (emailNorm && emailNorm === lead.email?.toLowerCase().trim()) return lead;
+    if (nameNorm && nameNorm === lead.name?.toLowerCase().replace(/[^a-z0-9]/g, '')) return lead;
+  }
+  return null;
+}
+
+export default function AddLeadModal({ open, onOpenChange, clients, onAdd, userId, existingLeads = [] }) {
   const [form, setForm] = useState({
     name: '',
     phone: '',
@@ -82,6 +102,8 @@ export default function AddLeadModal({ open, onOpenChange, clients, onAdd, userI
   const [appointmentDate, setAppointmentDate] = useState('');
   const [chatSTL, setChatSTL] = useState('');
   const [loading, setLoading] = useState(false);
+  const [matchedLead, setMatchedLead] = useState(null);
+  const [dismissed, setDismissed] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
