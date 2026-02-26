@@ -802,6 +802,7 @@ export default function SetterDashboard() {
         clients={clients}
         onAdd={handleAddLead}
         userId={user?.id}
+        existingLeads={allPipelineLeads}
       />
 
       <LeaderboardWidget
