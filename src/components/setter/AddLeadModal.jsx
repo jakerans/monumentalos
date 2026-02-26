@@ -145,6 +145,8 @@ export default function AddLeadModal({ open, onOpenChange, clients, onAdd, userI
       setIsBooked(false);
       setAppointmentDate('');
       setChatSTL('');
+      setMatchedLead(null);
+      setDismissed(false);
       onOpenChange(false);
     } catch (err) {
       console.error('Lead create failed:', err);
