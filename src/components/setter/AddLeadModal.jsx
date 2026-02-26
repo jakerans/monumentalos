@@ -153,7 +153,28 @@ export default function AddLeadModal({ open, onOpenChange, clients, onAdd, userI
     }
   };
 
-  const update = (field, value) => setForm(f => ({ ...f, [field]: value }));
+  // Check for duplicates when name, phone, email, or client changes
+  useEffect(() => {
+    if (dismissed) return;
+    const match = findMatchingLead(form, existingLeads);
+    setMatchedLead(match);
+  }, [form.name, form.phone, form.email, form.client_id, existingLeads, dismissed]);
+
+  const handleUseExisting = () => {
+    if (matchedLead) {
+      onOpenChange(false);
+      // Reset form
+      setForm({ name: '', phone: '', email: '', client_id: '', lead_source: '', industries: [], notes: '', project_types: [], project_size: '' });
+      setMatchedLead(null);
+      setDismissed(false);
+      toast({ title: 'Existing lead found', description: `"${matchedLead.name}" already exists. You can find it in your pipeline.` });
+    }
+  };
+
+  const update = (field, value) => {
+    setDismissed(false);
+    setForm(f => ({ ...f, [field]: value }));
+  };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
