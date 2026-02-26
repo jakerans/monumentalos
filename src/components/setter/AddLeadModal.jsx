@@ -353,6 +353,40 @@ export default function AddLeadModal({ open, onOpenChange, clients, onAdd, userI
             )}
           </div>
 
+          {/* Duplicate warning */}
+          {matchedLead && !dismissed && (
+            <div className="rounded-lg border border-orange-500/40 bg-orange-500/10 p-3 space-y-2">
+              <div className="flex items-start gap-2">
+                <AlertTriangle className="w-4 h-4 text-orange-400 mt-0.5 flex-shrink-0" />
+                <div className="min-w-0">
+                  <p className="text-sm font-semibold text-orange-300">This lead may already exist</p>
+                  <p className="text-xs text-slate-400 mt-1">
+                    <span className="text-white font-medium">{matchedLead.name}</span>
+                    {matchedLead.phone ? ` · ${matchedLead.phone}` : ''}
+                    {matchedLead.lead_source ? ` · Source: ${SOURCE_OPTIONS.find(s => s.value === matchedLead.lead_source)?.label || matchedLead.lead_source}` : ''}
+                    {` · Status: ${matchedLead.status}`}
+                  </p>
+                </div>
+              </div>
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  onClick={handleUseExisting}
+                  className="flex-1 px-3 py-1.5 text-xs font-medium rounded-lg bg-[#D6FF03]/15 border border-[#D6FF03]/30 text-[#D6FF03] hover:bg-[#D6FF03]/25 transition-colors"
+                >
+                  Use Existing Lead
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setDismissed(true)}
+                  className="px-3 py-1.5 text-xs font-medium rounded-lg bg-slate-700 text-slate-300 hover:bg-slate-600 transition-colors"
+                >
+                  Add Anyway
+                </button>
+              </div>
+            </div>
+          )}
+
           <div className="flex gap-2 pt-1">
             <button
               type="submit"
