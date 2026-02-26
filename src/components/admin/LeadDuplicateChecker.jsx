@@ -10,6 +10,14 @@ function formatDate(dateStr) {
   return new Date(dateStr).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
 }
 
+const SOURCE_LABELS = {
+  form: 'Form',
+  msg: 'MSG',
+  quiz: 'Quiz',
+  inbound_call: 'Inbound Call',
+  agency: 'Agency',
+};
+
 function normalize(str) {
   if (!str) return '';
   return str.toLowerCase().replace(/[^a-z0-9]/g, '');
@@ -147,6 +155,11 @@ export default function LeadDuplicateChecker({ leads, clients }) {
                           <span className="text-[11px] px-2 py-0.5 rounded-full bg-slate-700/50 text-slate-400">
                             {lead.status}
                           </span>
+                          {lead.lead_source && (
+                            <span className="text-[11px] px-2 py-0.5 rounded-full bg-blue-500/15 text-blue-400">
+                              {SOURCE_LABELS[lead.lead_source] || lead.lead_source}
+                            </span>
+                          )}
                         </div>
                         <div className="flex flex-wrap gap-3 mt-1 text-[11px] text-slate-500">
                           {lead.phone && <span>{lead.phone}</span>}
