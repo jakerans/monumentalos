@@ -1,4 +1,6 @@
 import React, { useState, useMemo } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { base44 } from '@/api/base44Client';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Copy, Check, MessageCircle } from 'lucide-react';
 
@@ -15,17 +17,27 @@ function renderTemplate(template, vars) {
 export default function MessengerBookedPopup({ open, onOpenChange, client, appointmentDate, onDone }) {
   const [copied, setCopied] = useState(false);
 
+  const { data: templateSetting } = useQuery({
+    queryKey: ['messenger-template-setting'],
+    queryFn: async () => {
+      const results = await base44.entities.CompanySettings.filter({ key: 'messenger_confirmation' });
+      return results[0] || null;
+    },
+    staleTime: 5 * 60 * 1000,
+  });
+
   const message = useMemo(() => {
     const dateStr = appointmentDate
       ? new Date(appointmentDate).toLocaleString('en-US', { weekday: 'long', month: 'long', day: 'numeric', hour: 'numeric', minute: '2-digit', hour12: true })
       : '';
-    return renderTemplate(client?.messenger_template || DEFAULT_TEMPLATE, {
+    const template = templateSetting?.messenger_template || DEFAULT_TEMPLATE;
+    return renderTemplate(template, {
       estimator_name: client?.estimator_name || '[Estimator Name]',
       estimator_phone: client?.estimator_phone || '[Estimator Phone]',
       appointment_date: dateStr,
       client_name: client?.name || '',
     });
-  }, [client, appointmentDate]);
+  }, [client, appointmentDate, templateSetting]);
 
   const handleCopy = async () => {
     await navigator.clipboard.writeText(message);
