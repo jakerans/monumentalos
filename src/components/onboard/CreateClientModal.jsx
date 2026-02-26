@@ -29,6 +29,8 @@ export default function CreateClientModal({ open, onOpenChange, onCreated }) {
   const [hybridRetainerDueDay, setHybridRetainerDueDay] = useState('1');
   const [hybridPerformanceType, setHybridPerformanceType] = useState('pay_per_set');
   const [hybridPerformancePricing, setHybridPerformancePricing] = useState([]);
+  const [estimatorName, setEstimatorName] = useState('');
+  const [estimatorPhone, setEstimatorPhone] = useState('');
 
   const addContact = () => setContacts([...contacts, { name: '', email: '', role: '' }]);
 
@@ -60,6 +62,8 @@ export default function CreateClientModal({ open, onOpenChange, onCreated }) {
       stripe_customer_id: stripeCustomerId.trim() || undefined,
       booking_link: bookingLink.trim() || undefined,
       service_radius: serviceRadius.trim() || undefined,
+      estimator_name: estimatorName.trim() || undefined,
+      estimator_phone: estimatorPhone.trim() || undefined,
       status: 'active',
       start_date: startDate || undefined,
       contacts: validContacts,
@@ -158,6 +162,8 @@ export default function CreateClientModal({ open, onOpenChange, onCreated }) {
     setHybridRetainerDueDay('1');
     setHybridPerformanceType('pay_per_set');
     setHybridPerformancePricing([]);
+    setEstimatorName('');
+    setEstimatorPhone('');
   };
 
   return (
@@ -243,6 +249,18 @@ export default function CreateClientModal({ open, onOpenChange, onCreated }) {
               <input value={stripeCustomerId} onChange={e => setStripeCustomerId(e.target.value)} className="w-full mt-1 px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="e.g. cus_xxxxx" />
             </div>
           </div>
+          {/* Estimator Info */}
+          <div className="grid grid-cols-2 gap-2">
+            <div>
+              <label className="text-xs font-medium text-gray-700">Estimator Name</label>
+              <input value={estimatorName} onChange={e => setEstimatorName(e.target.value)} className="w-full mt-1 px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="e.g. John Smith" />
+            </div>
+            <div>
+              <label className="text-xs font-medium text-gray-700">Estimator Phone</label>
+              <input value={estimatorPhone} onChange={e => setEstimatorPhone(e.target.value)} className="w-full mt-1 px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="e.g. (555) 123-4567" />
+            </div>
+          </div>
+
           <div className="grid grid-cols-2 gap-2">
             <div>
               <label className="text-xs font-medium text-gray-700">Booking Link</label>
