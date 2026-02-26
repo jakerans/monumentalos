@@ -37,6 +37,7 @@ import PageErrorBoundary from '../components/shared/PageErrorBoundary';
 import PageLoader from '../components/shared/PageLoader';
 import DailyChecklist from '../components/setter/DailyChecklist';
 import BugReportWidget from '../components/shared/BugReportWidget';
+import MessengerBookedPopup from '../components/setter/MessengerBookedPopup';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAutoAnimate } from '@formkit/auto-animate/react';
 
@@ -69,6 +70,7 @@ export default function SetterDashboard() {
   const [deleteRequestLead, setDeleteRequestLead] = useState(null);
   const [deleteRequestOpen, setDeleteRequestOpen] = useState(false);
   const [deleteReason, setDeleteReason] = useState('');
+  const [messengerPopup, setMessengerPopup] = useState(null); // { client, appointmentDate }
   const prevRankRef = useRef(null);
   const [animateRef] = useAutoAnimate({ duration: 350, easing: 'ease-out' });
 
@@ -434,24 +436,7 @@ export default function SetterDashboard() {
     }
   };
 
-  const handleBookAppointment = async (leadId, appointmentDate, projectType, projectSize) => {
-    const lead = allPipelineLeads.find(l => l.id === leadId);
-    const bookUpdates = {
-      status: 'appointment_booked',
-      appointment_date: appointmentDate,
-      date_appointment_set: new Date().toISOString(),
-      disposition: 'scheduled',
-      booked_by_setter_id: user.id,
-      ...(projectType ? { project_type: projectType } : {}),
-      ...(projectSize ? { project_size: projectSize } : {}),
-    };
-    optimisticLeadUpdate(leadId, bookUpdates);
-    toast({ title: '🗓️ Appointment Booked!', description: `${lead?.name || 'Lead'} is scheduled.`, variant: 'success', duration: 5000 });
-    base44.entities.Lead.update(leadId, bookUpdates)
-      .then(() => refetch())
-      .catch((err) => { console.error('Booking failed:', err); toast({ title: 'Booking sync error — refreshing...', variant: 'destructive' }); refetch(); });
-
-    // Fire the drop engine — non-blocking
+  const fireBookingCelebration = async (leadId) => {
     try {
       const dropRes = await base44.functions.invoke('processLootBoxDrop', {
         setter_id: user.id,
@@ -466,6 +451,32 @@ export default function SetterDashboard() {
       }
     } catch {
       setCelebration({ type: 'booking' });
+    }
+  };
+
+  const handleBookAppointment = async (leadId, appointmentDate, projectType, projectSize) => {
+    const lead = allPipelineLeads.find(l => l.id === leadId);
+    const bookUpdates = {
+      status: 'appointment_booked',
+      appointment_date: appointmentDate,
+      date_appointment_set: new Date().toISOString(),
+      disposition: 'scheduled',
+      booked_by_setter_id: user.id,
+      ...(projectType ? { project_type: projectType } : {}),
+      ...(projectSize ? { project_size: projectSize } : {}),
+    };
+    optimisticLeadUpdate(leadId, bookUpdates);
+    base44.entities.Lead.update(leadId, bookUpdates)
+      .then(() => refetch())
+      .catch((err) => { console.error('Booking failed:', err); toast({ title: 'Booking sync error — refreshing...', variant: 'destructive' }); refetch(); });
+
+    // Check if this is a messenger lead — show copy popup before celebration
+    if (lead?.lead_source === 'msg') {
+      const client = clients.find(c => c.id === lead.client_id);
+      setMessengerPopup({ client, appointmentDate, leadId });
+    } else {
+      toast({ title: '🗓️ Appointment Booked!', description: `${lead?.name || 'Lead'} is scheduled.`, variant: 'success', duration: 5000 });
+      await fireBookingCelebration(leadId);
     }
   };
 
@@ -880,6 +891,19 @@ export default function SetterDashboard() {
           />
         )}
       </AnimatePresence>
+
+      <MessengerBookedPopup
+        open={!!messengerPopup}
+        onOpenChange={(v) => { if (!v) setMessengerPopup(null); }}
+        client={messengerPopup?.client}
+        appointmentDate={messengerPopup?.appointmentDate}
+        onDone={async () => {
+          const leadId = messengerPopup?.leadId;
+          setMessengerPopup(null);
+          toast({ title: '🗓️ Appointment Booked!', description: 'Lead is scheduled.', variant: 'success', duration: 5000 });
+          if (leadId) await fireBookingCelebration(leadId);
+        }}
+      />
 
       <BugReportWidget user={user} />
 
