@@ -4,6 +4,7 @@ import { base44 } from '@/api/base44Client';
 import { toast } from '@/components/ui/use-toast';
 import { AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogTitle, AlertDialogFooter, AlertDialogCancel } from '@/components/ui/alert-dialog';
 import { Trash2, AlertTriangle, Loader2, Search } from 'lucide-react';
+import LeadDuplicateChecker from './LeadDuplicateChecker';
 
 function formatDate(dateStr) {
   if (!dateStr) return '-';
@@ -211,7 +212,12 @@ export default function LeadManager() {
         </div>
       )}
 
-      {/* Section B: Lead Search & Browse */}
+      {/* Section B: Duplicate Checker */}
+      {!loadingLeads && allLeads.length > 0 && (
+        <LeadDuplicateChecker leads={allLeads} clients={clients} />
+      )}
+
+      {/* Section C: Lead Search & Browse */}
       <div className="space-y-3">
         <div>
           <h2 className="text-sm font-semibold text-white mb-3">Search & Browse Leads</h2>
