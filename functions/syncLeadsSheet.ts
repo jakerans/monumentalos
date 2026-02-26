@@ -32,6 +32,16 @@ const COLUMN_MAP = {
 
 const HEADERS = ['App ID', ...Object.keys(COLUMN_MAP)];
 
+// Fields where the DB (app) always wins over the sheet.
+// These are set by setter/admin actions and should never be overwritten by stale sheet data.
+const DB_WINS_FIELDS = new Set([
+  'status', 'dq_reason', 'disposition', 'outcome',
+  'first_call_made_date', 'speed_to_lead_minutes',
+  'setter_id', 'booked_by_setter_id', 'disqualified_by_setter_id',
+  'appointment_date', 'date_appointment_set', 'disqualified_date',
+  'sale_amount', 'date_sold',
+]);
+
 const NUMERIC_FIELDS = ['speed_to_lead_minutes', 'sale_amount'];
 const ARRAY_FIELDS = ['industries'];
 const ENUM_FIELDS = {
@@ -178,7 +188,13 @@ Deno.serve(async (req) => {
           const sheetVal = (row[colIdx] || '').trim();
           const dbVal = toSheetValue(field, lead[field]);
 
-          if (sheetVal && sheetVal !== dbVal) {
+          if (DB_WINS_FIELDS.has(field)) {
+            // DB always wins for these fields — push DB value to sheet
+            if (sheetVal !== dbVal) {
+              rowUpdate[colIdx] = dbVal;
+              rowChanged = true;
+            }
+          } else if (sheetVal && sheetVal !== dbVal) {
             const parsed = parseSheetValue(field, sheetVal);
             if (parsed !== undefined) dbUpdatesObj[field] = parsed;
           } else if (!sheetVal && dbVal) {
