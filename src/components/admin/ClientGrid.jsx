@@ -65,7 +65,8 @@ export default function ClientGrid({ clients, leads, onRefresh }) {
 
   const filtered = useMemo(() => {
     return clients.filter(c => {
-      if (statusFilter !== 'all' && c.status !== statusFilter) return false;
+      const effectiveStatus = (c.status === 'inactive') ? 'inactive' : 'active';
+      if (statusFilter !== 'all' && effectiveStatus !== statusFilter) return false;
       if (search && !c.name?.toLowerCase().includes(search.toLowerCase())) return false;
       if (industryFilter !== 'all' && !(c.industries || []).includes(industryFilter)) return false;
       if (goalFilter !== 'all') {
