@@ -42,12 +42,19 @@ export default function ClientGrid({ clients, leads, onRefresh }) {
 
   // Build stats map
   const statsMap = useMemo(() => {
+    console.log('[ClientGrid] Building stats — leads count:', leads.length, 'clients count:', clients.length, 'mtdStart:', mtdStart.toISOString());
+    if (leads.length > 0) {
+      console.log('[ClientGrid] Sample lead:', JSON.stringify({ id: leads[0].id, client_id: leads[0].client_id, created_date: leads[0].created_date }));
+    }
     const map = {};
     clients.forEach(client => {
       const cLeads = leads.filter(l => l.client_id === client.id);
       const mtdLeads = cLeads.filter(l => new Date(l.created_date) >= mtdStart).length;
       const mtdBooked = cLeads.filter(l => l.date_appointment_set && new Date(l.date_appointment_set) >= mtdStart).length;
       const mtdShowed = cLeads.filter(l => (l.disposition === 'showed' || l.outcome === 'sold' || l.outcome === 'lost') && l.appointment_date && new Date(l.appointment_date) >= mtdStart).length;
+      if (cLeads.length > 0) {
+        console.log(`[ClientGrid] Client "${client.name}": total leads=${cLeads.length}, mtdLeads=${mtdLeads}, mtdBooked=${mtdBooked}`);
+      }
 
       let goalProgress = null;
       let goalCurrent = null;
