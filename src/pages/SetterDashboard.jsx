@@ -128,6 +128,17 @@ export default function SetterDashboard() {
     retryDelay: (attempt) => Math.min(1000 * 2 ** attempt, 10000),
   });
 
+  // Real-time Lead subscription — instantly push new/updated/deleted leads into the pipeline
+  useEffect(() => {
+    const unsubscribe = base44.entities.Lead.subscribe((event) => {
+      if (event.type === 'create' || event.type === 'update' || event.type === 'delete') {
+        // Invalidate and refetch the dashboard data immediately
+        queryClient.invalidateQueries({ queryKey: ['setter-dashboard-data'] });
+      }
+    });
+    return unsubscribe;
+  }, [queryClient]);
+
   // Workspace data (clock, schedule, hours)
   const { data: workspaceData, refetch: refetchWorkspace } = useQuery({
     queryKey: ['setter-workspace-data'],
