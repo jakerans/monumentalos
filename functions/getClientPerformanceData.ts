@@ -37,15 +37,17 @@ Deno.serve(async (req) => {
 
     const sr = base44.asServiceRole.entities;
 
-    const cutoff = new Date();
-    cutoff.setDate(cutoff.getDate() - 180);
-
-    const [clients, leads, spend, paidBilling] = await Promise.all([
+    const [clients, allLeads, spend, paidBilling] = await Promise.all([
       sr.Client.list(),
-      fetchAllFiltered(sr.Lead, { created_date: { $gte: cutoff.toISOString() } }, '-created_date'),
+      fetchAll(sr.Lead, '-created_date'),
       fetchAll(sr.Spend, '-date'),
       fetchAllFiltered(sr.MonthlyBilling, { status: 'paid' }, '-paid_date'),
     ]);
+
+    // Filter leads to last 180 days client-side since created_date filter doesn't work on built-in fields
+    const cutoff = new Date();
+    cutoff.setDate(cutoff.getDate() - 180);
+    const leads = allLeads.filter(l => new Date(l.created_date) >= cutoff);
 
     // Build unified payments list from paid billing records
     const payments = paidBilling.map(b => ({
