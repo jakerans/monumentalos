@@ -8,7 +8,7 @@ export default function CompactClientOverview({ clients, leads, spend }) {
   const now = new Date();
   const mtdStart = new Date(now.getFullYear(), now.getMonth(), 1);
 
-  const rows = clients.filter(c => c.status === 'active').map(client => {
+  const rows = clients.filter(c => c.status !== 'inactive').map(client => {
     const cLeads = leads.filter(l => l.client_id === client.id);
     const mtdLeads = cLeads.filter(l => new Date(l.created_date) >= mtdStart).length;
     const mtdBooked = cLeads.filter(l => l.date_appointment_set && new Date(l.date_appointment_set) >= mtdStart).length;

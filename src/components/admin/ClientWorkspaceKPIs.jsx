@@ -9,7 +9,7 @@ const INDUSTRY_LABELS = {
 };
 
 export default function ClientWorkspaceKPIs({ clients }) {
-  const active = clients.filter(c => c.status === 'active');
+  const active = clients.filter(c => c.status !== 'inactive');
   const inactive = clients.filter(c => c.status === 'inactive');
 
   const withGoal = active.filter(c => c.goal_type && c.goal_value);
