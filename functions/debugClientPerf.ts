@@ -13,17 +13,13 @@ Deno.serve(async (req) => {
     cutoff.setDate(cutoff.getDate() - 180);
 
     const leads = await sr.Lead.filter({ created_date: { $gte: cutoff.toISOString() } }, '-created_date', 3);
+    const allLeads = await sr.Lead.list('-created_date', 3);
     
     return Response.json({
-      leadCount: leads.length,
-      sampleLeads: leads.map(l => ({
-        id: l.id,
-        client_id: l.client_id,
-        created_date: l.created_date,
-        lead_received_date: l.lead_received_date,
-        name: l.name,
-        keys: Object.keys(l),
-      })),
+      filterLeadCount: leads.length,
+      listLeadCount: allLeads.length,
+      sampleFilterLead: leads.length > 0 ? leads[0] : null,
+      sampleListLead: allLeads.length > 0 ? { id: allLeads[0].id, client_id: allLeads[0].client_id, created_date: allLeads[0].created_date, lead_received_date: allLeads[0].lead_received_date, keys: Object.keys(allLeads[0]) } : null,
     });
   } catch (error) {
     return Response.json({ error: error.message }, { status: 500 });
