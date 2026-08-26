@@ -1,0 +1,91 @@
+{
+  "name": "MonthlyBilling",
+  "type": "object",
+  "properties": {
+    "invoice_id": {
+      "type": "string",
+      "description": "Unique invoice identifier (e.g. INV-2026-01-001)"
+    },
+    "client_id": {
+      "type": "string",
+      "description": "Reference to Client entity"
+    },
+    "billing_month": {
+      "type": "string",
+      "description": "The month being billed, format YYYY-MM (e.g. 2026-01)"
+    },
+    "billing_type": {
+      "type": "string",
+      "enum": [
+        "pay_per_show",
+        "pay_per_set",
+        "retainer",
+        "setup_fee",
+        "hybrid_retainer",
+        "hybrid_performance"
+      ],
+      "description": "Billing type at the time of billing"
+    },
+    "calculated_amount": {
+      "type": "number",
+      "description": "Auto-calculated amount based on lead activity (set/show) or retainer"
+    },
+    "manual_amount": {
+      "type": "number",
+      "description": "Manually entered amount (for retainer or adjustments)"
+    },
+    "quantity": {
+      "type": "number",
+      "description": "Number of appointments (set or showed) for this month"
+    },
+    "rate": {
+      "type": "number",
+      "description": "Rate per unit at time of billing"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "paid",
+        "overdue"
+      ],
+      "default": "pending",
+      "description": "Billing status"
+    },
+    "paid_date": {
+      "type": "string",
+      "format": "date",
+      "description": "Date payment was received"
+    },
+    "paid_amount": {
+      "type": "number",
+      "description": "Actual amount paid"
+    },
+    "processing_fee": {
+      "type": "number",
+      "description": "Processing fee charged on this payment (e.g. credit card fee)"
+    },
+    "payment_method": {
+      "type": "string",
+      "enum": [
+        "check",
+        "ach",
+        "wire",
+        "credit_card",
+        "cash",
+        "other"
+      ],
+      "default": "ach",
+      "description": "Payment method used"
+    },
+    "notes": {
+      "type": "string",
+      "description": "Optional notes"
+    }
+  },
+  "required": [
+    "client_id",
+    "billing_month",
+    "billing_type"
+  ]
+}

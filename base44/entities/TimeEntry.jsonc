@@ -1,0 +1,48 @@
+{
+  "name": "TimeEntry",
+  "type": "object",
+  "properties": {
+    "setter_id": {
+      "type": "string",
+      "description": "Reference to User.id"
+    },
+    "clock_in": {
+      "type": "string",
+      "description": "ISO timestamp of clock in"
+    },
+    "clock_out": {
+      "type": "string",
+      "description": "ISO timestamp of clock out, null while clocked in"
+    },
+    "total_hours": {
+      "type": "number",
+      "description": "Decimal hours worked, calculated on clock out"
+    },
+    "date": {
+      "type": "string",
+      "description": "YYYY-MM-DD of the shift (derived from clock_in date)"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "completed",
+        "edited"
+      ],
+      "default": "active",
+      "description": "Current status of the time entry"
+    },
+    "edited_by": {
+      "type": "string",
+      "description": "User ID if admin edited the entry"
+    },
+    "notes": {
+      "type": "string",
+      "description": "Optional notes"
+    }
+  },
+  "required": [
+    "setter_id",
+    "clock_in"
+  ]
+}

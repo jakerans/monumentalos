@@ -1,0 +1,48 @@
+{
+  "name": "OnboardTask",
+  "type": "object",
+  "properties": {
+    "project_id": {
+      "type": "string",
+      "description": "Reference to OnboardProject"
+    },
+    "title": {
+      "type": "string"
+    },
+    "description": {
+      "type": "string"
+    },
+    "assigned_to": {
+      "type": "string",
+      "enum": [
+        "onboard_admin",
+        "marketing_manager"
+      ],
+      "default": "onboard_admin"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "in_progress",
+        "completed"
+      ],
+      "default": "pending"
+    },
+    "order": {
+      "type": "number"
+    },
+    "completed_date": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "completed_by": {
+      "type": "string",
+      "description": "User ID who completed the task"
+    }
+  },
+  "required": [
+    "project_id",
+    "title"
+  ]
+}

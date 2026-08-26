@@ -1,0 +1,47 @@
+{
+  "name": "AITaskLog",
+  "type": "object",
+  "properties": {
+    "client_id": {
+      "type": "string",
+      "description": "Reference to Client entity (null for portfolio-wide tasks)"
+    },
+    "task_text": {
+      "type": "string",
+      "description": "The AI-generated task or insight text"
+    },
+    "type": {
+      "type": "string",
+      "enum": [
+        "task",
+        "insight"
+      ],
+      "default": "task",
+      "description": "Whether this is a task or an insight"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "done",
+        "dismissed",
+        "in_progress"
+      ],
+      "default": "pending",
+      "description": "Current status of the task"
+    },
+    "generated_date": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When this was generated"
+    },
+    "notes": {
+      "type": "string",
+      "description": "Optional user notes on this task"
+    }
+  },
+  "required": [
+    "task_text",
+    "type"
+  ]
+}

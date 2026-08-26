@@ -1,0 +1,31 @@
+{
+  "name": "PaidDayOffBank",
+  "type": "object",
+  "properties": {
+    "setter_id": {
+      "type": "string",
+      "description": "Reference to User.id"
+    },
+    "days_earned": {
+      "type": "number",
+      "default": 0,
+      "description": "Total PTO days granted (from admin or loot box wins)"
+    },
+    "days_used": {
+      "type": "number",
+      "default": 0,
+      "description": "Total PTO days consumed"
+    },
+    "last_updated": {
+      "type": "string",
+      "description": "ISO timestamp of last change"
+    },
+    "notes": {
+      "type": "string",
+      "description": "Optional admin notes"
+    }
+  },
+  "required": [
+    "setter_id"
+  ]
+}

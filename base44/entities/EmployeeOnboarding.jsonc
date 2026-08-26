@@ -1,0 +1,38 @@
+{
+  "name": "EmployeeOnboarding",
+  "type": "object",
+  "properties": {
+    "user_id": {
+      "type": "string",
+      "description": "The User ID of the person who completed onboarding"
+    },
+    "confirmed_name": {
+      "type": "string",
+      "description": "The name they confirmed"
+    },
+    "confirmed_email": {
+      "type": "string",
+      "description": "The email they confirmed"
+    },
+    "confirmed_phone": {
+      "type": "string",
+      "description": "Phone number they provided"
+    },
+    "employee_id": {
+      "type": "string",
+      "description": "The Employee record ID that was linked"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "completed"
+      ],
+      "default": "completed",
+      "description": "Onboarding status"
+    }
+  },
+  "required": [
+    "user_id",
+    "employee_id"
+  ]
+}

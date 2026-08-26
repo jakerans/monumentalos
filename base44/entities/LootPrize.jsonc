@@ -1,0 +1,55 @@
+{
+  "name": "LootPrize",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Display name of the prize"
+    },
+    "description": {
+      "type": "string",
+      "description": "Short description shown on reveal"
+    },
+    "rarity": {
+      "type": "string",
+      "enum": [
+        "common",
+        "rare",
+        "epic",
+        "legendary"
+      ],
+      "description": "Rarity tier of the prize"
+    },
+    "prize_type": {
+      "type": "string",
+      "enum": [
+        "cash",
+        "physical"
+      ],
+      "description": "Whether the prize is cash or a physical item"
+    },
+    "cash_value": {
+      "type": "number",
+      "description": "Cash value in dollars (only used when prize_type is cash)"
+    },
+    "drop_weight": {
+      "type": "number",
+      "description": "Relative probability weight within this rarity tier"
+    },
+    "is_active": {
+      "type": "boolean",
+      "default": true,
+      "description": "Inactive prizes are excluded from drops"
+    },
+    "fulfillment_notes": {
+      "type": "string",
+      "description": "Admin notes on how to fulfill this prize"
+    }
+  },
+  "required": [
+    "name",
+    "rarity",
+    "prize_type",
+    "drop_weight"
+  ]
+}

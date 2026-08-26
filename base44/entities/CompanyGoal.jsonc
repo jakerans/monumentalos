@@ -1,0 +1,33 @@
+{
+  "name": "CompanyGoal",
+  "type": "object",
+  "properties": {
+    "month": {
+      "type": "string",
+      "description": "Month in YYYY-MM format"
+    },
+    "gross_revenue_goal": {
+      "type": "number",
+      "description": "Gross revenue target"
+    },
+    "cash_collected_goal": {
+      "type": "number",
+      "description": "Cash collected target"
+    },
+    "gross_margin_goal": {
+      "type": "number",
+      "description": "Gross margin % target (e.g. 60 for 60%)"
+    },
+    "net_margin_goal": {
+      "type": "number",
+      "description": "Net margin % target"
+    },
+    "net_profit_goal": {
+      "type": "number",
+      "description": "Net profit dollar target"
+    }
+  },
+  "required": [
+    "month"
+  ]
+}

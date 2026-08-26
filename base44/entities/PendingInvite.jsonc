@@ -1,0 +1,37 @@
+{
+  "name": "PendingInvite",
+  "type": "object",
+  "properties": {
+    "email": {
+      "type": "string",
+      "description": "Email of the invited user"
+    },
+    "intended_role": {
+      "type": "string",
+      "enum": [
+        "admin",
+        "marketing_manager",
+        "setter",
+        "onboard_admin",
+        "client"
+      ],
+      "description": "The role to assign when they sign up"
+    },
+    "client_id": {
+      "type": "string",
+      "description": "Client ID to assign (for client role)"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "applied"
+      ],
+      "default": "pending"
+    }
+  },
+  "required": [
+    "email",
+    "intended_role"
+  ]
+}

@@ -1,0 +1,75 @@
+{
+  "name": "TimeEntryEditRequest",
+  "type": "object",
+  "properties": {
+    "time_entry_id": {
+      "type": "string",
+      "description": "ID of the TimeEntry being edited"
+    },
+    "setter_id": {
+      "type": "string",
+      "description": "User ID of the setter making the request"
+    },
+    "setter_name": {
+      "type": "string",
+      "description": "Display name of the setter"
+    },
+    "original_clock_in": {
+      "type": "string",
+      "description": "Original clock_in value before edit"
+    },
+    "original_clock_out": {
+      "type": "string",
+      "description": "Original clock_out value before edit"
+    },
+    "original_total_hours": {
+      "type": "number",
+      "description": "Original total_hours before edit"
+    },
+    "requested_clock_in": {
+      "type": "string",
+      "description": "New clock_in the setter wants"
+    },
+    "requested_clock_out": {
+      "type": "string",
+      "description": "New clock_out the setter wants"
+    },
+    "requested_total_hours": {
+      "type": "number",
+      "description": "Auto-calculated from requested times"
+    },
+    "reason": {
+      "type": "string",
+      "description": "Why the setter is requesting this edit"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "approved",
+        "denied"
+      ],
+      "default": "pending",
+      "description": "Current status of the request"
+    },
+    "admin_notes": {
+      "type": "string",
+      "description": "Optional notes from admin when approving/denying"
+    },
+    "reviewed_by": {
+      "type": "string",
+      "description": "User ID of the admin who reviewed it"
+    },
+    "reviewed_at": {
+      "type": "string",
+      "description": "ISO timestamp of when it was reviewed"
+    }
+  },
+  "required": [
+    "time_entry_id",
+    "setter_id",
+    "requested_clock_in",
+    "requested_clock_out",
+    "reason"
+  ]
+}

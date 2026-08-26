@@ -1,0 +1,32 @@
+{
+  "name": "QuickLink",
+  "type": "object",
+  "properties": {
+    "label": {
+      "type": "string",
+      "description": "Display name shown in tooltip"
+    },
+    "url": {
+      "type": "string",
+      "description": "External URL, opens in new tab"
+    },
+    "icon": {
+      "type": "string",
+      "description": "Lucide icon name (e.g. 'Phone', 'MessageSquare', 'Globe')"
+    },
+    "order": {
+      "type": "number",
+      "description": "Sort order for display"
+    },
+    "is_active": {
+      "type": "boolean",
+      "default": true,
+      "description": "Toggle visibility without deleting"
+    }
+  },
+  "required": [
+    "label",
+    "url",
+    "icon"
+  ]
+}

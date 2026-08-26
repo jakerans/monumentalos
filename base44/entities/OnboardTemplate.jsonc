@@ -1,0 +1,52 @@
+{
+  "name": "OnboardTemplate",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Template name (e.g. Kitchen Remodel Client, Full Home Client)"
+    },
+    "description": {
+      "type": "string",
+      "description": "Brief description of when to use this template"
+    },
+    "tasks": {
+      "type": "array",
+      "description": "Ordered list of task definitions",
+      "items": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "assigned_to": {
+            "type": "string",
+            "enum": [
+              "onboard_admin",
+              "marketing_manager"
+            ],
+            "default": "onboard_admin"
+          },
+          "order": {
+            "type": "number"
+          }
+        }
+      }
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "archived"
+      ],
+      "default": "active"
+    }
+  },
+  "required": [
+    "name",
+    "tasks"
+  ]
+}

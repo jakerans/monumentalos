@@ -1,0 +1,31 @@
+{
+  "name": "BankAccount",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Account name (e.g. Operating Account, Client Ad Spend Account)"
+    },
+    "account_id": {
+      "type": "string",
+      "description": "Account identifier from the bank feed (e.g. last 4 digits or full ID)"
+    },
+    "account_type": {
+      "type": "string",
+      "enum": [
+        "operating",
+        "client_adspend"
+      ],
+      "description": "Account type"
+    },
+    "notes": {
+      "type": "string",
+      "description": "Optional notes"
+    }
+  },
+  "required": [
+    "name",
+    "account_id",
+    "account_type"
+  ]
+}

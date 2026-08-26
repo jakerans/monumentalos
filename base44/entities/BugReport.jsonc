@@ -1,0 +1,67 @@
+{
+  "name": "BugReport",
+  "type": "object",
+  "properties": {
+    "reporter_user_id": {
+      "type": "string",
+      "description": "User ID of the bug reporter"
+    },
+    "reporter_name": {
+      "type": "string",
+      "description": "Full name of the reporter"
+    },
+    "reporter_role": {
+      "type": "string",
+      "enum": [
+        "setter",
+        "marketing_manager",
+        "admin"
+      ],
+      "description": "Role of the reporter"
+    },
+    "title": {
+      "type": "string",
+      "description": "Bug report title"
+    },
+    "description": {
+      "type": "string",
+      "description": "Detailed bug description"
+    },
+    "page_url": {
+      "type": "string",
+      "description": "URL/page where bug was encountered"
+    },
+    "severity": {
+      "type": "string",
+      "enum": [
+        "low",
+        "medium",
+        "high"
+      ],
+      "description": "Bug severity level"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "new",
+        "acknowledged",
+        "resolved"
+      ],
+      "default": "new",
+      "description": "Bug status"
+    },
+    "admin_notes": {
+      "type": "string",
+      "description": "Optional admin notes on the bug (optional)"
+    }
+  },
+  "required": [
+    "reporter_user_id",
+    "reporter_name",
+    "reporter_role",
+    "title",
+    "description",
+    "page_url",
+    "severity"
+  ]
+}

@@ -1,0 +1,94 @@
+{
+  "name": "Expense",
+  "type": "object",
+  "properties": {
+    "category": {
+      "type": "string",
+      "enum": [
+        "uncategorized",
+        "ad_spend",
+        "payroll",
+        "software",
+        "office",
+        "contractor",
+        "travel",
+        "distribution",
+        "processing_fee",
+        "other"
+      ],
+      "default": "uncategorized",
+      "description": "Expense category"
+    },
+    "expense_type": {
+      "type": "string",
+      "enum": [
+        "uncategorized",
+        "cogs",
+        "overhead",
+        "distribution"
+      ],
+      "default": "uncategorized",
+      "description": "Whether this is a Cost of Goods Sold, Overhead, or Distribution (owner draw) expense"
+    },
+    "description": {
+      "type": "string",
+      "description": "Description of the expense"
+    },
+    "amount": {
+      "type": "number",
+      "description": "Expense amount in dollars"
+    },
+    "date": {
+      "type": "string",
+      "format": "date",
+      "description": "Date of expense"
+    },
+    "client_id": {
+      "type": "string",
+      "description": "Optional reference to Client (for client-specific expenses)"
+    },
+    "bank_account_id": {
+      "type": "string",
+      "description": "Optional reference to BankAccount entity"
+    },
+    "recurring": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether this is a recurring expense"
+    },
+    "vendor": {
+      "type": "string",
+      "description": "Vendor or payee name"
+    },
+    "sheet_row_id": {
+      "type": "string",
+      "description": "ID from Column A of the expense spreadsheet (used for dedup during sync)"
+    },
+    "suggested_category": {
+      "type": "string",
+      "description": "AI-suggested category (pending human approval)"
+    },
+    "suggested_type": {
+      "type": "string",
+      "description": "AI-suggested expense type (pending human approval)"
+    },
+    "ai_approved": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether the AI suggestion has been human-approved"
+    },
+    "is_refunded": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether the expense has been fully refunded"
+    },
+    "refund_amount": {
+      "type": "number",
+      "description": "Amount refunded (for partial refunds, less than the full amount)"
+    }
+  },
+  "required": [
+    "amount",
+    "date"
+  ]
+}

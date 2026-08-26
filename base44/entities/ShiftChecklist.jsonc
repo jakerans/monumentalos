@@ -1,0 +1,31 @@
+{
+  "name": "ShiftChecklist",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Checklist template name, e.g. 'Default Setter Daily Checklist'"
+    },
+    "header_note": {
+      "type": "string",
+      "description": "Persistent instruction displayed above tasks (not a checkable task)"
+    },
+    "tasks": {
+      "type": "string",
+      "description": "JSON string containing ordered array of task objects"
+    },
+    "is_active": {
+      "type": "boolean",
+      "default": true,
+      "description": "Whether this checklist is currently in use"
+    },
+    "updated_at": {
+      "type": "string",
+      "description": "ISO datetime, auto-set on save"
+    }
+  },
+  "required": [
+    "name",
+    "tasks"
+  ]
+}

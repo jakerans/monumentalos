@@ -1,0 +1,154 @@
+{
+  "name": "Lead",
+  "type": "object",
+  "properties": {
+    "client_id": {
+      "type": "string",
+      "description": "Reference to Client entity"
+    },
+    "setter_id": {
+      "type": "string",
+      "description": "Reference to User (setter) who made first call"
+    },
+    "booked_by_setter_id": {
+      "type": "string",
+      "description": "Reference to User (setter) who booked the appointment"
+    },
+    "name": {
+      "type": "string"
+    },
+    "email": {
+      "type": "string"
+    },
+    "phone": {
+      "type": "string"
+    },
+    "lead_source": {
+      "type": "string",
+      "enum": [
+        "form",
+        "msg",
+        "quiz",
+        "inbound_call",
+        "agency"
+      ],
+      "description": "How the lead was generated"
+    },
+    "industries": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "painting",
+          "epoxy",
+          "kitchen_bath",
+          "reno"
+        ]
+      },
+      "description": "Industry classifications for this lead"
+    },
+    "ad_name": {
+      "type": "string",
+      "description": "Name of the ad that generated this lead"
+    },
+    "project_type": {
+      "type": "string",
+      "description": "Type of project (e.g., Kitchen Remodel, Bathroom Remodel, Full Home)"
+    },
+    "project_size": {
+      "type": "string",
+      "description": "Size or scope of project"
+    },
+    "notes": {
+      "type": "string",
+      "description": "Additional notes about the lead"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "new",
+        "first_call_made",
+        "contacted",
+        "appointment_booked",
+        "disqualified",
+        "completed"
+      ],
+      "default": "new"
+    },
+    "dq_reason": {
+      "type": "string",
+      "enum": [
+        "looking_for_work",
+        "not_interested",
+        "wrong_invalid_number",
+        "project_size",
+        "oosa",
+        "client_availability"
+      ],
+      "description": "Disqualification reason"
+    },
+    "disqualified_by_setter_id": {
+      "type": "string",
+      "description": "Reference to User (setter) who disqualified this lead"
+    },
+    "disqualified_date": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Date and time when the lead was disqualified"
+    },
+    "first_call_made_date": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "speed_to_lead_minutes": {
+      "type": "number",
+      "description": "Time in minutes from lead creation to first call"
+    },
+    "lead_received_date": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "appointment_date": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Date and time of appointment"
+    },
+    "date_appointment_set": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Date when the appointment was booked"
+    },
+    "disposition": {
+      "type": "string",
+      "enum": [
+        "scheduled",
+        "showed",
+        "cancelled",
+        "rescheduled"
+      ],
+      "description": "Client marks disposition"
+    },
+    "outcome": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "sold",
+        "lost"
+      ],
+      "description": "Final sale outcome"
+    },
+    "sale_amount": {
+      "type": "number",
+      "description": "Client's revenue from this sale"
+    },
+    "date_sold": {
+      "type": "string",
+      "format": "date",
+      "description": "Date when the sale was closed"
+    }
+  },
+  "required": [
+    "client_id",
+    "name"
+  ]
+}

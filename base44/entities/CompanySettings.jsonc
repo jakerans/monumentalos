@@ -1,0 +1,114 @@
+{
+  "name": "CompanySettings",
+  "type": "object",
+  "properties": {
+    "key": {
+      "type": "string",
+      "description": "Settings key (e.g. 'payroll', 'ai_coach', 'cashflow', 'ai_expense', 'lead_options', 'messenger_confirmation')"
+    },
+    "payroll_frequency": {
+      "type": "string",
+      "enum": [
+        "weekly",
+        "biweekly",
+        "semi_monthly",
+        "monthly"
+      ],
+      "default": "biweekly",
+      "description": "How often employees are paid"
+    },
+    "payroll_day_1": {
+      "type": "number",
+      "description": "First payroll day of month (for semi-monthly, e.g. 1)"
+    },
+    "payroll_day_2": {
+      "type": "number",
+      "description": "Second payroll day of month (for semi-monthly, e.g. 15)"
+    },
+    "payroll_day_of_week": {
+      "type": "string",
+      "enum": [
+        "monday",
+        "tuesday",
+        "wednesday",
+        "thursday",
+        "friday"
+      ],
+      "description": "Payday for weekly/biweekly schedules"
+    },
+    "starting_bank_balance": {
+      "type": "number",
+      "description": "Starting bank balance for cash runway calculation"
+    },
+    "ai_coach_instructions": {
+      "type": "string",
+      "description": "Legacy field \u2014 custom instructions (kept for backward compat)"
+    },
+    "ai_coach_tone": {
+      "type": "string",
+      "description": "Desired tone for the AI coach"
+    },
+    "ai_coach_rules": {
+      "type": "string",
+      "description": "Hard rules the AI must follow"
+    },
+    "ai_coach_context": {
+      "type": "string",
+      "description": "Company context the AI should know"
+    },
+    "ai_coach_sop_urls": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Uploaded SOP file URLs"
+    },
+    "ai_coach_sop_names": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Display names for uploaded SOP files"
+    },
+    "allowed_expense_categories": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Allowed expense categories for AI categorization"
+    },
+    "allowed_expense_types": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Allowed expense types"
+    },
+    "ai_custom_instructions": {
+      "type": "string",
+      "description": "Custom instructions for AI expense categorization"
+    },
+    "project_sizes": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Defined project size options for leads (e.g. Partial Project, Full Project)"
+    },
+    "project_types_by_industry": {
+      "type": "object",
+      "description": "Project type options keyed by industry (e.g. {painting: ['Interior','Exterior','Cabinets']})"
+    },
+    "ai_lead_classify_instructions": {
+      "type": "string",
+      "description": "Custom instructions for the AI lead classification agent"
+    },
+    "messenger_template": {
+      "type": "string",
+      "description": "Template message shown to setters after booking a Messenger lead. Supports {{estimator_name}}, {{estimator_phone}}, {{appointment_date}}, {{client_name}} placeholders."
+    }
+  },
+  "required": [
+    "key"
+  ]
+}

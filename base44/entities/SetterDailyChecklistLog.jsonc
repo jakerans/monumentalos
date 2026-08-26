@@ -1,0 +1,40 @@
+{
+  "name": "SetterDailyChecklistLog",
+  "type": "object",
+  "properties": {
+    "setter_id": {
+      "type": "string",
+      "description": "User ID of the setter"
+    },
+    "checklist_id": {
+      "type": "string",
+      "description": "Reference to ShiftChecklist template"
+    },
+    "date": {
+      "type": "string",
+      "description": "Date in YYYY-MM-DD format"
+    },
+    "completed_tasks": {
+      "type": "string",
+      "description": "JSON string array of completed task IDs"
+    },
+    "all_complete": {
+      "type": "boolean",
+      "default": false,
+      "description": "True when every task has been completed"
+    },
+    "started_at": {
+      "type": "string",
+      "description": "ISO datetime when first task was completed"
+    },
+    "completed_at": {
+      "type": "string",
+      "description": "ISO datetime when all tasks were completed"
+    }
+  },
+  "required": [
+    "setter_id",
+    "checklist_id",
+    "date"
+  ]
+}

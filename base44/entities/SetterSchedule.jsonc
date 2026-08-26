@@ -1,0 +1,46 @@
+{
+  "name": "SetterSchedule",
+  "type": "object",
+  "properties": {
+    "setter_id": {
+      "type": "string",
+      "description": "Reference to User.id"
+    },
+    "date": {
+      "type": "string",
+      "description": "YYYY-MM-DD"
+    },
+    "shift_start": {
+      "type": "string",
+      "description": "HH:MM format (e.g. 09:00)"
+    },
+    "shift_end": {
+      "type": "string",
+      "description": "HH:MM format (e.g. 17:00)"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "scheduled",
+        "off",
+        "pto",
+        "covered",
+        "called_out"
+      ],
+      "default": "scheduled",
+      "description": "Schedule status for this day"
+    },
+    "cover_setter_id": {
+      "type": "string",
+      "description": "If status is covered, who is covering"
+    },
+    "notes": {
+      "type": "string",
+      "description": "Optional notes"
+    }
+  },
+  "required": [
+    "setter_id",
+    "date"
+  ]
+}

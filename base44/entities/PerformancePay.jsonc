@@ -1,0 +1,93 @@
+{
+  "name": "PerformancePay",
+  "type": "object",
+  "properties": {
+    "employee_id": {
+      "type": "string",
+      "description": "Reference to Employee entity"
+    },
+    "name": {
+      "type": "string",
+      "description": "Name of performance pay plan (e.g. Revenue Commission)"
+    },
+    "type": {
+      "type": "string",
+      "enum": [
+        "revenue_percentage",
+        "flat_bonus",
+        "tiered",
+        "custom"
+      ],
+      "description": "Type of performance pay"
+    },
+    "frequency": {
+      "type": "string",
+      "enum": [
+        "monthly",
+        "quarterly"
+      ],
+      "description": "Pay frequency"
+    },
+    "tiers": {
+      "type": "array",
+      "description": "Tier definitions for tiered/revenue plans",
+      "items": {
+        "type": "object",
+        "properties": {
+          "threshold": {
+            "type": "number",
+            "description": "Revenue or metric threshold"
+          },
+          "percentage": {
+            "type": "number",
+            "description": "Percentage earned above threshold"
+          },
+          "label": {
+            "type": "string",
+            "description": "Tier label (e.g. Tier 1, Tier 2)"
+          }
+        }
+      }
+    },
+    "flat_amount": {
+      "type": "number",
+      "description": "Flat bonus amount (for flat_bonus type)"
+    },
+    "metric": {
+      "type": "string",
+      "enum": [
+        "revenue",
+        "appointments",
+        "shows",
+        "custom"
+      ],
+      "description": "What metric this is based on"
+    },
+    "notes": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "paused",
+        "ended"
+      ],
+      "default": "active"
+    },
+    "current_period_progress": {
+      "type": "number",
+      "description": "Current period metric value"
+    },
+    "current_period_payout": {
+      "type": "number",
+      "description": "Calculated payout for current period"
+    }
+  },
+  "required": [
+    "employee_id",
+    "name",
+    "type",
+    "frequency"
+  ]
+}

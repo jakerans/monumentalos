@@ -1,0 +1,67 @@
+{
+  "name": "LootBox",
+  "type": "object",
+  "properties": {
+    "setter_id": {
+      "type": "string",
+      "description": "User ID of the setter who earned it"
+    },
+    "rarity": {
+      "type": "string",
+      "enum": [
+        "common",
+        "rare",
+        "epic",
+        "legendary"
+      ],
+      "description": "Rarity tier of this loot box"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "unopened",
+        "opened"
+      ],
+      "default": "unopened",
+      "description": "Whether the loot box has been opened"
+    },
+    "awarded_date": {
+      "type": "string",
+      "format": "date",
+      "description": "Date the loot box was awarded"
+    },
+    "opened_date": {
+      "type": "string",
+      "format": "date",
+      "description": "Date the loot box was opened"
+    },
+    "source": {
+      "type": "string",
+      "enum": [
+        "booking_drop",
+        "spiff_reward",
+        "manual_award"
+      ],
+      "description": "What triggered this loot box award"
+    },
+    "spiff_id": {
+      "type": "string",
+      "description": "Spiff ID (only populated if source is spiff_reward)"
+    },
+    "booking_id": {
+      "type": "string",
+      "description": "The lead ID of the booking that triggered the drop"
+    },
+    "hold_request_id": {
+      "type": "string",
+      "description": "If set, this box is held for a PTO request and cannot be opened or traded until the hold is released"
+    }
+  },
+  "required": [
+    "setter_id",
+    "rarity",
+    "status",
+    "awarded_date",
+    "source"
+  ]
+}

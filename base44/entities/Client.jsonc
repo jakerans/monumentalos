@@ -1,0 +1,217 @@
+{
+  "name": "Client",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Client company name"
+    },
+    "industries": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "painting",
+          "epoxy",
+          "kitchen_bath",
+          "reno"
+        ]
+      },
+      "description": "Industry classifications for this client"
+    },
+    "estimator_name": {
+      "type": "string",
+      "description": "Name of the estimator for this client"
+    },
+    "estimator_phone": {
+      "type": "string",
+      "description": "Phone number of the estimator for this client"
+    },
+    "ad_account_id": {
+      "type": "string",
+      "description": "Facebook/Meta Ad Account ID for this client"
+    },
+    "stripe_customer_id": {
+      "type": "string",
+      "description": "Stripe Customer ID for this client (e.g. cus_xxxxx)"
+    },
+    "billing_type": {
+      "type": "string",
+      "enum": [
+        "pay_per_show",
+        "pay_per_set",
+        "retainer",
+        "hybrid"
+      ],
+      "default": "pay_per_show",
+      "description": "How this client is billed"
+    },
+    "price_per_shown_appointment": {
+      "type": "number",
+      "description": "LEGACY - Price per shown appointment (pay_per_show). Use industry_pricing instead."
+    },
+    "price_per_set_appointment": {
+      "type": "number",
+      "description": "LEGACY - Price per appointment set (pay_per_set). Use industry_pricing instead."
+    },
+    "industry_pricing": {
+      "type": "array",
+      "description": "Per-industry pricing. Each entry defines the price for a specific industry.",
+      "items": {
+        "type": "object",
+        "properties": {
+          "industry": {
+            "type": "string",
+            "enum": [
+              "painting",
+              "epoxy",
+              "kitchen_bath",
+              "reno"
+            ],
+            "description": "Industry this pricing applies to"
+          },
+          "price_per_show": {
+            "type": "number",
+            "description": "Price per shown appointment for this industry"
+          },
+          "price_per_set": {
+            "type": "number",
+            "description": "Price per set appointment for this industry"
+          }
+        }
+      }
+    },
+    "retainer_amount": {
+      "type": "number",
+      "description": "Monthly retainer fee (retainer)"
+    },
+    "retainer_due_day": {
+      "type": "number",
+      "description": "Day of month retainer is due (1-28)"
+    },
+    "hybrid_base_retainer": {
+      "type": "number",
+      "description": "Base retainer fee for hybrid billing"
+    },
+    "hybrid_retainer_due_day": {
+      "type": "number",
+      "description": "Day of month hybrid retainer is due (1-28)"
+    },
+    "hybrid_performance_type": {
+      "type": "string",
+      "enum": [
+        "pay_per_set",
+        "pay_per_show"
+      ],
+      "description": "Performance fee type for hybrid billing"
+    },
+    "hybrid_performance_pricing": {
+      "type": "array",
+      "description": "Per-industry performance pricing for hybrid billing. Each entry defines the price for a specific industry.",
+      "items": {
+        "type": "object",
+        "properties": {
+          "industry": {
+            "type": "string",
+            "enum": [
+              "painting",
+              "epoxy",
+              "kitchen_bath",
+              "reno"
+            ],
+            "description": "Industry this pricing applies to"
+          },
+          "price_per_show": {
+            "type": "number",
+            "description": "Price per shown appointment for this industry"
+          },
+          "price_per_set": {
+            "type": "number",
+            "description": "Price per set appointment for this industry"
+          }
+        }
+      }
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "inactive"
+      ],
+      "default": "active"
+    },
+    "start_date": {
+      "type": "string",
+      "format": "date",
+      "description": "Date the client officially started"
+    },
+    "deactivated_date": {
+      "type": "string",
+      "format": "date",
+      "description": "Date the client was deactivated/churned"
+    },
+    "booking_link": {
+      "type": "string",
+      "description": "URL for the client's booking calendar embed"
+    },
+    "service_radius": {
+      "type": "string",
+      "description": "Advertising & setting radius (e.g. 25 miles)"
+    },
+    "target_zip_codes": {
+      "type": "string",
+      "description": "Comma-separated list of target zip codes"
+    },
+    "negative_zip_codes": {
+      "type": "string",
+      "description": "Comma-separated list of excluded zip codes"
+    },
+    "contacts": {
+      "type": "array",
+      "description": "List of client contacts (name + email)",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          },
+          "role": {
+            "type": "string"
+          },
+          "invited": {
+            "type": "boolean"
+          }
+        }
+      }
+    },
+    "goal_type": {
+      "type": "string",
+      "enum": [
+        "leads",
+        "sets",
+        "shows"
+      ],
+      "description": "Type of monthly goal for this client"
+    },
+    "goal_value": {
+      "type": "number",
+      "description": "Monthly goal target number"
+    },
+    "goal_status": {
+      "type": "string",
+      "enum": [
+        "behind_wont_meet",
+        "behind_confident",
+        "on_track",
+        "goal_met"
+      ],
+      "description": "Current goal status"
+    }
+  },
+  "required": [
+    "name"
+  ]
+}

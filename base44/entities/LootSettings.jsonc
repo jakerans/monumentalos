@@ -1,0 +1,109 @@
+{
+  "name": "LootSettings",
+  "type": "object",
+  "properties": {
+    "base_drop_rate": {
+      "type": "number",
+      "default": 5,
+      "description": "Base drop percentage, e.g. 5 means 5%"
+    },
+    "dry_spell_threshold": {
+      "type": "number",
+      "default": 25,
+      "description": "Number of bookings before escalation starts"
+    },
+    "escalation_per_booking": {
+      "type": "number",
+      "default": 1,
+      "description": "Percentage points added per booking after dry spell threshold"
+    },
+    "inventory_cap": {
+      "type": "number",
+      "default": 10,
+      "description": "Maximum number of unopened loot boxes a setter can hold"
+    },
+    "inventory_yellow_warning": {
+      "type": "number",
+      "default": 8,
+      "description": "Unopened box count at which to show a yellow warning"
+    },
+    "eligibility_stl_threshold_minutes": {
+      "type": "number",
+      "default": 5,
+      "description": "Maximum average STL in minutes for a setter to be eligible for drops"
+    },
+    "rarity_weight_common": {
+      "type": "number",
+      "default": 65,
+      "description": "Relative weight for common rarity rolls"
+    },
+    "rarity_weight_rare": {
+      "type": "number",
+      "default": 25,
+      "description": "Relative weight for rare rarity rolls"
+    },
+    "rarity_weight_epic": {
+      "type": "number",
+      "default": 8,
+      "description": "Relative weight for epic rarity rolls"
+    },
+    "rarity_weight_legendary": {
+      "type": "number",
+      "default": 2,
+      "description": "Relative weight for legendary rarity rolls"
+    },
+    "test_mode_enabled": {
+      "type": "boolean",
+      "default": false,
+      "description": "When true, drop calculations are bypassed and admin can force any outcome"
+    },
+    "test_target_setter_id": {
+      "type": "string",
+      "description": "Which setter account to use for testing"
+    },
+    "test_rarity_override": {
+      "type": "string",
+      "enum": [
+        "common",
+        "rare",
+        "epic",
+        "legendary"
+      ],
+      "default": "common",
+      "description": "Rarity to force when test mode is active"
+    },
+    "image_common": {
+      "type": "string",
+      "description": "Image URL for common rarity loot box (closed)"
+    },
+    "image_rare": {
+      "type": "string",
+      "description": "Image URL for rare rarity loot box (closed)"
+    },
+    "image_epic": {
+      "type": "string",
+      "description": "Image URL for epic rarity loot box (closed)"
+    },
+    "image_legendary": {
+      "type": "string",
+      "description": "Image URL for legendary rarity loot box (closed)"
+    },
+    "image_common_opened": {
+      "type": "string",
+      "description": "Image URL for common rarity loot box (opened)"
+    },
+    "image_rare_opened": {
+      "type": "string",
+      "description": "Image URL for rare rarity loot box (opened)"
+    },
+    "image_epic_opened": {
+      "type": "string",
+      "description": "Image URL for epic rarity loot box (opened)"
+    },
+    "image_legendary_opened": {
+      "type": "string",
+      "description": "Image URL for legendary rarity loot box (opened)"
+    }
+  },
+  "required": []
+}

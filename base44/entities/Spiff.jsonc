@@ -1,0 +1,89 @@
+{
+  "name": "Spiff",
+  "type": "object",
+  "properties": {
+    "title": {
+      "type": "string",
+      "description": "Spiff/bonus name"
+    },
+    "description": {
+      "type": "string",
+      "description": "Short description of the spiff"
+    },
+    "scope": {
+      "type": "string",
+      "enum": [
+        "individual",
+        "team_each",
+        "team_company"
+      ],
+      "default": "team_each",
+      "description": "individual = one setter, team_each = each setter has own goal, team_company = shared company-wide goal"
+    },
+    "assigned_setter_id": {
+      "type": "string",
+      "description": "User ID of assigned setter (only for individual scope)"
+    },
+    "qualifier": {
+      "type": "string",
+      "enum": [
+        "appointments",
+        "stl"
+      ],
+      "default": "appointments",
+      "description": "What metric qualifies: set appointments or speed-to-lead"
+    },
+    "goal_value": {
+      "type": "number",
+      "description": "Target number (e.g. 20 appointments, or 5 min avg STL)"
+    },
+    "reward": {
+      "type": "string",
+      "description": "What they win (e.g. $200 bonus, gift card, etc.)"
+    },
+    "cash_value": {
+      "type": "number",
+      "default": 0,
+      "description": "Dollar amount of the spiff payout for payroll calculations"
+    },
+    "is_daily": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether this is a daily spiff (due by end of day)"
+    },
+    "due_date": {
+      "type": "string",
+      "format": "date",
+      "description": "Deadline for achieving the spiff"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "completed",
+        "expired"
+      ],
+      "default": "active"
+    },
+    "loot_box_enabled": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether completing this spiff awards a loot box"
+    },
+    "loot_box_rarity": {
+      "type": "string",
+      "enum": [
+        "common",
+        "rare",
+        "epic",
+        "legendary"
+      ],
+      "description": "Rarity of loot box awarded when this spiff is completed"
+    }
+  },
+  "required": [
+    "title",
+    "qualifier",
+    "goal_value"
+  ]
+}

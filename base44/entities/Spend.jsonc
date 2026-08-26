@@ -1,0 +1,36 @@
+{
+  "name": "Spend",
+  "type": "object",
+  "properties": {
+    "client_id": {
+      "type": "string",
+      "description": "Reference to Client entity"
+    },
+    "date": {
+      "type": "string",
+      "format": "date",
+      "description": "The date this spend applies to"
+    },
+    "amount": {
+      "type": "number",
+      "description": "Ad spend amount in dollars for this date"
+    },
+    "ad_account_id": {
+      "type": "string",
+      "description": "Facebook ad account ID"
+    },
+    "campaign_name": {
+      "type": "string",
+      "description": "Campaign or ad name from the sheet"
+    },
+    "messages": {
+      "type": "number",
+      "description": "Number of messages from the sheet (integer)"
+    }
+  },
+  "required": [
+    "client_id",
+    "date",
+    "amount"
+  ]
+}

@@ -1,0 +1,71 @@
+{
+  "name": "SetterProfile",
+  "type": "object",
+  "properties": {
+    "user_id": {
+      "type": "string",
+      "description": "Reference to the User entity"
+    },
+    "full_name": {
+      "type": "string",
+      "description": "Setter's display name (synced from User)"
+    },
+    "email": {
+      "type": "string",
+      "description": "Setter's email (synced from User)"
+    },
+    "avatar_url": {
+      "type": "string",
+      "description": "Profile picture URL"
+    },
+    "bio": {
+      "type": "string",
+      "description": "Short bio or tagline"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "inactive"
+      ],
+      "default": "active",
+      "description": "Profile status"
+    },
+    "mtd_booked": {
+      "type": "number",
+      "default": 0,
+      "description": "Month-to-date appointments booked"
+    },
+    "mtd_avg_stl": {
+      "type": "number",
+      "description": "Month-to-date average speed-to-lead in minutes (null if no data)"
+    },
+    "last_month_booked": {
+      "type": "number",
+      "default": 0,
+      "description": "Last month's total appointments booked"
+    },
+    "last_month_avg_stl": {
+      "type": "number",
+      "description": "Last month's average speed-to-lead in minutes"
+    },
+    "stats_updated_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When leaderboard stats were last synced"
+    },
+    "consecutive_bookings_no_drop": {
+      "type": "number",
+      "default": 0,
+      "description": "The dry spell counter that drives escalating drop probability"
+    },
+    "last_active_date": {
+      "type": "string",
+      "description": "The last date this setter logged any lead activity, used for eligibility calculation"
+    }
+  },
+  "required": [
+    "user_id",
+    "full_name"
+  ]
+}

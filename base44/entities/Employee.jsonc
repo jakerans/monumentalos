@@ -1,0 +1,114 @@
+{
+  "name": "Employee",
+  "type": "object",
+  "properties": {
+    "user_id": {
+      "type": "string",
+      "description": "Reference to User entity (optional, for linked app users)"
+    },
+    "full_name": {
+      "type": "string",
+      "description": "Employee full name"
+    },
+    "email": {
+      "type": "string"
+    },
+    "phone": {
+      "type": "string"
+    },
+    "app_role": {
+      "type": "string",
+      "enum": [
+        "admin",
+        "marketing_manager",
+        "setter",
+        "onboard_admin",
+        "client"
+      ],
+      "description": "Role in the app"
+    },
+    "classification": {
+      "type": "string",
+      "enum": [
+        "salary",
+        "hourly",
+        "contractor"
+      ],
+      "description": "Pay classification"
+    },
+    "pay_per_cycle": {
+      "type": "number",
+      "description": "Amount paid each payroll cycle (for salary or contractor per_cycle classification)"
+    },
+    "hourly_rate": {
+      "type": "number",
+      "description": "Hourly rate (for hourly classification)"
+    },
+    "standard_monthly_hours": {
+      "type": "number",
+      "description": "Standard hours per month (for hourly classification)"
+    },
+    "contractor_billing_type": {
+      "type": "string",
+      "enum": [
+        "hourly",
+        "monthly",
+        "per_cycle",
+        "per_project"
+      ],
+      "description": "Billing type for contractors"
+    },
+    "contractor_rate": {
+      "type": "number",
+      "description": "Contractor rate (hourly or monthly)"
+    },
+    "cost_type": {
+      "type": "string",
+      "enum": [
+        "overhead",
+        "cogs"
+      ],
+      "default": "overhead",
+      "description": "Whether employee cost is Overhead or COGS"
+    },
+    "discipline_status": {
+      "type": "string",
+      "enum": [
+        "green",
+        "yellow",
+        "red"
+      ],
+      "default": "green",
+      "description": "Discipline status"
+    },
+    "has_performance_pay": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether employee receives performance pay"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "dismissed"
+      ],
+      "default": "active"
+    },
+    "dismissed_date": {
+      "type": "string",
+      "format": "date"
+    },
+    "start_date": {
+      "type": "string",
+      "format": "date"
+    },
+    "notes": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "full_name",
+    "classification",
+    "cost_type"
+  ]
+}

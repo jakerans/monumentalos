@@ -1,0 +1,47 @@
+{
+  "name": "PerformancePayRecord",
+  "type": "object",
+  "properties": {
+    "performance_pay_id": {
+      "type": "string",
+      "description": "Reference to PerformancePay plan"
+    },
+    "employee_id": {
+      "type": "string",
+      "description": "Reference to Employee"
+    },
+    "period": {
+      "type": "string",
+      "description": "Period label (e.g. 2026-01, 2026-Q1)"
+    },
+    "metric_value": {
+      "type": "number",
+      "description": "Actual metric value for the period"
+    },
+    "payout": {
+      "type": "number",
+      "description": "Amount paid out"
+    },
+    "tier_reached": {
+      "type": "string",
+      "description": "Which tier was reached"
+    },
+    "notes": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "calculated",
+        "paid",
+        "adjusted"
+      ],
+      "default": "calculated"
+    }
+  },
+  "required": [
+    "performance_pay_id",
+    "employee_id",
+    "period"
+  ]
+}

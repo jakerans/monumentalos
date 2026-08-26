@@ -1,0 +1,48 @@
+{
+  "name": "LootTestEvent",
+  "type": "object",
+  "properties": {
+    "triggered_by": {
+      "type": "string",
+      "description": "User ID of the admin who ran the test"
+    },
+    "test_type": {
+      "type": "string",
+      "enum": [
+        "force_drop",
+        "force_rarity",
+        "force_prize",
+        "full_sequence"
+      ],
+      "description": "Type of test event"
+    },
+    "rarity_override": {
+      "type": "string",
+      "enum": [
+        "common",
+        "rare",
+        "epic",
+        "legendary"
+      ],
+      "description": "Used with force_rarity and force_prize to set target rarity"
+    },
+    "prize_id_override": {
+      "type": "string",
+      "description": "Used with force_prize to guarantee a specific prize"
+    },
+    "target_setter_id": {
+      "type": "string",
+      "description": "Which setter's inventory and screen to test on"
+    },
+    "result": {
+      "type": "string",
+      "description": "Log of what happened during the test"
+    },
+    "created_date": {
+      "type": "string",
+      "format": "date",
+      "description": "Date the test event was created"
+    }
+  },
+  "required": []
+}

@@ -1,0 +1,29 @@
+{
+  "name": "User",
+  "type": "object",
+  "properties": {
+    "role": {
+      "type": "string",
+      "enum": [
+        "admin",
+        "user"
+      ]
+    },
+    "app_role": {
+      "type": "string",
+      "enum": [
+        "admin",
+        "marketing_manager",
+        "setter",
+        "onboard_admin",
+        "client"
+      ],
+      "description": "Application-level role (separate from platform role)"
+    },
+    "client_id": {
+      "type": "string",
+      "description": "Reference to Client entity (for client users)"
+    }
+  },
+  "required": []
+}

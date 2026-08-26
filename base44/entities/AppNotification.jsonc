@@ -1,0 +1,57 @@
+{
+  "name": "AppNotification",
+  "type": "object",
+  "properties": {
+    "recipient_role": {
+      "type": "string",
+      "enum": [
+        "admin",
+        "marketing_manager",
+        "setter"
+      ],
+      "description": "Target role for this notification"
+    },
+    "recipient_user_id": {
+      "type": "string",
+      "description": "Specific user ID, or null for role-wide broadcast"
+    },
+    "type": {
+      "type": "string",
+      "enum": [
+        "client_settings_changed",
+        "bug_report",
+        "time_entry_edit",
+        "time_entry_edit_approved",
+        "time_entry_edit_denied"
+      ],
+      "description": "Notification type/category"
+    },
+    "title": {
+      "type": "string",
+      "description": "Short notification title"
+    },
+    "message": {
+      "type": "string",
+      "description": "Notification body text"
+    },
+    "source_user_id": {
+      "type": "string",
+      "description": "User ID who triggered this notification (optional)"
+    },
+    "source_entity_id": {
+      "type": "string",
+      "description": "Related entity ID like client_id (optional)"
+    },
+    "read": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether the notification has been read"
+    }
+  },
+  "required": [
+    "recipient_role",
+    "type",
+    "title",
+    "message"
+  ]
+}

@@ -1,0 +1,53 @@
+{
+  "name": "OnboardProject",
+  "type": "object",
+  "properties": {
+    "client_id": {
+      "type": "string",
+      "description": "Reference to Client entity"
+    },
+    "client_name": {
+      "type": "string",
+      "description": "Snapshot of client name at time of creation"
+    },
+    "template_id": {
+      "type": "string",
+      "description": "Reference to OnboardTemplate used"
+    },
+    "template_name": {
+      "type": "string",
+      "description": "Snapshot of template name"
+    },
+    "assigned_mm_id": {
+      "type": "string",
+      "description": "Marketing manager user ID assigned to this client"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "in_progress",
+        "completed",
+        "on_hold"
+      ],
+      "default": "in_progress"
+    },
+    "started_date": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When onboarding started"
+    },
+    "completed_date": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When onboarding was completed"
+    },
+    "notes": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "client_id",
+    "client_name",
+    "template_id"
+  ]
+}

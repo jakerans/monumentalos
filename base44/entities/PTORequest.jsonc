@@ -1,0 +1,80 @@
+{
+  "name": "PTORequest",
+  "type": "object",
+  "properties": {
+    "setter_id": {
+      "type": "string",
+      "description": "The setter requesting time off"
+    },
+    "request_date": {
+      "type": "string",
+      "description": "YYYY-MM-DD being requested off"
+    },
+    "cover_setter_id": {
+      "type": "string",
+      "description": "The setter who agreed to cover"
+    },
+    "cover_accepted": {
+      "type": "boolean",
+      "default": false,
+      "description": "Has the cover setter accepted"
+    },
+    "admin_approved": {
+      "type": "boolean",
+      "default": false,
+      "description": "Has admin approved"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending_cover",
+        "pending_admin",
+        "approved",
+        "denied",
+        "cancelled"
+      ],
+      "default": "pending_cover",
+      "description": "Current request status"
+    },
+    "days_deducted": {
+      "type": "number",
+      "default": 1,
+      "description": "PTO days to deduct from bank"
+    },
+    "offer_type": {
+      "type": "string",
+      "enum": [
+        "none",
+        "loot_boxes"
+      ],
+      "default": "none",
+      "description": "What was offered for coverage"
+    },
+    "offer_quantity": {
+      "type": "number",
+      "description": "How many boxes offered"
+    },
+    "offer_loot_box_ids": {
+      "type": "string",
+      "description": "Comma-separated LootBox IDs if offering boxes"
+    },
+    "transfer_status": {
+      "type": "string",
+      "enum": [
+        "none",
+        "pending_shift",
+        "completed",
+        "returned"
+      ],
+      "default": "none",
+      "description": "Tracks the state of the inventory transfer"
+    },
+    "notes": {
+      "type": "string",
+      "description": "Optional notes"
+    }
+  },
+  "required": [
+    "setter_id"
+  ]
+}

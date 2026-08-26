@@ -1,0 +1,83 @@
+{
+  "name": "LootWin",
+  "type": "object",
+  "properties": {
+    "setter_id": {
+      "type": "string",
+      "description": "User ID of the setter who won"
+    },
+    "loot_box_id": {
+      "type": "string",
+      "description": "Reference to the LootBox that was opened"
+    },
+    "prize_id": {
+      "type": "string",
+      "description": "Reference to the LootPrize won"
+    },
+    "prize_name": {
+      "type": "string",
+      "description": "Snapshot of prize name at time of win"
+    },
+    "prize_type": {
+      "type": "string",
+      "enum": [
+        "cash",
+        "physical"
+      ],
+      "description": "Type of prize won"
+    },
+    "cash_value": {
+      "type": "number",
+      "description": "Cash value at time of win"
+    },
+    "rarity": {
+      "type": "string",
+      "enum": [
+        "common",
+        "rare",
+        "epic",
+        "legendary"
+      ],
+      "description": "Rarity of the prize won"
+    },
+    "won_date": {
+      "type": "string",
+      "format": "date",
+      "description": "Date the prize was won"
+    },
+    "fulfillment_status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "approved",
+        "fulfilled",
+        "added_to_payroll"
+      ],
+      "default": "pending",
+      "description": "Current fulfillment status"
+    },
+    "fulfillment_date": {
+      "type": "string",
+      "format": "date",
+      "description": "Date the prize was fulfilled"
+    },
+    "fulfillment_notes": {
+      "type": "string",
+      "description": "Notes on how the prize was fulfilled"
+    },
+    "performance_pay_record_id": {
+      "type": "string",
+      "description": "Populated when cash prize is added to payroll"
+    }
+  },
+  "required": [
+    "setter_id",
+    "loot_box_id",
+    "prize_id",
+    "prize_name",
+    "prize_type",
+    "rarity",
+    "won_date",
+    "fulfillment_status"
+  ]
+}
