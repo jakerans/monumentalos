@@ -1,0 +1,37 @@
+{
+  "name": "Sync Setter Profile on Employee Onboarding",
+  "description": "Automatically syncs setter profile to leaderboard when employee completes onboarding",
+  "trigger": {
+    "condition": null,
+    "config": {
+      "trigger_type": "entity",
+      "events": [
+        "create"
+      ],
+      "entity_name": "EmployeeOnboarding"
+    }
+  },
+  "definition": {
+    "document": {
+      "dsl": "1.0.0",
+      "name": "sync_setter_profile_on_employee_onboarding",
+      "version": "1.0",
+      "namespace": "base44"
+    },
+    "do": [
+      {
+        "run_function": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "syncSetterProfile",
+            "args": {}
+          },
+          "then": "end"
+        }
+      }
+    ]
+  },
+  "x-base44-migrated-from-automation": {
+    "legacy_payload_function": "syncSetterProfile"
+  }
+}
